@@ -3,3 +3,7 @@
 from app.models.item import Item  # noqa: F401
 from app.models.loan import Loan
 from app.models.loan_item import LoanItem
+from app.models.book import Book
+from app.models.book_copy import BookCopy
+from app.models.libarary_card import LibraryCard
+from app.models.user import User

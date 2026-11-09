@@ -3,4 +3,7 @@
 from app.models.item import Item  # noqa: F401
 from app.models.library_card import CardStatus, CardType, LibraryCard  # noqa: F401
 from app.models.user import User, UserRole, UserStatus  # noqa: F401
+from app.models.loan import Loan
+from app.models.loan_item import LoanItem
 from app.models.fine import Fine
+

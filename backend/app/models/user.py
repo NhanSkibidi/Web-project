@@ -39,7 +39,7 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )
-
+    
     # 1 độc giả có thể có nhiều thẻ (vd: thẻ cũ hết hạn + thẻ mới)
     # user.library_cards -> danh sách thẻ của user đó
     library_cards: Mapped[list["LibraryCard"]] = relationship(

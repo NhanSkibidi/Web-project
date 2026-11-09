@@ -260,4 +260,6 @@ def seed_data():
 
 
 if __name__ == "__main__":
+    from app.db.session import Base, engine
+    Base.metadata.create_all(bind=engine)
     seed_data()

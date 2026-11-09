@@ -21,3 +21,35 @@ CREATE TABLE IF NOT EXISTS items (
 INSERT INTO items (name, description, price) VALUES
   ('Cơm rang dưa bò', 'Món mẫu để kiểm tra API', 45000),
   ('Trà đá', 'Dữ liệu mẫu số 2', 5000);
+
+
+SELECT
+    b.id,
+    b.title,
+    b.isbn,
+    GROUP_CONCAT(DISTINCT a.name) AS authors,
+    c.name AS category,
+    COUNT(DISTINCT bc.id) AS available_copies
+
+FROM books b
+
+LEFT JOIN book_authors ba
+    ON b.id = ba.book_id
+
+LEFT JOIN authors a
+    ON ba.author_id = a.id
+
+LEFT JOIN categories c
+    ON b.category_id = c.id
+
+LEFT JOIN book_copies bc
+    ON b.id = bc.book_id
+    AND bc.status = 'AVAILABLE'
+
+GROUP BY
+    b.id,
+    b.title,
+    b.isbn,
+    c.name
+
+ORDER BY b.title ASC;

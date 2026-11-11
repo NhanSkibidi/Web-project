@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.db.session import Base, engine
 from app.routers import book_copies, health, items, return_book
 
+from app.routers import loans
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,7 +33,6 @@ async def lifespan(app: FastAPI):
         print(f"[DB] Chi tiết: {error.orig}")
     yield
 
-
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
 # CORS: cho phép trang FE (khác cổng/khác domain) gọi được API này
@@ -46,6 +46,7 @@ app.add_middleware(
 # Mọi API đều bắt đầu bằng /api. Thêm router mới thì include ở đây.
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
+app.include_router(loans.router, prefix="/api")
 app.include_router(book_copies.router, prefix="/book_copies")
 app.include_router(return_book.router, prefix="/api")
 

@@ -19,7 +19,8 @@ router = APIRouter(prefix="/items", tags=["Items"])
 def get_item_or_404(item_id: int, db: Session = Depends(get_db)):
     item = item_crud.get_item(db, item_id)
     if item is None:
-        raise HTTPException(status_code=404, detail=f"Không tìm thấy item id={item_id}")
+        raise HTTPException(
+            status_code=404, detail=f"Không tìm thấy item id={item_id}")
     return item
 
 

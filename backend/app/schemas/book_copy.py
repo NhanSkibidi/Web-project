@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class BookCopyCreate(BaseModel):
-    book_isbn: str
     copy_code: str
     shelf_location: str
     imported_at: date
@@ -20,6 +19,9 @@ class BookCopyCreate(BaseModel):
         "DISPOSED"
     ] = "AVAILABLE"
 
+class BookCopiesCreate(BaseModel):
+    book_isbn: str
+    copies: list[BookCopyCreate]
 
 class BookCopyUpdate(BaseModel):
     shelf_location: str | None = None

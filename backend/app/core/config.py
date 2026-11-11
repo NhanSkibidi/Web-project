@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = ""
     DB_NAME: str = "app_db"
 
+    JWT_SECRET_KEY: str = "change-this-secret-before-deploying"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     # Chuỗi các origin cách nhau bằng dấu phẩy, hoặc "*"
     CORS_ORIGINS: str = "*"
 

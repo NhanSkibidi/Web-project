@@ -1,9 +1,11 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
+# class LoanCreate(BaseModel):
+#     user_id: int
+#     borrow_type: str = "ONLINE"
 class LoanCreate(BaseModel):
-    user_id: int
-    borrow_type: str = "ONLINE"
+    book_isbns: list[str] = Field(min_length=1)
 
 class LoanUpdate(BaseModel):
     status: str

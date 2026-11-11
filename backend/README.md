@@ -126,7 +126,47 @@ Kiểm tra:
 
 Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi không tìm thấy, 422 khi dữ liệu gửi lên sai.
 
-## 8. Frontend nối với backend thế nào?
+## 8. Đăng ký và đăng nhập
+
+Các endpoint xác thực có tiền tố `/api/auth`:
+
+| Method | URL | Việc làm |
+|---|---|---|
+| POST | `/api/auth/register` | Tạo tài khoản độc giả và thẻ thư viện hiệu lực một năm |
+| POST | `/api/auth/login` | Đăng nhập, nhận JWT |
+| GET | `/api/auth/me` | Xem tài khoản hiện tại (cần JWT Bearer) |
+
+Body đăng ký mẫu:
+
+```json
+{
+  "email": "docgia01@library.com",
+  "password": "Docgia@123",
+  "full_name": "Nguyễn Văn An",
+  "phone": "0912345678"
+}
+```
+
+Đăng ký trả HTTP `201`, tài khoản luôn có vai trò `READER`, cùng mã thẻ thư viện
+`STANDARD` có ngày hết hạn sau ngày cấp một năm. `id` của tài khoản và thẻ là
+số tự tăng, bắt đầu từ `1` khi bảng tương ứng chưa có dữ liệu. Email đã dùng
+trả HTTP `409`; dữ liệu sai trả `422`.
+
+Body đăng nhập:
+
+```json
+{
+  "email": "docgia01@library.com",
+  "password": "Docgia@123"
+}
+```
+
+Sao chép `access_token` từ phản hồi đăng nhập, bấm **Authorize** ở `/docs` và
+nhập `Bearer <access_token>` để thử `GET /api/auth/me`. JWT mặc định hết hạn
+sau 30 phút. Trước khi triển khai, đặt `JWT_SECRET_KEY` thành khóa bí mật riêng
+trong biến môi trường hoặc file `.env`; giá trị mặc định chỉ dành cho phát triển.
+
+## 9. Frontend nối với backend thế nào?
 
 - Frontend gọi tới `http://127.0.0.1:8000/api/...` (cấu hình ở `frontend/js/config.js`).
 - Trình duyệt chặn web ở địa chỉ khác gọi API nếu backend không cho phép. Đó là **CORS**. Backend đã cho phép bằng `CORS_ORIGINS` trong `.env`:
@@ -134,7 +174,7 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
   - Khi deploy thật, ghi rõ domain: `CORS_ORIGINS=https://nhom1.example.com`
 - Sửa `.env` xong phải **tắt (`Ctrl + C`) và chạy lại** uvicorn.
 
-## 9. Thêm chức năng cho đề tài (vd: bảng `products`)
+## 10. Thêm chức năng cho đề tài (vd: bảng `products`)
 
 1. **Tạo bảng trong MySQL:** viết câu `CREATE TABLE products (...)` vào file mới `sql/products.sql`, chạy bằng Workbench như bước 1. Lưu file `.sql` lại để cả nhóm cùng chạy.
 2. `app/models/product.py`: copy `item.py`, đổi tên class, `__tablename__ = "products"` và các cột cho **giống bảng vừa tạo**.
@@ -147,7 +187,7 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
 
 > Mẹo: nếu quên bước 1, server cũng tự tạo bảng còn thiếu theo model khi khởi động. Nhưng nó **không sửa** bảng đã có. Muốn thêm/sửa cột, hãy dùng `ALTER TABLE ...` trong Workbench rồi sửa model cho khớp.
 
-## 10. Lỗi hay gặp
+## 11. Lỗi hay gặp
 
 | Lỗi | Cách sửa |
 |---|---|
@@ -160,6 +200,6 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
 | Cổng 8000 đã bị dùng | `uvicorn app.main:app --reload --port 8001`, nhớ sửa `frontend/js/config.js` theo |
 | Tiếng Việt bị lỗi font trong DB | Database/bảng phải là `utf8mb4`. Tạo bằng `sql/init.sql` là đúng sẵn |
 
-## 11. (Không bắt buộc) Chạy MySQL bằng Docker
+## 12. (Không bắt buộc) Chạy MySQL bằng Docker
 
 Chỉ dành cho bạn nào đã biết Docker và không muốn cài MySQL. Trong `backend/` chạy `docker compose up -d`: MySQL chạy ở cổng **3307**, tự tạo bảng từ `sql/init.sql`. Khi đó sửa `.env` thành `DB_PORT=3307`, `DB_USER=app_user`, `DB_PASSWORD=app_password`.

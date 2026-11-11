@@ -13,6 +13,7 @@ from sqlalchemy.exc import OperationalError
 from app import models  # noqa: F401 - import để SQLAlchemy biết các bảng
 from app.core.config import settings
 from app.db.session import Base, engine
+from app.routers import auth, health, items
 from app.routers import book_copies, health, items, return_book
 
 from app.routers import loans
@@ -46,6 +47,7 @@ app.add_middleware(
 # Mọi API đều bắt đầu bằng /api. Thêm router mới thì include ở đây.
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 app.include_router(loans.router, prefix="/api")
 app.include_router(book_copies.router, prefix="/book_copies")
 app.include_router(return_book.router, prefix="/api")

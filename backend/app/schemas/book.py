@@ -44,3 +44,50 @@ class BookResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+from typing import List, Optional
+class AuthorSummary(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CategorySummary(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PublisherSummary(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BookSearchItem(BaseModel):
+    isbn: str
+    title: str
+    publish_year: Optional[int] = None
+    page_count: Optional[int] = None
+    language: str
+    description: Optional[str] = None
+    cover_image: Optional[str] = None
+    price: Decimal
+    category: Optional[CategorySummary] = None
+    publisher: Optional[PublisherSummary] = None
+    authors: List[AuthorSummary] = []
+    total_copies: int
+    available_copies: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BookPaginationResponse(BaseModel):
+    items: List[BookSearchItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

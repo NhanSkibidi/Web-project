@@ -14,7 +14,7 @@ from app import models  # noqa: F401 - import để SQLAlchemy biết các bản
 from app.core.config import settings
 from app.db.session import Base, engine
 from app.routers import book_copies, health, items, return_book
-
+from app.routers import book
 from app.routers import loans
 
 @asynccontextmanager
@@ -49,6 +49,7 @@ app.include_router(items.router, prefix="/api")
 app.include_router(loans.router, prefix="/api")
 app.include_router(book_copies.router, prefix="/book_copies")
 app.include_router(return_book.router, prefix="/api")
+app.include_router(book.router, prefix="/api")
 
 
 @app.get("/")

@@ -3,6 +3,7 @@
 Chạy:  uvicorn app.main:app --reload
 Tài liệu API tự sinh: http://127.0.0.1:8000/docs
 """
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -13,7 +14,9 @@ from app import models  # noqa: F401 - import để SQLAlchemy biết các bản
 from app.core.config import settings
 from app.db.session import Base, engine
 from app.routers import auth, health, items
+from app.routers import book_copies, health, items, return_book
 
+from app.routers import loans
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,14 +24,15 @@ async def lifespan(app: FastAPI):
     # Lưu ý: create_all KHÔNG sửa bảng đã tồn tại. Đổi cột -> sửa bằng SQL hoặc xoá bảng tạo lại.
     try:
         Base.metadata.create_all(bind=engine)
-        print(f"[DB] Đã kết nối MySQL {settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}")
+        print(
+            f"[DB] Đã kết nối MySQL {settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+        )
     except OperationalError as error:
         print("[DB] KHÔNG kết nối được MySQL! Kiểm tra MySQL đã bật chưa và file .env.")
         if "Unknown database" in str(error.orig):
             print("[DB] Chưa có database -> mở MySQL Workbench, chạy file sql/init.sql")
         print(f"[DB] Chi tiết: {error.orig}")
     yield
-
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
@@ -44,6 +48,9 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
+app.include_router(loans.router, prefix="/api")
+app.include_router(book_copies.router, prefix="/book_copies")
+app.include_router(return_book.router, prefix="/api")
 
 
 @app.get("/")

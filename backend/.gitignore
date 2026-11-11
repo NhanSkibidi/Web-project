@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 venv/
 env/
+rkl/
 
 # Cấu hình bí mật
 .env

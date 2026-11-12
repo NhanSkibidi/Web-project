@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "KS25 Base API"
 
+    DATABASE_URL: str | None = None
+
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_USER: str = "root"
@@ -26,6 +28,11 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
+        import os
+        if os.getenv("DATABASE_URL"):
+            return os.getenv("DATABASE_URL")
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         # mysql+pymysql://user:password@host:port/database
         # quote_plus: để mật khẩu có ký tự đặc biệt (@, #, /...) không làm hỏng URL
         return (

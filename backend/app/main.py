@@ -44,6 +44,8 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
+# Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api)
+app.include_router(auth.router)
 
 
 @app.get("/")

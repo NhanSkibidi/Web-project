@@ -80,8 +80,13 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
     try:
         db.flush()
         issue_date = date.today()
+        base_code = f"LC-{user.id:04d}"
+        card_code = base_code
+        if db.scalar(select(LibraryCard.id).where(LibraryCard.card_code == card_code)) is not None:
+            card_code = f"{base_code}-{secrets.token_hex(2).upper()}"
+
         card = LibraryCard(
-            card_code=f"LC-{user.id:04d}-{secrets.token_hex(4).upper()}",
+            card_code=card_code,
             reader_id=user.id,
             card_type=CardType.STANDARD,
             issue_date=issue_date,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.fine import (
@@ -9,7 +9,6 @@ from app.schemas.fine import (
     UnpaidCheckResponse,
 )
 from app.crud.fine import (
-    has_unpaid_fines,
     get_unpaid_fines_summary,
     report_damage_or_lost,
     pay_fine,
@@ -22,14 +21,14 @@ router = APIRouter(prefix="/fines", tags=["Tiền phạt"])
 
 @router.get("", response_model=list[FineResponse])
 def get_all_fines(
-    user_id: int | None = Query(None, description="Lọc theo ID độc giả"),
-    fine_status: str | None = Query(None, alias="status", description="Lọc theo trạng thái: UNPAID, PAID, WAIVED"),
+    user_id: int | None = None,
+    status: str | None = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    """Lấy danh sách các khoản phạt."""
-    return list_fines(db, user_id=user_id, status=fine_status, skip=skip, limit=limit)
+    """Lấy danh sách các khoản phạt (có thể lọc theo user_id hoặc status)."""
+    return list_fines(db, user_id=user_id, status=status, skip=skip, limit=limit)
 
 
 @router.get("/unpaid-check/{user_id}", response_model=UnpaidCheckResponse)
@@ -43,10 +42,7 @@ def report_damaged_or_lost_book(
     payload: ReportIssueRequest,
     db: Session = Depends(get_db),
 ):
-    """Báo sách hỏng hoặc báo mất sách: tự động tính phạt theo giá bìa của sách
-    - Hỏng: 50% giá sách, chuyển bản sao sang DAMAGED
-    - Mất: 100% giá sách, chuyển bản sao sang LOST và kết thúc lượt mượn
-    """
+    """Báo sách hỏng hoặc báo mất sách: tự động tính phạt theo giá bìa của sách."""
     return report_damage_or_lost(
         db,
         issue_type=payload.issue_type,
@@ -80,4 +76,3 @@ def waive_user_fine(
         waive_reason=payload.waive_reason,
         waived_by=payload.waived_by,
     )
-

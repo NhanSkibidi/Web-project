@@ -13,10 +13,16 @@ from sqlalchemy.exc import OperationalError
 from app import models  # noqa: F401 - import để SQLAlchemy biết các bảng
 from app.core.config import settings
 from app.db.session import Base, engine
-from app.routers import auth, health, items
-from app.routers import book_copies, health, items, return_book
-from app.routers import book
-from app.routers import loans
+from app.routers import (
+    auth,
+    book,
+    book_copies,
+    fine,
+    health,
+    items,
+    loans,
+    return_book,
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

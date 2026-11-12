@@ -18,7 +18,7 @@ class LoanItem(Base):
     copy_id: Mapped[int | None] = mapped_column(ForeignKey("book_copies.id"), nullable=True)
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     renewal_count: Mapped[int] = mapped_column(Integer, default=0)
-    return_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    return_date: Mapped[datetime | None] = mapped_column(DateTime,nullable=True)
 
     loan: Mapped["Loan"] = relationship("Loan", back_populates="loan_items")
     book: Mapped["Book"] = relationship("Book")

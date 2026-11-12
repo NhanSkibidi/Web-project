@@ -4,7 +4,7 @@ from app.db.session import get_db
 from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse
 from app.crud.book_copies import create_copy
 
-router = APIRouter(tags=["BookCopies"])
+router = APIRouter(prefix="/book_copies", tags=["BookCopies"])
 
 
 @router.post("", response_model=list[BookCopyResponse], status_code=status.HTTP_201_CREATED)

@@ -6,10 +6,8 @@ if TYPE_CHECKING:
     from app.models.BookCopy import BookCopy
 from datetime import datetime
 from decimal import Decimal
-
 from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.session import Base
 
 
@@ -42,8 +40,8 @@ class Book(Base):
     publisher: Mapped["Publisher"] = relationship(back_populates="books")
 
     book_authors: Mapped[list["BookAuthor"]] = relationship(
-        back_populates="book"
+        back_populates="book", cascade="all, delete-orphan"
     )
     copies: Mapped[list["BookCopy"]] = relationship(
-        back_populates="book"
+        back_populates="book", cascade="all, delete-orphan"
     )

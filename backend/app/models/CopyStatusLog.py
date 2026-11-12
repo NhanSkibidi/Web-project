@@ -1,17 +1,10 @@
-"""Model = cấu trúc 1 bảng trong MySQL. Bảng mẫu: items.
-
-Khi làm đề tài, copy file này để tạo bảng của nhóm (vd: Product, Order, Movie...).
-"""
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.BookCopy import BookCopy
 from datetime import datetime
-from decimal import Decimal
-
-from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Enum
+from sqlalchemy import DateTime, String, func, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.session import Base
 
 

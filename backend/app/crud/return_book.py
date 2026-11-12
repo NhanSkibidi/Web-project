@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.BookCopy import BookCopy
 from app.models.loan import Loan
 from app.models.loan_item import LoanItem
+from app.crud.fine import create_overdue_fine_if_applicable
 
 
 def return_single_book_copy(
@@ -45,7 +46,9 @@ def return_single_book_copy(
         copy.status = "AVAILABLE"
 
         loan = db.query(Loan).filter(Loan.id == loan_item.loan_id).first()
+        fine = None
         if loan:
+            fine = create_overdue_fine_if_applicable(db, loan, loan_item, now)
             remaining_items = (
                 db.query(LoanItem)
                 .filter(
@@ -61,6 +64,8 @@ def return_single_book_copy(
         db.commit()
         db.refresh(loan_item)
         db.refresh(copy)
+        if fine:
+            db.refresh(fine)
 
         return {
             "loan_item_id": loan_item.id,
@@ -70,7 +75,9 @@ def return_single_book_copy(
             "return_date": loan_item.return_date,
             "returned_at": loan_item.return_date,
             "status": "RETURNED",
-            "message": "Trả sách thành công",
+            "message": "Trả sách thành công" + (" (có phát sinh phạt quá hạn)" if fine else ""),
+            "fine_id": fine.id if fine else None,
+            "overdue_fine_amount": fine.amount if fine else 0.0,
         }
     except SQLAlchemyError as error:
         db.rollback()
@@ -95,20 +102,27 @@ def return_entire_loan(db: Session, loan_id: int):
 
     try:
         now = datetime.now(timezone.utc)
+        fines_created = []
         for item in items:
             item.return_date = now
             if item.copy_id:
                 copy = db.query(BookCopy).filter(BookCopy.id == item.copy_id).first()
                 if copy:
                     copy.status = "AVAILABLE"
+            fine = create_overdue_fine_if_applicable(db, loan, item, now)
+            if fine:
+                fines_created.append(fine)
 
         loan.status = "RETURNED"
         db.commit()
+        total_fine = sum(f.amount for f in fines_created)
         return {
             "message": "Đã trả toàn bộ sách trong phiếu thành công",
             "loan_id": loan_id,
             "returned_count": len(items),
             "status": "RETURNED",
+            "fines_created_count": len(fines_created),
+            "total_fines_amount": total_fine,
         }
     except SQLAlchemyError as error:
         db.rollback()

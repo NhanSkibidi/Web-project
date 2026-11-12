@@ -23,3 +23,5 @@ class ReturnItemResponse(BaseModel):
     returned_at: datetime | None = None
     status: str = "RETURNED"
     message: str = "Trả sách thành công"
+    fine_id: int | None = None
+    overdue_fine_amount: float = 0.0

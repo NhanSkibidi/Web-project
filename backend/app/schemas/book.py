@@ -1,8 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
-
+from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
-
 
 class BookCreate(BaseModel):
     isbn: str
@@ -45,7 +44,7 @@ class BookResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-from typing import List, Optional
+
 class AuthorSummary(BaseModel):
     id: int
     name: str

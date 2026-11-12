@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -41,7 +41,7 @@ def return_single_book_copy(
         )
 
     try:
-        now = datetime.now(timezone.utc)
+        now = datetime.now()
         loan_item.return_date = now
         copy.status = "AVAILABLE"
 
@@ -101,7 +101,7 @@ def return_entire_loan(db: Session, loan_id: int):
         )
 
     try:
-        now = datetime.now(timezone.utc)
+        now = datetime.now()
         fines_created = []
         for item in items:
             item.return_date = now

@@ -53,6 +53,7 @@ app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
+app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 
 

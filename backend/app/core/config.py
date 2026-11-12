@@ -12,17 +12,27 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "KS25 Base API"
 
+    DATABASE_URL: str | None = None
+
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_USER: str = "root"
     DB_PASSWORD: str = ""
     DB_NAME: str = "app_db"
 
+    JWT_SECRET_KEY: str = "change-this-secret-before-deploying"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     # Chuỗi các origin cách nhau bằng dấu phẩy, hoặc "*"
     CORS_ORIGINS: str = "*"
 
     @property
     def database_url(self) -> str:
+        import os
+        if os.getenv("DATABASE_URL"):
+            return os.getenv("DATABASE_URL")
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         # mysql+pymysql://user:password@host:port/database
         # quote_plus: để mật khẩu có ký tự đặc biệt (@, #, /...) không làm hỏng URL
         return (

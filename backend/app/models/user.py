@@ -1,4 +1,9 @@
 """Model User = bảng users (tài khoản: admin, thủ thư, độc giả)."""
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.models.library_card import LibraryCard
+    from app.models.loan import Loan
+
 import enum
 from datetime import datetime
 
@@ -39,9 +44,12 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )
-
+    
     # 1 độc giả có thể có nhiều thẻ (vd: thẻ cũ hết hạn + thẻ mới)
     # user.library_cards -> danh sách thẻ của user đó
     library_cards: Mapped[list["LibraryCard"]] = relationship(
         back_populates="reader", cascade="all, delete-orphan"
+    )
+    loans: Mapped[list["Loan"]] = relationship(
+        "Loan", back_populates="user", foreign_keys="Loan.user_id", cascade="all, delete-orphan"
     )

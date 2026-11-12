@@ -14,7 +14,10 @@ router = APIRouter(prefix="/returns", tags=["Trả sách"])
 @router.post("/item", response_model=ReturnItemResponse)
 def return_one_item(payload: ReturnItemRequest, db: Session = Depends(get_db)):
     return return_single_book_copy(
-        db, book_copy_id=payload.book_copy_id, barcode=payload.barcode
+        db,
+        book_copy_id=payload.book_copy_id,
+        copy_code=payload.copy_code,
+        barcode=payload.barcode,
     )
 
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 FINE_PER_DAY = 2000
 RATE_DAMAGED = 0.5
@@ -13,9 +13,9 @@ class FineBase(BaseModel):
     fine_type: str
     amount: float = 0.0
     status: str = "UNPAID"
-    collected_by: int = None
-    collected_at: datetime = None
-    waive_reason: str = None
+    collected_by: int | None = None
+    collected_at: datetime | None = None
+    waive_reason: str | None = None
 
 
 class FineCreate(FineBase):
@@ -26,5 +26,4 @@ class FineResponse(FineBase):
     id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

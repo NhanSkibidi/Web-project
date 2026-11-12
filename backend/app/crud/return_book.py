@@ -8,16 +8,20 @@ from app.models.loan_item import LoanItem
 
 
 def return_single_book_copy(
-    db: Session, book_copy_id: int | None = None, barcode: str | None = None
+    db: Session,
+    book_copy_id: int | None = None,
+    copy_code: str | None = None,
+    barcode: str | None = None,
 ):
+    code = copy_code or barcode
     query = db.query(BookCopy)
     if book_copy_id is not None:
         copy = query.filter(BookCopy.id == book_copy_id).first()
-    elif barcode is not None:
-        copy = query.filter(BookCopy.barcode == barcode).first()
+    elif code is not None:
+        copy = query.filter(BookCopy.copy_code == code).first()
     else:
         raise HTTPException(
-            status_code=400, detail="Cần cung cấp book_copy_id hoặc barcode"
+            status_code=400, detail="Cần cung cấp book_copy_id hoặc copy_code"
         )
 
     if not copy:
@@ -25,7 +29,7 @@ def return_single_book_copy(
 
     loan_item = (
         db.query(LoanItem)
-        .filter(LoanItem.book_copy_id == copy.id, LoanItem.returned_at.is_(None))
+        .filter(LoanItem.copy_id == copy.id, LoanItem.return_date.is_(None))
         .first()
     )
 
@@ -37,8 +41,7 @@ def return_single_book_copy(
 
     try:
         now = datetime.now(timezone.utc)
-        loan_item.returned_at = now
-        loan_item.status = "RETURNED"
+        loan_item.return_date = now
         copy.status = "AVAILABLE"
 
         loan = db.query(Loan).filter(Loan.id == loan_item.loan_id).first()
@@ -48,16 +51,27 @@ def return_single_book_copy(
                 .filter(
                     LoanItem.loan_id == loan.id,
                     LoanItem.id != loan_item.id,
-                    LoanItem.returned_at.is_(None),
+                    LoanItem.return_date.is_(None),
                 )
                 .count()
             )
             if remaining_items == 0:
-                loan.status = "COMPLETED"
+                loan.status = "RETURNED"
 
         db.commit()
         db.refresh(loan_item)
-        return loan_item
+        db.refresh(copy)
+
+        return {
+            "loan_item_id": loan_item.id,
+            "copy_id": copy.id,
+            "book_copy_id": copy.id,
+            "copy_code": copy.copy_code,
+            "return_date": loan_item.return_date,
+            "returned_at": loan_item.return_date,
+            "status": "RETURNED",
+            "message": "Trả sách thành công",
+        }
     except SQLAlchemyError as error:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Lỗi cơ sở dữ liệu: {str(error)}")
@@ -70,7 +84,7 @@ def return_entire_loan(db: Session, loan_id: int):
 
     items = (
         db.query(LoanItem)
-        .filter(LoanItem.loan_id == loan_id, LoanItem.returned_at.is_(None))
+        .filter(LoanItem.loan_id == loan_id, LoanItem.return_date.is_(None))
         .all()
     )
 
@@ -82,17 +96,19 @@ def return_entire_loan(db: Session, loan_id: int):
     try:
         now = datetime.now(timezone.utc)
         for item in items:
-            item.returned_at = now
-            item.status = "RETURNED"
-            copy = db.query(BookCopy).filter(BookCopy.id == item.book_copy_id).first()
-            if copy:
-                copy.status = "AVAILABLE"
+            item.return_date = now
+            if item.copy_id:
+                copy = db.query(BookCopy).filter(BookCopy.id == item.copy_id).first()
+                if copy:
+                    copy.status = "AVAILABLE"
 
-        loan.status = "COMPLETED"
+        loan.status = "RETURNED"
         db.commit()
         return {
             "message": "Đã trả toàn bộ sách trong phiếu thành công",
             "loan_id": loan_id,
+            "returned_count": len(items),
+            "status": "RETURNED",
         }
     except SQLAlchemyError as error:
         db.rollback()

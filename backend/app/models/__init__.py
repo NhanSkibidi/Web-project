@@ -11,7 +11,7 @@ from app.models.Book import Book  # noqa: F401
 from app.models.BookAuthor import BookAuthor  # noqa: F401
 from app.models.BookCopy import BookCopy  # noqa: F401
 from app.models.CopyStatusLog import CopyStatusLog  # noqa: F401
-from app.models.loan import Loan  # noqa: F401
+from app.models.loan import Loan, LoanStatus, BorrowType  # noqa: F401
 from app.models.loan_item import LoanItem  # noqa: F401
 
 from app.models.reservation import Reservation, ReservationStatus  # noqa: F401

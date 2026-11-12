@@ -1,192 +1,295 @@
-from datetime import date, datetime
-from fastapi import HTTPException, status
+from datetime import datetime
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.user import User, UserRole, UserStatus
 from app.models.library_card import LibraryCard, CardStatus
-from app.models.loan import Loan
+from app.models.loan import Loan, LoanStatus, BorrowType
 from app.models.loan_item import LoanItem
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.fine import Fine
 
-def check_library_card(db: Session, user_id: int):
-    card = (db.query(LibraryCard).filter(LibraryCard.reader_id == user_id).order_by(LibraryCard.id.desc()).first())
+MAX_BORROW_BOOKS = 5      
+BORROW_DAYS = 14           
+MAX_RENEWALS = 1           
+RENEWAL_DAYS = 7           
+
+def check_library_card(db: Session, user_id: int) -> LibraryCard:
+    card = (
+        db.query(LibraryCard)
+        .filter(LibraryCard.reader_id == user_id)
+        .order_by(LibraryCard.id.desc())
+        .first()
+    )
 
     if not card:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Độc giả chưa có thẻ thư viện"
+            status_code=400,
+            detail="Độc giả chưa có thẻ thư viện",
         )
 
     if card.status != CardStatus.ACTIVE:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Thẻ thư viện không hoạt động"
+            status_code=400,
+            detail="Thẻ thư viện không hoạt động",
         )
 
-    if card.expiry_date < date.today():
+    if card.expiry_date is None or card.expiry_date < datetime.now().date():
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Thẻ thư viện đã hết hạn"
+            status_code=400,
+            detail="Thẻ thư viện đã hết hạn",
         )
 
     return card
 
-def check_overdue_books(db: Session, user_id: int):
-    overdue = (db.query(LoanItem).join(Loan, LoanItem.loan_id == Loan.id).filter(
+def check_overdue_books(db: Session, user_id: int) -> None:
+    overdue = (
+        db.query(LoanItem)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .filter(
             Loan.user_id == user_id,
-            Loan.status == "BORROWED",
+            Loan.status == LoanStatus.BORROWED,
             LoanItem.return_date.is_(None),
-            LoanItem.due_date < datetime.now()
+            LoanItem.due_date < datetime.now(),
         )
         .first()
     )
 
     if overdue:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bạn đang có sách quá hạn"
+            status_code=400,
+            detail="Bạn đang có sách quá hạn, vui lòng trả trước khi mượn mới",
         )
 
-def check_unpaid_fines(db: Session, user_id: int):
-    unpaid = (db.query(Fine).filter(Fine.user_id == user_id,Fine.status == "UNPAID",Fine.amount > 0).first())
+
+def check_unpaid_fines(db: Session, user_id: int) -> None:
+    unpaid = (
+        db.query(Fine)
+        .filter(
+            Fine.user_id == user_id,
+            Fine.status == "UNPAID",
+            Fine.amount > 0,
+        )
+        .first()
+    )
 
     if unpaid:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bạn đang có khoản phạt chưa thanh toán"
+            status_code=400,
+            detail="Bạn đang có khoản phạt chưa thanh toán",
         )
 
-def check_borrow_limit(db: Session,user_id: int,card: LibraryCard,requested_count: int):
-    borrowed_count = (db.query(func.count(LoanItem.id)).join(Loan, LoanItem.loan_id == Loan.id).filter(
-        Loan.user_id == user_id,
-        Loan.status == "BORROWED",
-        LoanItem.return_date.is_(None)
-    ).scalar())
 
-    pending_count = (db.query(func.count(LoanItem.id)).join(Loan, LoanItem.loan_id == Loan.id).filter(
+def check_borrow_limit(
+    db: Session,
+    user_id: int,
+    requested_count: int,
+) -> None:
+    borrowed_count = (
+        db.query(func.count(LoanItem.id))
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .filter(
             Loan.user_id == user_id,
-            Loan.status == "PENDING"
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
         )
         .scalar()
-    )
+    ) or 0
+
+    pending_count = (
+        db.query(func.count(LoanItem.id))
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .filter(
+            Loan.user_id == user_id,
+            Loan.status == LoanStatus.PENDING,
+        )
+        .scalar()
+    ) or 0
 
     total = borrowed_count + pending_count + requested_count
 
-    if total > card.max_borrow_books:
+    if total > MAX_BORROW_BOOKS:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Bạn đã vượt giới hạn mượn {card.max_borrow_books} cuốn sách"
+            status_code=400,
+            detail=(
+                f"Vượt giới hạn mượn tối đa {MAX_BORROW_BOOKS} cuốn. "
+                f"Hiện tại: {borrowed_count} đang mượn, {pending_count} chờ duyệt, "
+                f"yêu cầu thêm {requested_count} cuốn."
+            ),
         )
 
-def create_online_loan(db: Session,user_id: int,book_isbns: list[str]):
+def create_online_loan(
+    db: Session,
+    user_id: int,
+    book_isbns: list[str],
+) -> Loan:
     try:
-        user = db.query(User).filter(User.id == user_id).first()
-
-        if not user:
+        if not book_isbns:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Không tìm thấy độc giả"
+                status_code=400,
+                detail="Vui lòng chọn ít nhất một đầu sách",
             )
 
-        if user.role != UserRole.READER:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Chỉ độc giả mới được gửi yêu cầu mượn"
-            )
+        book_isbns = [isbn.strip() for isbn in book_isbns]
 
-        if user.status != UserStatus.ACTIVE:
+        if any(not isbn for isbn in book_isbns):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Tài khoản độc giả đã bị khóa"
+                status_code=400,
+                detail="ISBN không được để trống",
             )
 
         if len(book_isbns) != len(set(book_isbns)):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Không được chọn trùng đầu sách"
+                status_code=400,
+                detail="Không được chọn trùng đầu sách",
             )
 
-        card = check_library_card(db, user_id)
+        if len(book_isbns) > MAX_BORROW_BOOKS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Một lần mượn tối đa {MAX_BORROW_BOOKS} cuốn",
+            )
 
+        user = db.query(User).filter(User.id == user_id).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="Không tìm thấy độc giả")
+
+        if user.role != UserRole.READER:
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ độc giả mới được gửi yêu cầu mượn",
+            )
+
+        if user.status != UserStatus.ACTIVE:
+            raise HTTPException(
+                status_code=403,
+                detail="Tài khoản độc giả đã bị khóa",
+            )
+
+        check_library_card(db, user_id)
         check_overdue_books(db, user_id)
-
         check_unpaid_fines(db, user_id)
+        check_borrow_limit(db, user_id, len(book_isbns))
 
-        check_borrow_limit(db,user_id,card,len(book_isbns))
-
-        loan_items = []
+        selected_copies: list[BookCopy] = []
 
         for isbn in book_isbns:
             book = db.query(Book).filter(Book.isbn == isbn).first()
 
             if not book:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Không tìm thấy sách ISBN: {isbn}"
+                    status_code=404,
+                    detail=f"Không tìm thấy sách ISBN: {isbn}",
                 )
 
-            copy = (db.query(BookCopy).filter(BookCopy.book_isbn == isbn,BookCopy.status == "AVAILABLE").with_for_update().first())
+            copy = (
+                db.query(BookCopy)
+                .filter(
+                    BookCopy.book_isbn == isbn,
+                    BookCopy.status == "AVAILABLE",
+                )
+                .with_for_update()
+                .first()
+            )
 
             if not copy:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Sách '{book.title}' hiện không còn cuốn có thể mượn"
+                    status_code=400,
+                    detail=f"Sách '{book.title}' hiện không còn bản sao có thể mượn",
                 )
 
-            loan_items.append(LoanItem(book_isbn=isbn,copy_id=copy.id))
+            selected_copies.append(copy)
 
+        loan = Loan(
+            user_id=user_id,
+            borrow_type=BorrowType.ONLINE,
+            status=LoanStatus.PENDING,
+        )
+        db.add(loan)
+        db.flush()
+
+        for copy in selected_copies:
+            loan_item = LoanItem(
+                loan_id=loan.id,
+                book_isbn=copy.book_isbn,
+                copy_id=copy.id,
+            )
+            db.add(loan_item)
             copy.status = "RESERVED"
 
-        loan = Loan(user_id=user_id,borrow_type="ONLINE",status="PENDING")
-
-        loan.loan_items = loan_items
-
-        db.add(loan)
         db.commit()
         db.refresh(loan)
-
         return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception:
         db.rollback()
         raise
 
-def cancel_online_loan(db: Session,loan_id: int,user_id: int):
+def cancel_online_loan(
+    db: Session,
+    loan_id: int,
+    user_id: int,
+) -> Loan:
     try:
-        loan = (db.query(Loan).filter(Loan.id == loan_id,Loan.user_id == user_id).first())
+        loan = (
+            db.query(Loan)
+            .filter(
+                Loan.id == loan_id,
+                Loan.user_id == user_id,
+            )
+            .with_for_update()
+            .first()
+        )
 
         if not loan:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Không tìm thấy yêu cầu mượn sách"
+                status_code=404,
+                detail="Không tìm thấy yêu cầu mượn sách",
             )
 
-        if loan.borrow_type != "ONLINE":
+        if loan.borrow_type != BorrowType.ONLINE:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chỉ được hủy yêu cầu mượn online"
+                status_code=400,
+                detail="Chỉ được hủy yêu cầu mượn online",
             )
 
-        if loan.status != "PENDING":
+        if loan.status != LoanStatus.PENDING:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Chỉ được hủy yêu cầu khi chưa được duyệt"
+                status_code=400,
+                detail="Chỉ được hủy yêu cầu khi chưa được duyệt (trạng thái PENDING)",
             )
 
-        for item in loan.loan_items:
+        loan_items = (
+            db.query(LoanItem)
+            .filter(LoanItem.loan_id == loan.id)
+            .all()
+        )
+
+        for item in loan_items:
             if item.copy_id:
-                copy = (db.query(BookCopy).filter(BookCopy.id == item.copy_id).first())
-
+                copy = (
+                    db.query(BookCopy)
+                    .filter(BookCopy.id == item.copy_id)
+                    .with_for_update()
+                    .first()
+                )
                 if copy and copy.status == "RESERVED":
                     copy.status = "AVAILABLE"
 
-        loan.status = "CANCELLED"
+        loan.status = LoanStatus.CANCELLED
 
         db.commit()
         db.refresh(loan)
-
         return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception:
         db.rollback()
         raise

@@ -6,3 +6,13 @@ from app.schemas.reservation import (
     ReservationUpdate,
     ReservationResponse,
 )
+from app.schemas.book import (
+    BookCreate,
+    BookUpdate,
+    BookResponse,
+    BookSearchItem,
+    BookDetailResponse,
+    BookCopySummary,
+    TopBorrowedBookItem,
+    BookPaginationResponse,
+)

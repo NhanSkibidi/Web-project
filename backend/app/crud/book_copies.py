@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.schemas.book_copy import BookCopiesCreate
 from app.models.BookCopy import BookCopy
@@ -6,11 +7,26 @@ from app.models.Book import Book
 
 def create_copy(book_copies: BookCopiesCreate, db: Session):
     book = db.query(Book).filter(
-        Book.isbn == book_copies.book_isbn
+        Book.isbn == book_copies.book_isbn,
+        Book.is_deleted == False  # noqa: E712
     ).first()
 
     if book is None:
         return "Book not found"
+
+    codes = [c.copy_code.strip() for c in book_copies.copies]
+    if len(codes) != len(set(codes)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Danh sách bản sao chứa mã bản sao trùng lặp trong yêu cầu",
+        )
+
+    existing = db.query(BookCopy.copy_code).filter(BookCopy.copy_code.in_(codes)).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Mã bản sao '{existing[0]}' đã tồn tại trong hệ thống",
+        )
 
     new_copies = []
     for copy in book_copies.copies:

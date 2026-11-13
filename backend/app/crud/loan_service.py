@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
+from app.core.dependencies import check_card_can_borrow
 from app.models.user import User, UserRole, UserStatus
 from app.models.library_card import LibraryCard, CardStatus
 from app.models.loan import Loan, LoanStatus, BorrowType
@@ -18,33 +19,7 @@ BORROW_DAYS = 14
 MAX_RENEWALS = 1           
 RENEWAL_DAYS = 7          
 
-def check_library_card(db: Session, user_id: int) -> LibraryCard:
-    card = (
-        db.query(LibraryCard)
-        .filter(LibraryCard.reader_id == user_id)
-        .order_by(LibraryCard.id.desc())
-        .first()
-    )
-
-    if not card:
-        raise HTTPException(
-            status_code=400,
-            detail="Độc giả chưa có thẻ thư viện",
-        )
-
-    if card.status != CardStatus.ACTIVE:
-        raise HTTPException(
-            status_code=400,
-            detail="Thẻ thư viện không hoạt động",
-        )
-
-    if card.expiry_date is None or card.expiry_date < datetime.now().date():
-        raise HTTPException(
-            status_code=400,
-            detail="Thẻ thư viện đã hết hạn",
-        )
-
-    return card
+check_library_card = check_card_can_borrow
 
 
 def check_overdue_books(db: Session, user_id: int) -> None:
@@ -89,7 +64,11 @@ def check_borrow_limit(
     db: Session,
     user_id: int,
     requested_count: int,
+    card: LibraryCard | None = None,
 ) -> None:
+    # Dùng giới hạn từ thẻ nếu có, nếu không fallback về MAX_BORROW_BOOKS
+    limit = card.max_borrow_books if card else MAX_BORROW_BOOKS
+
     borrowed_count = (
         db.query(func.count(LoanItem.id))
         .join(Loan, LoanItem.loan_id == Loan.id)
@@ -113,11 +92,11 @@ def check_borrow_limit(
 
     total = borrowed_count + pending_count + requested_count
 
-    if total > MAX_BORROW_BOOKS:
+    if total > limit:
         raise HTTPException(
             status_code=400,
             detail=(
-                f"Vượt giới hạn mượn tối đa {MAX_BORROW_BOOKS} cuốn. "
+                f"Vượt giới hạn mượn tối đa {limit} cuốn. "
                 f"Hiện tại: {borrowed_count} đang mượn, {pending_count} chờ duyệt, "
                 f"yêu cầu thêm {requested_count} cuốn."
             ),
@@ -172,10 +151,10 @@ def create_online_loan(
                 detail="Tài khoản độc giả đã bị khóa",
             )
 
-        check_library_card(db, user_id)
+        card = check_library_card(db, user_id)
         check_overdue_books(db, user_id)
         check_unpaid_fines(db, user_id)
-        check_borrow_limit(db, user_id, len(book_isbns))
+        check_borrow_limit(db, user_id, len(book_isbns), card=card)
 
         selected_copies: list[BookCopy] = []
 

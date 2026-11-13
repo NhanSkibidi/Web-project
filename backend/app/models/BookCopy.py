@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from app.models.Book import Book
     from app.models.CopyStatusLog import CopyStatusLog
+    from app.models.loan_item import LoanItem
 from datetime import datetime, date
 from sqlalchemy import DateTime, String, func, Date, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.session import Base
 
 
@@ -52,4 +51,7 @@ class BookCopy(Base):
     book: Mapped["Book"] = relationship(back_populates="copies")
     status_logs: Mapped[list["CopyStatusLog"]] = relationship(
         back_populates="book_copy"
+    )
+    loan_items: Mapped[list["LoanItem"]] = relationship(
+        back_populates="copy"
     )

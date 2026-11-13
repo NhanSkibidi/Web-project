@@ -6,10 +6,8 @@ if TYPE_CHECKING:
     from app.models.BookCopy import BookCopy
 from datetime import datetime
 from decimal import Decimal
-
-from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Integer
+from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.session import Base
 
 
@@ -30,6 +28,7 @@ class Book(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     cover_image: Mapped[str | None] = mapped_column(String(500), nullable=True)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now()
@@ -42,8 +41,7 @@ class Book(Base):
     publisher: Mapped["Publisher"] = relationship(back_populates="books")
 
     book_authors: Mapped[list["BookAuthor"]] = relationship(
-        back_populates="book"
+        back_populates="book", cascade="all, delete-orphan"
     )
     copies: Mapped[list["BookCopy"]] = relationship(
-        back_populates="book"
-    )
+        back_populates="book", cascade="all, delete-orphan")

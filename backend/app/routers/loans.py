@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import require_reader
 from app.db.session import get_db
 from app.schemas.loan import LoanCreate, LoanResponse, LoanReject, LoanHandover
 from app.crud.loan_service import (
@@ -10,6 +11,9 @@ from app.crud.loan_service import (
     reject_loan,
     handover_loan,
 )
+from app.models.user import User
+from app.schemas.loan import LoanCreate, LoanResponse
+from app.crud.loan_service import create_online_loan, cancel_online_loan
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
 
@@ -19,9 +23,12 @@ def create_loan(
     data: LoanCreate,
     user_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_reader),
 ):
     """Độc giả gửi yêu cầu mượn sách online."""
     return create_online_loan(db, user_id, data.book_isbns)
+    """Độc giả gửi yêu cầu mượn sách online. Yêu cầu Bearer token (vai trò READER)."""
+    return create_online_loan(db, current_user.id, data.book_isbns)
 
 
 @router.patch("/{loan_id}/cancel", response_model=LoanResponse)
@@ -29,6 +36,7 @@ def cancel_loan(
     loan_id: int,
     user_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_reader),
 ):
     """Độc giả huỷ yêu cầu mượn khi chưa được duyệt."""
     return cancel_online_loan(db, loan_id, user_id)
@@ -69,3 +77,5 @@ def handover(
     """
     copies_data = [item.model_dump() for item in data.copies]
     return handover_loan(db, loan_id, librarian_id, copies_data)
+    """Độc giả hủy yêu cầu mượn của chính mình (chỉ khi PENDING). Yêu cầu Bearer token (vai trò READER)."""
+    return cancel_online_loan(db, loan_id, current_user.id)

@@ -16,7 +16,7 @@ from app.crud.fine import (
     list_fines,
 )
 
-router = APIRouter(prefix="/fines", tags=["Tiền phạt"])
+router = APIRouter(prefix="/fines", tags=["Fines"])
 
 
 @router.get("", response_model=list[FineResponse])

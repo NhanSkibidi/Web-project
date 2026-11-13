@@ -1,21 +1,11 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status, HTTPException
+from app.db.session import get_db
+from app.crud.book import get_books_paginated, get_book_by_isbn, create_book, update_book, delete_book
+from app.schemas.book import BookPaginationResponse, BookSearchItem, BookCreate, BookUpdate
 from sqlalchemy.orm import Session
 
-from app.db.session import SessionLocal
-from app.crud.book import get_books_paginated
-from app.schemas.book import BookPaginationResponse, BookSearchItem
-
 router = APIRouter(prefix="/books", tags=["Books"])
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @router.get("/search", response_model=BookPaginationResponse)
 def search_books(
@@ -26,8 +16,8 @@ def search_books(
     publisher_id: Optional[int] = Query(None, description="Lọc theo nhà xuất bản"),
     publish_year: Optional[int] = Query(None, description="Lọc theo năm xuất bản"),
     available_only: bool = Query(False, description="Chỉ lấy sách còn bản sao có thể mượn"),
-    sort_by: str = Query("created_at", regex="^(created_at|title|publish_year|price)$", description="Trường cần sắp xếp"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Thứ tự sắp xếp: asc hoặc desc"),
+    sort_by: str = Query("created_at", pattern="^(created_at|title|publish_year|price)$", description="Trường cần sắp xếp"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Thứ tự sắp xếp: asc hoặc desc"),
     page: int = Query(1, ge=1, description="Số trang (bắt đầu từ 1)"),
     page_size: int = Query(10, ge=1, le=100, description="Số sách mỗi trang"),
 ):
@@ -83,3 +73,120 @@ def search_books(
         page_size=page_size,
         total_pages=total_pages,
     )
+
+@router.get("/{isbn}", response_model=BookSearchItem)
+def get_book_detail(
+    isbn: str,
+    db: Session = Depends(get_db)
+):
+    result = get_book_by_isbn(db, isbn)
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy đầu sách"
+        )
+
+    book = result["book"]
+
+    return BookSearchItem(
+        isbn=book.isbn,
+        title=book.title,
+        publish_year=book.publish_year,
+        page_count=book.page_count,
+        language=book.language,
+        description=book.description,
+        cover_image=book.cover_image,
+        price=book.price,
+        category=book.category,
+        publisher=book.publisher,
+        authors=result["authors"],
+        total_copies=result["total_copies"],
+        available_copies=result["available_copies"]
+    )
+
+@router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED)
+def create_book_api(
+    book_data: BookCreate,
+    db: Session = Depends(get_db)
+):
+    try:
+        book, authors = create_book(db, book_data)
+
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Không thể tạo đầu sách"
+            )
+
+        return BookSearchItem(
+            isbn=book.isbn,
+            title=book.title,
+            publish_year=book.publish_year,
+            page_count=book.page_count,
+            language=book.language,
+            description=book.description,
+            cover_image=book.cover_image,
+            price=book.price,
+            category=book.category,
+            publisher=book.publisher,
+            authors=authors,
+            total_copies=0,
+            available_copies=0
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.put("/{isbn}", response_model=BookSearchItem, status_code = status.HTTP_200_OK)
+def update_book_api(
+    isbn: str,
+    book_data: BookUpdate,
+    db: Session = Depends(get_db)
+):
+    try:
+        result = update_book(db, isbn, book_data)
+
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Không tìm thấy đầu sách")
+
+        book = result["book"]
+
+        return BookSearchItem(
+            isbn=book.isbn,
+            title=book.title,
+            publish_year=book.publish_year,
+            page_count=book.page_count,
+            language=book.language,
+            description=book.description,
+            cover_image=book.cover_image,
+            price=book.price,
+            category=book.category,
+            publisher=book.publisher,
+            authors=result["authors"],
+            total_copies=result["total_copies"],
+            available_copies=result["available_copies"])
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e))
+
+@router.delete("/{isbn}", status_code=status.HTTP_200_OK)
+def delete_book_api(isbn: str, db: Session = Depends(get_db)):
+    result = delete_book(db, isbn)
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy đầu sách")
+
+    if result == "hidden":
+        return {"message": "Đầu sách đã được ẩn"}
+
+    return {"message": "Đầu sách đã được xóa"}

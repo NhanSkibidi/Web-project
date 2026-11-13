@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class BookCreate(BaseModel):
     isbn: str
@@ -14,6 +14,7 @@ class BookCreate(BaseModel):
     description: str | None = None
     cover_image: str | None = None
     price: Decimal = 0
+    author_ids: List[int] = Field(default_factory=list)
 
 
 class BookUpdate(BaseModel):
@@ -26,6 +27,7 @@ class BookUpdate(BaseModel):
     description: str | None = None
     cover_image: str | None = None
     price: Decimal | None = None
+    author_ids: List[int] | None = None
 
 
 class BookResponse(BaseModel):

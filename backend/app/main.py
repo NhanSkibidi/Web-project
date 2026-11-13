@@ -46,6 +46,7 @@ app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -54,8 +55,8 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
-# Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api)
-app.include_router(auth.router, prefix="/api")
+# Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
+app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")

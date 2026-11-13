@@ -9,9 +9,16 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import (
+    check_card_can_borrow,
+    get_current_user,
+    require_admin,
+    require_librarian,
+    require_reader,
+    require_roles,
+)
 from app.core.security import (
     create_access_token,
-    decode_access_token,
     hash_password,
     verify_password,
 )
@@ -22,7 +29,6 @@ from app.schemas.auth import LoginRequest, RegisterRequest, RegisterResponse, To
 from app.schemas.user import UserOut
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def _one_year_from(day: date) -> date:
@@ -30,31 +36,6 @@ def _one_year_from(day: date) -> date:
         return day.replace(year=day.year + 1)
     except ValueError:
         return day.replace(year=day.year + 1, day=28)
-
-
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    db: Session = Depends(get_db),
-) -> User:
-    unauthorized = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Thông tin xác thực không hợp lệ hoặc đã hết hạn",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    if credentials is None:
-        raise unauthorized
-
-    try:
-        user_id = decode_access_token(credentials.credentials)
-    except jwt.InvalidTokenError:
-        raise unauthorized from None
-
-    user = db.get(User, user_id)
-    if user is None:
-        raise unauthorized
-    if user.status != UserStatus.ACTIVE:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tài khoản đã bị khóa")
-    return user
 
 
 @router.post(

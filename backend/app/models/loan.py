@@ -8,7 +8,6 @@ class BorrowType(str, enum.Enum):
     ONLINE = "ONLINE"      
     WALK_IN = "WALK_IN"    
 
-
 class LoanStatus(str, enum.Enum):
     PENDING = "PENDING"        
     APPROVED = "APPROVED"      

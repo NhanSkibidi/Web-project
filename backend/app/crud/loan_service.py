@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+
 from app.core.dependencies import check_card_can_borrow
 from app.models.user import User, UserRole, UserStatus
 from app.models.library_card import LibraryCard, CardStatus
@@ -10,14 +12,15 @@ from app.models.loan_item import LoanItem
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.fine import Fine
+from app.crud.copy_status_log import change_copy_status
 
-MAX_BORROW_BOOKS = 5      
+MAX_BORROW_BOOKS = 5       
 BORROW_DAYS = 14           
 MAX_RENEWALS = 1           
-RENEWAL_DAYS = 7           
+RENEWAL_DAYS = 7          
 
-# Hàm kiểm tra thẻ hợp lệ để mượn (dùng chung logic từ app.core.dependencies)
 check_library_card = check_card_can_borrow
+
 
 def check_overdue_books(db: Session, user_id: int) -> None:
     overdue = (
@@ -82,7 +85,7 @@ def check_borrow_limit(
         .join(Loan, LoanItem.loan_id == Loan.id)
         .filter(
             Loan.user_id == user_id,
-            Loan.status == LoanStatus.PENDING,
+            Loan.status.in_([LoanStatus.PENDING, LoanStatus.APPROVED]),
         )
         .scalar()
     ) or 0
@@ -262,6 +265,455 @@ def cancel_online_loan(
                     copy.status = "AVAILABLE"
 
         loan.status = LoanStatus.CANCELLED
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def approve_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được duyệt phiếu",
+            )
+
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.PENDING:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ duyệt được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
+            )
+
+        loan.status = LoanStatus.APPROVED
+        loan.processed_by = librarian_id
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def reject_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+    reject_reason: str,
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được từ chối phiếu",
+            )
+
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.PENDING:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ từ chối được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
+            )
+
+        loan_items = (
+            db.query(LoanItem)
+            .filter(LoanItem.loan_id == loan.id)
+            .all()
+        )
+
+        for item in loan_items:
+            if item.copy_id:
+                copy = (
+                    db.query(BookCopy)
+                    .filter(BookCopy.id == item.copy_id)
+                    .with_for_update()
+                    .first()
+                )
+                if copy and copy.status == "RESERVED":
+                    copy.status = "AVAILABLE"
+
+        loan.status = LoanStatus.REJECTED
+        loan.processed_by = librarian_id
+        loan.reject_reason = reject_reason
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def handover_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+    copies_data: list[dict],
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được giao sách",
+            )
+        
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.APPROVED:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ giao sách được khi phiếu đã duyệt APPROVED (hiện tại: {loan.status.value})",
+            )
+
+        loan_items = (
+            db.query(LoanItem)
+            .filter(LoanItem.loan_id == loan.id)
+            .all()
+        )
+
+        item_by_isbn: dict[str, LoanItem] = {}
+        for item in loan_items:
+            item_by_isbn[item.book_isbn] = item
+
+        if len(copies_data) != len(loan_items):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Phiếu có {len(loan_items)} đầu sách, "
+                    f"nhưng bạn giao {len(copies_data)} bản sao"
+                ),
+            )
+
+        now = datetime.now()
+        due_date = now + timedelta(days=BORROW_DAYS)
+
+        for copy_info in copies_data:
+            isbn = copy_info["book_isbn"]
+            copy_code = copy_info["copy_code"]
+
+            # Kiểm tra ISBN có trong phiếu không
+            if isbn not in item_by_isbn:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"ISBN '{isbn}' không có trong phiếu mượn này",
+                )
+
+            loan_item = item_by_isbn[isbn]
+
+            copy = (
+                db.query(BookCopy)
+                .filter(
+                    BookCopy.copy_code == copy_code,
+                    BookCopy.book_isbn == isbn,
+                )
+                .with_for_update()
+                .first()
+            )
+
+            if not copy:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Không tìm thấy bản sao mã '{copy_code}' cho sách ISBN '{isbn}'",
+                )
+
+            if copy.status not in ("AVAILABLE", "RESERVED"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Bản sao '{copy_code}' đang ở trạng thái '{copy.status}', "
+                        f"không thể giao cho mượn"
+                    ),
+                )
+            
+            change_copy_status(db, copy.id, "BORROWED", auto_commit=False)
+
+            loan_item.copy_id = copy.id
+            loan_item.due_date = due_date
+
+        loan.status = LoanStatus.BORROWED
+        loan.borrowed_at = now
+        loan.due_date = due_date
+        loan.processed_by = librarian_id
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def approve_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được duyệt phiếu",
+            )
+
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.PENDING:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ duyệt được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
+            )
+
+        loan.status = LoanStatus.APPROVED
+        loan.processed_by = librarian_id
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def reject_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+    reject_reason: str,
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được từ chối phiếu",
+            )
+
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.PENDING:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ từ chối được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
+            )
+
+        loan_items = (
+            db.query(LoanItem)
+            .filter(LoanItem.loan_id == loan.id)
+            .all()
+        )
+
+        for item in loan_items:
+            if item.copy_id:
+                copy = (
+                    db.query(BookCopy)
+                    .filter(BookCopy.id == item.copy_id)
+                    .with_for_update()
+                    .first()
+                )
+                if copy and copy.status == "RESERVED":
+                    copy.status = "AVAILABLE"
+
+        loan.status = LoanStatus.REJECTED
+        loan.processed_by = librarian_id
+        loan.reject_reason = reject_reason
+
+        db.commit()
+        db.refresh(loan)
+        return loan
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+def handover_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int,
+    copies_data: list[dict],
+) -> Loan:
+    try:
+        librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+
+        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ thủ thư hoặc admin mới được giao sách",
+            )
+
+        loan = (
+            db.query(Loan)
+            .filter(Loan.id == loan_id)
+            .with_for_update()
+            .first()
+        )
+
+        if not loan:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+        if loan.status != LoanStatus.APPROVED:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chỉ giao sách được khi phiếu đã duyệt APPROVED (hiện tại: {loan.status.value})",
+            )
+
+        loan_items = (
+            db.query(LoanItem)
+            .filter(LoanItem.loan_id == loan.id)
+            .all()
+        )
+
+        item_by_isbn: dict[str, LoanItem] = {}
+        for item in loan_items:
+            item_by_isbn[item.book_isbn] = item
+
+        if len(copies_data) != len(loan_items):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Phiếu có {len(loan_items)} đầu sách, "
+                    f"nhưng bạn giao {len(copies_data)} bản sao"
+                ),
+            )
+
+        now = datetime.now()
+        due_date = now + timedelta(days=BORROW_DAYS)
+
+        for copy_info in copies_data:
+            isbn = copy_info["book_isbn"]
+            copy_code = copy_info["copy_code"]
+
+            if isbn not in item_by_isbn:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"ISBN '{isbn}' không có trong phiếu mượn này",
+                )
+
+            loan_item = item_by_isbn[isbn]
+
+            copy = (
+                db.query(BookCopy)
+                .filter(
+                    BookCopy.copy_code == copy_code,
+                    BookCopy.book_isbn == isbn,
+                )
+                .with_for_update()
+                .first()
+            )
+
+            if not copy:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Không tìm thấy bản sao mã '{copy_code}' cho sách ISBN '{isbn}'",
+                )
+
+            if copy.status not in ("AVAILABLE", "RESERVED"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Bản sao '{copy_code}' đang ở trạng thái '{copy.status}', "
+                        f"không thể giao cho mượn"
+                    ),
+                )
+
+            change_copy_status(db, copy.id, "BORROWED", auto_commit=False)
+
+            loan_item.copy_id = copy.id
+            loan_item.due_date = due_date
+
+        loan.status = LoanStatus.BORROWED
+        loan.borrowed_at = now
+        loan.due_date = due_date
+        loan.processed_by = librarian_id
 
         db.commit()
         db.refresh(loan)

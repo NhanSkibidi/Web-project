@@ -8,7 +8,7 @@ from app.schemas.return_book import (
 )
 from app.crud.return_book import return_single_book_copy, return_entire_loan
 
-router = APIRouter(prefix="/returns", tags=["Trả sách"])
+router = APIRouter(prefix="/returns", tags=["ReturnBook"])
 
 
 @router.post("/item", response_model=ReturnItemResponse)

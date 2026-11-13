@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from app.models.BookCopy import BookCopy
 from datetime import datetime
 from decimal import Decimal
-from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Integer
+from sqlalchemy import DateTime, Numeric, String, Text, func, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.session import Base
 
@@ -43,5 +43,5 @@ class Book(Base):
         back_populates="book", cascade="all, delete-orphan"
     )
     copies: Mapped[list["BookCopy"]] = relationship(
-        back_populates="book", cascade="all, delete-orphan"
-    )
+        back_populates="book", cascade="all, delete-orphan")
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

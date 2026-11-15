@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trả sách tại quầy & Thu phí phạt | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+
+  <!-- Google Fonts: Newsreader, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Material Symbols Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#1B4332',
+              hover: '#2D6A4F',
+              light: '#E8F5E9',
+              dark: '#143326',
+            },
+            paper: '#FAF8F5',
+            surface: '#FFFFFF',
+            warmborder: '#E6E2D8',
+            amberaccent: '#B45309',
+            darktext: '#1A202C',
+            mutedtext: '#718096',
+          },
+          fontFamily: {
+            headline: ["'Newsreader'", "Georgia", "serif"],
+            sans: ["'Plus Jakarta Sans'", "sans-serif"],
+            mono: ["'JetBrains Mono'", "monospace"],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="../css/returns.css">
+</head>
+<body data-root="../" class="bg-paper min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="fixed top-0 left-0 right-0 h-16 bg-[#FAF8F5]/95 backdrop-blur-md z-50 flex items-center justify-between px-6 border-b border-warmborder">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-brand flex items-center justify-center text-white shadow-sm">
+          <span class="material-symbols-outlined text-[20px]">local_library</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-headline font-semibold text-lg text-darktext tracking-tight leading-none">UniLib</span>
+          <span class="text-[11px] text-mutedtext leading-none mt-1">Thư viện số KS25</span>
+        </div>
+      </div>
+      <nav class="hidden lg:flex items-center gap-2 ml-4">
+        <a href="../index.html" class="text-sm font-medium text-mutedtext hover:text-darktext py-1 px-3 rounded-lg transition-colors">Trang chủ</a>
+        <a href="../index.html" class="text-sm font-medium text-mutedtext hover:text-darktext py-1 px-3 rounded-lg transition-colors">Tra cứu sách</a>
+        <a href="../index.html" class="text-sm font-medium text-mutedtext hover:text-darktext py-1 px-3 rounded-lg transition-colors">Phiếu mượn của tôi</a>
+        <a href="returns.html" class="text-sm font-semibold text-brand bg-brand/10 py-1 px-3 rounded-lg transition-colors">Quản trị thư viện</a>
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="hidden md:flex items-center gap-2 bg-white border border-warmborder px-3 py-1.5 rounded-xl shadow-xs">
+        <span class="material-symbols-outlined text-[18px] text-mutedtext">search</span>
+        <input class="bg-transparent border-0 outline-none text-darktext placeholder:text-mutedtext text-xs w-56 font-sans" placeholder="Tra cứu mã sách, độc giả..." type="text">
+      </div>
+      <button class="relative p-2 rounded-lg text-mutedtext hover:text-darktext hover:bg-white border border-transparent hover:border-warmborder transition-all flex items-center justify-center">
+        <span class="material-symbols-outlined text-[22px]">shopping_bag</span>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500"></span>
+      </button>
+      <div class="h-6 w-[1px] bg-warmborder hidden sm:block"></div>
+      <div class="flex items-center gap-2.5 pl-1">
+        <div class="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white font-semibold text-xs">
+          Đ
+        </div>
+        <div class="hidden xl:flex flex-col text-left">
+          <span class="text-xs font-semibold text-darktext leading-tight">Trịnh Huy Đại</span>
+          <span class="text-[11px] text-mutedtext leading-tight">Thủ thư ca trực</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEFT SIDEBAR (COLLAPSIBLE RAIL: ICONS ONLY BY DEFAULT, EXPANDS ON HOVER) -->
+  <aside id="app-sidebar" class="group/sidebar fixed left-0 top-0 h-full w-[72px] hover:w-64 bg-[#F5F3EF] z-40 flex flex-col pt-20 pb-4 border-r border-warmborder transition-all duration-300 ease-in-out shadow-xs hover:shadow-2xl overflow-x-hidden">
+    <div class="px-3.5 mb-3 flex items-center justify-between overflow-hidden whitespace-nowrap h-7">
+      <span class="text-xs font-semibold text-mutedtext uppercase tracking-wider opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 pl-1">Phân hệ Thủ thư</span>
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-white text-darktext border border-warmborder text-[10px] font-mono opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">v1.2</span>
+    </div>
+    <nav class="flex-1 px-2.5 space-y-1.5 overflow-y-auto overflow-x-hidden">
+      <a href="../index.html" class="flex items-center h-11 px-3 rounded-xl text-mutedtext hover:bg-white hover:text-darktext transition-all text-sm font-medium whitespace-nowrap" title="Tổng quan & Thống kê">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6">space_dashboard</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-medium">Tổng quan &amp; Thống kê</span>
+      </a>
+      <a href="../index.html" class="flex items-center h-11 px-3 rounded-xl text-mutedtext hover:bg-white hover:text-darktext transition-all text-sm font-medium whitespace-nowrap" title="Quản lý Đầu sách & Bản sao">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6">menu_book</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-medium">Quản lý Đầu sách &amp; Bản sao</span>
+      </a>
+      <a href="../index.html" class="flex items-center h-11 px-3 rounded-xl text-mutedtext hover:bg-white hover:text-darktext transition-all text-sm font-medium whitespace-nowrap" title="Quản lý Phiếu mượn">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6">receipt_long</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-medium">Quản lý Phiếu mượn</span>
+      </a>
+      <a href="returns.html" aria-current="page" class="flex items-center h-11 px-3 rounded-xl bg-brand text-white font-semibold text-sm shadow-sm transition-all whitespace-nowrap" title="Trả sách tại quầy">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6 text-white">assignment_return</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-semibold">Trả sách tại quầy</span>
+      </a>
+      <a href="../index.html" class="flex items-center h-11 px-3 rounded-xl text-mutedtext hover:bg-white hover:text-darktext transition-all text-sm font-medium whitespace-nowrap" title="Quản lý Độc giả & Thẻ">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6">badge</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-medium">Quản lý Độc giả &amp; Thẻ</span>
+      </a>
+      <a href="../index.html" class="flex items-center h-11 px-3 rounded-xl text-mutedtext hover:bg-white hover:text-darktext transition-all text-sm font-medium whitespace-nowrap" title="Cài đặt hệ thống">
+        <span class="material-symbols-outlined text-[22px] shrink-0 text-center w-6">settings</span>
+        <span class="ml-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 font-medium">Cài đặt hệ thống</span>
+      </a>
+    </nav>
+    <div class="px-2 pt-3 mt-auto overflow-hidden">
+      <div class="bg-white border border-warmborder p-2 rounded-xl flex items-center justify-between shadow-xs whitespace-nowrap h-12">
+        <div class="flex items-center gap-2.5 pl-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+          <div class="flex flex-col opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 overflow-hidden">
+            <span class="text-xs font-semibold text-darktext truncate">Máy chủ thư viện</span>
+            <span class="text-[10px] text-emerald-700 font-mono truncate">K1-Online</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-mutedtext text-[18px] shrink-0 pr-1 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">dns</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN OPERATIONAL WORKSPACE -->
+  <div class="pl-[72px] flex-1 w-full transition-all duration-300">
+    <main class="pt-20 px-4 sm:px-8 pb-10 min-h-[calc(100vh-64px)] max-w-[1440px] mx-auto w-full">
+      
+      <!-- Top Breadcrumb & Page Title -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-1.5 text-xs text-mutedtext mb-1 uppercase tracking-wider font-semibold">
+            <span>Phân hệ Quản trị</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-brand">Trả sách tại quầy</span>
+          </div>
+          <h1 class="font-headline text-2xl lg:text-3xl font-bold text-darktext tracking-tight">Trả sách tại quầy &amp; Thu phí phạt</h1>
+          <p class="text-sm text-mutedtext mt-1">
+            Quét mã vạch ấn bản, kiểm tra tình trạng vật lý, tự động tính toán số ngày quá hạn và phát hành biên lai hoàn trả.
+          </p>
+        </div>
+        <!-- Right Quick Action Buttons -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button id="btn-view-history" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-warmborder text-darktext hover:bg-neutral-50 transition-colors rounded-lg shadow-2xs text-xs font-semibold">
+            <span class="material-symbols-outlined text-[18px] text-mutedtext">history</span>
+            <span>Lịch sử trả hôm nay (<span id="history-count">14</span>)</span>
+          </button>
+          <button id="btn-view-policy" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-warmborder text-darktext hover:bg-neutral-50 transition-colors rounded-lg shadow-2xs text-xs font-semibold">
+            <span class="material-symbols-outlined text-[18px] text-mutedtext">help_outline</span>
+            <span>Quy định tính phạt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Operational Responsive Grid: 1 column on smaller/tablet, 12 cols on desktop/xl so nothing gets cramped -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 2xl:gap-8 items-start">
+        
+        <!-- LEFT COLUMN: Operations & Inspection (8 cols on xl/2xl) -->
+        <div class="xl:col-span-8 2xl:col-span-8 flex flex-col gap-5 min-w-0">
+          
+          <!-- 1. Quick Scan Barcode Input Card -->
+          <div class="bg-white border border-warmborder rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3">
+              <label for="barcode-scanner" class="text-sm font-bold text-darktext flex items-center gap-2">
+                <span class="material-symbols-outlined text-brand text-[20px]">barcode_scanner</span>
+                <span>Tiếp nhận ấn phẩm hoàn trả</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input id="auto-single-complete" type="checkbox" class="w-4 h-4 rounded text-brand accent-brand">
+                <span class="text-xs text-mutedtext">Tự động hoàn tất khi chỉ có 1 cuốn</span>
+              </label>
+            </div>
+
+            <form id="scan-form" class="flex flex-col sm:flex-row gap-2.5">
+              <div class="relative flex-1">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-mutedtext text-[20px]">qr_code_scanner</span>
+                <input id="barcode-scanner" type="text" autofocus autocomplete="off"
+                       class="w-full h-11 pl-10 pr-4 bg-paper text-darktext font-mono text-sm rounded-lg border border-warmborder focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all placeholder:text-mutedtext"
+                       placeholder="Quét mã vạch (Barcode) hoặc nhập mã bản sao..." value="UL-IT-2023-001">
+              </div>
+              <button id="btn-scan" type="submit" class="h-11 px-5 bg-brand hover:bg-brand-hover text-white font-semibold text-sm rounded-lg flex items-center justify-center gap-2 transition-all shadow-xs shrink-0 active:scale-95">
+                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                <span>Kiểm tra / Thêm (Enter)</span>
+              </button>
+            </form>
+
+            <!-- Quick Barcode Test Chips -->
+            <div class="flex items-center gap-2 mt-3.5 flex-wrap">
+              <span class="text-xs text-mutedtext">Mã test nhanh:</span>
+              <button type="button" class="chip-btn font-mono text-xs px-2.5 py-1 rounded bg-[#F5F3EF] hover:bg-brand/10 text-darktext hover:text-brand border border-warmborder transition-colors" data-code="UL-IT-2023-001">UL-IT-2023-001</button>
+              <button type="button" class="chip-btn font-mono text-xs px-2.5 py-1 rounded bg-[#F5F3EF] hover:bg-brand/10 text-darktext hover:text-brand border border-warmborder transition-colors" data-code="UL-EC-2022-045">UL-EC-2022-045</button>
+              <button type="button" class="chip-btn font-mono text-xs px-2.5 py-1 rounded bg-[#F5F3EF] hover:bg-brand/10 text-darktext hover:text-brand border border-warmborder transition-colors" data-code="UL-MA-2023-112">UL-MA-2023-112</button>
+            </div>
+          </div>
+
+          <!-- 2. Associated Reader Profile Summary -->
+          <div id="reader-card" class="bg-white border border-warmborder rounded-xl p-5 shadow-xs">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+              <div class="flex items-center gap-4">
+                <div class="relative w-13 h-13 rounded-full overflow-hidden shrink-0 bg-brand/10 flex items-center justify-center text-brand font-headline font-bold text-lg border border-warmborder">
+                  <span id="reader-avatar-text">A</span>
+                </div>
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span id="reader-name" class="font-headline font-bold text-lg text-darktext">Nguyễn Văn An</span>
+                    <span id="reader-id" class="font-mono text-xs px-2 py-0.5 rounded-md bg-[#F5F3EF] text-darktext font-semibold border border-warmborder">23010412</span>
+                    <span id="card-status-badge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      Thẻ hợp lệ
+                    </span>
+                  </div>
+                  <span id="reader-email" class="text-xs text-mutedtext mt-0.5">docgia01@library.com · Khoa CNTT</span>
+                </div>
+              </div>
+
+              <!-- Loan Metadata -->
+              <div class="flex items-center gap-4 bg-paper border border-warmborder px-4 py-2 rounded-xl">
+                <div class="flex flex-col text-right">
+                  <span class="text-[11px] text-mutedtext">Phiếu mượn gốc</span>
+                  <span id="loan-code" class="font-mono text-xs font-bold text-brand">#PM-2024-0082</span>
+                </div>
+                <div class="h-7 w-[1px] bg-warmborder"></div>
+                <div class="flex flex-col text-right">
+                  <span class="text-[11px] text-mutedtext">Hạn trả quy định</span>
+                  <span id="due-date-display" class="font-mono text-xs font-bold text-red-600">09/10/2024</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loan summary strip -->
+            <div class="mt-4 pt-3 border-t border-warmborder/80 flex items-center justify-between text-mutedtext text-xs flex-wrap gap-2">
+              <div class="flex items-center gap-4">
+                <span>Ngày mượn: <strong id="borrow-date-display" class="text-darktext font-semibold">25/09/2024</strong></span>
+                <span>Tổng mượn đợt này: <strong id="borrow-count-display" class="text-darktext font-semibold">02 ấn bản</strong></span>
+              </div>
+              <span class="text-mutedtext">Thủ thư duyệt: <span class="text-darktext font-medium">Trần Hoàng Phúc</span></span>
+            </div>
+          </div>
+
+          <!-- 3. Return Items Processing Table -->
+          <div class="bg-white border border-warmborder rounded-xl shadow-xs overflow-hidden flex flex-col">
+            <div class="p-4 px-5 flex items-center justify-between bg-paper border-b border-warmborder">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-brand text-[20px]">checklist</span>
+                <span class="font-headline font-bold text-base text-darktext">Danh sách ấn phẩm đang xử lý trả (<span id="items-count-badge">02</span>)</span>
+              </div>
+              <span class="text-xs text-mutedtext font-medium">Tình trạng thực tế • Biểu phí kiểm kê</span>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto w-full">
+              <table class="w-full text-left border-collapse min-w-[720px]">
+                <thead>
+                  <tr class="bg-[#F5F3EF]/60 text-mutedtext text-[11px] font-semibold uppercase tracking-wider border-b border-warmborder">
+                    <th class="py-3 px-5 whitespace-nowrap min-w-[220px]">ẤN BẢN / VỊ TRÍ</th>
+                    <th class="py-3 px-3 text-center whitespace-nowrap min-w-[160px]">HẠN TRẢ &amp; QUÁ HẠN</th>
+                    <th class="py-3 px-3 whitespace-nowrap min-w-[240px]">TÌNH TRẠNG VẬT LÝ</th>
+                    <th class="py-3 px-5 text-right whitespace-nowrap min-w-[120px]">PHÍ PHẠT</th>
+                    <th class="py-3 px-2 text-center w-10"></th>
+                  </tr>
+                </thead>
+                <tbody id="return-items-body" class="divide-y divide-warmborder">
+                  <!-- Rows dynamically populated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Add extra books button (Dashed style footer) -->
+            <div class="p-4 px-5 bg-paper/60 border-t border-warmborder flex items-center justify-between flex-wrap gap-2">
+              <button id="btn-add-extra" type="button" class="inline-flex items-center gap-1.5 text-brand hover:text-brand-hover text-xs font-semibold transition-colors group">
+                <span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform">add_circle_outline</span>
+                <span>+ Thêm ấn phẩm khác của độc giả <span id="add-extra-reader-name">Nguyễn Văn An</span></span>
+              </button>
+              <span id="scanned-progress-text" class="text-xs text-mutedtext font-medium">Đã quét 2/2 cuốn theo phiếu gốc</span>
+            </div>
+          </div>
+
+          <!-- 4. Quick Tips Card -->
+          <div class="bg-white border border-warmborder p-4.5 rounded-xl flex items-start gap-3 shadow-xs">
+            <span class="material-symbols-outlined text-brand text-[22px] shrink-0 mt-0.5">info</span>
+            <div class="flex flex-col text-xs leading-relaxed">
+              <span class="font-semibold text-darktext">Quy chuẩn thủ thư tiếp nhận</span>
+              <p class="text-mutedtext mt-0.5">
+                Kiểm tra dấu mộc thư viện trang lót, mã RFID/Barcode sau gáy sách trước khi bấm xác nhận. Ấn phẩm sau khi hoàn tất sẽ tự động chuyển trạng thái về <strong>“Trong kho - Đang phân loại về kệ”</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Fine Calculation & Settlement (Compact 4 cols on xl/2xl, tucked to the right) -->
+        <div class="xl:col-span-4 2xl:col-span-4 flex flex-col gap-5 min-w-0 xl:max-w-[400px] xl:ml-auto w-full">
+          
+          <!-- Settlement Card -->
+          <div class="bg-white border border-warmborder rounded-xl p-5 shadow-xs">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-warmborder">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-brand text-[20px]">payments</span>
+                <span class="font-headline font-bold text-base text-darktext">Chi tiết quyết toán phí phạt</span>
+              </div>
+              <span id="tx-code" class="font-mono text-xs text-mutedtext font-semibold">#TX-20241028-09</span>
+            </div>
+
+            <!-- Breakdown List -->
+            <div class="space-y-2 text-sm text-mutedtext">
+              <div class="flex items-center justify-between py-1">
+                <span class="flex items-center gap-1.5 text-xs text-darktext font-medium">
+                  <span class="material-symbols-outlined text-[16px] text-red-600">event_busy</span>
+                  <span>Phạt quá hạn (<span id="summary-overdue-days">19</span> ngày × 2.000đ)</span>
+                </span>
+                <span id="summary-overdue-amount" class="font-mono text-xs font-bold text-darktext">38.000 đ</span>
+              </div>
+
+              <div class="flex items-center justify-between py-1">
+                <span class="flex items-center gap-1.5 text-xs text-darktext font-medium">
+                  <span class="material-symbols-outlined text-[16px] text-amberaccent">healing</span>
+                  <span>Bồi thường hư hỏng / mất sách</span>
+                </span>
+                <span id="summary-damage-amount" class="font-mono text-xs font-bold text-darktext">20.000 đ</span>
+              </div>
+
+              <div class="flex items-center justify-between py-1">
+                <span class="flex items-center gap-1.5 text-xs text-darktext font-medium">
+                  <span class="material-symbols-outlined text-[16px] text-emerald-700">loyalty</span>
+                  <span>Miễn giảm thủ thư phê duyệt</span>
+                </span>
+                <span id="summary-waived-amount" class="font-mono text-xs font-semibold text-emerald-700">- 0 đ</span>
+              </div>
+
+              <!-- Total Amount Highlight Box -->
+              <div class="pt-3 mt-2 bg-rose-50/70 border border-rose-200 p-3.5 rounded-lg flex items-center justify-between">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-rose-950 uppercase tracking-tight">TỔNG TIỀN CẦN THU</span>
+                  <span class="text-[11px] text-rose-800">Đã bao gồm VAT &amp; Phí nghiệp vụ</span>
+                </div>
+                <div class="font-mono text-2xl font-bold text-red-600 tracking-tight flex items-baseline gap-1">
+                  <span id="summary-total-amount">58.000</span>
+                  <span class="text-base font-normal">đ</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="mt-5 pt-4 border-t border-warmborder">
+              <label class="text-[11px] font-bold text-mutedtext uppercase tracking-wider block mb-2">
+                Phương thức thanh toán
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="payment-method-label flex flex-col items-center justify-center p-2.5 rounded-lg border border-brand bg-brand/5 cursor-pointer text-center text-brand font-semibold transition-all">
+                  <input type="radio" name="payment-method" value="cash" checked class="sr-only">
+                  <span class="material-symbols-outlined text-[20px] mb-1">payments</span>
+                  <span class="text-xs">Tiền mặt</span>
+                </label>
+                <label class="payment-method-label flex flex-col items-center justify-center p-2.5 rounded-lg border border-warmborder bg-paper hover:bg-neutral-50 cursor-pointer text-center text-mutedtext transition-all">
+                  <input type="radio" name="payment-method" value="qr" class="sr-only">
+                  <span class="material-symbols-outlined text-[20px] mb-1">qr_code_2</span>
+                  <span class="text-xs font-medium">VietQR</span>
+                </label>
+                <label class="payment-method-label flex flex-col items-center justify-center p-2.5 rounded-lg border border-warmborder bg-paper hover:bg-neutral-50 cursor-pointer text-center text-mutedtext transition-all">
+                  <input type="radio" name="payment-method" value="account" class="sr-only">
+                  <span class="material-symbols-outlined text-[20px] mb-1">account_balance_wallet</span>
+                  <span class="text-xs font-medium">Ví thư viện</span>
+                </label>
+              </div>
+
+              <!-- Cash Calculator -->
+              <div id="cash-calculator-box" class="mt-3 p-3 bg-paper border border-warmborder rounded-lg space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="cash-received-input" class="text-xs text-mutedtext font-medium">Số tiền khách đưa:</label>
+                  <div class="relative w-36">
+                    <input id="cash-received-input" type="text"
+                           class="w-full h-8 px-2 text-right bg-white text-darktext font-mono text-xs rounded border border-warmborder outline-none focus:border-brand font-semibold"
+                           value="100.000">
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1 border-t border-warmborder/60">
+                  <span class="text-xs text-mutedtext font-medium">Tiền thừa trả khách:</span>
+                  <span id="cash-change-display" class="font-mono text-sm font-bold text-emerald-700">42.000 đ</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Checkboxes -->
+            <div class="mt-4 space-y-1.5 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer select-none text-darktext">
+                <input id="cb-print-receipt" type="checkbox" checked class="w-4 h-4 rounded text-brand accent-brand">
+                <span>In biên lai thu tiền phạt &amp; hoàn trả sách</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-darktext">
+                <input id="cb-send-email" type="checkbox" checked class="w-4 h-4 rounded text-brand accent-brand">
+                <span>Gửi email thông báo hoàn tất cho sinh viên</span>
+              </label>
+            </div>
+
+            <!-- Primary CTA Action Buttons -->
+            <div class="mt-6 flex flex-col gap-2">
+              <button id="btn-confirm-return" type="button" class="w-full h-11 bg-brand hover:bg-brand-hover text-white font-bold text-sm rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] tracking-wide">
+                <span class="material-symbols-outlined text-[20px]">task_alt</span>
+                <span>XÁC NHẬN TRẢ SÁCH &amp; THU TIỀN</span>
+              </button>
+              <button id="btn-cancel-return" type="button" class="w-full h-9 bg-transparent hover:bg-neutral-100 text-mutedtext hover:text-darktext text-xs font-semibold rounded-lg transition-colors">
+                Hủy bỏ lượt tiếp nhận này
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Policy Reference Card -->
+          <div class="bg-white border border-warmborder rounded-xl p-5 shadow-xs">
+            <div class="flex items-center gap-2 text-darktext mb-2">
+              <span class="material-symbols-outlined text-mutedtext text-[18px]">gavel</span>
+              <span class="text-xs font-bold uppercase tracking-wider">Biểu phí phạt tham chiếu nhanh</span>
+            </div>
+            <ul class="space-y-1.5 text-xs text-mutedtext list-disc pl-4 leading-relaxed">
+              <li><strong>Quá hạn:</strong> 2.000 VNĐ / ấn bản / mỗi ngày trễ hạn.</li>
+              <li><strong>Hư hỏng nhẹ:</strong> Viết vẽ, gấp nếp, rách nhẹ bìa: 20.000 – 50.000 VNĐ.</li>
+              <li><strong>Mất sách / Không phục hồi:</strong> 100% giá bìa niêm yết + 30.000 VNĐ phí nghiệp vụ.</li>
+              <li><strong>Mở khóa thẻ:</strong> Thẻ thư viện tự động kích hoạt lại ngay sau khi hoàn tất thanh toán.</li>
+            </ul>
+          </div>
+
+          <!-- Developer Integration Spec Pill -->
+          <div class="bg-white border border-warmborder rounded-lg p-3 font-mono text-[11px] text-mutedtext shadow-2xs">
+            <div class="flex items-center justify-between text-mutedtext mb-1">
+              <span class="uppercase tracking-wider font-semibold text-[10px]">FastAPI Backend Endpoint</span>
+              <span class="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold text-[10px]">POST / GET</span>
+            </div>
+            <div class="text-darktext font-semibold truncate">/api/returns/item · /api/fines/report-issue</div>
+            <div class="text-[10px] text-mutedtext mt-0.5 truncate">Payload: {copy_code, issue_type, note} · /api/fines/{id}/pay</div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-white border-t border-warmborder py-4 px-8 mt-auto">
+      <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-mutedtext">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-brand text-[18px]">verified</span>
+          <span>© 2026 UniLib - Nhóm CNTT K1 (HN-KS25-CNTT1). Sinh viên thực hiện: Trịnh Huy Đại.</span>
+        </div>
+        <div class="flex items-center gap-5">
+          <a href="#" class="hover:text-brand transition-colors">Trung tâm trợ giúp</a>
+          <a href="#" class="hover:text-brand transition-colors">Quy định mượn trả</a>
+          <a href="#" class="hover:text-brand transition-colors">Hỗ trợ sinh viên</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div id="receipt-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full border border-warmborder shadow-xl p-6 relative animate-scale">
+      <button id="btn-close-modal" class="absolute top-4 right-4 text-mutedtext hover:text-darktext p-1 rounded-lg">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+
+      <div class="flex flex-col items-center text-center pb-4 border-b border-warmborder">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-2">
+          <span class="material-symbols-outlined text-[28px]">check_circle</span>
+        </div>
+        <h3 class="font-headline font-bold text-xl text-darktext">Hoàn tất thủ tục trả sách</h3>
+        <p class="text-xs text-mutedtext mt-0.5">Biên lai giao dịch lưu vết hệ thống số #<span id="modal-tx-code">TX-20241028-09</span></p>
+      </div>
+
+      <div class="py-4 space-y-2 text-xs">
+        <div class="flex justify-between text-mutedtext">
+          <span>Độc giả:</span>
+          <strong id="modal-reader-name" class="text-darktext font-semibold">Nguyễn Văn An</strong>
+        </div>
+        <div class="flex justify-between text-mutedtext">
+          <span>Mã thẻ / SV:</span>
+          <span id="modal-reader-id" class="font-mono text-darktext">23010412</span>
+        </div>
+        <div class="flex justify-between text-mutedtext">
+          <span>Số ấn bản đã trả:</span>
+          <span id="modal-returned-count" class="font-mono text-darktext font-bold">2 cuốn</span>
+        </div>
+        <div class="flex justify-between text-mutedtext">
+          <span>Hình thức thanh toán:</span>
+          <span id="modal-payment-method" class="text-darktext font-medium">Tiền mặt</span>
+        </div>
+        <div class="pt-2 border-t border-warmborder flex justify-between items-baseline">
+          <span class="text-xs font-bold text-darktext uppercase">Tổng tiền phạt đã thu:</span>
+          <span id="modal-total-paid" class="font-mono text-lg font-bold text-emerald-700">58.000 đ</span>
+        </div>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button id="btn-print-receipt-action" type="button" class="flex-1 h-10 bg-brand hover:bg-brand-hover text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all">
+          <span class="material-symbols-outlined text-[18px]">print</span>
+          <span>In biên lai</span>
+        </button>
+        <button id="btn-finish-modal" type="button" class="flex-1 h-10 bg-paper hover:bg-neutral-100 text-darktext border border-warmborder rounded-lg text-xs font-bold transition-all">
+          Đóng &amp; Tiếp nhận mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-box"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/returns.js"></script>
+</body>
+</html>

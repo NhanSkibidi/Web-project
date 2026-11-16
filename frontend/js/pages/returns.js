@@ -496,48 +496,44 @@ function renderTableRows() {
       const totalItemFine = item.overdue_fine + item.damage_fine;
 
       return `
-        <tr class="hover:bg-neutral-50/70 transition-colors ${isDamaged ? "bg-amber-50/20" : ""}">
+        <tr class="${isDamaged ? "row-damaged" : ""}">
           <!-- Cột 1: Tên & Mã & Vị trí -->
-          <td class="py-4 px-5 align-top min-w-[220px]">
-            <div class="flex flex-col">
-              <span class="font-bold text-darktext text-sm leading-snug">${escapeHtml(item.book_title)}</span>
-              <div class="flex items-center gap-2 mt-1 flex-wrap">
-                <span class="font-mono text-xs bg-paper border border-warmborder px-1.5 py-0.5 rounded text-mutedtext whitespace-nowrap">${escapeHtml(item.copy_code)}</span>
-                <span class="text-xs text-mutedtext flex items-center gap-1 whitespace-nowrap">
-                  <span class="material-symbols-outlined text-[14px]">shelves</span>
-                  <span>${escapeHtml(item.shelf_location)}</span>
-                </span>
-              </div>
+          <td style="min-width: 220px;">
+            <div class="book-title-cell">${escapeHtml(item.book_title)}</div>
+            <div class="book-meta-row">
+              <span class="copy-code-pill">${escapeHtml(item.copy_code)}</span>
+              <span class="shelf-pill">
+                <span class="material-symbols-outlined">shelves</span>
+                <span>${escapeHtml(item.shelf_location)}</span>
+              </span>
             </div>
           </td>
 
           <!-- Cột 2: Hạn trả & Quá hạn -->
-          <td class="py-4 px-3 align-top text-center min-w-[160px] whitespace-nowrap">
-            <div class="flex flex-col items-center">
-              <span class="font-mono text-xs text-mutedtext">${escapeHtml(item.due_date)}</span>
+          <td style="min-width: 160px; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <span class="font-mono" style="font-size: 12px; color: var(--color-text-muted);">${escapeHtml(item.due_date)}</span>
               ${
                 item.is_overdue
-                  ? `<span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-rose-50 text-red-600 font-semibold mt-1 border border-rose-200 whitespace-nowrap">
-                      <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                  ? `<span class="badge-overdue">
+                      <span class="dot"></span>
                       Quá hạn ${item.overdue_days} ngày
                     </span>
-                    <span class="text-[11px] text-mutedtext mt-0.5 font-mono whitespace-nowrap">2.000đ × ${item.overdue_days} ngày</span>`
-                  : `<span class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold mt-1 border border-emerald-200 whitespace-nowrap">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                    <span class="font-mono" style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">2.000đ × ${item.overdue_days} ngày</span>`
+                  : `<span class="badge-ontime">
+                      <span class="dot"></span>
                       Đúng hạn
                     </span>
-                    <span class="text-[11px] text-emerald-700 mt-0.5 whitespace-nowrap">Không phạt</span>`
+                    <span style="font-size: 11px; color: var(--color-success); margin-top: 2px;">Không phạt</span>`
               }
             </div>
           </td>
 
           <!-- Cột 3: Tình trạng vật lý -->
-          <td class="py-4 px-3 align-top min-w-[240px]">
-            <div class="flex flex-col gap-1.5">
+          <td style="min-width: 240px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
               <select onchange="handleConditionChange(${index}, this.value)"
-                      class="h-9 px-2 text-xs font-medium rounded-lg border border-warmborder bg-white text-darktext focus:outline-none focus:border-brand w-full ${
-                        isDamaged ? "border-amberaccent/50 bg-amber-50/40 text-amber-900" : ""
-                      }">
+                      class="condition-select ${isDamaged ? "damaged" : ""}">
                 <option value="NORMAL" ${item.condition_type === "NORMAL" ? "selected" : ""}>Bình thường / Nguyên vẹn</option>
                 <option value="LIGHT_DAMAGE" ${item.condition_type === "LIGHT_DAMAGE" ? "selected" : ""}>Hư hỏng nhẹ (Rách bìa) • +20.000đ</option>
                 <option value="HEAVY_DAMAGE" ${item.condition_type === "HEAVY_DAMAGE" ? "selected" : ""}>Hư hỏng nặng (50% giá bìa: ${formatVND(item.book_price * 0.5)})</option>
@@ -546,36 +542,36 @@ function renderTableRows() {
 
               ${
                 item.condition_type === "NORMAL"
-                  ? `<span class="text-[11px] text-emerald-700 flex items-center gap-1 font-medium whitespace-nowrap">
-                      <span class="material-symbols-outlined text-[14px]">verified</span>
+                  ? `<span style="font-size: 11px; color: var(--color-success); display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
                       Sách nguyên vẹn
                     </span>`
                   : `<input type="text" value="${escapeHtml(item.note || "")}"
                             onchange="state.activeItems[${index}].note = this.value"
                             placeholder="Ghi chú hỏng hóc..."
-                            class="h-7 px-2 text-xs bg-paper border border-warmborder rounded outline-none text-darktext w-full">`
+                            class="condition-note-input">`
               }
             </div>
           </td>
 
           <!-- Cột 4: Tiền phạt -->
-          <td class="py-4 px-5 align-top text-right min-w-[120px] whitespace-nowrap">
-            <div class="flex flex-col items-end">
-              <span class="font-mono text-sm font-bold ${totalItemFine > 0 ? "text-red-600" : "text-darktext"}">
+          <td style="min-width: 120px; text-align: right;">
+            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+              <span class="fine-amount-display ${totalItemFine > 0 ? "is-fine" : ""}">
                 ${formatVND(totalItemFine)}
               </span>
-              <span class="text-[11px] text-mutedtext whitespace-nowrap">
+              <span style="font-size: 11px; color: var(--color-text-muted);">
                 ${item.overdue_fine > 0 ? "Phạt hạn" : (item.damage_fine > 0 ? "Bồi thường" : "Miễn phí")}
               </span>
             </div>
           </td>
 
           <!-- Cột 5: Nút xóa -->
-          <td class="py-4 px-2 align-top text-center w-10">
+          <td style="text-align: center; width: 40px;">
             <button type="button" onclick="handleRemoveItem(${index})"
-                    class="w-8 h-8 rounded-lg flex items-center justify-center text-mutedtext hover:text-red-600 hover:bg-rose-50 transition-colors"
+                    class="btn-remove-row"
                     title="Loại khỏi lượt trả này">
-              <span class="material-symbols-outlined text-[18px]">close</span>
+              <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
             </button>
           </td>
         </tr>
@@ -609,9 +605,9 @@ function updatePaymentMethodUI() {
   document.querySelectorAll(".payment-method-label").forEach((label) => {
     const radio = label.querySelector('input[type="radio"]');
     if (radio && radio.checked) {
-      label.className = "payment-method-label flex flex-col items-center justify-center p-2.5 rounded-lg border border-brand bg-brand/5 cursor-pointer text-center text-brand font-semibold transition-all";
+      label.classList.add("active");
     } else {
-      label.className = "payment-method-label flex flex-col items-center justify-center p-2.5 rounded-lg border border-warmborder bg-paper hover:bg-neutral-50 cursor-pointer text-center text-mutedtext transition-all";
+      label.classList.remove("active");
     }
   });
 

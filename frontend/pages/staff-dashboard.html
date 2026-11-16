@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bàn làm việc Thủ thư | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<!--
+  data-layout="staff"          -> Dùng khung Sidebar trái + Topbar quản trị
+  data-roles="ADMIN,LIBRARIAN" -> Chặn Độc giả & khách chưa đăng nhập (chỉ cho Admin & Thủ thư)
+-->
+<body data-root="../" data-layout="staff" data-roles="ADMIN,LIBRARIAN" data-title="Bàn làm việc Thủ thư & Quản trị">
+  <header id="app-header"></header>
+
+  <main class="container">
+    <!-- Thống kê nhanh -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Tổng đầu sách</div>
+        <div id="stat-total-books" class="stat-value">—</div>
+        <div class="stat-sub">Đầu sách đang lưu hành</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bản sao trong kho</div>
+        <div id="stat-total-copies" class="stat-value">—</div>
+        <div id="stat-avail-copies" class="stat-sub">Đang kiểm tra...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Khoản phạt chưa thu</div>
+        <div id="stat-unpaid-fines" class="stat-value" style="color: var(--color-warning);">—</div>
+        <div id="stat-unpaid-amount" class="stat-sub">0 ₫ cần thu</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Phiên làm việc</div>
+        <div id="stat-staff-role" class="stat-value" style="font-size: 22px;">—</div>
+        <div id="stat-staff-name" class="stat-sub">Đã xác thực JWT</div>
+      </div>
+    </div>
+
+    <div class="layout-2col">
+      <!-- Cột trái: Tác nghiệp nhanh tại quầy (Quét mã trả sách & Báo sự cố) -->
+      <div>
+        <section id="returns" class="card">
+          <h2>⚡ Tiếp nhận trả sách tại quầy</h2>
+          <p class="muted">Quét hoặc nhập mã cuốn sách (<span class="code-mono">copy_code</span>) để thu hồi về kho và tự động tính phạt quá hạn (nếu có).</p>
+          <form id="quick-return-form">
+            <label for="return-copy-code">Mã bản sao sách (copy_code) *</label>
+            <input id="return-copy-code" type="text" required placeholder="VD: BC-9786042100001-01" class="code-mono">
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" style="width: 100%;">Xác nhận trả sách →</button>
+            </div>
+          </form>
+          <div id="return-result-box" class="status" hidden></div>
+        </section>
+
+        <section class="card">
+          <h2>⚠️ Báo hỏng / Mất sách</h2>
+          <p class="muted">Tự động tính phạt 50% (Hỏng) hoặc 100% (Mất) theo giá bìa.</p>
+          <form id="report-issue-form">
+            <label for="issue-copy-code">Mã bản sao (copy_code) *</label>
+            <input id="issue-copy-code" type="text" required placeholder="VD: BC-9786042100001-01" class="code-mono">
+
+            <label for="issue-type">Loại sự cố *</label>
+            <select id="issue-type">
+              <option value="HỎNG">Làm hỏng sách (Phạt 50% giá bìa)</option>
+              <option value="MẤT">Làm mất sách (Phạt 100% giá bìa)</option>
+            </select>
+
+            <label for="issue-note">Ghi chú biên bản</label>
+            <input id="issue-note" type="text" placeholder="VD: Rách bìa trang 15...">
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-warning" style="width: 100%;">Ghi nhận vi phạm</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- Cột phải: Danh mục sách & Khoản phạt -->
+      <div>
+        <section id="fines" class="card">
+          <div class="list-header">
+            <div>
+              <h2 style="margin-bottom: 4px;">Danh sách khoản phạt vi phạm</h2>
+              <span class="muted">Quản lý thu phí phạt quá hạn, làm hỏng hoặc mất sách</span>
+            </div>
+            <button id="btn-reload-fines" type="button" class="btn btn-small">↻ Làm mới</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Độc giả</th>
+                  <th>Bản sao</th>
+                  <th>Loại phạt</th>
+                  <th class="text-right">Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th class="text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="fines-table-body">
+                <tr><td colspan="7" class="muted">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="books" class="card">
+          <div class="list-header">
+            <div>
+              <h2 style="margin-bottom: 4px;">Tra cứu nhanh kho sách & bản sao</h2>
+              <span class="muted">Kiểm tra tồn kho thực tế theo ISBN và thể loại</span>
+            </div>
+            <input id="staff-book-search" type="search" placeholder="Tìm tên sách, ISBN...">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ISBN</th>
+                  <th>Tên đầu sách</th>
+                  <th class="text-right">Giá bìa</th>
+                  <th>Tồn kho</th>
+                </tr>
+              </thead>
+              <tbody id="staff-books-body">
+                <tr><td colspan="4" class="muted">Đang tải danh mục sách...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="../js/pages/staff-dashboard.js"></script>
+</body>
+</html>

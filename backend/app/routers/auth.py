@@ -2,14 +2,12 @@
 import secrets
 from datetime import date
 
-import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import (
+from app.core.dependencies import (  # noqa: F401
     check_card_can_borrow,
     get_current_user,
     require_admin,
@@ -26,6 +24,7 @@ from app.db.session import get_db
 from app.models.library_card import CardStatus, CardType, LibraryCard
 from app.models.user import User, UserRole, UserStatus
 from app.schemas.auth import LoginRequest, RegisterRequest, RegisterResponse, TokenResponse
+from app.schemas.library_card import LibraryCardOut
 from app.schemas.user import UserOut
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -109,3 +108,18 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def get_me(user: User = Depends(get_current_user)):
     return user
+
+
+@router.get("/my-card", response_model=LibraryCardOut | None)
+def get_my_card(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Lấy thẻ thư viện mới nhất của độc giả đang đăng nhập."""
+    card = (
+        db.query(LibraryCard)
+        .filter(LibraryCard.reader_id == user.id)
+        .order_by(LibraryCard.id.desc())
+        .first()
+    )
+    return card

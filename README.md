@@ -1,4 +1,4 @@
-# Base code dự án thực tập: HN-KS25-CNTT1
+# Base code dự án thực tập: HN-KS25-CNTT5
 
 Khung dự án chung cho các nhóm (04/11 – 25/11/2026). Gồm 2 phần đã nối sẵn với nhau:
 

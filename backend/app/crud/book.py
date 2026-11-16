@@ -28,7 +28,7 @@ def get_books_paginated(
     """
     Truy vấn danh sách sách có tìm kiếm từ khoá, lọc nhiều tiêu chí, sắp xếp và phân trang.
     """
-    query = db.query(Book)
+    query = db.query(Book).filter(Book.is_deleted == False)  # noqa: E712
 
     # Join các bảng liên quan để tìm kiếm và lọc
     query = (
@@ -101,7 +101,7 @@ def get_book_by_isbn(db: Session, isbn: str):
             joinedload(Book.book_authors).joinedload(BookAuthor.author),
             joinedload(Book.copies)
         )
-        .filter(Book.isbn == isbn)
+        .filter(Book.isbn == isbn, Book.is_deleted == False)  # noqa: E712
         .first()
     )
 
@@ -185,7 +185,7 @@ def update_book(db: Session, isbn: str, book_data):
             joinedload(Book.book_authors).joinedload(BookAuthor.author),
             joinedload(Book.copies)
         )
-        .filter(Book.isbn == isbn)
+        .filter(Book.isbn == isbn, Book.is_deleted == False)  # noqa: E712
         .first()
     )
 
@@ -258,7 +258,7 @@ def update_book(db: Session, isbn: str, book_data):
     }
 
 def delete_book(db: Session, isbn: str):
-    book = db.query(Book).filter(Book.isbn == isbn).first()
+    book = db.query(Book).filter(Book.isbn == isbn, Book.is_deleted == False).first()  # noqa: E712
 
     if not book:
         return None

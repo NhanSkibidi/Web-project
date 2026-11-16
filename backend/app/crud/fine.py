@@ -70,6 +70,10 @@ def create_overdue_fine_if_applicable(
     return_time: datetime | None = None,
 ) -> Fine | None:
     """Tự động tạo khoản phạt quá hạn nếu sách trả muộn hơn hạn."""
+    # Không thể tạo fine nếu chưa có bản sao được gán (copy_id bắt buộc trong bảng fines)
+    if not loan_item.copy_id:
+        return None
+
     now = return_time or datetime.now()
     overdue_days, amount = calculate_overdue_days_and_amount(loan_item.due_date, now)
 
@@ -239,6 +243,12 @@ def waive_fine(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Khoản phạt đã thanh toán, không thể miễn",
+        )
+
+    if fine.status == "WAIVED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Khoản phạt đã được miễn trước đó",
         )
 
     fine.status = "WAIVED"

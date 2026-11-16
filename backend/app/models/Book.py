@@ -28,6 +28,7 @@ class Book(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     cover_image: Mapped[str | None] = mapped_column(String(500), nullable=True)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now()
@@ -44,4 +45,3 @@ class Book(Base):
     )
     copies: Mapped[list["BookCopy"]] = relationship(
         back_populates="book", cascade="all, delete-orphan")
-    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

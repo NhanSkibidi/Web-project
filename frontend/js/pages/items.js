@@ -20,7 +20,7 @@ async function loadItems() {
   try {
     const keyword = searchInput.value.trim();
     // axios tự ghép params thành ?q=... (và tự mã hoá tiếng Việt)
-    const items = await api.get("/items", keyword ? { q: keyword } : undefined);
+    const items = await api.get("/items", keyword ? { q: keyword } : {});
     renderItems(items);
   } catch (error) {
     tableBody.innerHTML = `<tr><td colspan="5" class="text-error">${escapeHtml(error.message)}</td></tr>`;
@@ -37,7 +37,7 @@ function renderItems(items) {
       <td>${item.id}</td>
       <td>
         <strong>${escapeHtml(item.name)}</strong>
-        <div class="muted">${escapeHtml(item.description)}</div>
+        ${item.description ? `<div class="muted">${escapeHtml(item.description)}</div>` : ""}
       </td>
       <td class="text-right">${formatMoney(item.price)}</td>
       <td>${formatDateTime(item.created_at)}</td>

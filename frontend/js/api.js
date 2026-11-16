@@ -54,7 +54,7 @@ http.interceptors.response.use(
     }
     // Không có response: server tắt, sai URL, bị chặn CORS, hoặc quá thời gian chờ
     return Promise.reject(new ApiError(
-      "Không kết nối được backend. Backend đã chạy chưa? Kiểm tra CONFIG.API_BASE_URL.", 0,
+      "Không kết nối được backend. Backend đã chạy chưa? Kiểm tra CONFIG.API_BASE_URL.", 0, null,
     ));
   },
 );

@@ -126,15 +126,72 @@ Kiểm tra:
 
 Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi không tìm thấy, 422 khi dữ liệu gửi lên sai.
 
-## 8. Đăng ký và đăng nhập
+## 8. Đăng ký, đăng nhập & Phân quyền (Authentication & Authorization)
 
-Các endpoint xác thực có tiền tố `/api/auth`:
+Các endpoint xác thực có tiền tố `/api/auth` (hoặc `/auth`):
 
 | Method | URL | Việc làm |
 |---|---|---|
 | POST | `/api/auth/register` | Tạo tài khoản độc giả và thẻ thư viện hiệu lực một năm |
-| POST | `/api/auth/login` | Đăng nhập, nhận JWT |
+| POST | `/api/auth/login` | Đăng nhập, nhận JWT Bearer Token |
 | GET | `/api/auth/me` | Xem tài khoản hiện tại (cần JWT Bearer) |
+
+### 8.1. Hướng dẫn gắn Dependency xác thực & phân quyền vào API
+
+Tất cả dependency dùng chung được đặt tại `app.core.dependencies`:
+
+```python
+from fastapi import APIRouter, Depends
+from app.core.dependencies import (
+    get_current_user,
+    require_roles,
+    require_admin,
+    require_librarian,
+    require_reader,
+    check_card_can_borrow,
+)
+from app.models.user import User, UserRole
+
+router = APIRouter(prefix="/example", tags=["Example"])
+
+# 1. Bất kỳ người dùng nào đã đăng nhập (ACTIVE):
+@router.get("/profile")
+def my_profile(current_user: User = Depends(get_current_user)):
+    return {"id": current_user.id, "email": current_user.email}
+
+# 2. Chỉ Quản trị viên (ADMIN):
+@router.delete("/system-reset")
+def reset_system(admin: User = Depends(require_admin)):
+    return {"message": "Đã thực hiện reset"}
+
+# 3. Quản trị viên hoặc Thủ thư (ADMIN, LIBRARIAN):
+@router.post("/books")
+def add_new_book(user: User = Depends(require_librarian)):
+    # hoặc dùng: Depends(require_roles(UserRole.ADMIN, UserRole.LIBRARIAN))
+    return {"message": "Thêm sách thành công"}
+
+# 4. Chỉ Độc giả (READER):
+@router.post("/loans/online")
+def borrow_online(user: User = Depends(require_reader)):
+    return {"message": "Yêu cầu mượn online"}
+
+# 5. Kiểm tra thẻ thư viện hợp lệ cho module Mượn (Loans / Reservations):
+@router.post("/check-borrow")
+def check_borrow(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    card = check_card_can_borrow(db, user.id)
+    return {"card_code": card.card_code, "max_books": card.max_borrow_books}
+```
+
+#### Quy tắc mã lỗi (HTTP Status Codes):
+- `401 Unauthorized`: Thiếu Bearer Token, Token giả mạo hoặc Token đã hết hạn.
+- `403 Forbidden`: 
+  - Tài khoản đã bị khóa (`status != ACTIVE`).
+  - Người dùng không có vai trò phù hợp (VD: Reader cố truy cập API của Librarian).
+  - Thẻ thư viện đã bị khóa (`status == LOCKED`).
+- `400 Bad Request`: Thẻ thư viện chưa được cấp, đã hết hạn hoặc không ở trạng thái ACTIVE.
 
 Body đăng ký mẫu:
 

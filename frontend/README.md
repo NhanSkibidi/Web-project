@@ -62,24 +62,52 @@ Trình duyệt (FE: 127.0.0.1:5500) --axios--> Backend FastAPI (127.0.0.1:8000/a
     console.log(error.status);          // 404, 422, 500... hoặc 0 nếu không gọi được server
   }
   ```
-- Cần gửi token đăng nhập kèm mọi request? Trong `js/api.js` đã có sẵn đoạn interceptor mẫu (đang comment), chỉ cần bỏ comment.
+- **Tự động gắn Bearer Token (Axios Interceptor):** Trong `js/api.js` đã cấu hình sẵn Request & Response Interceptor:
+  - Mọi lệnh gọi `api.get()`, `api.post()`, `api.put()`, `api.patch()`, `api.delete()` đều tự động lấy JWT từ `auth.getToken()` và đính kèm header `Authorization: Bearer <token>`.
+  - Khi gặp lỗi `401 Unauthorized` (token hết hạn), tự động xoá phiên cũ.
+- **Lấy thông tin người dùng đang đăng nhập ở bất kỳ file JS nào:**
+  ```js
+  const user = auth.getUser();   // { id, email, full_name, phone, role, status }
+  const card = auth.getCard();   // { card_code: "LC-0001", status, max_borrow_books, ... }
+  const role = auth.getRole();   // "ADMIN" | "LIBRARIAN" | "READER" | null
+  ```
 - Backend phải cho phép FE gọi (**CORS**). Base code backend đã bật sẵn (`CORS_ORIGINS=*` trong `backend/.env`).
 
-## 4. Thêm trang mới (vd: trang Sản phẩm)
+## 4. Khung giao diện chung (Layout) & Chặn trang theo Role (`js/layout.js`)
 
-1. Copy `pages/items.html` thành `pages/products.html`, sửa `<title>` và nội dung HTML.
-2. Copy `js/pages/items.js` thành `js/pages/products.js`, đổi `/items` thành `/products` (API của nhóm bạn).
-3. Ở cuối `pages/products.html`, đổi `../js/pages/items.js` thành `../js/pages/products.js`.
-4. Thêm link vào menu trong `js/layout.js`:
-   ```js
-   { href: "pages/products.html", label: "Sản phẩm" },
-   ```
+Hệ thống hỗ trợ sẵn **2 khung giao diện** và **bộ chặn trang theo vai trò (`data-roles`)** chỉ bằng thuộc tính trên thẻ `<body>`:
 
-Lưu ý khi tạo trang:
+### 4.1. Chọn Layout cho trang (`data-layout`)
 
-- Trang trong `pages/` để `<body data-root="../">`; trang ở thư mục gốc để `data-root="./"`.
-- Giữ thứ tự thẻ `<script>`: axios (CDN) → `config.js` → `api.js` → `utils.js` → `layout.js` → script riêng của trang.
-- Khi chèn dữ liệu người dùng nhập vào `innerHTML`, luôn bọc bằng `escapeHtml(...)` để chống chèn mã độc (XSS).
+| Loại trang | Cách khai báo ở thẻ `<body>` | Giao diện sinh ra |
+|---|---|---|
+| **Trang Độc giả / Công khai** | `<body data-root="../" data-layout="reader">` | **Header ngang** (Logo, Menu độc giả, Mã thẻ `LC-XXXX`, Tên user) + **Footer** |
+| **Trang Thủ thư & Admin** | `<body data-root="../" data-layout="staff" data-title="Tên trang">` | **Sidebar cố định bên trái** (chia nhóm nghiệp vụ) + **Topbar** (Breadcrumb, Ô quét nhanh `copy_code`) |
+
+### 4.2. Chặn trang theo Role (`data-roles`)
+
+Chỉ cần gắn `data-roles="..."` vào thẻ `<body>` (cách nhau bằng dấu phẩy):
+
+```html
+<!-- 1. Trang dành cho cả Admin và Thủ thư (VD: Quản lý sách, Mượn trả, Thu phạt) -->
+<body data-root="../" data-layout="staff" data-roles="ADMIN,LIBRARIAN" data-title="Quản lý mượn trả">
+
+<!-- 2. Trang CHỈ dành cho Admin (Thủ thư và Độc giả vào sẽ bị chặn 403) -->
+<body data-root="../" data-layout="staff" data-roles="ADMIN" data-title="Quản trị hệ thống">
+
+<!-- 3. Trang Độc giả bắt buộc phải đăng nhập -->
+<body data-root="../" data-layout="reader" data-roles="READER">
+```
+
+- Nếu **chưa đăng nhập (`401`)**: Tự động hiển thị màn hình yêu cầu đăng nhập và lưu lại trang đang mở (`redirect_after_login`) để tự quay lại sau khi đăng nhập xong.
+- Nếu **đăng nhập sai vai trò (`403`)**: Tự động khóa nội dung trang và hiển thị màn hình **HTTP 403 Forbidden** kèm nút điều hướng về đúng trang của vai trò đó.
+
+## 5. Thêm trang mới cho nhóm
+
+1. **Nếu làm trang cho Thủ thư / Admin**: Copy `pages/staff-dashboard.html` thành trang mới (vd: `pages/loans.html`), sửa `data-title="..."` và nội dung bên trong `<main>`. Thêm link vào mảng `STAFF_SIDEBAR_GROUPS` trong `js/layout.js`.
+2. **Nếu làm trang cho Độc giả**: Copy `pages/items.html` thành trang mới (vd: `pages/books.html`), giữ `data-layout="reader"`. Thêm link vào mảng `READER_MENU` trong `js/layout.js`.
+3. Giữ thứ tự thẻ `<script>` ở cuối trang: axios (CDN) → `config.js` → `api.js` → `utils.js` → `layout.js` → script riêng của trang.
+4. Khi chèn dữ liệu người dùng nhập vào `innerHTML`, luôn bọc bằng `escapeHtml(...)` để chống chèn mã độc (XSS).
 
 ## 5. Lỗi hay gặp
 

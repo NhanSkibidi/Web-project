@@ -1,19 +1,21 @@
-/* ==========================================================
-   KS25 Library - Màn hình Trả sách tại quầy & Thu phí phạt
-   File CSS độc lập theo chuẩn DESIGN.md (Task T3CFF12)
-   Không phụ thuộc Tailwind - Viết theo chuẩn BEM / CSS gốc
-   Kế thừa và mở rộng từ style.css
-   ========================================================== */
+/* ==========================================================================
+   KS25 Library - Màn hình Trả sách tại quầy & Thu phí phạt (Task T3CFF12)
+   Design System: Newsreader (Headline) / Plus Jakarta Sans (Body) / JetBrains Mono (Numbers)
+   Màu chủ đạo: Deep Forest Green (#1B4332) & Warm Paper (#FAF8F5)
+   File CSS độc lập 100%, không phụ thuộc Tailwind, không bị style.css đè màu
+   ========================================================================== */
 
 :root {
   --color-brand: #1B4332;
   --color-brand-hover: #2D6A4F;
   --color-brand-light: #E8F5E9;
-  --color-brand-dark: #143326;
+  --color-brand-subtle: rgba(27, 67, 50, 0.08);
   --color-paper: #FAF8F5;
   --color-surface: #FFFFFF;
   --color-border: #E6E2D8;
+  --color-border-subtle: #F0EDE6;
   --color-amber: #B45309;
+  --color-amber-bg: #FEF3C7;
   --color-danger: #DC2626;
   --color-danger-bg: #FEF2F2;
   --color-danger-border: #FECACA;
@@ -23,15 +25,23 @@
   --color-text-primary: #1A202C;
   --color-text-secondary: #4A5568;
   --color-text-muted: #718096;
-  --radius-card: 12px;
+  --radius-card: 14px;
   --radius-btn: 8px;
+  --shadow-card: 0 1px 3px rgba(27, 67, 50, 0.05);
+  --shadow-elevated: 0 10px 25px rgba(27, 67, 50, 0.12);
 }
 
-body {
+* {
+  box-sizing: border-box;
+}
+
+body.returns-body {
+  margin: 0;
+  padding: 0;
   background-color: var(--color-paper);
   color: var(--color-text-primary);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  margin: 0;
+  line-height: 1.5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -45,14 +55,219 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ----------------------------------------------------------
-   1. THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR RAIL COLLAPSIBLE)
-   Mặc định chỉ hiện icon (72px), di chuột vào mở rộng (256px)
-   ---------------------------------------------------------- */
+/* ==========================================================================
+   1. THANH ĐIỀU HƯỚNG TRÊN CÙNG (TOPBAR)
+   ========================================================================== */
+.librarian-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(250, 248, 245, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-brand);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(27, 67, 50, 0.25);
+}
+
+.brand-icon .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-nav-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.topbar-nav-link:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+.topbar-nav-link.active {
+  color: var(--color-brand);
+  background: var(--color-brand-light);
+  font-weight: 600;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  border-radius: 10px;
+  width: 240px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.topbar-search .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.topbar-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  width: 100%;
+  color: var(--color-text-primary);
+}
+
+.topbar-search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.topbar-icon-btn {
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.topbar-icon-btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.topbar-icon-btn .badge-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
+}
+
+.librarian-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.librarian-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.librarian-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.librarian-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.librarian-role {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   2. THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR RAIL COLLAPSIBLE)
+   ========================================================================== */
 .sidebar-rail {
   position: fixed;
   left: 0;
-  top: 60px; /* Dưới header 60px */
+  top: 64px;
   bottom: 0;
   width: 72px;
   background-color: #F5F3EF;
@@ -61,17 +276,17 @@ body {
   flex-direction: column;
   padding: 16px 8px 12px;
   z-index: 40;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.28s ease;
   overflow-x: hidden;
   box-sizing: border-box;
 }
 
 .sidebar-rail:hover {
   width: 256px;
-  box-shadow: 0 10px 25px rgba(27, 67, 50, 0.12);
+  box-shadow: var(--shadow-elevated);
 }
 
-.sidebar-heading {
+.sidebar-rail-header {
   height: 24px;
   display: flex;
   align-items: center;
@@ -81,7 +296,7 @@ body {
   white-space: nowrap;
 }
 
-.sidebar-heading span {
+.sidebar-rail-header span {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-muted);
@@ -91,7 +306,7 @@ body {
   transition: opacity 0.2s ease;
 }
 
-.sidebar-heading .version-pill {
+.sidebar-rail-header .version-pill {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   background: var(--color-surface);
@@ -103,19 +318,19 @@ body {
   transition: opacity 0.2s ease;
 }
 
-.sidebar-rail:hover .sidebar-heading span,
-.sidebar-rail:hover .sidebar-heading .version-pill {
+.sidebar-rail:hover .sidebar-rail-header span,
+.sidebar-rail:hover .sidebar-rail-header .version-pill {
   opacity: 1;
 }
 
-.sidebar-nav {
+.sidebar-rail-nav {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1;
 }
 
-.sidebar-link {
+.sidebar-rail-link {
   display: flex;
   align-items: center;
   height: 44px;
@@ -123,43 +338,43 @@ body {
   border-radius: 10px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.15s, color 0.15s;
   box-sizing: border-box;
 }
 
-.sidebar-link:hover {
+.sidebar-rail-link:hover {
   background: var(--color-surface);
   color: var(--color-text-primary);
 }
 
-.sidebar-link.active {
+.sidebar-rail-link.active {
   background: var(--color-brand);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.2);
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.22);
 }
 
-.sidebar-link .material-symbols-outlined {
+.sidebar-rail-link .material-symbols-outlined {
   font-size: 22px;
   width: 24px;
   text-align: center;
   flex-shrink: 0;
 }
 
-.sidebar-label {
+.sidebar-rail-link .rail-label {
   margin-left: 14px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.sidebar-rail:hover .sidebar-label {
+.sidebar-rail:hover .sidebar-rail-link .rail-label {
   opacity: 1;
 }
 
-.sidebar-status-box {
+.sidebar-rail-footer {
   margin-top: auto;
   padding: 8px 10px;
   background: var(--color-surface);
@@ -169,28 +384,41 @@ body {
   align-items: center;
   justify-content: space-between;
   white-space: nowrap;
-  height: 42px;
+  height: 44px;
   box-sizing: border-box;
 }
 
-.sidebar-status-dot {
+.status-dot-pulse {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #10B981;
   flex-shrink: 0;
   margin-right: 8px;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
-.sidebar-status-text {
+.sidebar-status-details {
   display: flex;
   flex-direction: column;
   opacity: 0;
   transition: opacity 0.2s ease;
+  overflow: hidden;
 }
 
-.sidebar-rail:hover .sidebar-status-text {
+.sidebar-rail:hover .sidebar-status-details {
   opacity: 1;
+}
+
+.sidebar-status-details strong {
+  font-size: 11px;
+  color: var(--color-text-primary);
+}
+
+.sidebar-status-details small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--color-success);
 }
 
 @media (max-width: 900px) {
@@ -199,26 +427,40 @@ body {
   }
 }
 
-/* ----------------------------------------------------------
-   2. KHU VỰC LÀM VIỆC CHÍNH (RETURNS WORKSPACE)
-   ---------------------------------------------------------- */
-.returns-workspace {
-  margin-left: 72px; /* Đẩy sang phải bằng độ rộng của sidebar */
-  flex: 1;
-  padding: 24px 32px 48px;
-  max-width: 1440px;
-  width: calc(100% - 72px);
-  box-sizing: border-box;
+/* ==========================================================================
+   3. KHU VỰC THAO TÁC NGHIỆP VỤ (WORKSPACE)
+   ========================================================================== */
+.returns-workspace-wrapper {
+  padding-top: 64px;
+  padding-left: 72px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: padding-left 0.28s ease;
 }
 
 @media (max-width: 900px) {
-  .returns-workspace {
-    margin-left: 0;
-    width: 100%;
+  .returns-workspace-wrapper {
+    padding-left: 0;
+  }
+}
+
+.returns-main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 32px 48px;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .returns-main-container {
     padding: 16px;
   }
 }
 
+/* Tiêu đề trang */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -250,6 +492,7 @@ body {
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0 0 4px;
+  letter-spacing: -0.01em;
 }
 
 .page-subtitle {
@@ -266,9 +509,35 @@ body {
   align-items: center;
 }
 
-/* ----------------------------------------------------------
-   3. BỐ CỤC 2 CỘT TỰ CO GIÃN (LEFT FLUID : RIGHT 390px)
-   ---------------------------------------------------------- */
+.btn-header-action {
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-header-action:hover {
+  background: #F5F3EF;
+  border-color: #D5D0C5;
+}
+
+.btn-header-action .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   4. BỐ CỤC 2 CỘT NGHIỆP VỤ (RETURNS GRID)
+   ========================================================================== */
 .returns-grid {
   display: grid;
   grid-template-columns: 1fr 390px;
@@ -296,16 +565,13 @@ body {
   min-width: 0;
 }
 
-/* ----------------------------------------------------------
-   4. THẺ CARD CHUẨN THIẾT KẾ
-   ---------------------------------------------------------- */
-.return-card {
+/* Thẻ Panel Card */
+.panel-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.04);
-  margin-bottom: 0; /* override style.css */
+  box-shadow: var(--shadow-card);
 }
 
 .card-title-row {
@@ -329,7 +595,7 @@ body {
   font-size: 20px;
 }
 
-/* Form quét barcode */
+/* 4.1 Form quét barcode */
 .scan-input-group {
   display: flex;
   gap: 10px;
@@ -352,7 +618,7 @@ body {
 
 .scan-input-wrap input {
   width: 100%;
-  height: 42px;
+  height: 44px;
   padding: 0 14px 0 40px;
   background: var(--color-paper);
   border: 1px solid var(--color-border);
@@ -362,21 +628,21 @@ body {
   color: var(--color-text-primary);
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .scan-input-wrap input:focus {
   border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.15);
+  box-shadow: 0 0 0 3px var(--color-brand-subtle);
   background: #ffffff;
 }
 
-.btn-brand {
-  height: 42px;
-  padding: 0 18px;
+.btn-brand-primary {
+  height: 44px;
+  padding: 0 20px;
   background: var(--color-brand);
   color: #ffffff;
-  border: 1px solid var(--color-brand);
+  border: none;
   border-radius: var(--radius-btn);
   font-size: 14px;
   font-weight: 600;
@@ -388,12 +654,11 @@ body {
   transition: background 0.2s, transform 0.1s;
 }
 
-.btn-brand:hover {
+.btn-brand-primary:hover {
   background: var(--color-brand-hover);
-  border-color: var(--color-brand-hover);
 }
 
-.btn-brand:active {
+.btn-brand-primary:active {
   transform: scale(0.98);
 }
 
@@ -425,7 +690,7 @@ body {
   border-color: var(--color-brand);
 }
 
-/* Thẻ thông tin độc giả */
+/* 4.2 Thẻ thông tin độc giả */
 .reader-profile-row {
   display: flex;
   justify-content: space-between;
@@ -448,7 +713,7 @@ body {
   color: var(--color-brand);
   font-family: 'Newsreader', Georgia, serif;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -545,16 +810,24 @@ body {
   gap: 8px;
 }
 
-/* Bảng danh sách ấn phẩm kiểm kê trả */
+/* 4.3 Bảng ấn phẩm kiểm kê trả (Table Workspace) */
 .table-card-section {
-  padding-bottom: 0;
+  padding: 0;
   overflow: hidden;
+}
+
+.table-card-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .table-wrap {
   overflow-x: auto;
-  margin: 0 -20px; /* Tràn viền card cho liền mạch */
-  border-top: 1px solid var(--color-border);
+  width: 100%;
 }
 
 .returns-table {
@@ -564,20 +837,20 @@ body {
 }
 
 .returns-table th {
-  background: #FAF8F5;
+  background: #F5F3EF;
   color: var(--color-text-muted);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   white-space: nowrap;
 }
 
 .returns-table td {
-  padding: 16px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--color-border);
   vertical-align: top;
   font-size: 13px;
@@ -745,7 +1018,7 @@ body {
 
 .table-footer-strip {
   padding: 14px 20px;
-  background: #FAF8F5;
+  background: var(--color-paper);
   border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
@@ -775,20 +1048,31 @@ body {
   text-decoration: underline;
 }
 
-/* ----------------------------------------------------------
+/* 4.4 Quy chuẩn tiếp nhận */
+.guide-card-content {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guide-card-content .material-symbols-outlined {
+  color: var(--color-brand);
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
    5. CỘT QUYẾT TOÁN PHÍ PHẠT (SETTLEMENT CARD)
-   ---------------------------------------------------------- */
+   ========================================================================== */
 .settlement-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.04);
-}
-
-.pb-border {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 12px;
+  box-shadow: var(--shadow-card);
 }
 
 .tx-code-badge {
@@ -1071,9 +1355,47 @@ body {
   font-size: 10px;
 }
 
-/* ----------------------------------------------------------
-   6. MODAL BIÊN LAI (RECEIPT MODAL)
-   ---------------------------------------------------------- */
+/* ==========================================================================
+   6. FOOTER PHÂN HỆ QUẢN TRỊ
+   ========================================================================== */
+.librarian-footer {
+  width: 100%;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 16px 32px;
+  margin-top: auto;
+}
+
+.librarian-footer-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.librarian-footer-links {
+  display: flex;
+  gap: 16px;
+}
+
+.librarian-footer-links a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.librarian-footer-links a:hover {
+  color: var(--color-brand);
+}
+
+/* ==========================================================================
+   7. MODAL BIÊN LAI (RECEIPT MODAL) & TOASTS
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1219,6 +1541,7 @@ body {
   justify-content: center;
   gap: 6px;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .modal-btn-print:hover {
@@ -1235,15 +1558,14 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .modal-btn-finish:hover {
   background: #F5F3EF;
 }
 
-/* ----------------------------------------------------------
-   7. TOAST NOTIFICATIONS
-   ---------------------------------------------------------- */
+/* Toast */
 .toast-box {
   position: fixed;
   bottom: 24px;

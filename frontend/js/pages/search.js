@@ -182,7 +182,7 @@ function renderSearchResults(books) {
 
         <!-- Thông tin sách -->
         <div class="book-card-info">
-          <h3 class="book-card-title" title="${book.title}">${book.title}</h3>
+          <h3 class="book-card-title" title="${book.title}" style="cursor:pointer;" onclick="window.location.href='book-detail.html'">${book.title}</h3>
           
           <div class="book-card-author">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

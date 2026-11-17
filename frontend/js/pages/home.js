@@ -553,12 +553,7 @@ function borrowBook(bookTitle) {
 }
 
 function viewBookDetail(bookTitle) {
-  const book = ALL_BOOKS.find((b) => b.title === bookTitle);
-  if (book) {
-    alert(`📖 THÔNG TIN TÀI LIỆU:\n- Tiêu đề: ${book.title}\n- Tác giả: ${book.author}\n- Chuyên ngành: ${book.category}\n- Vị trí: ${book.shelf}\n- Mã ISBN: ${book.isbn}\n- Tình trạng: ${book.copies}`);
-  } else {
-    alert(`Thông tin tài liệu: ${bookTitle}`);
-  }
+  window.location.href = "book-detail.html";
 }
 
 function escapeQuotes(str) {

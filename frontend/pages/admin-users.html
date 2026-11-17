@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản trị Nhân sự & Phân quyền | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<!--
+  data-layout="staff" -> Dùng Sidebar trái + Header quản trị
+  data-roles="ADMIN"  -> CHỈ CHO PHÉP ADMIN (Thủ thư và Độc giả vào sẽ bị chặn 403)
+-->
+<body data-root="../" data-layout="staff" data-roles="ADMIN" data-title="Quản trị Nhân sự & Phân quyền (ADMIN ONLY)">
+  <header id="app-header"></header>
+
+  <main class="container">
+    <section class="card">
+      <div class="list-header">
+        <div>
+          <h2>🛡️ Khu vực Quản trị Hệ thống (Chỉ dành cho ADMIN)</h2>
+          <p class="muted" style="margin-bottom: 0;">
+            Trang này được gắn thuộc tính <code>data-roles="ADMIN"</code>. Nếu đăng nhập bằng tài khoản Thủ thư (<code>LIBRARIAN</code>) hoặc Độc giả (<code>READER</code>), hệ thống sẽ tự động chặn bằng màn hình <strong>HTTP 403 Forbidden</strong>.
+          </p>
+        </div>
+        <span class="badge badge-available">Quyền: ADMIN</span>
+      </div>
+    </section>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Quản trị viên (ADMIN)</div>
+        <div class="stat-value">1</div>
+        <div class="stat-sub">Toàn quyền cấu hình hệ thống</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Thủ thư (LIBRARIAN)</div>
+        <div class="stat-value">2</div>
+        <div class="stat-sub">Quản lý sách, mượn trả & thu phạt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Độc giả (READER)</div>
+        <div class="stat-value">20+</div>
+        <div class="stat-sub">Tra cứu & gửi yêu cầu mượn online</div>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Danh sách tài khoản mẫu trong hệ thống</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Họ và tên</th>
+              <th>Vai trò (Role)</th>
+              <th>Mật khẩu mẫu</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code-mono">admin@library.com</span></td>
+              <td><strong>Quản Trị Viên</strong></td>
+              <td><span class="badge badge-available">ADMIN</span></td>
+              <td><span class="code-mono">Admin@123</span></td>
+              <td><span class="badge badge-available">ACTIVE</span></td>
+            </tr>
+            <tr>
+              <td><span class="code-mono">thuthu1@library.com</span></td>
+              <td><strong>Thủ Thư 1</strong></td>
+              <td><span class="badge badge-borrowed">LIBRARIAN</span></td>
+              <td><span class="code-mono">Thuthu@123</span></td>
+              <td><span class="badge badge-available">ACTIVE</span></td>
+            </tr>
+            <tr>
+              <td><span class="code-mono">docgia01@library.com</span></td>
+              <td><strong>Nguyễn Văn An (Thẻ LC-0001)</strong></td>
+              <td><span class="badge badge-reserved">READER</span></td>
+              <td><span class="code-mono">Docgia@123</span></td>
+              <td><span class="badge badge-available">ACTIVE</span></td>
+            </tr>
+            <tr>
+              <td><span class="code-mono">docgia20@library.com</span></td>
+              <td><strong>Tạ Thị Yến (Tài khoản bị khóa)</strong></td>
+              <td><span class="badge badge-reserved">READER</span></td>
+              <td><span class="code-mono">Docgia@123</span></td>
+              <td><span class="badge badge-danger">LOCKED</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/layout.js"></script>
+</body>
+</html>

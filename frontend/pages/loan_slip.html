@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phiếu mượn của tôi | UniLib</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Newsreader:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap&subset=vietnamese" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/loan_slip.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header__inner">
+      <a class="brand" href="home.html" aria-label="UniLib - Trang chủ">
+        <img class="brand__logo" src="../assets/images/Background+Shadow.png" alt="" width="40" height="40" />
+        <span class="brand__text"><strong>UniLib</strong><small>Thư viện số</small></span>
+      </a>
+      <nav class="nav" aria-label="Điều hướng chính">
+        <a class="nav__link" href="home.html">Trang chủ</a>
+        <a class="nav__link" href="books.html">Tra cứu sách</a>
+        <a class="nav__link is-active" href="loan_slip.html" aria-current="page">Phiếu mượn của tôi</a>
+        <a class="nav__link" href="staff-dashboard.html">Quản trị thư viện</a>
+      </nav>
+      <div class="header__right">
+        <a class="cart" href="loan_basket.html" aria-label="Giỏ mượn sách, 3 cuốn">
+          <i data-lucide="shopping-cart"></i><span class="cart__badge">3</span>
+        </a>
+        <span class="header__divider"></span>
+        <div class="account">
+          <button class="account__btn" id="accountBtn" aria-haspopup="true" aria-expanded="false">
+            <img src="../assets/images/Profile.png" alt="Ảnh đại diện" width="40" height="40" />
+            <span>Nguyễn Văn An</span>
+          </button>
+          <div class="account__menu" id="accountMenu" hidden>
+            <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
+            <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="page__head">
+      <h1>Phiếu Mượn Của Tôi</h1>
+      <p>Theo dõi thời hạn và trạng thái các ấn phẩm đang mượn</p>
+    </section>
+
+    <section class="stats" id="stats" aria-label="Thống kê nhanh"></section>
+
+    <section class="toolbar">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Lọc theo trạng thái"></div>
+      <label class="search">
+        <i data-lucide="search"></i>
+        <input id="searchInput" type="search" placeholder="Tìm theo mã phiếu hoặc tên sách..." aria-label="Tìm phiếu mượn" />
+        <kbd>⌘K</kbd>
+      </label>
+    </section>
+
+    <section class="slips" id="slips" aria-live="polite"></section>
+
+    <section class="foot-bar">
+      <p class="rule"><i data-lucide="info"></i>Mỗi độc giả được mượn tối đa 5 cuốn cùng lúc. Thời hạn mượn chuẩn là 14 ngày.</p>
+      <div class="pager" id="pager"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ thống Quản lý Học thuật UniLib 2025</p>
+      <nav class="footer__links" aria-label="Liên kết chân trang">
+        <a href="#">Quy chế thư viện</a><a href="#">Hỗ trợ nghiên cứu</a><a href="#">Liên hệ thủ thư</a>
+      </nav>
+    </div>
+  </footer>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../js/pages/loan_slip.js"></script>
+</body>
+</html>

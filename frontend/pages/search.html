@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tra cứu Danh mục Ấn bản Thư viện | KS25 Library</title>
   <link rel="icon" href="../assets/images/logo.svg">
-  <link rel="stylesheet" href="../css/style.css?v=9.0">
-  <link rel="stylesheet" href="../css/search.css?v=9.0">
+  <link rel="stylesheet" href="../css/style.css?v=10.1">
+  <link rel="stylesheet" href="../css/search.css?v=10.1">
 </head>
 <body data-root="../">
   <!-- 1. HEADER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER) -->
@@ -49,10 +49,10 @@
         Tìm kiếm trong hơn 140.000 đầu sách, giáo trình đại học, luận văn thạc sĩ và tạp chí nghiên cứu khoa học.
       </p>
 
-      <!-- Khung tìm kiếm: Khi di vào thì di chuyển lên -->
+      <!-- Khung tìm kiếm: Hợp nhất icon, input, quét mã vạch và nút tìm kiếm trên cùng 1 hàng -->
       <div class="search-wrapper">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
+        <div class="search-box" style="display: flex !important; flex-direction: row !important; align-items: center !important; width: 100% !important; background: #FFFFFF !important; border: 1px solid var(--color-border) !important; border-radius: var(--radius-lg) !important; padding: 8px 12px 8px 18px !important; box-sizing: border-box !important; gap: 12px !important; box-shadow: 0 4px 16px rgba(27, 67, 50, 0.07) !important;">
+          <span class="search-icon" style="font-size: 20px !important; color: var(--color-muted) !important; flex-shrink: 0 !important; display: flex !important; align-items: center !important; margin: 0 !important;">🔍</span>
           <input 
             type="text" 
             id="search-input" 
@@ -60,14 +60,15 @@
             value="Học máy và cấu trúc dữ liệu" 
             placeholder="Nhập tên tài liệu, tác giả, chuyên ngành hoặc mã ISBN..."
             onkeyup="handleSearchKeyup(event)"
+            style="flex: 1 1 auto !important; min-width: 180px !important; width: auto !important; border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; font-size: 16.5px !important; color: var(--color-text) !important; padding: 8px 0 !important;"
           >
-          <button type="button" class="btn-barcode" onclick="openBarcodeModal()" title="Quét mã vạch trên gáy sách hoặc thẻ thư viện">
+          <button type="button" class="btn-barcode" onclick="openBarcodeModal()" title="Quét mã vạch trên gáy sách hoặc thẻ thư viện" style="flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 9px 16px !important; border: 1px solid var(--color-border) !important; border-radius: var(--radius) !important; background: var(--color-bg) !important; color: var(--color-text-sub) !important; font-size: 13.5px !important; font-weight: 600 !important; cursor: pointer !important; white-space: nowrap !important;">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
               <path d="M2 4h2v16H2V4zm4 0h1v16H6V4zm3 0h2v16H9V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm4 0h2v16h-2V4z"/>
             </svg>
             <span>Quét mã vạch</span>
           </button>
-          <button type="button" class="search-btn" onclick="executeSearch()">
+          <button type="button" class="search-btn" onclick="executeSearch()" style="flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 10px 24px !important; border: none !important; border-radius: var(--radius) !important; background: var(--color-primary) !important; color: #FFFFFF !important; font-size: 15px !important; font-weight: 700 !important; cursor: pointer !important; white-space: nowrap !important;">
             <span>Tìm kiếm</span>
             <span>→</span>
           </button>

@@ -17,10 +17,10 @@
 
 // Danh sách menu cho Cổng Độc giả (Header ngang)
 const READER_MENU = [
-  { href: "pages/home.html", label: "Trang chủ" },
-  { href: "pages/search.html", label: "Tra cứu sách" },
-  { href: "pages/loan_basket.html", label: "Phiếu mượn của tôi" },
-  { href: "pages/staff-dashboard.html", label: "Quản trị thư viện" },
+  { href: "home.html", label: "Trang chủ" },
+  { href: "search.html", label: "Tra cứu sách" },
+  { href: "javascript:void(0)", label: "Phiếu mượn của tôi" },
+  { href: "javascript:void(0)", label: "Quản trị thư viện" },
 ];
 
 // Danh sách menu Sidebar cho Admin & Thủ thư (Cả nhóm thêm trang mới vào đây)
@@ -228,52 +228,24 @@ function renderReaderLayout() {
 
   if (headerEl) {
     const linksHtml = READER_MENU.map((item) => {
-      const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "pages/home.html" && (currentPath.endsWith("/") || currentPath.endsWith("/home.html")));
-      return `<a href="${root}${item.href}" class="nav-item ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
+      const isCurrent = currentPath.endsWith("/" + item.href);
+      return `<a href="${item.href}" class="nav-item ${isCurrent ? "active" : ""}" onclick="handleNavClick(event, this)">${getSafeText(item.label)}</a>`;
     }).join("");
 
-    // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
-    const staffShortcutHtml =
-      user && (user.role === "ADMIN" || user.role === "LIBRARIAN")
-        ? `<a href="${root}pages/staff-dashboard.html" class="btn btn-outline btn-small">⚡ Bàn làm việc Thủ thư</a>`
-        : "";
-
-    let userAreaHtml = "";
-    if (user) {
-      const cardBadgeHtml =
-        user.role === "READER" && card?.card_code
-          ? `<span class="reader-card-pill" title="Mã thẻ thư viện">💳 ${getSafeText(card.card_code)}</span>`
-          : "";
-
-      userAreaHtml = `
-        <div class="header-user-area">
-          ${staffShortcutHtml}
-          ${cardBadgeHtml}
-          <a href="${root}pages/auth.html" class="user-chip" title="Xem thông tin tài khoản">
-            <span>👤 ${getSafeText(user.full_name || user.email)}</span>
-            <span class="user-chip-role">${getSafeText(ROLE_LABELS[user.role] || user.role)}</span>
-          </a>
-          <button type="button" id="header-logout-btn" class="btn btn-danger btn-small">Đăng xuất</button>
-        </div>
-      `;
-    } else {
-      userAreaHtml = `
-        <div class="header-user-area">
-          <a href="${root}pages/login.html#login" class="btn-login">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-            <span>Đăng nhập</span>
-          </a>
-        </div>
-      `;
-    }
+    const userAreaHtml = `
+      <div class="header-user-area">
+        <button type="button" class="btn-login" id="btn-login" onclick="handleLoginClick(event)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Đăng nhập</span>
+        </button>
+      </div>
+    `;
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="${root}pages/home.html" class="brand">
+        <a href="javascript:void(0)" class="brand">
           <div class="brand-icon">KS</div>
           <div class="brand-text">
             <span class="brand-title">KS25 Library</span>
@@ -294,11 +266,6 @@ function renderReaderLayout() {
           headerEl.classList.remove("scrolled");
         }
       }
-    });
-
-    document.getElementById("header-logout-btn")?.addEventListener("click", () => {
-      auth.clearSession();
-      window.location.href = `${root}pages/login.html#login`;
     });
   }
 
@@ -519,5 +486,32 @@ function initLayout() {
     });
   }
 }
+
+function handleNavClick(e, el) {
+  if (el.getAttribute("href") === "javascript:void(0)" || el.getAttribute("href") === "#") {
+    if (e) e.preventDefault();
+  }
+  document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function handleLoginClick(e) {
+  if (e) e.preventDefault();
+  const btn = document.getElementById("btn-login");
+  if (!btn) return;
+  const isLogged = btn.classList.toggle("logged-in");
+  if (isLogged) {
+    btn.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16A34A;"></span><span>Độc giả KS25</span>`;
+    btn.style.color = "#16A34A";
+    btn.style.borderColor = "#16A34A";
+  } else {
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span>Đăng nhập</span>`;
+    btn.style.color = "var(--color-primary)";
+    btn.style.borderColor = "var(--color-primary)";
+  }
+}
+
+window.handleNavClick = handleNavClick;
+window.handleLoginClick = handleLoginClick;
 
 initLayout();

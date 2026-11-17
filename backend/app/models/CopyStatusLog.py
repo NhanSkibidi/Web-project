@@ -30,11 +30,12 @@ class CopyStatusLog(Base):
         ),
         nullable=False
     )
-
     changed_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now()
     )
-
     book_copy: Mapped["BookCopy"] = relationship(
         back_populates="status_logs"
+    )
+    reason: Mapped[str | None] = mapped_column(
+        String(500), nullable=True
     )

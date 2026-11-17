@@ -269,15 +269,14 @@ function renderReaderLayout() {
     });
   }
 
-  if (footerEl) {
+  if (footerEl && !footerEl.querySelector(".footer-inner")) {
     footerEl.innerHTML = `
       <div class="container footer-inner">
-        <div>© ${new Date().getFullYear()} <strong>KS25 Library System</strong> · Đồ án thực tập CNTT (HN-KS25-CNTT1)</div>
+        <div>© ${new Date().getFullYear()} Thư viện số KS25. Bảo lưu mọi quyền.</div>
         <div class="footer-links">
-          <a href="${root}index.html">Cổng Độc giả</a>
-          <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
-          <a href="${root}pages/auth.html">Tài khoản & Thẻ</a>
-          <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>
+          <a href="javascript:void(0)">Trung tâm trợ giúp</a>
+          <a href="javascript:void(0)">Quy định mượn trả</a>
+          <a href="javascript:void(0)">Hỗ trợ sinh viên</a>
         </div>
       </div>
     `;

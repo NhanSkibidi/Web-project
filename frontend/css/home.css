@@ -1004,7 +1004,7 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
   border-top: 1px solid var(--color-border);
   background: var(--color-bg);
   padding: 24px 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-muted);
 }
 .footer-inner {
@@ -1016,10 +1016,18 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 }
 .footer-links {
   display: flex;
-  gap: 20px;
+  gap: 28px;
 }
-.footer-links a { color: var(--color-muted); font-size: 12.5px; }
-.footer-links a:hover { color: var(--color-primary); }
+.footer-links a {
+  color: var(--color-muted);
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.footer-links a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
 
 /* ==========================================================
    RESPONSIVE DESIGN (MEDIA QUERIES)

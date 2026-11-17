@@ -245,7 +245,7 @@ function renderReaderLayout() {
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="javascript:void(0)" class="brand">
+        <a href="home.html" class="brand">
           <div class="brand-icon">KS</div>
           <div class="brand-text">
             <span class="brand-title">KS25 Library</span>

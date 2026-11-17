@@ -9,8 +9,32 @@
   <link rel="stylesheet" href="../css/search.css?v=9.0">
 </head>
 <body data-root="../">
-  <!-- 1. HEADER (Dùng chung qua layout.js - menu chữ đen, hover chữ trắng ô xanh di chuyển lên, nút Đăng nhập) -->
-  <header id="app-header"></header>
+  <!-- 1. HEADER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER) -->
+  <header id="app-header">
+    <div class="container header-inner">
+      <a href="home.html" class="brand">
+        <div class="brand-icon">KS</div>
+        <div class="brand-text">
+          <span class="brand-title">KS25 Library</span>
+          <span class="brand-subtitle">Hệ thống thư viện số</span>
+        </div>
+      </a>
+      <nav class="nav" id="main-nav">
+        <a href="home.html" class="nav-item" onclick="handleNavClick(event, this)">Trang chủ</a>
+        <a href="search.html" class="nav-item active" onclick="handleNavClick(event, this)">Tra cứu sách</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="handleNavClick(event, this)">Phiếu mượn của tôi</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="handleNavClick(event, this)">Quản trị thư viện</a>
+      </nav>
+      <div class="header-user-area">
+        <button type="button" class="btn-login" id="btn-login" onclick="handleLoginClick(event)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Đăng nhập</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
   <!-- 2. PHẦN HERO & THANH TÌM KIẾM TRUNG TÂM -->
   <section class="search-hero">

@@ -24,5 +24,6 @@ class CopyStatusLogResponse(BaseModel):
     old_status: str | None
     new_status: str
     changed_at: datetime
+    reason: str | None
 
     model_config = ConfigDict(from_attributes=True)

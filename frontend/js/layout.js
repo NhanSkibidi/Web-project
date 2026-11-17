@@ -98,7 +98,6 @@ const ROLE_LABELS = {
 
 function getRootPrefix() {
   return document.body.dataset.root || "./";
->>>>>>> 66cbcdad244e9f862934c895922ed3b31d9cb4a3
 }
 
 function getSafeText(val) {
@@ -319,8 +318,8 @@ function renderStaffLayout() {
         const badgeHtml = item.badge
           ? `<span class="sidebar-badge">${getSafeText(item.badge)}</span>`
           : isRestricted
-          ? `<span class="sidebar-badge">🔒</span>`
-          : "";
+            ? `<span class="sidebar-badge">🔒</span>`
+            : "";
 
         return `
           <a href="${root}${item.href}" class="sidebar-link ${isActive ? "active" : ""}">
@@ -401,14 +400,13 @@ function renderStaffLayout() {
             <span>🔍</span>
             <input id="topbar-copy-code-input" type="text" placeholder="Tra nhanh copy_code (VD: BC-...)" autocomplete="off">
           </form>
-          ${
-            user
-              ? `<span class="user-chip">
+          ${user
+      ? `<span class="user-chip">
                   <span>${getSafeText(user.full_name || user.email)}</span>
                   <span class="user-chip-role">${getSafeText(user.role)}</span>
                 </span>`
-              : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
-          }
+      : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
+    }
         </div>
       </header>
 

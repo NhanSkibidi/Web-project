@@ -98,7 +98,6 @@ const ROLE_LABELS = {
 
 function getRootPrefix() {
   return document.body.dataset.root || "./";
->>>>>>> 66cbcdad244e9f862934c895922ed3b31d9cb4a3
 }
 
 function getSafeText(val) {

@@ -406,17 +406,15 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 
 .category-grid.expanded .category-card-extra {
   display: flex !important;
-  animation: fadeInCategory 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInCategory 0.25s ease-out;
 }
 
 @keyframes fadeInCategory {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -459,18 +457,20 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
   text-align: center;
   text-decoration: none;
   color: var(--color-text);
-  transition: all 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 2px 6px rgba(27, 67, 50, 0.04);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  will-change: transform;
 }
-.category-card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-5px);
-  box-shadow: 0 10px 22px rgba(27, 67, 50, 0.1);
+.category-card:hover,
+.category-card-extra:hover {
+  border-color: var(--color-primary) !important;
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 24px rgba(27, 67, 50, 0.12) !important;
 }
 .category-icon {
   width: 60px;
@@ -562,7 +562,7 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 .books-pagination-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 10px;
   margin-bottom: 56px;
   padding-top: 24px;
@@ -627,24 +627,7 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 }
 
 .btn-toggle-view-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-primary);
-  background: transparent;
-  color: var(--color-primary);
-  font-size: 14.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.btn-toggle-view-mode:hover {
-  background: var(--color-primary);
-  color: #FFFFFF;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.16);
+  display: none !important;
 }
 
 .books-grid {

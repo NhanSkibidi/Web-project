@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookCopyCreate(BaseModel):

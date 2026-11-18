@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Tiền phạt &amp; Thu phạt | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+
+  <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+
+  <!-- Stylesheet riêng của trang, tách biệt hoàn toàn theo yêu cầu 3 file -->
+  <link rel="stylesheet" href="../css/fines.css">
+</head>
+
+<body data-root="../" class="fines-body">
+
+  <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
+  <header class="librarian-topbar">
+    <div class="topbar-left">
+      <a href="../index.html" class="brand-badge">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="../index.html" class="topbar-nav-link">Tra cứu sách</a>
+        <a href="books.html" class="topbar-nav-link">Quản lý Đầu sách</a>
+        <a href="returns.html" class="topbar-nav-link">Trả sách tại quầy</a>
+        <a href="fines.html" class="topbar-nav-link active">Xử lý tiền phạt</a>
+      </nav>
+    </div>
+
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" id="topbar-quick-search" placeholder="Tra cứu tên độc giả, mã thẻ, sách...">
+      </div>
+      <button type="button" class="topbar-icon-btn" id="btn-toggle-notif" title="Thông báo hệ thống">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="badge-dot" id="notif-dot"></span>
+      </button>
+      <div class="topbar-divider"></div>
+      <div class="librarian-profile">
+        <div class="librarian-avatar">Đ</div>
+        <div class="librarian-info">
+          <span class="librarian-name" id="user-display-name">Trịnh Huy Đại</span>
+          <span class="librarian-role" id="user-display-role">Thủ thư quản trị (B25DTCN151)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG & NẢY LÊN) -->
+  <aside id="app-sidebar" class="sidebar-rail">
+    <div class="sidebar-rail-header">
+      <span>Phân hệ Thủ thư</span>
+      <span class="version-pill">v2.0</span>
+    </div>
+    <nav class="sidebar-rail-nav">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+        <span class="material-symbols-outlined">space_dashboard</span>
+        <span class="rail-label">Tổng quan &amp; Thống kê</span>
+      </a>
+      <a href="books.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
+      </a>
+      <a href="loan_basket.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="rail-label">Quản lý Phiếu mượn</span>
+      </a>
+      <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="fines.html" class="sidebar-rail-link active" title="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+      </a>
+    </nav>
+    <div class="sidebar-rail-footer">
+      <div style="display: flex; align-items: center;">
+        <span class="status-dot-pulse"></span>
+        <div class="sidebar-status-details">
+          <strong>Máy chủ Fines</strong>
+          <small>Hoạt động</small>
+        </div>
+      </div>
+      <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
+    </div>
+  </aside>
+
+  <!-- 3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH -->
+  <div class="fines-workspace-wrapper">
+    <main class="fines-main-container">
+
+      <!-- Tiêu đề trang & Thanh chuyển chế độ (Quầy Thủ thư vs Độc giả) -->
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb-nav">
+            <span>Phân hệ Quản trị</span>
+            <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
+            <span class="highlight">Quản lý tiền phạt</span>
+          </div>
+          <h1 class="page-title font-headline">Thu tiền phạt &amp; Miễn giảm vi phạm</h1>
+          <p class="page-subtitle">
+            Hệ thống quản lý các khoản phạt quá hạn, hỏng sách và mất sách. Hỗ trợ thu tiền trực tiếp, in biên lai thanh toán và Admin miễn giảm kèm lý do kiểm toán.
+          </p>
+        </div>
+
+        <!-- Tab chuyển đổi Quầy Thủ thư / Cổng Độc giả -->
+        <div class="header-actions">
+          <div class="view-mode-tabs" role="tablist">
+            <button type="button" class="tab-btn active" id="tab-staff-view" data-target="staff-view">
+              <span class="material-symbols-outlined">point_of_sale</span>
+              <span>Quầy Thủ thư</span>
+            </button>
+            <button type="button" class="tab-btn" id="tab-reader-view" data-target="reader-view">
+              <span class="material-symbols-outlined">person_search</span>
+              <span>Độc giả tra cứu</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: DÀNH CHO THỦ THƯ & ADMIN -->
+      <div id="staff-view" class="view-panel active">
+
+        <!-- 4 THẺ THỐNG KÊ KPI NỔI BẬT -->
+        <div class="kpi-grid">
+          <div class="kpi-card danger">
+            <div class="kpi-icon-wrap">
+              <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Tổng tiền chưa thu</span>
+              <div class="kpi-value font-mono" id="stat-unpaid-amount">0 ₫</div>
+              <div class="kpi-meta"><span id="stat-unpaid-count">0</span> khoản phạt đang chờ nộp</div>
+            </div>
+          </div>
+
+          <div class="kpi-card success">
+            <div class="kpi-icon-wrap">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Đã thu hôm nay</span>
+              <div class="kpi-value font-mono" id="stat-paid-today">0 ₫</div>
+              <div class="kpi-meta"><span id="stat-paid-count">0</span> lượt đã nộp thành công</div>
+            </div>
+          </div>
+
+          <div class="kpi-card purple">
+            <div class="kpi-icon-wrap">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Lượt miễn phạt</span>
+              <div class="kpi-value font-mono" id="stat-waived-count">0</div>
+              <div class="kpi-meta">Có quyết định miễn giảm từ Admin</div>
+            </div>
+          </div>
+
+          <div class="kpi-card info">
+            <div class="kpi-icon-wrap">
+              <span class="material-symbols-outlined">format_list_numbered</span>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">Tổng hồ sơ phạt</span>
+              <div class="kpi-value font-mono" id="stat-total-count">0</div>
+              <div class="kpi-meta">Hồ sơ vi phạm toàn hệ thống</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BỘ LỌC VÀ THANH CÔNG CỤ TÌM KIẾM -->
+        <div class="filter-toolbar card-panel">
+          <div class="filter-inputs">
+            <!-- Ô tìm kiếm từ khóa -->
+            <div class="search-input-group">
+              <span class="material-symbols-outlined">search</span>
+              <input type="text" id="filter-keyword" placeholder="Tìm theo tên độc giả, mã thẻ, mã sách, ấn bản...">
+              <button type="button" class="clear-btn" id="btn-clear-search" style="display: none;">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <!-- Bộ lọc trạng thái -->
+            <div class="select-group">
+              <label for="filter-status">Trạng thái:</label>
+              <select id="filter-status">
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="UNPAID" selected>Chưa thanh toán (UNPAID)</option>
+                <option value="PAID">Đã thanh toán (PAID)</option>
+                <option value="WAIVED">Đã miễn phạt (WAIVED)</option>
+              </select>
+            </div>
+
+            <!-- Bộ lọc loại phạt -->
+            <div class="select-group">
+              <label for="filter-type">Loại vi phạm:</label>
+              <select id="filter-type">
+                <option value="ALL">Tất cả loại vi phạm</option>
+                <option value="QUÁ HẠN">Quá hạn (2.000đ/ngày)</option>
+                <option value="HỎNG">Hỏng sách (50% giá bìa)</option>
+                <option value="MẤT">Mất sách (100% giá bìa)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Các nút hành động phụ -->
+          <div class="filter-actions">
+            <button type="button" class="btn btn-secondary" id="btn-refresh" title="Tải lại danh sách">
+              <span class="material-symbols-outlined">refresh</span>
+              <span>Làm mới</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Xuất báo cáo Excel / CSV">
+              <span class="material-symbols-outlined">download</span>
+              <span>Xuất CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BẢNG DANH SÁCH CÁC KHOẢN PHẠT -->
+        <div class="card-panel table-wrapper">
+          <div class="table-header-info">
+            <div class="table-title">
+              <h3>Danh sách tiền phạt vi phạm</h3>
+              <span class="badge-count" id="table-record-count">0 kết quả</span>
+            </div>
+            <div class="table-legend">
+              <span class="legend-item"><span class="dot unpaid"></span> Chưa thu</span>
+              <span class="legend-item"><span class="dot paid"></span> Đã nộp</span>
+              <span class="legend-item"><span class="dot waived"></span> Miễn phạt</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="fines-table">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Mã phạt</th>
+                  <th>Độc giả &amp; Mã thẻ</th>
+                  <th>Ấn bản &amp; Tựa sách</th>
+                  <th style="width: 140px;">Loại vi phạm</th>
+                  <th style="width: 130px;" class="text-right">Số tiền</th>
+                  <th style="width: 150px;">Thời gian</th>
+                  <th style="width: 140px;">Trạng thái</th>
+                  <th style="width: 160px;" class="text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="fines-table-body">
+                <tr>
+                  <td colspan="8" class="empty-state">
+                    <div class="loading-spinner"></div>
+                    <p>Đang tải dữ liệu các khoản phạt...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VIEW 2: DÀNH CHO ĐỘC GIẢ XEM KHOẢN PHẠT CỦA MÌNH -->
+      <div id="reader-view" class="view-panel" style="display: none;">
+        <div class="reader-search-card card-panel">
+          <div class="reader-search-header">
+            <div class="badge-pill">Cổng Độc Giả</div>
+            <h2>Tra cứu khoản phạt cá nhân</h2>
+            <p>Nhập mã thẻ thư viện hoặc mã định danh bạn đọc để kiểm tra các khoản phí phạt, lịch sử thanh toán và biên lai điện tử.</p>
+          </div>
+
+          <div class="reader-input-box">
+            <div class="input-with-icon">
+              <span class="material-symbols-outlined">badge</span>
+              <input type="text" id="reader-card-input" placeholder="Nhập mã thẻ thư viện (VD: LC-2026-0042) hoặc User ID...">
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-reader-check">
+              <span class="material-symbols-outlined">search</span>
+              <span>Kiểm tra ngay</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner cảnh báo độc giả nếu có nợ phạt -->
+        <div id="reader-alert-box" class="reader-alert" style="display: none;">
+          <div class="alert-icon">
+            <span class="material-symbols-outlined">warning</span>
+          </div>
+          <div class="alert-content">
+            <h4 id="reader-alert-title">Tài khoản có khoản phạt chưa thanh toán</h4>
+            <p id="reader-alert-desc">
+              Theo quy định mượn trả KS25, độc giả có khoản phạt chưa thanh toán sẽ tạm thời bị khóa quyền mượn sách mới. Vui lòng thanh toán tại quầy thủ thư hoặc chuyển khoản để tiếp tục sử dụng dịch vụ.
+            </p>
+          </div>
+          <div class="alert-amount font-mono" id="reader-alert-amount">
+            0 ₫
+          </div>
+        </div>
+
+        <!-- Bảng danh sách các khoản phạt của độc giả -->
+        <div class="card-panel table-wrapper" id="reader-result-wrapper" style="display: none;">
+          <div class="table-header-info">
+            <div class="table-title">
+              <h3 id="reader-result-name">Khoản phạt của độc giả</h3>
+              <span class="badge-count" id="reader-record-count">0 khoản</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Mã</th>
+                  <th>Ấn bản &amp; Tựa sách</th>
+                  <th>Loại vi phạm</th>
+                  <th class="text-right">Số tiền</th>
+                  <th>Ngày phát sinh</th>
+                  <th>Trạng thái</th>
+                  <th class="text-center">Biên lai</th>
+                </tr>
+              </thead>
+              <tbody id="reader-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 4. CÁC MODAL NGHIỆP VỤ: THU TIỀN, MIỄN PHẠT, IN BIÊN LAI -->
+  <!-- ========================================================================= -->
+
+  <!-- MODAL 1: THỦ THƯ THU TIỀN PHẠT -->
+  <div class="modal-backdrop" id="modal-pay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon-badge pay">
+            <span class="material-symbols-outlined">payments</span>
+          </span>
+          <div>
+            <h3 class="modal-title font-headline">Thu tiền phạt vi phạm</h3>
+            <span class="modal-subtitle">Xác nhận thu tiền phạt và cập nhật trạng thái phiếu nộp</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" data-close="modal-pay">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="pay-fine-id">
+
+        <!-- Khung tóm tắt khoản phạt -->
+        <div class="summary-box">
+          <div class="summary-row">
+            <span class="label">Mã khoản phạt:</span>
+            <strong class="font-mono" id="pay-summary-code">#FN-0000</strong>
+          </div>
+          <div class="summary-row">
+            <span class="label">Độc giả nộp phạt:</span>
+            <span id="pay-summary-reader">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Mã thẻ thư viện:</span>
+            <span class="font-mono" id="pay-summary-card">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Ấn bản vi phạm:</span>
+            <span id="pay-summary-book">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Loại vi phạm:</span>
+            <span class="fine-badge" id="pay-summary-type">Quá hạn</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total">
+            <span class="label">Số tiền cần thu:</span>
+            <span class="amount-highlight font-mono" id="pay-summary-amount">0 ₫</span>
+          </div>
+        </div>
+
+        <!-- Chọn phương thức thanh toán -->
+        <div class="form-group" style="margin-top: 18px;">
+          <label class="form-label">Phương thức thanh toán <span class="required">*</span></label>
+          <div class="payment-method-options">
+            <label class="method-option active">
+              <input type="radio" name="pay-method" value="TIỀN MẶT" checked>
+              <span class="material-symbols-outlined">point_of_sale</span>
+              <span>Tiền mặt tại quầy</span>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="pay-method" value="CHUYỂN KHOẢN">
+              <span class="material-symbols-outlined">qr_code_scanner</span>
+              <span>Chuyển khoản QR</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Khung QR VietQR (hiện khi chọn chuyển khoản) -->
+        <div id="qr-transfer-box" class="qr-box" style="display: none;">
+          <div class="qr-placeholder">
+            <div class="mock-qr">
+              <span class="material-symbols-outlined" style="font-size: 64px; color: var(--color-brand);">qr_code_2</span>
+            </div>
+            <div class="qr-info">
+              <p><strong>Ngân hàng:</strong> MB Bank (Quân Đội)</p>
+              <p><strong>Số tài khoản:</strong> 9999-KS25-UNILIB</p>
+              <p><strong>Chủ tài khoản:</strong> THU VIEN SO KS25</p>
+              <p><strong>Nội dung:</strong> <span class="font-mono" id="qr-transfer-content">NOP PHAT FN0000</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ghi chú thu tiền -->
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label" for="pay-note">Ghi chú giao dịch (Tùy chọn)</label>
+          <input type="text" id="pay-note" class="form-input" placeholder="Ví dụ: Độc giả nộp tại quầy ca sáng...">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modal-pay">Hủy bỏ</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-pay">
+          <span class="material-symbols-outlined">check</span>
+          <span>Xác nhận thu tiền &amp; In biên lai</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADMIN MIỄN GIẢM TIỀN PHẠT KÈM LÝ DO -->
+  <div class="modal-backdrop" id="modal-waive" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon-badge waive">
+            <span class="material-symbols-outlined">verified_user</span>
+          </span>
+          <div>
+            <h3 class="modal-title font-headline">Admin Miễn giảm tiền phạt</h3>
+            <span class="modal-subtitle">Xóa bỏ nghĩa vụ nộp phạt kèm lý do lưu hồ sơ kiểm toán</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" data-close="modal-waive">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="waive-fine-id">
+
+        <div class="callout warning">
+          <span class="material-symbols-outlined">info</span>
+          <div>
+            <strong>Thẩm quyền Quản trị viên:</strong>
+            Quyết định miễn phạt sẽ được ghi nhận vĩnh viễn vào hệ thống với tên người phê duyệt và thời gian thực hiện.
+          </div>
+        </div>
+
+        <div class="summary-box" style="margin-top: 14px;">
+          <div class="summary-row">
+            <span class="label">Mã khoản phạt:</span>
+            <strong class="font-mono" id="waive-summary-code">#FN-0000</strong>
+          </div>
+          <div class="summary-row">
+            <span class="label">Độc giả:</span>
+            <span id="waive-summary-reader">-</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Số tiền miễn:</span>
+            <span class="amount-highlight purple font-mono" id="waive-summary-amount">0 ₫</span>
+          </div>
+        </div>
+
+        <!-- Ô nhập lý do bắt buộc -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="form-label" for="waive-reason-input">
+            Lý do miễn giảm phạt <span class="required">* (Bắt buộc tối thiểu 3 ký tự)</span>
+          </label>
+          <textarea id="waive-reason-input" class="form-textarea" rows="3"
+            placeholder="Nhập lý do cụ thể (Ví dụ: Độc giả có giấy xác nhận điều trị nội trú tại bệnh viện; Sách trễ do bưu điện giao chậm; Chính sách tân sinh viên...)."></textarea>
+          
+          <!-- Các gợi ý lý do nhanh -->
+          <div class="quick-reasons">
+            <span class="quick-reason-label">Gợi ý nhanh:</span>
+            <button type="button" class="chip-btn" data-reason="Độc giả có giấy xác nhận điều trị y tế tại bệnh viện">Có xác nhận y tế</button>
+            <button type="button" class="chip-btn" data-reason="Chính sách hỗ trợ miễn giảm tân sinh viên K25">Hỗ trợ sinh viên</button>
+            <button type="button" class="chip-btn" data-reason="Chậm trễ do sự cố bất khả kháng từ đơn vị vận chuyển">Sự cố vận chuyển</button>
+            <button type="button" class="chip-btn" data-reason="Lỗi ghi nhận thời gian từ hệ thống kiểm kê">Sai sót kiểm kê</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modal-waive">Hủy bỏ</button>
+        <button type="button" class="btn btn-purple" id="btn-confirm-waive">
+          <span class="material-symbols-outlined">verified</span>
+          <span>Xác nhận miễn phạt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: IN BIÊN LAI THU TIỀN PHẠT (CHẾ ĐỘ IN ẤN CHUẨN A5/A4) -->
+  <div class="modal-backdrop" id="modal-receipt" style="display: none;">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header no-print">
+        <div class="modal-title-wrap">
+          <span class="modal-icon-badge receipt">
+            <span class="material-symbols-outlined">receipt</span>
+          </span>
+          <div>
+            <h3 class="modal-title font-headline">Biên lai thu tiền phạt thư viện</h3>
+            <span class="modal-subtitle">Bản in chuẩn hóa lưu trữ và bàn giao độc giả</span>
+          </div>
+        </div>
+        <div class="modal-header-actions">
+          <button type="button" class="btn btn-primary" id="btn-print-receipt">
+            <span class="material-symbols-outlined">print</span>
+            <span>In biên lai (Ctrl + P)</span>
+          </button>
+          <button type="button" class="modal-close-btn" data-close="modal-receipt">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-body print-area">
+        <!-- VĂN BẢN BIÊN LAI CHUẨN IN ẤN -->
+        <div class="receipt-paper" id="receipt-paper-content">
+          <div class="receipt-header">
+            <div class="receipt-org">
+              <h4>THƯ VIỆN ĐẠI HỌC QUỐC TẾ KS25</h4>
+              <p>Tòa nhà Trung tâm Tri Thức, Khu Đô thị Đại Học</p>
+              <p>Hotline: 1900-2525 | Email: library@unilib.edu.vn</p>
+            </div>
+            <div class="receipt-meta font-mono">
+              <div class="receipt-no" id="receipt-doc-no">REC-000000</div>
+              <div class="receipt-date" id="receipt-doc-date">Ngày: 18/11/2026</div>
+            </div>
+          </div>
+
+          <div class="receipt-title-block">
+            <h2 class="receipt-title">BIÊN LAI THU PHÍ PHẠT VI PHẠM</h2>
+            <div class="receipt-subtitle">(Liên 1: Lưu tại thủ thư / Liên 2: Giao độc giả)</div>
+          </div>
+
+          <!-- Thông tin độc giả -->
+          <div class="receipt-section">
+            <table class="receipt-info-grid">
+              <tr>
+                <td style="width: 130px;">Họ tên độc giả:</td>
+                <td><strong id="receipt-reader-name">Nguyễn Văn An</strong></td>
+                <td style="width: 120px;">Mã thẻ thư viện:</td>
+                <td><strong class="font-mono" id="receipt-card-code">LC-2026-0042</strong></td>
+              </tr>
+              <tr>
+                <td>Số điện thoại:</td>
+                <td id="receipt-reader-phone">0901234567</td>
+                <td>Email liên hệ:</td>
+                <td id="receipt-reader-email">reader@example.com</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Chi tiết bảng vi phạm -->
+          <div class="receipt-section">
+            <table class="receipt-items-table">
+              <thead>
+                <tr>
+                  <th style="width: 45px;" class="text-center">STT</th>
+                  <th>Nội dung thu / Ấn phẩm vi phạm</th>
+                  <th style="width: 120px;">Mã ấn bản</th>
+                  <th style="width: 120px;">Loại vi phạm</th>
+                  <th style="width: 140px;" class="text-right">Thành tiền (VNĐ)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-center">1</td>
+                  <td>
+                    <strong id="receipt-book-title">Lập trình Web Hiện đại với Python &amp; FastAPI</strong>
+                    <div style="font-size: 11px; color: #666;" id="receipt-book-isbn">ISBN: 978-604-0-12345-6</div>
+                  </td>
+                  <td class="font-mono" id="receipt-copy-code">CP-MS-001</td>
+                  <td><span id="receipt-fine-type">QUÁ HẠN</span></td>
+                  <td class="text-right font-mono"><strong id="receipt-item-amount">15.000 ₫</strong></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-right"><strong>TỔNG TIỀN ĐÃ THU:</strong></td>
+                  <td class="text-right font-mono"><strong class="total-price" id="receipt-total-amount">15.000 ₫</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Số tiền bằng chữ -->
+          <div class="receipt-section receipt-words-box">
+            <p><strong>Số tiền viết bằng chữ:</strong> <em id="receipt-amount-words">Mười lăm nghìn đồng chẵn</em></p>
+            <p><strong>Phương thức thanh toán:</strong> <span id="receipt-payment-method">Tiền mặt tại quầy</span> | <strong>Trạng thái:</strong> <span id="receipt-doc-status" class="receipt-status-pill">ĐÃ THANH TOÁN</span></p>
+            <p id="receipt-note-row" style="display: none;"><strong>Ghi chú:</strong> <span id="receipt-note-text"></span></p>
+          </div>
+
+          <!-- Phần ký tên hai bên -->
+          <div class="receipt-signatures">
+            <div class="sig-block">
+              <span class="sig-title">Người nộp tiền</span>
+              <span class="sig-sub">(Ký và ghi rõ họ tên)</span>
+              <div class="sig-space"></div>
+              <span class="sig-name" id="receipt-sig-reader">Nguyễn Văn An</span>
+            </div>
+            <div class="sig-block">
+              <span class="sig-title">Thủ thư tiếp nhận</span>
+              <span class="sig-sub">(Ký, đóng dấu quầy thu)</span>
+              <div class="sig-space">
+                <div class="mock-stamp">
+                  <span>THƯ VIỆN KS25</span>
+                  <small>ĐÃ THU TIỀN</small>
+                </div>
+              </div>
+              <span class="sig-name" id="receipt-sig-collector">Trịnh Huy Đại</span>
+            </div>
+          </div>
+
+          <div class="receipt-footer">
+            <span>Cảm ơn bạn đọc đã tuân thủ nội quy Thư viện số KS25. Biên lai này có giá trị làm chứng từ xác nhận giải phóng lượt mượn.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" data-close="modal-receipt">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- SCRIPT RIÊNG CỦA TRANG: TÁCH 3 FILE CHUẨN HTML + CSS + JS -->
+  <script src="../js/pages/fines.js"></script>
+</body>
+
+</html>

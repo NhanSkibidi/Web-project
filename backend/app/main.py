@@ -51,6 +51,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+from fastapi.staticfiles import StaticFiles
+
 # Mọi API đều bắt đầu bằng /api. Thêm router mới thì include ở đây.
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
@@ -58,10 +61,23 @@ app.include_router(auth.router, prefix="/api")
 # Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
 app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
+app.include_router(loans.readers_router, prefix="/api")
+app.include_router(loans.copies_router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
+
+# Phục vụ giao diện tĩnh Frontend qua FastAPI
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+if os.path.isdir(frontend_dir):
+    app.mount("/frontend", StaticFiles(directory=frontend_dir), name="frontend")
+    # Cho phép mở thẳng /pages/... hoặc /css/... qua root static
+    app.mount("/pages", StaticFiles(directory=os.path.join(frontend_dir, "pages")), name="pages")
+    app.mount("/css", StaticFiles(directory=os.path.join(frontend_dir, "css")), name="css")
+    app.mount("/js", StaticFiles(directory=os.path.join(frontend_dir, "js")), name="js")
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dir, "assets")), name="assets")
+
 
 
 @app.get("/")

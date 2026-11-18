@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -15,9 +15,11 @@ from app.models.fine import Fine
 from app.crud.copy_status_log import change_copy_status
 
 MAX_BORROW_BOOKS = 5       
-BORROW_DAYS = 14           
+MAX_COUNTER_BORROW_BOOKS = 3   # Giới hạn tối đa khi mượn tại quầy
+BORROW_DAYS = 14               # Thời hạn mượn 14 ngày
 MAX_RENEWALS = 1           
 RENEWAL_DAYS = 7          
+MAX_UNPAID_FINE = 50000        # Ngưỡng nợ phạt cho phép (VND)
 
 check_library_card = check_card_can_borrow
 
@@ -502,226 +504,418 @@ def handover_loan(
         db.rollback()
         raise
 
-def approve_loan(
-    db: Session,
-    loan_id: int,
-    librarian_id: int,
-) -> Loan:
-    try:
-        librarian = db.query(User).filter(User.id == librarian_id).first()
-        if not librarian:
-            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 6) Nghiệp vụ mượn sách trực tiếp tại quầy (Counter Borrowing)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
-            raise HTTPException(
-                status_code=403,
-                detail="Chỉ thủ thư hoặc admin mới được duyệt phiếu",
-            )
+def get_reader_by_card(db: Session, card_code: str) -> dict:
+    """Tra cứu thông tin độc giả theo mã thẻ thư viện (chuẩn hóa trim, in hoa)."""
+    code = card_code.strip().upper() if card_code else ""
+    if not code:
+        raise HTTPException(status_code=400, detail="Mã thẻ không được để trống")
 
-        loan = (
-            db.query(Loan)
-            .filter(Loan.id == loan_id)
-            .with_for_update()
-            .first()
+    card = db.query(LibraryCard).filter(LibraryCard.card_code == code).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Không tìm thấy độc giả")
+
+    user = card.reader
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản độc giả gắn với thẻ này")
+
+    borrowing_count = (
+        db.query(func.count(LoanItem.id))
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .filter(
+            Loan.user_id == user.id,
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
         )
+        .scalar()
+    ) or 0
 
-        if not loan:
-            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+    unpaid_fine = (
+        db.query(func.sum(Fine.amount))
+        .filter(Fine.user_id == user.id, Fine.status == "UNPAID")
+        .scalar()
+    ) or 0.0
 
-        if loan.status != LoanStatus.PENDING:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Chỉ duyệt được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
-            )
+    credit_score = 100
+    if unpaid_fine > 0:
+        credit_score = max(50, credit_score - 20)
 
-        loan.status = LoanStatus.APPROVED
-        loan.processed_by = librarian_id
+    student_id = getattr(user, "phone", None) or f"2301{user.id:04d}"
 
-        db.commit()
-        db.refresh(loan)
-        return loan
+    return {
+        "reader_id": card.id,
+        "user_id": user.id,
+        "card_code": card.card_code,
+        "full_name": user.full_name,
+        "student_id": student_id,
+        "faculty": "Khoa CNTT (K1)",
+        "card_status": card.status.value if hasattr(card.status, "value") else str(card.status),
+        "expiry_date": card.expiry_date.strftime("%Y-%m-%d") if card.expiry_date else None,
+        "borrowing_count": borrowing_count,
+        "max_borrow_books": MAX_COUNTER_BORROW_BOOKS,
+        "credit_score": credit_score,
+        "unpaid_fine": float(unpaid_fine),
+    }
 
-    except HTTPException:
-        db.rollback()
-        raise
-    except Exception:
-        db.rollback()
-        raise
 
-def reject_loan(
+def get_copy_by_barcode(db: Session, barcode: str) -> dict:
+    """Tra cứu bản sao sách theo mã vạch / copy_code."""
+    bc = barcode.strip() if barcode else ""
+    if not bc:
+        raise HTTPException(status_code=400, detail="Mã vạch không được để trống")
+
+    copy = db.query(BookCopy).filter(BookCopy.copy_code == bc).first()
+    if not copy:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy bản sao sách có mã vạch: {bc}")
+
+    book = copy.book
+    author_name = "Nhiều tác giả"
+    if book and getattr(book, "book_authors", None) and len(book.book_authors) > 0:
+        first_author = book.book_authors[0]
+        if getattr(first_author, "author", None):
+            author_name = first_author.author.name
+
+    return {
+        "id": copy.id,
+        "barcode": copy.copy_code,
+        "copy_code": copy.copy_code,
+        "book_isbn": copy.book_isbn,
+        "title": book.title if book else "Không xác định",
+        "author": author_name,
+        "location": copy.shelf_location,
+        "shelf_location": copy.shelf_location,
+        "status": copy.status,
+    }
+
+
+def validate_counter_borrow(
     db: Session,
-    loan_id: int,
-    librarian_id: int,
-    reject_reason: str,
-) -> Loan:
-    try:
-        librarian = db.query(User).filter(User.id == librarian_id).first()
-        if not librarian:
-            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
+    card_code: str,
+    barcodes: list[str],
+) -> dict:
+    """
+    Kiểm tra 7 điều kiện mượn sách tại quầy (Nguồn duy nhất - Single Source of Truth).
+    Mỗi điều kiện trả về: { code, label, passed, mandatory, message }.
+    can_borrow = True khi toàn bộ điều kiện mandatory đều passed.
+    """
+    code = card_code.strip().upper() if card_code else ""
+    clean_barcodes = [b.strip() for b in barcodes if b and b.strip()]
+    unique_barcodes = list(dict.fromkeys(clean_barcodes))
 
-        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
-            raise HTTPException(
-                status_code=403,
-                detail="Chỉ thủ thư hoặc admin mới được từ chối phiếu",
+    card = db.query(LibraryCard).filter(LibraryCard.card_code == code).first() if code else None
+    user = card.reader if card else None
+
+    # Lấy các bản sao trong kho
+    found_copies = (
+        db.query(BookCopy).filter(BookCopy.copy_code.in_(unique_barcodes)).all()
+        if unique_barcodes
+        else []
+    )
+    found_map = {cp.copy_code: cp for cp in found_copies}
+
+    # Đếm số sách đang mượn
+    borrowing_count = 0
+    if user:
+        borrowing_count = (
+            db.query(func.count(LoanItem.id))
+            .join(Loan, LoanItem.loan_id == Loan.id)
+            .filter(
+                Loan.user_id == user.id,
+                Loan.status == LoanStatus.BORROWED,
+                LoanItem.return_date.is_(None),
             )
+            .scalar()
+        ) or 0
 
-        loan = (
-            db.query(Loan)
-            .filter(Loan.id == loan_id)
-            .with_for_update()
-            .first()
-        )
-
-        if not loan:
-            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
-
-        if loan.status != LoanStatus.PENDING:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Chỉ từ chối được phiếu ở trạng thái PENDING (hiện tại: {loan.status.value})",
-            )
-
-        loan_items = (
+    # Kiểm tra nợ phạt và sách quá hạn
+    has_overdue = False
+    unpaid_fines = 0.0
+    if user:
+        overdue_item = (
             db.query(LoanItem)
-            .filter(LoanItem.loan_id == loan.id)
+            .join(Loan, LoanItem.loan_id == Loan.id)
+            .filter(
+                Loan.user_id == user.id,
+                Loan.status == LoanStatus.BORROWED,
+                LoanItem.return_date.is_(None),
+                LoanItem.due_date < datetime.now(),
+            )
+            .first()
+        )
+        has_overdue = overdue_item is not None
+        unpaid_fines = float(
+            db.query(func.sum(Fine.amount))
+            .filter(Fine.user_id == user.id, Fine.status == "UNPAID")
+            .scalar()
+            or 0.0
+        )
+
+    conditions = []
+
+    # 1. CARD_VALID: thẻ tồn tại, ACTIVE, chưa quá hạn thẻ
+    card_exists = card is not None
+    card_active = card.status == CardStatus.ACTIVE if card else False
+    card_not_expired = (
+        (card.expiry_date is None or card.expiry_date >= date.today()) if card else False
+    )
+    pass_card = card_exists and card_active and card_not_expired
+    if not card_exists:
+        card_msg = "Mã thẻ thư viện không tồn tại trong hệ thống"
+    elif not card_active:
+        card_msg = f"Thẻ thư viện đang ở trạng thái {card.status.value}"
+    elif not card_not_expired:
+        card_msg = f"Thẻ thư viện đã hết hạn từ ngày {card.expiry_date.strftime('%d/%m/%Y')}"
+    else:
+        card_msg = f"Thẻ hợp lệ (Hạn dùng: {card.expiry_date.strftime('%d/%m/%Y') if card.expiry_date else 'Vô thời hạn'})"
+
+    conditions.append({
+        "code": "CARD_VALID",
+        "label": "Thẻ thư viện hợp lệ và còn hạn",
+        "passed": pass_card,
+        "mandatory": True,
+        "message": card_msg,
+    })
+
+    # 2. READER_ALLOWED: độc giả không bị khóa quyền
+    user_active = user is not None and user.status == UserStatus.ACTIVE
+    pass_reader = card_exists and user_active
+    reader_msg = "Tài khoản độc giả đủ quyền mượn sách" if pass_reader else (
+        "Tài khoản độc giả đã bị khóa quyền mượn" if user else "Chưa xác định độc giả"
+    )
+    conditions.append({
+        "code": "READER_ALLOWED",
+        "label": "Quyền mượn của độc giả",
+        "passed": pass_reader,
+        "mandatory": True,
+        "message": reader_msg,
+    })
+
+    # 3. LIMIT_NOT_EXCEEDED: số sách đang giữ + số sách mới <= giới hạn cho phép
+    total_requested = len(unique_barcodes)
+    total_books = borrowing_count + total_requested
+    limit = card.max_borrow_books if (card and card.max_borrow_books) else MAX_BORROW_BOOKS
+    pass_limit = total_books <= limit
+    limit_msg = (
+        f"Đang giữ {borrowing_count}, thêm {total_requested}, tối đa {limit} cuốn"
+        if pass_limit
+        else f"Vượt giới hạn: đang giữ {borrowing_count}, thêm {total_requested}, vượt mức tối đa {limit} cuốn"
+    )
+    conditions.append({
+        "code": "LIMIT_NOT_EXCEEDED",
+        "label": "Giới hạn số lượng sách mượn",
+        "passed": pass_limit,
+        "mandatory": True,
+        "message": limit_msg,
+    })
+
+    # 4. BOOK_EXISTS: mọi mã vạch tồn tại
+    missing_barcodes = [bc for bc in unique_barcodes if bc not in found_map]
+    pass_exists = len(unique_barcodes) > 0 and len(missing_barcodes) == 0
+    if len(unique_barcodes) == 0:
+        exists_msg = "Chưa quét mã cuốn sách nào"
+    elif len(missing_barcodes) > 0:
+        exists_msg = f"Mã vạch không tồn tại: {', '.join(missing_barcodes)}"
+    else:
+        exists_msg = f"Tất cả {len(unique_barcodes)} mã vạch sách đều tồn tại trong kho"
+
+    conditions.append({
+        "code": "BOOK_EXISTS",
+        "label": "Mã vạch sách tồn tại trong kho",
+        "passed": pass_exists,
+        "mandatory": True,
+        "message": exists_msg,
+    })
+
+    # 5. COPY_AVAILABLE: mọi bản sao đang AVAILABLE
+    unavailable = [
+        f"{cp.copy_code} ({cp.status})"
+        for cp in found_copies
+        if cp.status != "AVAILABLE"
+    ]
+    pass_avail = len(unique_barcodes) > 0 and len(missing_barcodes) == 0 and len(unavailable) == 0
+    if len(unique_barcodes) == 0:
+        avail_msg = "Chưa có sách để kiểm tra tính sẵn sàng"
+    elif len(unavailable) > 0:
+        avail_msg = f"Sách không sẵn sàng mượn: {', '.join(unavailable)}"
+    else:
+        avail_msg = "Tất cả cuốn sách đều sẵn sàng trên giá (AVAILABLE)"
+
+    conditions.append({
+        "code": "COPY_AVAILABLE",
+        "label": "Bản sao sẵn sàng cho mượn",
+        "passed": pass_avail,
+        "mandatory": True,
+        "message": avail_msg,
+    })
+
+    # 6. NO_RESTRICTION: không có sách quá hạn và nợ phạt <= 50.000đ
+    pass_restriction = (not has_overdue) and (unpaid_fines <= MAX_UNPAID_FINE)
+    if has_overdue:
+        restr_msg = "Độc giả đang có sách quá hạn chưa trả, không thể mượn thêm"
+    elif unpaid_fines > MAX_UNPAID_FINE:
+        restr_msg = f"Độc giả đang có nợ phạt {unpaid_fines:,.0f} đ vượt mức cho phép ({MAX_UNPAID_FINE:,.0f} đ)"
+    else:
+        restr_msg = "Không có sách quá hạn và không nợ phạt vi phạm"
+
+    conditions.append({
+        "code": "NO_RESTRICTION",
+        "label": "Không có sách quá hạn hoặc nợ phạt",
+        "passed": pass_restriction,
+        "mandatory": True,
+        "message": restr_msg,
+    })
+
+    # 7. HAS_BOOKS: có ít nhất 1 cuốn
+    pass_has = len(unique_barcodes) >= 1
+    has_msg = (
+        f"Đã chọn {len(unique_barcodes)} cuốn sách để mượn"
+        if pass_has
+        else "Chưa chọn cuốn sách nào (Cần ít nhất 1 cuốn)"
+    )
+    conditions.append({
+        "code": "HAS_BOOKS",
+        "label": "Danh sách sách cần mượn",
+        "passed": pass_has,
+        "mandatory": True,
+        "message": has_msg,
+    })
+
+    can_borrow = all(c["passed"] for c in conditions if c["mandatory"])
+    return {
+        "can_borrow": can_borrow,
+        "conditions": conditions,
+    }
+
+
+def create_counter_loan(
+    db: Session,
+    card_code: str,
+    barcodes: list[str],
+    librarian_id: int | None = None,
+) -> dict:
+    """
+    Tạo phiếu mượn tại quầy trực tiếp trong 1 transaction an toàn (all-or-nothing):
+    1. Kiểm tra lại toàn bộ 7 điều kiện mượn ở server.
+    2. Cập nhật bản sao AVAILABLE -> BORROWED (có điều kiện, chống mượn trùng đồng thời 409).
+    3. Tạo phiếu Loan trạng thái BORROWED ngay lập tức, borrow_type = WALK_IN, hạn trả = +14 ngày.
+    4. Trả về payload đầy đủ để in biên lai mượn sách.
+    """
+    try:
+        val = validate_counter_borrow(db, card_code, barcodes)
+        if not val["can_borrow"]:
+            err_details = [c["message"] for c in val["conditions"] if not c["passed"] and c["mandatory"]]
+            raise HTTPException(
+                status_code=422,
+                detail=f"Điều kiện mượn không hợp lệ: {'; '.join(err_details)}",
+            )
+
+        code = card_code.strip().upper()
+        clean_barcodes = [b.strip() for b in barcodes if b and b.strip()]
+        unique_barcodes = list(dict.fromkeys(clean_barcodes))
+
+        card = db.query(LibraryCard).filter(LibraryCard.card_code == code).first()
+        if not card or not card.reader:
+            raise HTTPException(status_code=404, detail="Không tìm thấy độc giả")
+
+        user = card.reader
+
+        # Khóa và kiểm tra lại trạng thái bản sao (chống mượn trùng đồng thời)
+        copies = (
+            db.query(BookCopy)
+            .filter(BookCopy.copy_code.in_(unique_barcodes))
+            .with_for_update()
             .all()
         )
 
-        for item in loan_items:
-            if item.copy_id:
-                copy = (
-                    db.query(BookCopy)
-                    .filter(BookCopy.id == item.copy_id)
-                    .with_for_update()
-                    .first()
-                )
-                if copy and copy.status == "RESERVED":
-                    copy.status = "AVAILABLE"
-
-        loan.status = LoanStatus.REJECTED
-        loan.processed_by = librarian_id
-        loan.reject_reason = reject_reason
-
-        db.commit()
-        db.refresh(loan)
-        return loan
-
-    except HTTPException:
-        db.rollback()
-        raise
-    except Exception:
-        db.rollback()
-        raise
-
-def handover_loan(
-    db: Session,
-    loan_id: int,
-    librarian_id: int,
-    copies_data: list[dict],
-) -> Loan:
-    try:
-        librarian = db.query(User).filter(User.id == librarian_id).first()
-        if not librarian:
-            raise HTTPException(status_code=404, detail="Không tìm thấy thủ thư")
-
-        if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
-            raise HTTPException(
-                status_code=403,
-                detail="Chỉ thủ thư hoặc admin mới được giao sách",
-            )
-
-        loan = (
-            db.query(Loan)
-            .filter(Loan.id == loan_id)
-            .with_for_update()
-            .first()
-        )
-
-        if not loan:
-            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
-
-        if loan.status != LoanStatus.APPROVED:
+        if len(copies) != len(unique_barcodes):
             raise HTTPException(
                 status_code=400,
-                detail=f"Chỉ giao sách được khi phiếu đã duyệt APPROVED (hiện tại: {loan.status.value})",
+                detail="Một số mã vạch sách không tìm thấy trong cơ sở dữ liệu",
             )
 
-        loan_items = (
-            db.query(LoanItem)
-            .filter(LoanItem.loan_id == loan.id)
-            .all()
-        )
-
-        item_by_isbn: dict[str, LoanItem] = {}
-        for item in loan_items:
-            item_by_isbn[item.book_isbn] = item
-
-        if len(copies_data) != len(loan_items):
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    f"Phiếu có {len(loan_items)} đầu sách, "
-                    f"nhưng bạn giao {len(copies_data)} bản sao"
-                ),
-            )
-
-        now = datetime.now()
-        due_date = now + timedelta(days=BORROW_DAYS)
-
-        for copy_info in copies_data:
-            isbn = copy_info["book_isbn"]
-            copy_code = copy_info["copy_code"]
-
-            if isbn not in item_by_isbn:
+        for copy in copies:
+            if copy.status != "AVAILABLE":
+                db.rollback()
                 raise HTTPException(
-                    status_code=400,
-                    detail=f"ISBN '{isbn}' không có trong phiếu mượn này",
+                    status_code=409,
+                    detail=f"Bản sao '{copy.copy_code}' vừa được mượn hoặc không còn sẵn sàng (COPY_NOT_AVAILABLE)",
                 )
 
-            loan_item = item_by_isbn[isbn]
-
-            copy = (
-                db.query(BookCopy)
-                .filter(
-                    BookCopy.copy_code == copy_code,
-                    BookCopy.book_isbn == isbn,
-                )
-                .with_for_update()
+        # Xác định thủ thư phụ trách
+        librarian = None
+        if librarian_id:
+            librarian = db.query(User).filter(User.id == librarian_id).first()
+        if not librarian:
+            librarian = (
+                db.query(User)
+                .filter(User.role.in_([UserRole.LIBRARIAN, UserRole.ADMIN]))
                 .first()
             )
 
-            if not copy:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Không tìm thấy bản sao mã '{copy_code}' cho sách ISBN '{isbn}'",
-                )
+        now = datetime.now()
+        due = now + timedelta(days=BORROW_DAYS)
 
-            if copy.status not in ("AVAILABLE", "RESERVED"):
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        f"Bản sao '{copy_code}' đang ở trạng thái '{copy.status}', "
-                        f"không thể giao cho mượn"
-                    ),
-                )
+        # Tạo phiếu mượn BORROWED ngay lập tức
+        loan = Loan(
+            user_id=user.id,
+            processed_by=librarian.id if librarian else None,
+            borrow_type=BorrowType.WALK_IN,
+            status=LoanStatus.BORROWED,
+            borrowed_at=now,
+            due_date=due,
+        )
+        db.add(loan)
+        db.flush()
 
+        books_receipt = []
+        for copy in copies:
+            loan_item = LoanItem(
+                loan_id=loan.id,
+                book_isbn=copy.book_isbn,
+                copy_id=copy.id,
+                due_date=due,
+            )
+            db.add(loan_item)
             change_copy_status(db, copy.id, "BORROWED", auto_commit=False)
 
-            loan_item.copy_id = copy.id
-            loan_item.due_date = due_date
-
-        loan.status = LoanStatus.BORROWED
-        loan.borrowed_at = now
-        loan.due_date = due_date
-        loan.processed_by = librarian_id
+            books_receipt.append({
+                "copy_id": copy.id,
+                "barcode": copy.copy_code,
+                "title": copy.book.title if copy.book else "Không xác định",
+                "isbn": copy.book_isbn,
+                "location": copy.shelf_location,
+                "due_date": due.strftime("%d/%m/%Y"),
+            })
 
         db.commit()
         db.refresh(loan)
-        return loan
+
+        student_id = getattr(user, "phone", None) or f"2301{user.id:04d}"
+
+        return {
+            "id": loan.id,
+            "code": loan.code,
+            "borrow_type": loan.borrow_type.value,
+            "status": loan.status.value,
+            "borrowed_at": now.strftime("%d/%m/%Y %H:%M"),
+            "due_date": due.strftime("%d/%m/%Y"),
+            "librarian_name": librarian.full_name if librarian else "Thủ thư ca trực",
+            "reader_name": user.full_name,
+            "reader_student_id": student_id,
+            "reader_faculty": "Khoa CNTT (K1)",
+            "reader_card_code": card.card_code,
+            "books": books_receipt,
+        }
 
     except HTTPException:
         db.rollback()
         raise
-    except Exception:
+    except Exception as e:
         db.rollback()
-        raise
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi hệ thống khi tạo phiếu mượn tại quầy: {str(e)}",
+        )

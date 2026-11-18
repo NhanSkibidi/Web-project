@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse, CopyStatusChangeRequest
+from app.schemas.copy_status_log import CopyStatusLogResponse
 from app.crud.book_copies import create_copy, get_book_copies, get_copy_by_code, dispose_copy, report_lost, report_damaged, get_copy_history
 
 router = APIRouter(prefix="/book_copies", tags=["BookCopies"])

@@ -316,14 +316,16 @@ function renderCurrentView() {
   grid.style.opacity = "0.6";
   grid.innerHTML = pageBooks.map((book) => `
     <div class="book-card">
-      <div class="book-cover" style="background: ${book.coverBg}; cursor: pointer;" onclick="viewBookDetail('${escapeQuotes(book.title)}')">
-        <span class="shelf-badge">${book.shelf}</span>
-        <div class="book-cover-content">
-          <div class="book-cover-tag">${book.coverTag}</div>
-          <div class="book-cover-title">${book.coverTitle}</div>
-          <div class="book-cover-author">${book.author}</div>
+      <a href="book_detail.html?book=${getBookDetailKey(book.title)}" style="display:block;text-decoration:none;">
+        <div class="book-cover" style="background: ${book.coverBg}; cursor: pointer;">
+          <span class="shelf-badge">${book.shelf}</span>
+          <div class="book-cover-content">
+            <div class="book-cover-tag">${book.coverTag}</div>
+            <div class="book-cover-title">${book.coverTitle}</div>
+            <div class="book-cover-author">${book.author}</div>
+          </div>
         </div>
-      </div>
+      </a>
       <div class="book-meta">
         <span class="badge-cat">${book.category}</span>
         <span class="badge-status ${book.available ? 'status-available' : 'status-out'}">
@@ -335,7 +337,7 @@ function renderCurrentView() {
       </h3>
       <div class="book-author">${book.author}</div>
       <div class="book-actions">
-        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail" onclick="viewBookDetail('${escapeQuotes(book.title)}'); return false;">Chi tiết</a>
+        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail">Chi tiết</a>
         ${book.available
       ? `<button class="btn-borrow" onclick="borrowBook('${escapeQuotes(book.title)}')">🛒 Mượn</button>`
       : `<button class="btn-borrow" disabled>Hết sách</button>`

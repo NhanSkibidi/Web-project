@@ -92,7 +92,7 @@ const auth = {
     if (role === "ADMIN" || role === "LIBRARIAN") {
       return `${root}pages/staff-dashboard.html`;
     }
-    return `${root}index.html`;
+    return `${root}pages/home.html`;
   },
 
   // Đồng bộ lại thông tin user từ endpoint /api/auth/me

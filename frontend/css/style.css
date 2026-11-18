@@ -108,11 +108,11 @@ main.container {
 .header-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 64px;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  justify-content: flex-start;
+  gap: 24px;
+  min-height: 80px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   flex-wrap: wrap;
 }
 
@@ -142,7 +142,9 @@ main.container {
 .nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  margin-left: 20px;
+  margin-right: auto;
   flex-wrap: wrap;
 }
 
@@ -241,7 +243,8 @@ main.container {
 .header-user-area {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  margin-left: auto;
   flex-wrap: wrap;
 }
 

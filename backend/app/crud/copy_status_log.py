@@ -17,10 +17,11 @@ def change_copy_status(
     db: Session,
     book_copy_id: int,
     new_status: str,
+    reason: str | None = None,
     *,
     auto_commit: bool = True,
 ) -> BookCopy:
-    new_status_upper = new_status.upper()
+    new_status = new_status.upper()
 
     book_copy = db.query(BookCopy).filter(BookCopy.id == book_copy_id).first()
     if not book_copy:
@@ -31,26 +32,36 @@ def change_copy_status(
 
     current_status = book_copy.status
 
-    if new_status_upper not in VALID_TRANSITIONS:
+    if new_status not in VALID_TRANSITIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Trạng thái '{new_status}' không hợp lệ",
         )
 
-    if new_status_upper not in VALID_TRANSITIONS.get(current_status, []):
+    if new_status not in VALID_TRANSITIONS.get(current_status, []):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Không thể chuyển bản sao từ '{current_status}' sang '{new_status_upper}'",
         )
+    if new_status in ["LOST", "DAMAGED", "DISPOSED"]:
+        if not reason or not reason.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Vui lòng nhập lý do thay đổi trạng thái"
+            )
 
     log = CopyStatusLog(
         book_copy_id=book_copy.id,
         old_status=current_status,
-        new_status=new_status_upper,
+        new_status=new_status,
+        reason=reason.strip() if reason else None
     )
     db.add(log)
+    
+    book_copy.status = new_status
 
-    book_copy.status = new_status_upper
+    if new_status == "DAMAGED":
+        book_copy.condition = "HỎNG"
 
     if auto_commit:
         db.commit()

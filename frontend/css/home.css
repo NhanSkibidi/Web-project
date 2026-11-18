@@ -95,10 +95,11 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 }
 
 .header-inner {
-  display: flex;
-  align-items: center;
-  height: 90px;
-  gap: 32px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-height: 80px;
+  gap: 28px;
 }
 
 /* Brand / Logo */
@@ -129,19 +130,20 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 
 /* Navigation Links: Dịch sang trái cạnh logo chứ không để ở giữa */
 .nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 24px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px;
+  margin-left: 20px;
+  margin-right: auto !important;
 }
 
 /* Yêu cầu của bạn: Chữ đen -> khi hover/bấm: chữ trắng, nền xanh, di chuyển lên */
 .nav-item {
   display: inline-flex;
   align-items: center;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 10px;
-  font-size: 16.5px;
+  font-size: 15.5px;
   font-weight: 700;
   color: var(--color-text); /* Chữ đen lúc đầu */
   background: transparent;
@@ -149,11 +151,12 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   will-change: transform;
+  white-space: nowrap;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  background-color: var(--color-primary); /* Đổi màu nền thành xanh rừng */
+  background-color: var(--color-primary) !important; /* Đổi màu nền thành xanh rừng */
   color: #FFFFFF !important;               /* Đổi chữ thành trắng */
   transform: translateY(-3px);             /* Di chuyển lên trên */
   box-shadow: 0 4px 12px rgba(27, 67, 50, 0.18);
@@ -163,12 +166,13 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
   transform: translateY(-1px);
 }
 
-/* Header Right: Nút Đăng Nhập ở góc phải cùng */
-.header-actions {
-  display: flex;
-  align-items: center;
+/* Header Right: Nút Đăng Nhập / Thông tin User ở góc phải cùng */
+.header-actions,
+.header-user-area {
+  display: flex !important;
+  align-items: center !important;
   gap: 14px;
-  margin-left: auto; /* Đẩy sang góc phải */
+  margin-left: auto !important; /* Đẩy sang góc phải */
 }
 
 .btn-login {

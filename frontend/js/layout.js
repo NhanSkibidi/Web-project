@@ -226,10 +226,12 @@ function renderReaderLayout() {
   const footerEl = document.getElementById("app-footer");
 
   if (headerEl) {
+    const cleanPath = (currentPath.split("/").pop() || "home.html").toLowerCase();
     const linksHtml = READER_MENU.map((item) => {
+      const itemFile = item.href.split("/").pop().toLowerCase();
       const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "pages/home.html" && (currentPath.endsWith("/") || currentPath.endsWith("/home.html")));
+        cleanPath === itemFile ||
+        (itemFile === "home.html" && (cleanPath === "" || cleanPath === "index.html" || cleanPath === "home.html"));
       return `<a href="${root}${item.href}" class="nav-item ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
     }).join("");
 

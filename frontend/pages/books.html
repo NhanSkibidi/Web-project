@@ -481,7 +481,7 @@
                         <div
                             style="padding: 10px 12px; background: #EFEEEB; border: 1px solid var(--color-border); border-radius: 8px; display: flex; gap: 8px; font-size: 11px; color: var(--color-text-primary);">
                             <span class="material-symbols-outlined"
-                                style="font-size: 16px; color: var(--color-brand); shrink-0;">info</span>
+                                style="font-size: 16px; color: var(--color-brand); flex-shrink: 0">info</span>
                             <span>Dữ liệu đầu sách sẽ được đánh chỉ mục tra cứu ngay sau khi lưu. Có thể bổ sung bản sao
                                 bất kỳ lúc nào ở nút "Bản sao (N)".</span>
                         </div>
@@ -512,112 +512,239 @@
         </div>
     </div>
 
-    <!-- ==========================================================================
-       MODAL 2: QUẢN LÝ BẢN SAO VẬT LÝ CỦA TỪNG ĐẦU SÁCH (COPIES MODAL)
+        <!-- ==========================================================================
+       MODAL 2: QUẢN LÝ BẢN SAO & TRẠNG THÁI (STITCH HIGH-FIDELITY DESIGN)
        ========================================================================== -->
     <div id="copiesModalBackdrop" class="modal-overlay hidden">
-        <div class="copies-modal-box">
-            <!-- Modal Header -->
-            <div class="modal-header-bar">
-                <div class="modal-header-title">
-                    <div class="modal-icon-badge">
-                        <span class="material-symbols-outlined">qr_code_2</span>
-                    </div>
+        <div class="copies-hfd-modal">
+            <!-- Modal Header: Refined, Academic & Clean -->
+            <div class="copies-hfd-header">
+                <div class="copies-hfd-header-top">
                     <div>
-                        <h2 id="copiesModalTitle">Danh mục Bản sao vật lý</h2>
-                        <p id="copiesModalSubtitle" class="modal-subtext">Đang tải thông tin bản sao...</p>
+                        <div class="copies-hfd-meta-badges">
+                            <span id="copiesModalBookId" class="badge-code">BK-IT-2024-001</span>
+                            <span class="meta-separator">•</span>
+                            <span id="copiesModalIsbn" class="meta-label">ISBN: 978-604-0-12834</span>
+                            <span class="meta-separator">•</span>
+                            <span id="copiesModalDdc" class="meta-label">DDC: 005.133 (FastAPI)</span>
+                        </div>
+                        <h1 id="copiesModalTitle" class="copies-hfd-title">Quản lý Bản sao &amp; Trạng thái</h1>
+                        <p class="copies-hfd-subtitle">
+                            Đầu sách: <span id="copiesModalBookTitle" class="highlight-title">Lập trình Web Hiện đại với Python &amp; FastAPI</span> • <span id="copiesModalEdition">Tái bản lần 2 (NXB Khoa Học Kỹ Thuật)</span>
+                        </p>
+                        <p id="copiesModalSubtitle" class="hidden"></p>
                     </div>
-                </div>
-                <button id="closeCopiesModalBtn" type="button" class="btn-close-modal" title="Đóng cửa sổ">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <!-- Modal Grid: Thêm mới bản sao (Trái) & Bảng bản sao (Phải) -->
-            <div class="copies-modal-grid">
-                <!-- Form thêm nhanh bản sao -->
-                <div class="copies-add-panel">
-                    <div
-                        style="font-size: 14px; font-weight: 700; color: var(--color-brand); display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">add_box</span>
-                        <span>Thêm bản sao mới</span>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label for="newCopyQty">Số lượng cần bổ sung</label>
-                        <input type="number" id="newCopyQty" class="form-input" min="1" max="50" value="1">
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label for="newCopyShelf">Vị trí kệ lưu trữ</label>
-                        <input type="text" id="newCopyShelf" class="form-input" placeholder="VD: Kệ A3 - Ngăn 2"
-                            value="Kệ A3 - Ngăn 2">
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label for="newCopyCondition">Tình trạng vật lý ban đầu</label>
-                        <select id="newCopyCondition" class="form-select">
-                            <option value="Mới 100%">Mới 100% (Mới nhập kho)</option>
-                            <option value="Tốt 95%">Tốt 95% (Nguyên vẹn)</option>
-                            <option value="Cũ 80%">Cũ 80% (Bình thường)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label for="newCopyStatus">Trạng thái kho ban đầu</label>
-                        <select id="newCopyStatus" class="form-select">
-                            <option value="AVAILABLE">AVAILABLE (Sẵn sàng phục vụ)</option>
-                            <option value="RESERVED">RESERVED (Đang giữ chỗ)</option>
-                            <option value="MAINTENANCE">MAINTENANCE (Bảo quản định kỳ)</option>
-                        </select>
-                    </div>
-
-                    <button id="btnAddCopySubmit" type="button" class="btn-header-create"
-                        style="width: 100%; justify-content: center; margin-top: 6px;">
-                        <span class="material-symbols-outlined">add</span>
-                        <span>Thêm bản sao</span>
+                    <button id="closeCopiesModalBtn" class="btn-icon-close" title="Đóng cửa sổ" type="button">
+                        <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <!-- Bảng danh sách bản sao hiện hữu -->
-                <div>
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 13px; font-weight: 700; color: var(--color-text-primary);">
-                            Danh sách bản sao (<span id="copies-count-badge">0</span> bản)
+                <!-- Minimalist KPI Status Pill Bar -->
+                <div class="copies-hfd-status-bar">
+                    <div class="status-pills-group">
+                        <span id="copiesModalTotalSummary" class="status-summary-text">12 bản sao:</span>
+                        <span id="pill-stat-available" class="status-pill pill-available">
+                            <span class="dot dot-success"></span> <span id="stat-count-available">8</span> Sẵn sàng
                         </span>
-                        <small style="font-size: 11px; color: var(--color-text-secondary);">
-                            Nhấp vào biểu tượng sửa để đổi vị trí kệ/tình trạng
-                        </small>
+                        <span id="pill-stat-borrowed" class="status-pill pill-borrowed">
+                            <span class="dot dot-primary"></span> <span id="stat-count-borrowed">2</span> Đang mượn
+                        </span>
+                        <span id="pill-stat-damaged" class="status-pill pill-damaged">
+                            <span class="dot dot-danger"></span> <span id="stat-count-damaged">1</span> Hư hỏng
+                        </span>
+                        <span id="pill-stat-maintenance" class="status-pill pill-maintenance">
+                            <span class="dot dot-warning"></span> <span id="stat-count-maintenance">1</span> Bảo trì
+                        </span>
+                    </div>
+                    <div class="copies-shelf-badge">
+                        <span class="material-symbols-outlined">shelves</span>
+                        <span id="copiesModalShelf">KHO-TRUNG-TAM-A</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="copies-hfd-tabs">
+                    <button id="btnTab1" class="tab-btn active" type="button">
+                        <span class="material-symbols-outlined">library_books</span>
+                        <span>Danh mục bản sao (<span id="tab1Count">12</span>)</span>
+                    </button>
+                    <button id="btnTab2" class="tab-btn" type="button">
+                        <span class="material-symbols-outlined">history</span>
+                        <span>Lịch sử thay đổi (Audit Log)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Scrollable Content Container -->
+            <div class="copies-hfd-body">
+                <!-- TAB 1: DANH MỤC BẢN SAO -->
+                <div id="contentTab1" class="tab-content active">
+                    <!-- Clean Search & Filter Toolbar -->
+                    <div class="copies-filter-bar">
+                        <div class="copies-filter-pills">
+                            <span class="filter-label">Lọc:</span>
+                            <button id="filterBtnAll" class="filter-pill-btn active" type="button">Tất cả (<span id="filterCountAll">12</span>)</button>
+                            <button id="filterBtnAvailable" class="filter-pill-btn" type="button">Sẵn sàng (<span id="filterCountAvailable">8</span>)</button>
+                            <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span id="filterCountBorrowed">2</span>)</button>
+                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span id="filterCountIssues">2</span>)</button>
+                        </div>
+                        <div class="copies-actions-cluster">
+                            <div class="search-input-wrap">
+                                <span class="material-symbols-outlined">search</span>
+                                <input id="copiesSearchInput" type="text" placeholder="Tìm mã bản sao, RFID, barcode..." />
+                            </div>
+                            <button id="printBatchBarcodesBtn" class="btn-action-outline" type="button" title="In tem mã vạch">
+                                <span class="material-symbols-outlined">print</span>
+                                <span>In tem</span>
+                            </button>
+                            <button id="toggleAddCopyBtn" class="btn-action-primary" type="button" title="Thêm bản sao mới">
+                                <span class="material-symbols-outlined">add</span>
+                                <span>Thêm bản sao</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="copies-table-wrap">
-                        <table class="copies-sub-table">
+                    <!-- Collapsible Add Copy Drawer -->
+                    <div id="addCopyDrawer" class="add-copy-drawer hidden">
+                        <div class="drawer-header">
+                            <div class="drawer-title">
+                                <span class="material-symbols-outlined">add_circle</span>
+                                <span>Thêm bản sao mới vào kho</span>
+                            </div>
+                            <button id="closeAddCopyDrawerBtn" type="button" class="btn-drawer-close">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <form id="addCopyForm" class="add-copy-form">
+                            <div class="form-grid-4">
+                                <div class="form-field">
+                                    <label for="newCopyQty">Số lượng (*)</label>
+                                    <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control" required />
+                                </div>
+                                <div class="form-field">
+                                    <label for="newCopyShelf">Vị trí kệ (*)</label>
+                                    <input type="text" id="newCopyShelf" class="form-control" placeholder="VD: Kệ A3-02-T1" required />
+                                </div>
+                                <div class="form-field">
+                                    <label for="newCopyCondition">Tình trạng thực tế</label>
+                                    <input type="text" id="newCopyCondition" class="form-control" value="Mới 100% • Đã dán bọc" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="newCopyPolicy">Chính sách</label>
+                                    <select id="newCopyPolicy" class="form-control">
+                                        <option value="Mượn 14 ngày">Cho mượn về nhà (14 ngày)</option>
+                                        <option value="Chỉ đọc tại chỗ">Chỉ đọc tại phòng đọc</option>
+                                        <option value="Tạm khóa">Tạm khóa lưu thông</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="drawer-footer">
+                                <button id="cancelAddCopyBtn" type="button" class="btn-action-ghost">Hủy</button>
+                                <button id="submitAddCopyBtn" type="button" class="btn-action-primary">
+                                    <span class="material-symbols-outlined">save</span>
+                                    <span>Khởi tạo bản sao</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Clean & Minimalist Copy Table -->
+                    <div class="copies-table-container">
+                        <table class="copies-table">
                             <thead>
                                 <tr>
-                                    <th>Mã vạch (Barcode)</th>
-                                    <th>Vị trí kệ</th>
-                                    <th>Tình trạng</th>
-                                    <th>Trạng thái</th>
-                                    <th style="text-align: right;">Thao tác</th>
+                                    <th>MÃ BẢN SAO</th>
+                                    <th>VỊ TRÍ KỆ</th>
+                                    <th>TÌNH TRẠNG THỰC TẾ</th>
+                                    <th>TRẠNG THÁI LƯU THÔNG</th>
+                                    <th class="text-center">CHÍNH SÁCH</th>
+                                    <th class="text-right">THAO TÁC</th>
                                 </tr>
                             </thead>
                             <tbody id="copiesTableBody">
-                                <!-- Render động bởi books.js -->
+                                <!-- Rendered dynamically by books.js -->
                             </tbody>
                         </table>
+
+                        <!-- Pagination Footer -->
+                        <div class="copies-pagination-bar">
+                            <span id="copiesPaginationInfo" class="pagination-info">Hiển thị 1 - 6 trên 12 bản sao</span>
+                            <div id="copiesPaginationControls" class="pagination-controls">
+                                <!-- Dynamic pagination buttons -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Streamlined Compact Status Adjustment Drawer (Focused, Minimalist Form) -->
+                    <div id="quickStatusDrawer" class="status-drawer hidden">
+                        <div class="status-drawer-header">
+                            <div class="drawer-title-wrap">
+                                <span class="status-dot-indicator"></span>
+                                <span class="drawer-heading">Điều chỉnh trạng thái bản sao:</span>
+                                <span id="quickStatusCopyCode" class="copy-code-badge">BS-IT-001-04</span>
+                            </div>
+                            <span id="quickStatusTicket" class="ticket-code">Phiếu: #TRX-MOD-89104</span>
+                        </div>
+                        <form id="quickStatusForm" class="status-drawer-form">
+                            <div class="status-form-col status-select-col">
+                                <label for="quickStatusSelect">Trạng thái mới <span class="req">*</span></label>
+                                <select id="quickStatusSelect" class="form-control">
+                                    <option value="DAMAGED">Hư hỏng / Chờ phục hồi (DAMAGED)</option>
+                                    <option value="AVAILABLE">Khả dụng - Đưa lại giá (AVAILABLE)</option>
+                                    <option value="MAINTENANCE">Bảo dưỡng - Dán gáy (MAINTENANCE)</option>
+                                    <option value="LOST">Báo mất - Lập biên bản (LOST)</option>
+                                    <option value="LIQUIDATION">Đề nghị thanh lý (LIQUIDATED)</option>
+                                </select>
+                            </div>
+                            <div class="status-form-col status-reason-col">
+                                <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span class="req">*</span></label>
+                                <input id="quickStatusReason" type="text" class="form-control" placeholder="Nhập lý do chi tiết..." required />
+                            </div>
+                            <div class="status-form-col status-actions-col">
+                                <div class="librarian-mini-badge">
+                                    <span class="librarian-mini-name">Thủ thư trưởng</span>
+                                    <span class="librarian-mini-code">TT-04</span>
+                                </div>
+                                <button id="cancelQuickStatusBtn" type="button" class="btn-action-outline">Hủy</button>
+                                <button id="saveQuickStatusBtn" type="button" class="btn-action-primary">
+                                    <span class="material-symbols-outlined">save</span>
+                                    <span>Lưu trạng thái</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 2: AUDIT LOG TIMELINE (Clean, Minimalist History) -->
+                <div id="contentTab2" class="tab-content hidden">
+                    <div class="audit-toolbar">
+                        <span class="audit-subtitle">Lưu vết toàn bộ hoạt động thay đổi trạng thái và vị trí bản sao.</span>
+                        <span id="auditSyncBadge" class="audit-sync-badge">Đồng bộ: VERIFIED #41029</span>
+                    </div>
+
+                    <div id="auditTimelineContainer" class="audit-timeline">
+                        <!-- Dynamic audit logs rendered here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Modal Footer -->
-            <div class="modal-footer-bar">
-                <div class="modal-api-tag">
-                    <span class="material-symbols-outlined"
-                        style="font-size: 14px; vertical-align: -2px; color: var(--color-brand);">dns</span>
-                    <span>Dữ liệu đồng bộ máy chủ KS25-Core</span>
+            <!-- Modal Footer: Clean & Essential Actions -->
+            <div class="copies-hfd-footer">
+                <div class="footer-api-spec">
+                    <span class="material-symbols-outlined">terminal</span>
+                    <span>API: PATCH /api/v1/book-copies/status</span>
                 </div>
-                <button id="closeCopiesModalFooterBtn" type="button" class="btn-modal-cancel">Đóng</button>
+                <div class="footer-actions">
+                    <button id="closeCopiesModalFooterBtn" type="button" class="btn-action-outline">Đóng</button>
+                    <button id="exportCopiesCsvBtn" type="button" class="btn-action-outline">
+                        <span class="material-symbols-outlined">file_download</span>
+                        <span>Xuất CSV</span>
+                    </button>
+                    <button id="doneCopiesModalBtn" type="button" class="btn-action-primary">
+                        <span class="material-symbols-outlined">check</span>
+                        <span>Hoàn tất</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

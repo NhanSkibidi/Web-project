@@ -109,50 +109,79 @@ main.container {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 24px;
-  min-height: 80px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  flex-wrap: wrap;
+  gap: 28px;
+  height: 64px;
+  min-height: 64px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-.brand {
+.brand,
+.brand-badge {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 700;
-  color: var(--color-primary);
   text-decoration: none !important;
+  color: inherit;
+  flex-shrink: 0;
 }
 
-.brand-logo-box {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: var(--color-primary);
-  color: #FFFFFF;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 5px rgba(27, 67, 50, 0.25);
   flex-shrink: 0;
+}
+
+.brand-icon .material-symbols-outlined {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name,
+.brand-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.brand-sub,
+.brand-subtitle {
+  font-size: 11px;
+  color: var(--color-muted);
+  line-height: 1.1;
+  margin-top: 2px;
+  font-weight: 500;
 }
 
 .nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: 20px;
+  gap: 6px;
+  margin-left: 0;
   margin-right: auto;
   flex-wrap: wrap;
 }
 
 .nav a.nav-link {
-  padding: 7px 13px;
-  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  border-radius: 8px;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.15s ease;
@@ -172,63 +201,46 @@ main.container {
   font-weight: 600;
 }
 
-/* Nav item tương tác: ban đầu chữ đen, hover/active chữ trắng nền xanh di chuyển lên */
+/* Nav item tương tác theo phong cách returns: chữ đen, hover/active chữ trắng nền xanh */
 .nav-item {
   display: inline-flex;
   align-items: center;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-size: 16.5px;
-  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
   color: var(--color-text);
   background: transparent;
   text-decoration: none !important;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   will-change: transform;
+  white-space: nowrap;
 }
 
 .nav-item:hover,
 .nav-item.active {
   background-color: var(--color-primary) !important;
   color: #FFFFFF !important;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(27, 67, 50, 0.18);
 }
 
 .nav-item:active {
-  transform: translateY(-1px);
+  transform: translateY(0);
 }
-
-.brand-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: var(--color-primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.brand-text { display: flex; flex-direction: column; }
-.brand-title { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--color-primary); line-height: 1.2; }
-.brand-subtitle { font-size: 13px; color: var(--color-muted); font-weight: 500; }
 
 .btn-login {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 22px;
+  padding: 6px 16px;
   border-radius: 8px;
   border: 1.5px solid var(--color-primary);
   background: transparent;
   color: var(--color-primary);
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 13.5px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none !important;
@@ -237,7 +249,7 @@ main.container {
   background: var(--color-primary);
   color: #FFFFFF;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.18);
+  box-shadow: 0 3px 8px rgba(27, 67, 50, 0.18);
 }
 
 .header-user-area {

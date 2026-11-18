@@ -274,11 +274,13 @@ function renderReaderLayout() {
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="${root}pages/home.html" class="brand">
-          <div class="brand-icon">KS</div>
+        <a href="${root}pages/home.html" class="brand brand-badge">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined">local_library</span>
+          </div>
           <div class="brand-text">
-            <span class="brand-title">KS25 Library</span>
-            <span class="brand-subtitle">Hệ thống thư viện số</span>
+            <span class="brand-name brand-title">UniLib</span>
+            <span class="brand-sub brand-subtitle">Thư viện số KS25</span>
           </div>
         </a>
         <nav class="nav" id="main-nav">${linksHtml}</nav>

@@ -499,9 +499,7 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
    TÀI LIỆU MỚI NHẬP HỌC KỲ NÀY (BOOK ROW)
    ========================================================== */
 .carousel-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: none !important;
 }
 .carousel-btn {
   width: 40px;

@@ -86,6 +86,11 @@ body.returns-body {
   gap: 10px;
   text-decoration: none;
   color: inherit;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand-badge:hover {
+  transform: translateY(-2px);
 }
 
 .brand-icon {
@@ -128,28 +133,54 @@ body.returns-body {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .topbar-nav-link {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 8px;
-  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.22s ease;
+  will-change: transform;
 }
 
 .topbar-nav-link:hover {
-  color: var(--color-text-primary);
-  background: var(--color-surface);
+  color: #ffffff;
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
+}
+
+.topbar-nav-link:active {
+  transform: translateY(-1px) scale(0.97);
+  box-shadow: 0 2px 4px rgba(27, 67, 50, 0.12);
 }
 
 .topbar-nav-link.active {
-  color: var(--color-brand);
-  background: var(--color-brand-light);
-  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(27, 67, 50, 0.25);
+}
+
+.topbar-nav-link.active:hover {
+  background: var(--color-brand-hover);
+  border-color: var(--color-brand-hover);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(27, 67, 50, 0.35);
 }
 
 .topbar-right {
@@ -199,13 +230,15 @@ body.returns-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, border-color 0.15s;
 }
 
 .topbar-icon-btn:hover {
   background: var(--color-surface);
   border-color: var(--color-border);
-  color: var(--color-text-primary);
+  color: var(--color-brand);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(27, 67, 50, 0.12);
 }
 
 .topbar-icon-btn .badge-dot {
@@ -228,6 +261,14 @@ body.returns-body {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s;
+}
+
+.librarian-profile:hover {
+  transform: translateY(-2px);
+  background: rgba(27, 67, 50, 0.05);
 }
 
 .librarian-avatar {

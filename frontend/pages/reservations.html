@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sách Đặt Trước Của Tôi | Thư viện số KS25</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=10.1">
+  <link rel="stylesheet" href="../css/reservations.css?v=1.0">
+</head>
+
+<body data-root="../" data-roles="READER,LIBRARIAN,ADMIN">
+
+  <!-- 1. HEADER CỐ ĐỊNH -->
+  <header id="app-header">
+    <div class="container header-inner">
+      <a href="home.html" class="brand" title="Về trang chủ">
+        <div class="brand-icon">KS</div>
+        <div class="brand-text">
+          <span class="brand-title">KS25 Library</span>
+          <span class="brand-subtitle">Hệ thống thư viện số</span>
+        </div>
+      </a>
+
+      <!-- Menu điều hướng -->
+      <nav class="nav" id="main-nav">
+        <a href="home.html" class="nav-item">Trang chủ</a>
+        <a href="search.html" class="nav-item">Tra cứu sách</a>
+        <a href="loan_basket.html" class="nav-item">Phiếu mượn của tôi</a>
+        <a href="reservations.html" class="nav-item active">Sách đặt trước</a>
+        <a href="staff-dashboard.html" class="nav-item">Quản trị thư viện</a>
+      </nav>
+
+      <!-- Góc phải: Giỏ hàng + Avatar người dùng -->
+      <div class="header-right-user">
+        <a href="loan_basket.html" class="cart-header-btn" id="headerCartBtn" title="Xem giỏ sách">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="cart-badge" id="headerCartBadge">0</span>
+        </a>
+
+        <div class="user-profile-badge" id="headerUserProfile">
+          <div class="user-avatar-circle" id="headerUserAvatar">U</div>
+          <div class="user-info-text">
+            <span class="user-name" id="headerUserName">Nguyễn Nhật Anh</span>
+            <span class="user-role-label" id="headerUserRole">Sinh viên</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NỘI DUNG CHÍNH -->
+  <main class="container reservations-main">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb-bar">
+      <div class="breadcrumb-links">
+        <a href="home.html">🏠 Trang chủ</a>
+        <span>/</span>
+        <a href="loan_basket.html">Tài khoản cá nhân</a>
+        <span>/</span>
+        <span class="breadcrumb-current">Sách đặt trước của tôi</span>
+      </div>
+      <a href="search.html" class="btn-back-catalog">
+        <span>🔍</span>
+        <span>Tra cứu thêm sách</span>
+      </a>
+    </div>
+
+    <!-- BANNER HERO -->
+    <section class="res-hero-banner">
+      <div class="res-hero-content">
+        <div class="res-pill-tag">
+          <span>📋</span>
+          <span>Tác vụ độc giả · Module Đặt trước (T3CFCAC)</span>
+        </div>
+        <h1 class="res-hero-title">Sách Đặt Trước Của Tôi</h1>
+        <p class="res-hero-desc">
+          Hệ thống xếp hàng tự động theo thời gian (FIFO). Khi sách hết bản sao, bạn được đặt trước tối đa <strong>3 đầu sách</strong>. Ngay khi có người trả sách, hệ thống sẽ ưu tiên giữ sách <strong>2 ngày</strong> cho bạn tại quầy thư viện.
+        </p>
+
+        <!-- Thanh thông tin hạn mức đặt trước -->
+        <div class="res-quota-box">
+          <div class="quota-info">
+            <span>Hạn mức đặt trước:</span>
+            <strong id="quotaText">Đang dùng 2 / 3 lượt</strong>
+          </div>
+          <div class="quota-bar-track">
+            <div class="quota-bar-fill" id="quotaBarFill" style="width: 66%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BỘ LỌC TABS -->
+    <div class="res-tabs-bar">
+      <button type="button" class="res-tab-btn active" data-tab="all" onclick="filterReservations('all', this)">
+        <span>Tất cả</span>
+        <span class="tab-count-badge" id="countAll">2</span>
+      </button>
+      <button type="button" class="res-tab-btn" data-tab="READY" onclick="filterReservations('READY', this)">
+        <span>🔔 Đã có sách (READY)</span>
+        <span class="tab-count-badge badge-ready" id="countReady">1</span>
+      </button>
+      <button type="button" class="res-tab-btn" data-tab="WAITING" onclick="filterReservations('WAITING', this)">
+        <span>⏳ Đang chờ lượt (WAITING)</span>
+        <span class="tab-count-badge badge-waiting" id="countWaiting">1</span>
+      </button>
+      <button type="button" class="res-tab-btn" data-tab="history" onclick="filterReservations('history', this)">
+        <span>Lịch sử (Đã nhận / Đã huỷ)</span>
+        <span class="tab-count-badge" id="countHistory">0</span>
+      </button>
+    </div>
+
+    <!-- DANH SÁCH CÁC THẺ ĐẶT TRƯỚC -->
+    <div class="res-list-container" id="reservationsList">
+      <!-- Render động từ reservations.js -->
+    </div>
+
+    <!-- KHUNG RỖNG KHI CHƯA ĐẶT SÁCH -->
+    <div class="res-empty-state" id="emptyState" style="display: none;">
+      <div class="empty-icon-circle">📚</div>
+      <h3 class="empty-title">Bạn chưa có lượt đặt trước nào</h3>
+      <p class="empty-sub">Khi các đầu sách chuyên ngành bạn cần bị mượn hết, hãy chọn nút "Đặt trước" trên trang chi tiết để được xếp hàng nhận sách đầu tiên.</p>
+      <a href="search.html" class="btn btn-primary" style="margin-top: 14px; text-decoration: none;">Khám phá kho sách ngay →</a>
+    </div>
+
+  </main>
+
+  <!-- CHÂN TRANG ĐỒNG BỘ -->
+  <footer id="app-footer">
+    <div class="container footer-inner">
+      <div class="footer-copy">© 2026 Thư viện số KS25. Bảo lưu mọi quyền.</div>
+      <div class="footer-links">
+        <a href="javascript:void(0)">Trung tâm trợ giúp</a>
+        <a href="javascript:void(0)">Quy định mượn trả</a>
+        <a href="javascript:void(0)">Hỗ trợ sinh viên</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL XÁC NHẬN HUỶ ĐẶT TRƯỚC -->
+  <div class="modal-overlay" id="cancelModalOverlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-icon-circle">⚠️</div>
+      <h3 class="modal-title">Xác nhận huỷ đặt trước?</h3>
+      <p class="modal-desc" id="cancelModalDesc">
+        Bạn có chắc muốn huỷ lượt đặt trước này không? Lượt giữ sách sẽ được chuyển cho người tiếp theo trong hàng chờ.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Giữ lại</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmCancel" onclick="confirmCancelAction()">Huỷ đặt trước</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/reservations.js?v=1.0"></script>
+</body>
+
+</html>

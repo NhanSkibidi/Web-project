@@ -483,8 +483,41 @@
       if (mainBtn) {
         mainBtn.className = "btn-add-cart-main btn-reserve-mode";
         mainBtn.innerHTML = `<span style="font-size: 18px;">📋</span><span>Đặt trước tài liệu</span>`;
-        mainBtn.onclick = () => {
-          alert(`Đã ghi nhận yêu cầu ĐẶT TRƯỚC cho cuốn "${book.title}". Thư viện sẽ gửi thông báo đến bạn ngay khi có bản sao được hoàn trả!`);
+        mainBtn.onclick = async () => {
+          try {
+            if (typeof api !== "undefined" && typeof api.createReservation === "function") {
+              const u = typeof auth !== "undefined" ? auth.getUser() : null;
+              await api.createReservation({ book_isbn: book.isbn }, u?.id);
+            }
+          } catch (err) {
+            console.warn("Backend reservation API offline, lưu trạng thái cục bộ:", err);
+          }
+
+          try {
+            const raw = localStorage.getItem("ks25_reservations");
+            const list = raw ? JSON.parse(raw) : [];
+            const exists = list.some((r) => r.book_isbn === book.isbn && (r.status === "WAITING" || r.status === "READY"));
+            if (!exists) {
+              list.push({
+                id: Date.now(),
+                user_id: 1,
+                book_isbn: book.isbn,
+                book_title: book.title,
+                book_author: book.authors,
+                status: "WAITING",
+                reserved_at: new Date().toISOString(),
+                pickup_deadline: null,
+                queue_position: list.filter((r) => r.status === "WAITING").length + 1,
+                cover_bg: book.cover.bg,
+                cover_tag: book.cover.tag
+              });
+              localStorage.setItem("ks25_reservations", JSON.stringify(list));
+            }
+          } catch {}
+
+          if (confirm(`✓ Đã gửi yêu cầu ĐẶT TRƯỚC cuốn "${book.title}" thành công!\nBạn đang ở vị trí #1 trong hàng chờ.\n\nBạn có muốn chuyển sang xem "Danh sách đặt trước của tôi" ngay không?`)) {
+            window.location.href = "reservations.html";
+          }
         };
       }
     }

@@ -1641,125 +1641,368 @@ body.returns-body {
 }
 
 /* ==========================================================================
-   MODAL QUY ĐỊNH TÍNH PHẠT HIỆN ĐẠI (POLICY MODAL)
+   MODAL QUY ĐỊNH TÍNH PHẠT HIỆN ĐẠI (EXECUTIVE DESIGN SYSTEM)
    ========================================================================== */
-.policy-modal-card {
-  max-width: 640px !important;
-  padding: 28px !important;
-  border-radius: 18px !important;
+.policy-modal-box {
+  max-width: 720px !important;
+  width: 95% !important;
+  padding: 32px !important;
+  border-radius: 24px !important;
+  background: #ffffff !important;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  position: relative !important;
 }
 
-.policy-grid-modern {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 16px 0;
-}
-
-@media (max-width: 600px) {
-  .policy-grid-modern {
-    grid-template-columns: 1fr;
-  }
-}
-
-.policy-item-card {
-  background: var(--color-paper);
+.policy-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.policy-item-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-brand);
-  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.08);
-}
-
-.policy-item-header {
+  background: var(--color-paper);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s;
+  z-index: 10;
+}
+
+.policy-modal-close:hover {
+  transform: rotate(90deg) scale(1.08);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.policy-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding-right: 40px;
+}
+
+.policy-header-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(27, 67, 50, 0.28);
+}
+
+.policy-header-badge .material-symbols-outlined {
+  font-size: 28px;
+}
+
+.policy-header-text {
+  flex: 1;
+}
+
+.policy-header-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 6px;
 }
 
-.policy-tag {
+.policy-chip {
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--color-brand-light);
+  color: var(--color-brand);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
-.policy-tag.overdue {
-  background: var(--color-amber-bg);
-  color: var(--color-amber);
+.policy-chip-sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
 }
 
-.policy-tag.damaged {
-  background: #FFF1F2;
-  color: #E11D48;
-}
-
-.policy-tag.severe {
-  background: #FEF2F2;
-  color: #DC2626;
-}
-
-.policy-tag.lost {
-  background: #450A0A;
-  color: #FECACA;
-}
-
-.policy-rate {
-  font-size: 12.5px;
+.policy-modal-title {
+  font-size: 24px;
   font-weight: 700;
   color: var(--color-brand);
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
 }
 
-.policy-item-title {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 4px;
-}
-
-.policy-item-desc {
-  font-size: 11.5px;
+.policy-modal-subtitle {
+  font-size: 12.5px;
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.45;
 }
 
-.policy-note-box {
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-top: 14px;
-  font-size: 12px;
-  color: #14532D;
+/* LƯỚI 4 THẺ VI PHẠM */
+.policy-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
-.policy-note-box .note-title {
+@media (max-width: 640px) {
+  .policy-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.policy-card-item {
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  background: #ffffff;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+
+.policy-card-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 1. Overdue Card */
+.policy-card-item.card-overdue {
+  background: #FFFDF7;
+  border-color: #FDE68A;
+  border-left-color: #D97706;
+}
+.card-overdue .card-item-icon {
+  background: #FEF3C7;
+  color: #D97706;
+}
+.card-overdue .card-item-badge {
+  background: #FEF3C7;
+  color: #92400E;
+}
+.card-overdue .card-item-price {
+  color: #B45309;
+}
+
+/* 2. Damaged Card */
+.policy-card-item.card-damaged {
+  background: #FFFBF7;
+  border-color: #FED7AA;
+  border-left-color: #EA580C;
+}
+.card-damaged .card-item-icon {
+  background: #FFEDD5;
+  color: #EA580C;
+}
+.card-damaged .card-item-badge {
+  background: #FFEDD5;
+  color: #9A3412;
+}
+.card-damaged .card-item-price {
+  color: #C2410C;
+}
+
+/* 3. Severe Damage Card */
+.policy-card-item.card-severe {
+  background: #FFF8F8;
+  border-color: #FECDD3;
+  border-left-color: #E11D48;
+}
+.card-severe .card-item-icon {
+  background: #FFE4E6;
+  color: #E11D48;
+}
+.card-severe .card-item-badge {
+  background: #FFE4E6;
+  color: #9F1239;
+}
+.card-severe .card-item-price {
+  color: #BE123C;
+}
+
+/* 4. Lost Card */
+.policy-card-item.card-lost {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  border-left-color: #B91C1C;
+}
+.card-lost .card-item-icon {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+.card-lost .card-item-badge {
+  background: #FEE2E2;
+  color: #7F1D1D;
+}
+.card-lost .card-item-price {
+  color: #991B1B;
+}
+
+.card-item-top {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.card-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-item-icon .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.card-item-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.card-item-title {
+  margin: 0 0 6px 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-item-price {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
   margin-bottom: 6px;
-  font-size: 12.5px;
 }
 
-.policy-note-box ul {
+.card-item-price span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.card-item-desc {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
   margin: 0;
-  padding-left: 18px;
-  line-height: 1.5;
 }
 
-.policy-note-box li {
-  margin-bottom: 3px;
+/* BANNER QUYỀN LỢI */
+.policy-footer-note {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.note-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #DCFCE7;
+  color: #15803D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.note-icon-wrap .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.note-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.note-row {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #166534;
+}
+
+.note-row strong {
+  color: #14532D;
+  margin-right: 4px;
+}
+
+/* FOOTER BUTTONS */
+.policy-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.policy-btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-paper);
+  color: var(--color-brand);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, border-color 0.15s;
+}
+
+.policy-btn-link:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: var(--color-brand);
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.1);
+}
+
+.policy-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-brand);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(27, 67, 50, 0.25);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, box-shadow 0.15s;
+}
+
+.policy-btn-primary:hover {
+  transform: translateY(-2px);
+  background: var(--color-brand-hover);
+  box-shadow: 0 6px 18px rgba(27, 67, 50, 0.35);
 }
 
 #btn-view-policy {

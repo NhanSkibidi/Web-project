@@ -1,10 +1,3 @@
-// ==============================================================================
-// KS25 Library — Nghiệp vụ Mượn sách tại quầy (Counter Borrowing)
-// File: frontend/js/pages/borrow_on_site.js
-// Tuân thủ: Vanilla JS, Không framework, Không localStorage cho state nghiệp vụ,
-// Phòng chống XSS bằng textContent / escapeHtml, Validation 7 điều kiện realtime.
-// ==============================================================================
-
 (function () {
   "use strict";
 

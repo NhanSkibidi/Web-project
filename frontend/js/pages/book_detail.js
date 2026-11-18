@@ -367,7 +367,8 @@
 
     const overlay = document.getElementById("authGuardOverlay");
     if (!user) {
-      if (overlay) overlay.style.display = "flex";
+      // Cho phép độc giả xem chi tiết tài liệu tự do, chỉ kích hoạt yêu cầu đăng nhập khi mượn/đặt trước
+      if (overlay) overlay.style.display = "none";
       return false;
     } else {
       if (overlay) overlay.style.display = "none";
@@ -673,6 +674,19 @@
 
   // 3. HIỆU ỨNG BAY VÀO GIỎ HÀNG (FLYING ANIMATION)
   window.addToCartWithAnimation = function (e, barcode = null) {
+    let user = typeof auth !== "undefined" ? auth.getUser() : null;
+    if (!user) {
+      try {
+        const stored = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+        if (stored) user = JSON.parse(stored);
+      } catch {}
+    }
+    if (!user) {
+      const overlay = document.getElementById("authGuardOverlay");
+      if (overlay) overlay.style.display = "flex";
+      return;
+    }
+
     const btn = e.currentTarget;
     const cartIcon = document.getElementById("headerCartBtn");
     const bookTitle = BOOK_DATA.title;

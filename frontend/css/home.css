@@ -801,9 +801,17 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
   color: var(--color-text-sub);
   cursor: pointer;
   text-align: center;
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
-.btn-detail:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-detail:hover { 
+  border-color: var(--color-primary); 
+  color: var(--color-primary); 
+  background: var(--color-brand-light, #F0FDF4);
+}
 
 .btn-borrow {
   flex: 1;

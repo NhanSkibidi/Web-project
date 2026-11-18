@@ -1,3 +1,20 @@
+function getBookDetailKey(bookTitle) {
+  const title = (bookTitle || "").toLowerCase();
+  if (title.includes("clean code") || title.includes("mã sạch")) return "cleancode";
+  if (title.includes("cấu trúc dữ liệu") || title.includes("giải thuật") || title.includes("dsa") || title.includes("sedgewick")) return "dsa";
+  if (title.includes("python")) return "python";
+  if (title.includes("cơ sở dữ liệu") || title.includes("csdl") || title.includes("hệ thống") || title.includes("database") || title.includes("kiến trúc phần mềm")) return "hethong";
+  if (title.includes("kiến trúc") || title.includes("máy tính") || title.includes("nhúng")) return "kientruc";
+  if (title.includes("trí tuệ") || title.includes("ai") || title.includes("học máy")) return "python";
+  if (title.includes("kinh tế") || title.includes("vi mô") || title.includes("tài chính")) return "kientruc";
+  return "dsa";
+}
+
+window.viewBookDetail = function(bookTitle) {
+  const key = getBookDetailKey(bookTitle);
+  window.location.href = `book_detail.html?book=${key}`;
+};
+
 // ==========================================================
 // KS25 Library - Logic Trang Tra cứu Danh mục Ấn bản Thư viện
 // Đáp ứng đúng ảnh mẫu: Lọc, tìm kiếm, quét mã vạch, mượn sách, đổi scope...
@@ -166,7 +183,7 @@ function renderSearchResults(books) {
     return `
       <article class="book-search-card" data-id="${book.id}">
         <!-- Ảnh bìa với badge trạng thái & vị trí kệ -->
-        <div class="book-card-cover">
+        <div class="book-card-cover" style="cursor:pointer;" onclick="window.location.href='book_detail.html?book=${getBookDetailKey(book.title)}'">
           <img 
             src="${book.coverOnline}" 
             alt="${book.title}" 
@@ -182,7 +199,9 @@ function renderSearchResults(books) {
 
         <!-- Thông tin sách -->
         <div class="book-card-info">
-          <h3 class="book-card-title" title="${book.title}">${book.title}</h3>
+          <h3 class="book-card-title" title="${book.title}">
+            <a href="book_detail.html?book=${getBookDetailKey(book.title)}" style="color:inherit;text-decoration:none;">${book.title}</a>
+          </h3>
           
           <div class="book-card-author">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -195,6 +214,9 @@ function renderSearchResults(books) {
 
           <!-- Nút hành động -->
           <div class="book-card-actions">
+            <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail-search" title="Xem chi tiết ấn bản">
+              Chi tiết
+            </a>
             ${book.available ? `
               <button 
                 type="button" 

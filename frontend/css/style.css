@@ -55,7 +55,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-display);
   color: var(--color-text);
   margin-top: 0;
@@ -66,11 +68,13 @@ a {
   color: var(--color-primary);
   text-decoration: none;
 }
+
 a:hover {
   text-decoration: underline;
 }
 
-code, .code-mono {
+code,
+.code-mono {
   font-family: var(--font-mono);
   font-size: 0.9em;
   background: #F2EFE9;
@@ -245,6 +249,7 @@ main.container {
   transition: all 0.2s ease;
   text-decoration: none !important;
 }
+
 .btn-login:hover {
   background: var(--color-primary);
   color: #FFFFFF;
@@ -323,6 +328,7 @@ main.container {
   color: var(--color-muted);
   text-decoration: none;
 }
+
 .footer-links a:hover {
   color: var(--color-primary);
 }
@@ -640,18 +646,23 @@ body.staff-layout-active {
   .staff-sidebar {
     transform: translateX(-100%);
   }
+
   .staff-sidebar.open {
     transform: translateX(0);
   }
+
   .staff-main {
     margin-left: 0;
   }
+
   .mobile-menu-btn {
     display: inline-flex;
   }
+
   .quick-scan-box {
     display: none;
   }
+
   .staff-content {
     padding: 18px;
   }
@@ -811,7 +822,9 @@ label {
   color: var(--color-text-secondary);
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   width: 100%;
   padding: 9px 12px;
   border: 1px solid var(--color-border);
@@ -823,7 +836,9 @@ input, textarea, select {
   transition: all 0.15s;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--color-primary);
   background: #FFFFFF;
@@ -964,7 +979,8 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   padding: 11px 12px;
   border-bottom: 1px solid var(--color-border);
   text-align: left;

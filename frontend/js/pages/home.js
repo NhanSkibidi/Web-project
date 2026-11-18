@@ -316,7 +316,7 @@ function renderCurrentView() {
   grid.style.opacity = "0.6";
   grid.innerHTML = pageBooks.map((book) => `
     <div class="book-card">
-      <div class="book-cover" style="background: ${book.coverBg};">
+      <div class="book-cover" style="background: ${book.coverBg}; cursor: pointer;" onclick="viewBookDetail('${escapeQuotes(book.title)}')">
         <span class="shelf-badge">${book.shelf}</span>
         <div class="book-cover-content">
           <div class="book-cover-tag">${book.coverTag}</div>
@@ -330,10 +330,12 @@ function renderCurrentView() {
           ● ${book.copies}
         </span>
       </div>
-      <h3 class="book-title" title="${book.title}">${book.title}</h3>
+      <h3 class="book-title" title="${book.title}">
+        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" style="color:inherit;text-decoration:none;">${book.title}</a>
+      </h3>
       <div class="book-author">${book.author}</div>
       <div class="book-actions">
-        <button class="btn-detail" onclick="viewBookDetail('${escapeQuotes(book.title)}')">Chi tiết</button>
+        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail" onclick="viewBookDetail('${escapeQuotes(book.title)}'); return false;">Chi tiết</a>
         ${
           book.available
             ? `<button class="btn-borrow" onclick="borrowBook('${escapeQuotes(book.title)}')">🛒 Mượn</button>`
@@ -552,13 +554,21 @@ function borrowBook(bookTitle) {
   alert(`✓ Đã thêm cuốn "${bookTitle}" vào danh sách mượn!`);
 }
 
+function getBookDetailKey(bookTitle) {
+  const title = (bookTitle || "").toLowerCase();
+  if (title.includes("clean code") || title.includes("mã sạch")) return "cleancode";
+  if (title.includes("cấu trúc dữ liệu") || title.includes("giải thuật") || title.includes("dsa") || title.includes("sedgewick")) return "dsa";
+  if (title.includes("python")) return "python";
+  if (title.includes("cơ sở dữ liệu") || title.includes("csdl") || title.includes("hệ thống") || title.includes("database")) return "hethong";
+  if (title.includes("kiến trúc") || title.includes("máy tính") || title.includes("nhúng")) return "kientruc";
+  if (title.includes("trí tuệ") || title.includes("ai")) return "python";
+  if (title.includes("kinh tế") || title.includes("vi mô")) return "kientruc";
+  return "dsa";
+}
+
 function viewBookDetail(bookTitle) {
-  const book = ALL_BOOKS.find((b) => b.title === bookTitle);
-  if (book) {
-    alert(`📖 THÔNG TIN TÀI LIỆU:\n- Tiêu đề: ${book.title}\n- Tác giả: ${book.author}\n- Chuyên ngành: ${book.category}\n- Vị trí: ${book.shelf}\n- Mã ISBN: ${book.isbn}\n- Tình trạng: ${book.copies}`);
-  } else {
-    alert(`Thông tin tài liệu: ${bookTitle}`);
-  }
+  const key = getBookDetailKey(bookTitle);
+  window.location.href = `book_detail.html?book=${key}`;
 }
 
 function escapeQuotes(str) {

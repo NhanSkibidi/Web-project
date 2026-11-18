@@ -610,6 +610,28 @@
   margin-top: auto;
 }
 
+.btn-detail-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  background: #FFFFFF;
+  color: var(--color-text);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-detail-search:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-brand-light, #F0FDF4);
+  transform: translateY(-2px);
+}
+
 .btn-borrow-online {
   flex: 1;
   background: var(--color-primary);

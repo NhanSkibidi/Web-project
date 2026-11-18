@@ -298,25 +298,31 @@ h1, h2, h3, h4 { margin-top: 0; font-family: var(--font-serif); }
 }
 
 .search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  font-size: 17px;
-  color: var(--color-text);
-  padding: 8px 0;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 16px !important;
+  color: var(--color-text) !important;
+  padding: 8px 0 !important;
 }
-.search-input:focus { outline: none; }
+.search-input:focus { outline: none !important; }
 .search-input::placeholder { color: var(--color-muted); }
 
 .search-select {
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
-  padding: 11px 16px;
-  font-size: 15px;
-  color: var(--color-text-sub);
-  cursor: pointer;
-  outline: none;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 175px !important;
+  border: 1px solid var(--color-border) !important;
+  background: var(--color-bg) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 9px 12px !important;
+  font-size: 14px !important;
+  color: var(--color-text-sub) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
 
 .search-btn {

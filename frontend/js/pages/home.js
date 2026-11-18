@@ -336,11 +336,10 @@ function renderCurrentView() {
       <div class="book-author">${book.author}</div>
       <div class="book-actions">
         <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail" onclick="viewBookDetail('${escapeQuotes(book.title)}'); return false;">Chi tiết</a>
-        ${
-          book.available
-            ? `<button class="btn-borrow" onclick="borrowBook('${escapeQuotes(book.title)}')">🛒 Mượn</button>`
-            : `<button class="btn-borrow" disabled>Hết sách</button>`
-        }
+        ${book.available
+      ? `<button class="btn-borrow" onclick="borrowBook('${escapeQuotes(book.title)}')">🛒 Mượn</button>`
+      : `<button class="btn-borrow" disabled>Hết sách</button>`
+    }
       </div>
     </div>
   `).join("");
@@ -459,7 +458,7 @@ function handleSearch(event) {
   }
 
   currentFilteredList = ALL_BOOKS.filter((book) => {
-    const matchKeyword = !keyword || 
+    const matchKeyword = !keyword ||
       book.title.toLowerCase().includes(keyword) ||
       book.author.toLowerCase().includes(keyword) ||
       book.isbn.toLowerCase().includes(keyword) ||

@@ -162,6 +162,81 @@
   transform: translateY(-4px); /* Nhấc lên khi di chuột vào */
 }
 
+/* KHUNG Ô TÌM KIẾM CHÍNH (SEARCH BOX) */
+.search-box {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  padding: 8px 10px 8px 18px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(27, 67, 50, 0.07);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-wrapper:hover .search-box,
+.search-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(27, 67, 50, 0.12);
+}
+
+.search-icon {
+  color: var(--color-muted);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 15.5px !important;
+  color: var(--color-text) !important;
+  padding: 8px 0 !important;
+  box-shadow: none !important;
+  width: auto !important;
+}
+
+.search-input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.search-input::placeholder {
+  color: var(--color-muted);
+}
+
+.search-btn {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border: none !important;
+  padding: 10px 24px;
+  border-radius: var(--radius, 8px);
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.search-btn:hover {
+  background: var(--color-primary-hover, #2D6A4F);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.2);
+}
+
 /* PHẠM VI TÌM KIẾM (TẤT CẢ, NHAN ĐỀ, TÁC GIẢ, ISBN, CHUYÊN NGÀNH)
    - Yêu cầu của bạn: khi di vào chữ đổi trắng, ô thành xanh và di chuyển lên */
 .scope-selector {

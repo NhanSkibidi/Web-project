@@ -553,7 +553,7 @@ function borrowBook(bookTitle) {
 }
 
 function viewBookDetail(bookTitle) {
-  window.location.href = "book-detail.html";
+  window.location.href = "book_detail.html";
 }
 
 function escapeQuotes(str) {

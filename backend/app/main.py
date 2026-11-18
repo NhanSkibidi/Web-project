@@ -20,6 +20,7 @@ from app.routers import (
     fine,
     health,
     items,
+    library_cards,
     loans,
     return_book,
 )
@@ -67,6 +68,8 @@ app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
+app.include_router(library_cards.router, prefix="/api")
+app.include_router(library_cards.readers_router, prefix="/api")
 
 # Phục vụ giao diện tĩnh Frontend qua FastAPI
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))

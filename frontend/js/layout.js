@@ -17,9 +17,10 @@
 
 // Danh sách menu cho Cổng Độc giả (Header ngang)
 const READER_MENU = [
-  { href: "index.html", label: "Trang chủ & Tra cứu" },
-  { href: "pages/items.html", label: "Items (CRUD mẫu)" },
+  { href: "pages/home.html", label: "Trang chủ Thư viện" },
+  { href: "pages/loan_basket.html", label: "Giỏ mượn sách" },
   { href: "pages/auth.html", label: "Tài khoản & Thẻ" },
+  { href: "pages/items.html", label: "Items (CRUD mẫu)" },
 ];
 
 // Danh sách menu Sidebar cho Admin & Thủ thư (Cả nhóm thêm trang mới vào đây)
@@ -69,6 +70,11 @@ const STAFF_SIDEBAR_GROUPS = [
   {
     group: "Độc Giả & Vi Phạm",
     items: [
+      {
+        href: "pages/readers.html",
+        label: "Độc giả & Thẻ thư viện",
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>`,
+      },
       {
         href: "pages/staff-dashboard.html#fines",
         label: "Xử lý tiền phạt",
@@ -273,7 +279,7 @@ function renderReaderLayout() {
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="${root}index.html" class="brand">
+        <a href="${root}pages/home.html" class="brand">
           <div class="brand-logo-box">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -404,7 +410,7 @@ function renderStaffLayout() {
           </div>
         </div>
         <div class="sidebar-actions">
-          <a href="${root}index.html" class="sidebar-btn" title="Mở giao diện Cổng Độc giả">Cổng Độc giả</a>
+          <a href="${root}pages/home.html" class="sidebar-btn" title="Mở giao diện Trang chủ Độc giả">Cổng Độc giả</a>
           <button type="button" id="staff-logout-btn" class="sidebar-btn sidebar-btn-danger">Đăng xuất</button>
         </div>
       </div>

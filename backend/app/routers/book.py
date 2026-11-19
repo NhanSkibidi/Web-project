@@ -105,6 +105,8 @@ def get_book_detail(
         authors=result["authors"],
         total_copies=result["total_copies"],
         available_copies=result["available_copies"],
+        borrowed_copies=result["borrowed_copies"],
+        reserved_copies=result["reserved_copies"],
         lost_copies=result["lost_copies"],
         damage_copies=result["damage_copies"],
         disposed_copies=result["disposed_copies"]

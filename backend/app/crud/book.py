@@ -114,6 +114,8 @@ def get_book_by_isbn(db: Session, isbn: str):
     lost_copies = 0
     damage_copies = 0
     disposed_copies = 0
+    borrowed_copies = 0
+    reserved_copies = 0
     for copy in book.copies:
         if copy.status == "AVAILABLE":
             available_copies += 1
@@ -123,6 +125,10 @@ def get_book_by_isbn(db: Session, isbn: str):
             damage_copies += 1
         elif copy.status == "DISPOSED":
             disposed_copies += 1
+        elif copy.status == "BORROWED":
+            borrowed_copies += 1
+        elif copy.status == "RESERVED":
+            reserved_copies += 1
 
     authors = []
     for ba in book.book_authors:
@@ -133,6 +139,8 @@ def get_book_by_isbn(db: Session, isbn: str):
         "book": book,
         "total_copies": total_copies,
         "available_copies": available_copies,
+        "borrowed_copies": borrowed_copies,
+        "reserved_copies": reserved_copies,
         "lost_copies": lost_copies,
         "damage_copies": damage_copies,
         "disposed_copies": disposed_copies,

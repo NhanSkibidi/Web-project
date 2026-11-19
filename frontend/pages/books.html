@@ -79,6 +79,10 @@
                 <span class="material-symbols-outlined">receipt_long</span>
                 <span class="rail-label">Quản lý Phiếu mượn</span>
             </a>
+            <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+                <span class="material-symbols-outlined">library_add</span>
+                <span class="rail-label">Mượn sách tại quầy</span>
+            </a>
             <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
                 <span class="material-symbols-outlined">assignment_return</span>
                 <span class="rail-label">Trả sách tại quầy</span>
@@ -512,7 +516,7 @@
         </div>
     </div>
 
-        <!-- ==========================================================================
+    <!-- ==========================================================================
        MODAL 2: QUẢN LÝ BẢN SAO & TRẠNG THÁI (STITCH HIGH-FIDELITY DESIGN)
        ========================================================================== -->
     <div id="copiesModalBackdrop" class="modal-overlay hidden">
@@ -530,7 +534,9 @@
                         </div>
                         <h1 id="copiesModalTitle" class="copies-hfd-title">Quản lý Bản sao &amp; Trạng thái</h1>
                         <p class="copies-hfd-subtitle">
-                            Đầu sách: <span id="copiesModalBookTitle" class="highlight-title">Lập trình Web Hiện đại với Python &amp; FastAPI</span> • <span id="copiesModalEdition">Tái bản lần 2 (NXB Khoa Học Kỹ Thuật)</span>
+                            Đầu sách: <span id="copiesModalBookTitle" class="highlight-title">Lập trình Web Hiện đại với
+                                Python &amp; FastAPI</span> • <span id="copiesModalEdition">Tái bản lần 2 (NXB Khoa Học
+                                Kỹ Thuật)</span>
                         </p>
                         <p id="copiesModalSubtitle" class="hidden"></p>
                     </div>
@@ -583,21 +589,28 @@
                     <div class="copies-filter-bar">
                         <div class="copies-filter-pills">
                             <span class="filter-label">Lọc:</span>
-                            <button id="filterBtnAll" class="filter-pill-btn active" type="button">Tất cả (<span id="filterCountAll">12</span>)</button>
-                            <button id="filterBtnAvailable" class="filter-pill-btn" type="button">Sẵn sàng (<span id="filterCountAvailable">8</span>)</button>
-                            <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span id="filterCountBorrowed">2</span>)</button>
-                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span id="filterCountIssues">2</span>)</button>
+                            <button id="filterBtnAll" class="filter-pill-btn active" type="button">Tất cả (<span
+                                    id="filterCountAll">12</span>)</button>
+                            <button id="filterBtnAvailable" class="filter-pill-btn" type="button">Sẵn sàng (<span
+                                    id="filterCountAvailable">8</span>)</button>
+                            <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span
+                                    id="filterCountBorrowed">2</span>)</button>
+                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span
+                                    id="filterCountIssues">2</span>)</button>
                         </div>
                         <div class="copies-actions-cluster">
                             <div class="search-input-wrap">
                                 <span class="material-symbols-outlined">search</span>
-                                <input id="copiesSearchInput" type="text" placeholder="Tìm mã bản sao, RFID, barcode..." />
+                                <input id="copiesSearchInput" type="text"
+                                    placeholder="Tìm mã bản sao, RFID, barcode..." />
                             </div>
-                            <button id="printBatchBarcodesBtn" class="btn-action-outline" type="button" title="In tem mã vạch">
+                            <button id="printBatchBarcodesBtn" class="btn-action-outline" type="button"
+                                title="In tem mã vạch">
                                 <span class="material-symbols-outlined">print</span>
                                 <span>In tem</span>
                             </button>
-                            <button id="toggleAddCopyBtn" class="btn-action-primary" type="button" title="Thêm bản sao mới">
+                            <button id="toggleAddCopyBtn" class="btn-action-primary" type="button"
+                                title="Thêm bản sao mới">
                                 <span class="material-symbols-outlined">add</span>
                                 <span>Thêm bản sao</span>
                             </button>
@@ -619,15 +632,18 @@
                             <div class="form-grid-4">
                                 <div class="form-field">
                                     <label for="newCopyQty">Số lượng (*)</label>
-                                    <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control" required />
+                                    <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control"
+                                        required />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyShelf">Vị trí kệ (*)</label>
-                                    <input type="text" id="newCopyShelf" class="form-control" placeholder="VD: Kệ A3-02-T1" required />
+                                    <input type="text" id="newCopyShelf" class="form-control"
+                                        placeholder="VD: Kệ A3-02-T1" required />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyCondition">Tình trạng thực tế</label>
-                                    <input type="text" id="newCopyCondition" class="form-control" value="Mới 100% • Đã dán bọc" />
+                                    <input type="text" id="newCopyCondition" class="form-control"
+                                        value="Mới 100% • Đã dán bọc" />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyPolicy">Chính sách</label>
@@ -668,7 +684,8 @@
 
                         <!-- Pagination Footer -->
                         <div class="copies-pagination-bar">
-                            <span id="copiesPaginationInfo" class="pagination-info">Hiển thị 1 - 6 trên 12 bản sao</span>
+                            <span id="copiesPaginationInfo" class="pagination-info">Hiển thị 1 - 6 trên 12 bản
+                                sao</span>
                             <div id="copiesPaginationControls" class="pagination-controls">
                                 <!-- Dynamic pagination buttons -->
                             </div>
@@ -697,8 +714,10 @@
                                 </select>
                             </div>
                             <div class="status-form-col status-reason-col">
-                                <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span class="req">*</span></label>
-                                <input id="quickStatusReason" type="text" class="form-control" placeholder="Nhập lý do chi tiết..." required />
+                                <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span
+                                        class="req">*</span></label>
+                                <input id="quickStatusReason" type="text" class="form-control"
+                                    placeholder="Nhập lý do chi tiết..." required />
                             </div>
                             <div class="status-form-col status-actions-col">
                                 <div class="librarian-mini-badge">
@@ -718,7 +737,8 @@
                 <!-- TAB 2: AUDIT LOG TIMELINE (Clean, Minimalist History) -->
                 <div id="contentTab2" class="tab-content hidden">
                     <div class="audit-toolbar">
-                        <span class="audit-subtitle">Lưu vết toàn bộ hoạt động thay đổi trạng thái và vị trí bản sao.</span>
+                        <span class="audit-subtitle">Lưu vết toàn bộ hoạt động thay đổi trạng thái và vị trí bản
+                            sao.</span>
                         <span id="auditSyncBadge" class="audit-sync-badge">Đồng bộ: VERIFIED #41029</span>
                     </div>
 

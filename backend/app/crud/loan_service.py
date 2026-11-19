@@ -919,3 +919,17 @@ def create_counter_loan(
             status_code=500,
             detail=f"Lỗi hệ thống khi tạo phiếu mượn tại quầy: {str(e)}",
         )
+
+def get_book_loan_history(db: Session, isbn: str):
+    return (
+        db.query(LoanItem, Loan, User, BookCopy)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .join(User, Loan.user_id == User.id)
+        .outerjoin(BookCopy, LoanItem.copy_id == BookCopy.id)
+        .filter(
+            LoanItem.book_isbn == isbn,
+            Loan.borrowed_at.isnot(None)
+        )
+        .order_by(Loan.borrowed_at.desc())
+        .all()
+    )

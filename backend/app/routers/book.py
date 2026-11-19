@@ -1,9 +1,11 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status, HTTPException
+from fastapi import APIRouter, Depends, Query, status, HTTPException, UploadFile, File
 from app.db.session import get_db
-from app.crud.book import get_books_paginated, get_book_by_isbn, create_book, update_book, delete_book
+from app.crud.book import get_books_paginated, get_book_by_isbn, create_book, update_book, delete_book, update_book_cover
 from app.schemas.book import BookPaginationResponse, BookSearchItem, BookCreate, BookUpdate
 from sqlalchemy.orm import Session
+import os
+from pathlib import Path
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
@@ -102,7 +104,12 @@ def get_book_detail(
         publisher=book.publisher,
         authors=result["authors"],
         total_copies=result["total_copies"],
-        available_copies=result["available_copies"]
+        available_copies=result["available_copies"],
+        borrowed_copies=result["borrowed_copies"],
+        reserved_copies=result["reserved_copies"],
+        lost_copies=result["lost_copies"],
+        damage_copies=result["damage_copies"],
+        disposed_copies=result["disposed_copies"]
     )
 
 @router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED)
@@ -190,3 +197,59 @@ def delete_book_api(isbn: str, db: Session = Depends(get_db)):
         return {"message": "Đầu sách đã được ẩn"}
 
     return {"message": "Đầu sách đã được xóa"}
+
+@router.post("/{isbn}/cover", status_code = status.HTTP_200_OK)
+async def upload_book_cover(
+    isbn: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    book = get_book_by_isbn(db, isbn)
+
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy đầu sách"
+        )
+
+    # Đọc file và kiểm tra dung lượng
+    content = await file.read(5 * 1024 * 1024 + 1)
+
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Dung lượng ảnh không được vượt quá 5MB"
+        )
+
+    # Kiểm tra định dạng ảnh bằng chữ ký file
+    if content.startswith(b"\xff\xd8\xff"):
+        extension = ".jpg"
+    elif content.startswith(b"\x89PNG\r\n\x1a\n"):
+        extension = ".png"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chỉ chấp nhận ảnh JPG hoặc PNG"
+        )
+
+    # Tạo thư mục lưu ảnh
+    upload_dir = Path(__file__).resolve().parents[2] / "uploads" / "book_covers"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Tạo tên file theo ISBN
+    filename = f"{isbn}{extension}"
+    file_path = upload_dir / filename
+
+    # Lưu ảnh
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    # Đường dẫn lưu trong database
+    cover_image = f"/uploads/book_covers/{filename}"
+
+    update_book_cover(db, isbn, cover_image)
+
+    return {
+        "message": "Upload ảnh bìa thành công",
+        "cover_image": cover_image
+    }

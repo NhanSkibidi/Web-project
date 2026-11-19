@@ -137,3 +137,20 @@ class CounterBorrowReceiptResponse(BaseModel):
     reader_card_code: str
     books: list[CounterBorrowReceiptBook]
 
+class BookLoanHistoryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    loan_code: str
+    borrower_name: str
+    copy_code: str | None
+    borrow_date: datetime
+    due_date: datetime | None
+    return_date: datetime | None
+    status: str
+
+
+class BookLoanHistoryResponse(BaseModel):
+    isbn: str
+    total: int
+    items: list[BookLoanHistoryItem]
+

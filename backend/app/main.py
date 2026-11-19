@@ -9,6 +9,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
+import os
+from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401 - import để SQLAlchemy biết các bảng
 from app.core.config import settings
@@ -22,6 +24,7 @@ from app.routers import (
     items,
     loans,
     return_book,
+    loans_item
 )
 
 @asynccontextmanager
@@ -51,9 +54,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
-from fastapi.staticfiles import StaticFiles
-
 # Mọi API đều bắt đầu bằng /api. Thêm router mới thì include ở đây.
 app.include_router(health.router, prefix="/api")
 app.include_router(items.router, prefix="/api")
@@ -67,6 +67,7 @@ app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
+app.include_router(loans_item.router, prefix="/api")
 
 # Phục vụ giao diện tĩnh Frontend qua FastAPI
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))

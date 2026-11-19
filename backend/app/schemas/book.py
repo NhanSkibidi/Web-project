@@ -82,6 +82,9 @@ class BookSearchItem(BaseModel):
     authors: List[AuthorSummary] = []
     total_copies: int
     available_copies: int
+    lost_copies: int
+    damage_copies: int
+    disposed_copies: int
 
     model_config = ConfigDict(from_attributes=True)
 

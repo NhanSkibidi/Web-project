@@ -102,7 +102,10 @@ def get_book_detail(
         publisher=book.publisher,
         authors=result["authors"],
         total_copies=result["total_copies"],
-        available_copies=result["available_copies"]
+        available_copies=result["available_copies"],
+        lost_copies=result["lost_copies"],
+        damage_copies=result["damage_copies"],
+        disposed_copies=result["disposed_copies"]
     )
 
 @router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED)

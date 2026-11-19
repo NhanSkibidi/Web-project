@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mượn sách tại quầy | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+
+  <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/borrow_on_site.css">
+</head>
+<body data-root="../" class="borrow-body">
+
+  <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ -->
+  <header class="librarian-topbar">
+    <div class="topbar-left">
+      <a href="../index.html" class="brand-badge">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="books.html" class="topbar-nav-link">Tra cứu sách</a>
+        <a href="loan_slip.html" class="topbar-nav-link">Phiếu mượn</a>
+        <a href="borrow_on_site.html" class="topbar-nav-link active">Quản trị quầy thủ thư</a>
+      </nav>
+    </div>
+
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" id="topbar-quick-search" placeholder="Tra cứu mã sách, độc giả...">
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="librarian-profile">
+        <div class="librarian-avatar">TT</div>
+        <div class="librarian-info">
+          <span id="librarian-name-display" class="librarian-name">Thủ thư ca trực</span>
+          <span class="librarian-role">Quầy phục vụ sinh viên</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG) -->
+  <aside id="app-sidebar" class="sidebar-rail">
+    <div class="sidebar-rail-header">
+      <span>Phân hệ Thủ thư</span>
+      <span class="version-pill">v1.2</span>
+    </div>
+    <nav class="sidebar-rail-nav">
+      <a href="../index.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+        <span class="material-symbols-outlined">space_dashboard</span>
+        <span class="rail-label">Tổng quan &amp; Thống kê</span>
+      </a>
+      <a href="../pages/items.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
+      </a>
+      <a href="../index.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="rail-label">Quản lý Phiếu mượn</span>
+      </a>
+      <a href="borrow_on_site.html" class="sidebar-rail-link active" title="Mượn sách tại quầy">
+        <span class="material-symbols-outlined">library_add</span>
+        <span class="rail-label">Mượn sách tại quầy</span>
+      </a>
+      <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+      </a>
+      <a href="../index.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="rail-label">Cài đặt hệ thống</span>
+      </a>
+    </nav>
+    <div class="sidebar-rail-footer">
+      <div style="display: flex; align-items: center;">
+        <span class="status-dot-pulse"></span>
+        <div class="sidebar-status-details">
+          <strong>Máy chủ K1</strong>
+          <small>Online</small>
+        </div>
+      </div>
+      <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
+    </div>
+  </aside>
+
+  <!-- 3. KHUNG NỘI DUNG CHÍNH CỦA TRANG -->
+  <div class="main-wrapper">
+    <main class="page-container">
+
+      <!-- Breadcrumb & Header trang -->
+      <nav class="breadcrumb-trail" aria-label="Breadcrumb">
+        <span>KS25 ADMIN</span>
+        <span class="breadcrumb-separator">›</span>
+        <span>QUẢN LÝ PHIẾU MƯỢN</span>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">MƯỢN TẠI QUẦY</span>
+      </nav>
+
+      <div class="page-header-row">
+        <div>
+          <h1 class="page-title font-headline">Mượn Sách Tại Quầy</h1>
+          <p class="page-subtitle">Nhập/quét mã thẻ độc giả, quét mã vạch từng cuốn, kiểm tra tự động 7 điều kiện và lập phiếu mượn tức thì.</p>
+        </div>
+        <div class="header-action-group">
+          <a href="returns.html" class="btn-outline-action" title="Chuyển sang màn hình trả sách">
+            <span class="material-symbols-outlined">assignment_return</span>
+            <span>Trả sách tại quầy</span>
+          </a>
+          <button id="btn-reset-counter" type="button" class="btn-refresh-action" title="Làm mới để tiếp nhận giao dịch mới">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>Tiếp nhận mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bố cục 2 Cột: Trái (Thao tác quẹt thẻ & Quét sách) - Phải (Thẩm định & Tạo phiếu) -->
+      <div class="borrow-grid">
+
+        <!-- CỘT TRÁI: TÁC NGHIỆP TẠI QUẦY -->
+        <div class="borrow-col-left">
+
+          <!-- THẺ 1: TIẾP NHẬN THẺ ĐỘC GIẢ -->
+          <section class="counter-card" id="card-reader-section">
+            <div class="card-header-bar">
+              <div class="card-header-left">
+                <div class="step-badge">1</div>
+                <div>
+                  <h2 class="card-title">Thẻ thư viện độc giả</h2>
+                  <p class="card-desc">Quét mã vạch thẻ hoặc nhập mã thẻ / MSSV độc giả</p>
+                </div>
+              </div>
+              <span id="reader-status-pill" class="status-pill status-pill-muted">Chờ quẹt thẻ</span>
+            </div>
+
+            <!-- Form quét/nhập mã thẻ -->
+            <form id="reader-search-form" class="scanner-input-group" onsubmit="return false;">
+              <div class="scanner-input-wrap">
+                <span class="material-symbols-outlined scanner-icon">badge</span>
+                <input
+                  id="input-card-code"
+                  type="text"
+                  class="font-mono scanner-input"
+                  placeholder="Quét hoặc nhập mã thẻ (VD: LC-0001)..."
+                  autocomplete="off"
+                  autofocus
+                >
+                <button id="btn-lookup-card" type="button" class="scanner-action-btn">
+                  <span class="material-symbols-outlined">search</span>
+                  <span>Tra cứu</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Vùng hiển thị thông tin độc giả (ẩn khi chưa có thẻ) -->
+            <div id="reader-info-display" class="reader-detail-box hidden">
+              <!-- Render động qua JavaScript -->
+            </div>
+
+            <!-- Vùng placeholder khi chưa nhập thẻ -->
+            <div id="reader-empty-placeholder" class="empty-hint-box">
+              <span class="material-symbols-outlined empty-hint-icon">credit_card</span>
+              <p class="empty-hint-title">Chưa có thông tin độc giả</p>
+              <p class="empty-hint-text">Vui lòng quét thẻ thư viện hoặc nhập mã thẻ để hệ thống kiểm tra hạn thẻ và lịch sử mượn trả.</p>
+            </div>
+          </section>
+
+          <!-- THẺ 2: QUÉT MÃ VẠCH CÁC CUỐN SÁCH -->
+          <section class="counter-card" id="card-books-section">
+            <div class="card-header-bar">
+              <div class="card-header-left">
+                <div class="step-badge">2</div>
+                <div>
+                  <h2 class="card-title">Quét mã vạch bản sao sách</h2>
+                  <p class="card-desc">Quét từng mã cuốn sách (copy_code) độc giả muốn mượn</p>
+                </div>
+              </div>
+              <span id="copies-count-pill" class="status-pill status-pill-muted">0 cuốn</span>
+            </div>
+
+            <!-- Form quét mã vạch sách -->
+            <form id="barcode-scan-form" class="scanner-input-group" onsubmit="return false;">
+              <div class="scanner-input-wrap">
+                <span class="material-symbols-outlined scanner-icon">barcode_scanner</span>
+                <input
+                  id="input-barcode"
+                  type="text"
+                  class="font-mono scanner-input"
+                  placeholder="Quét mã vạch bản sao (VD: BC-9786040000019-01)..."
+                  autocomplete="off"
+                >
+                <button id="btn-add-barcode" type="button" class="scanner-action-btn">
+                  <span class="material-symbols-outlined">add_circle</span>
+                  <span>Thêm sách</span>
+                </button>
+              </div>
+              <div class="scanner-tip-text">
+                <span class="material-symbols-outlined" style="font-size: 14px;">lightbulb</span>
+                <span>Gợi ý: Nhấn <strong>Enter</strong> sau mỗi mã quét để tự động thêm sách và tiếp tục quét mã tiếp theo.</span>
+              </div>
+            </form>
+
+            <!-- Danh sách các cuốn sách đã quét -->
+            <div id="scanned-copies-list" class="scanned-copies-container">
+              <!-- Render động danh sách book card -->
+            </div>
+
+            <!-- Vùng placeholder khi chưa quét cuốn nào -->
+            <div id="copies-empty-placeholder" class="empty-hint-box">
+              <span class="material-symbols-outlined empty-hint-icon">auto_stories</span>
+              <p class="empty-hint-title">Chưa có ấn phẩm nào được quét</p>
+              <p class="empty-hint-text">Đưa máy quét vào mã vạch trên gáy/bìa sách hoặc nhập mã bản sao để đưa vào danh mục mượn.</p>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- CỘT PHẢI: KIỂM SOÁT ĐIỀU KIỆN & XÁC NHẬN GIAO DỊCH -->
+        <div class="borrow-col-right">
+
+          <!-- THẺ 3: THẨM ĐỊNH 7 ĐIỀU KIỆN MƯỢN SÁCH THEO THỜI GIAN THỰC -->
+          <section class="counter-card" id="card-conditions-section">
+            <div class="card-header-bar">
+              <div class="card-header-left">
+                <div class="step-badge">3</div>
+                <div>
+                  <h2 class="card-title">Thẩm định điều kiện mượn</h2>
+                  <p class="card-desc">Hệ thống tự động kiểm tra 7 quy định mượn của thư viện</p>
+                </div>
+              </div>
+              <div id="condition-overall-badge" class="badge-eval badge-eval-waiting">
+                <span class="material-symbols-outlined" style="font-size: 16px;">pending</span>
+                <span>Chờ dữ liệu</span>
+              </div>
+            </div>
+
+            <!-- Danh sách 7 điều kiện -->
+            <div id="conditions-list-box" class="conditions-checklist">
+              <div class="condition-item condition-state-pending" data-code="CARD_VALID">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">1. Thẻ thư viện hợp lệ và còn hạn</div>
+                  <div class="condition-message">Chưa kiểm tra thông tin thẻ độc giả</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="READER_ALLOWED">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">2. Quyền mượn của độc giả</div>
+                  <div class="condition-message">Tài khoản độc giả phải ở trạng thái hoạt động (ACTIVE)</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="LIMIT_NOT_EXCEEDED">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">3. Giới hạn số lượng sách mượn</div>
+                  <div class="condition-message">Tổng số sách đang giữ + số sách mới không vượt quá hạn mức</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="BOOK_EXISTS">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">4. Mã vạch sách tồn tại trong kho</div>
+                  <div class="condition-message">Mã bản sao phải tồn tại trên hệ thống quản lý ấn bản</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="COPY_AVAILABLE">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">5. Bản sao sẵn sàng cho mượn</div>
+                  <div class="condition-message">Tất cả cuốn sách phải đang ở trạng thái AVAILABLE trên giá</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="NO_RESTRICTION">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">6. Không có sách quá hạn hoặc nợ phạt</div>
+                  <div class="condition-message">Không giữ sách quá hạn và nợ phạt không vượt mức quy định</div>
+                </div>
+              </div>
+
+              <div class="condition-item condition-state-pending" data-code="HAS_BOOKS">
+                <div class="condition-icon-wrap">
+                  <span class="material-symbols-outlined condition-icon">radio_button_unchecked</span>
+                </div>
+                <div class="condition-info">
+                  <div class="condition-label">7. Danh sách sách cần mượn</div>
+                  <div class="condition-message">Cần chọn ít nhất 1 cuốn sách để lập phiếu mượn</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- THẺ 4: TÓM TẮT & XÁC NHẬN CẤP PHIẾU -->
+          <section class="counter-card" id="card-confirm-section">
+            <div class="card-header-bar">
+              <div class="card-header-left">
+                <div class="step-badge">4</div>
+                <div>
+                  <h2 class="card-title">Xác nhận & Cấp phiếu mượn</h2>
+                  <p class="card-desc">Khởi tạo phiếu mượn BORROWED và in biên lai giao dịch</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-specs-box">
+              <div class="summary-spec-row">
+                <span class="summary-spec-label">Hình thức mượn:</span>
+                <span class="summary-spec-value font-mono">TẠI QUẦY (WALK_IN)</span>
+              </div>
+              <div class="summary-spec-row">
+                <span class="summary-spec-label">Thời hạn mượn:</span>
+                <span class="summary-spec-value"><strong>14 ngày</strong> (Tiêu chuẩn)</span>
+              </div>
+              <div class="summary-spec-row">
+                <span class="summary-spec-label">Ngày hẹn trả:</span>
+                <span id="summary-due-date" class="summary-spec-value font-mono">—</span>
+              </div>
+              <div class="summary-spec-row">
+                <span class="summary-spec-label">Tổng số sách mượn:</span>
+                <span id="summary-total-books" class="summary-spec-value font-mono" style="font-weight: 700; font-size: 16px;">0 cuốn</span>
+              </div>
+              <div class="summary-spec-row">
+                <span class="summary-spec-label">Thủ thư phụ trách:</span>
+                <span id="summary-librarian-name" class="summary-spec-value">Thủ thư ca trực</span>
+              </div>
+            </div>
+
+            <!-- Nút bấm hành động chính -->
+            <div class="action-btn-group">
+              <button
+                id="btn-submit-loan"
+                type="button"
+                class="btn-primary-loan"
+                disabled
+              >
+                <span class="material-symbols-outlined">assignment_turned_in</span>
+                <span id="btn-submit-text">Xác nhận &amp; Cấp phiếu mượn</span>
+              </button>
+
+              <button
+                id="btn-cancel-loan"
+                type="button"
+                class="btn-cancel-loan"
+              >
+                <span>Hủy bỏ &amp; Nhập lại</span>
+              </button>
+            </div>
+
+            <!-- Ghi chú bảo mật quy trình -->
+            <div class="security-note">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-brand);">shield</span>
+              <span>Giao dịch chạy trong 1 transaction an toàn (all-or-nothing). Trạng thái bản sao sẽ tự động chuyển sang <strong>BORROWED</strong>.</span>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- 4. CHÂN TRANG PHÂN HỆ QUẢN TRỊ -->
+    <footer class="librarian-footer">
+      <div class="librarian-footer-inner">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="color: var(--color-brand); font-size: 18px;">verified</span>
+          <span>© 2026 UniLib - Phân hệ Thủ thư quầy phục vụ sinh viên. Hệ thống thư viện số KS25.</span>
+        </div>
+        <div class="librarian-footer-links">
+          <a href="../index.html">Cổng thông tin</a>
+          <a href="#">Quy định mượn 14 ngày</a>
+          <a href="#">Hỗ trợ sự cố</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 5. MODAL BIÊN LAI MƯỢN SÁCH & IN PHIẾU GIAO DỊCH -->
+  <div id="receipt-modal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="modal-box">
+      <button id="btn-close-modal" type="button" class="btn-close-modal" title="Đóng modal">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="modal-header">
+        <div class="modal-success-icon">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <h3 class="modal-title font-headline">Cấp Phiếu Mượn Thành Công!</h3>
+        <p class="modal-sub">Mã phiếu mượn: <strong id="modal-loan-code" class="font-mono">PM-2026-0001</strong></p>
+      </div>
+
+      <!-- Nội dung tóm tắt biên lai trong modal -->
+      <div class="modal-receipt-summary">
+        <div class="modal-row">
+          <span>Độc giả:</span>
+          <strong id="modal-reader-name">—</strong>
+        </div>
+        <div class="modal-row">
+          <span>Mã thẻ / MSSV:</span>
+          <span id="modal-reader-id" class="font-mono">—</span>
+        </div>
+        <div class="modal-row">
+          <span>Số sách mượn:</span>
+          <strong id="modal-book-count" class="font-mono">—</strong>
+        </div>
+        <div class="modal-row">
+          <span>Thời gian mượn:</span>
+          <span id="modal-borrowed-at" class="font-mono">—</span>
+        </div>
+        <div class="modal-row modal-due-highlight">
+          <span>Hạn trả sách (14 ngày):</span>
+          <strong id="modal-due-date" class="font-mono modal-due-val">—</strong>
+        </div>
+      </div>
+
+      <!-- Danh sách ấn phẩm đã mượn trong biên lai modal -->
+      <div class="modal-books-section">
+        <div class="modal-books-title">Ấn phẩm bàn giao:</div>
+        <div id="modal-books-list" class="modal-books-table-wrap">
+          <!-- Bảng sách render động -->
+        </div>
+      </div>
+
+      <!-- Các nút bấm điều khiển modal -->
+      <div class="modal-actions">
+        <button id="btn-print-receipt-action" type="button" class="modal-btn-print">
+          <span class="material-symbols-outlined" style="font-size: 18px;">print</span>
+          <span>In biên lai mượn (window.print)</span>
+        </button>
+        <button id="btn-finish-modal" type="button" class="modal-btn-finish">
+          Tiếp nhận lượt mượn mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. KHUNG IN BIÊN LAI (@MEDIA PRINT DÀNH RIÊNG CHO MÁY IN VÀ FILE PDF) -->
+  <div id="printable-receipt" class="printable-receipt-area">
+    <div class="print-header">
+      <div class="print-brand-title">HỆ THỐNG THƯ VIỆN SỐ KS25 - UNILIB</div>
+      <div class="print-sub">Quầy Phục Vụ Độc Giả · Tầng 1 Nhà Thư Viện</div>
+      <div class="print-divider"></div>
+      <h2 class="print-receipt-title">PHIẾU MƯỢN SÁCH TẠI QUẦY</h2>
+      <div class="print-meta-grid">
+        <div><strong>Mã phiếu:</strong> <span id="p-loan-code" class="font-mono">—</span></div>
+        <div><strong>Ngày mượn:</strong> <span id="p-borrow-date" class="font-mono">—</span></div>
+        <div><strong>Hạn trả:</strong> <span id="p-due-date" class="font-mono" style="font-weight: 700;">—</span></div>
+        <div><strong>Kênh mượn:</strong> <span>Mượn trực tiếp tại quầy</span></div>
+      </div>
+    </div>
+
+    <div class="print-divider-dashed"></div>
+
+    <div class="print-reader-box">
+      <div><strong>Độc giả:</strong> <span id="p-reader-name">—</span></div>
+      <div><strong>Mã thẻ:</strong> <span id="p-card-code" class="font-mono">—</span></div>
+      <div><strong>Mã SV:</strong> <span id="p-student-id" class="font-mono">—</span></div>
+      <div><strong>Khoa / Lớp:</strong> <span id="p-faculty">—</span></div>
+    </div>
+
+    <div class="print-divider-dashed"></div>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 35px; text-align: center;">STT</th>
+          <th style="width: 140px;">Mã vạch</th>
+          <th>Tên sách &amp; Tác giả</th>
+          <th style="width: 80px; text-align: center;">Vị trí</th>
+          <th style="width: 90px; text-align: right;">Hạn trả</th>
+        </tr>
+      </thead>
+      <tbody id="p-books-body">
+        <!-- Render động hàng sách in -->
+      </tbody>
+    </table>
+
+    <div class="print-rules-note">
+      <p><strong>* QUY ĐỊNH MƯỢN TRẢ ẤN PHẨM:</strong></p>
+      <p>1. Thời hạn mượn sách tiêu chuẩn là 14 ngày. Độc giả vui lòng hoàn trả sách đúng hoặc trước ngày hẹn trả.</p>
+      <p>2. Phí phạt quá hạn: 2.000 đ/cuốn/ngày. Làm mất hoặc hư hỏng sách sẽ bị phạt theo giá trị bìa sách.</p>
+      <p>3. Vui lòng giữ gìn biên lai này để đối chiếu khi cần thiết.</p>
+    </div>
+
+    <div class="print-signatures">
+      <div class="sig-box">
+        <p><strong>Người mượn sách</strong></p>
+        <p class="sig-sub">(Ký và ghi rõ họ tên)</p>
+        <div class="sig-space"></div>
+        <p id="p-sig-reader-name">—</p>
+      </div>
+      <div class="sig-box">
+        <p><strong>Thủ thư lập phiếu</strong></p>
+        <p class="sig-sub">(Ký và ghi rõ họ tên)</p>
+        <div class="sig-space"></div>
+        <p id="p-sig-librarian-name">—</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. HỘP THÔNG BÁO TOAST TOÀN CỤC -->
+  <div id="toast-container" class="toast-box"></div>
+
+  <!-- 8. CÁC FILE SCRIPT THEO THỨ TỰ CHUẨN CỦA PROJECT -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/borrow_on_site.js"></script>
+</body>
+</html>

@@ -6,6 +6,12 @@ from app.schemas.loan import (
     LoanReject,
     LoanHandover,
     HandoverCopyItem,
+    CounterBorrowValidateRequest,
+    CounterBorrowValidateResponse,
+    CounterBorrowCreateRequest,
+    ReaderLookupResponse,
+    CopyLookupResponse,
+    CounterBorrowReceiptResponse,
 )
 from app.schemas.loan_item import LoanItemCreate, LoanItemResponse
 from app.schemas.reservation import (

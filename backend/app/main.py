@@ -9,6 +9,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
+import os
+from fastapi.staticfiles import StaticFiles
 
 from app import models  # noqa: F401 - import để SQLAlchemy biết các bảng
 from app.core.config import settings
@@ -22,6 +24,7 @@ from app.routers import (
     items,
     loans,
     return_book,
+    loans_item
 )
 
 @asynccontextmanager
@@ -58,11 +61,30 @@ app.include_router(auth.router, prefix="/api")
 # Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
 app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
+app.include_router(loans.readers_router, prefix="/api")
+app.include_router(loans.copies_router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
+app.include_router(loans_item.router, prefix="/api")
 
+# Phục vụ giao diện tĩnh Frontend qua FastAPI
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+if os.path.isdir(frontend_dir):
+    app.mount("/frontend", StaticFiles(directory=frontend_dir), name="frontend")
+    # Cho phép mở thẳng /pages/... hoặc /css/... qua root static
+    app.mount("/pages", StaticFiles(directory=os.path.join(frontend_dir, "pages")), name="pages")
+    app.mount("/css", StaticFiles(directory=os.path.join(frontend_dir, "css")), name="css")
+    app.mount("/js", StaticFiles(directory=os.path.join(frontend_dir, "js")), name="js")
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dir, "assets")), name="assets")
+
+upload_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "uploads")
+)
+os.makedirs(upload_dir, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 
 @app.get("/")
 def root():

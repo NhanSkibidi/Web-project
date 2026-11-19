@@ -12,3 +12,6 @@ rkl/
 # IDE
 .vscode/
 .idea/
+
+# Ảnh upload
+uploads/

@@ -295,3 +295,16 @@ def delete_book(db: Session, isbn: str):
     db.commit()
 
     return "deleted"
+
+def update_book_cover(db: Session, isbn: str, cover_image: str):
+    book = db.query(Book).filter(Book.isbn == isbn).first()
+
+    if not book:
+        return None
+
+    book.cover_image = cover_image
+
+    db.commit()
+    db.refresh(book)
+
+    return book

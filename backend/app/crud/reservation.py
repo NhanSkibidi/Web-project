@@ -16,7 +16,7 @@ def format_reservation_response(db: Session, res: Reservation) -> dict:
     reader = db.query(User).filter(User.id == res.user_id).first()
     copy = db.query(BookCopy).filter(BookCopy.id == res.copy_id).first() if res.copy_id else None
 
-    # Tính vị trí hàng chờ nếu đang ở trạng thái WAITING
+    # Tính vị trí hàng chờ nếu đang ở trạng thái WAITING (FIFO theo thời gian)
     queue_pos = None
     if res.status == "WAITING":
         queue_pos = (
@@ -24,7 +24,8 @@ def format_reservation_response(db: Session, res: Reservation) -> dict:
             .filter(
                 Reservation.book_isbn == res.book_isbn,
                 Reservation.status == "WAITING",
-                Reservation.reserved_at <= res.reserved_at,
+                (Reservation.reserved_at < res.reserved_at)
+                | ((Reservation.reserved_at == res.reserved_at) & (Reservation.id <= res.id)),
             )
             .count()
         )
@@ -32,7 +33,7 @@ def format_reservation_response(db: Session, res: Reservation) -> dict:
     # Lấy thông tin vị trí kệ sách
     shelf = "Quầy thủ thư (Sách đặt trước)"
     if copy:
-        shelf = f"Kệ {getattr(copy, 'shelf_number', 'A')} - Tầng 1"
+        shelf = getattr(copy, "shelf_location", None) or "Quầy thủ thư (Sách đặt trước)"
 
     return {
         "id": res.id,
@@ -273,6 +274,7 @@ def check_and_expire_reservations(db: Session) -> int:
                     copy.status = "RESERVED"
                 else:
                     copy.status = "AVAILABLE"
+                db.flush()
 
     if count > 0:
         db.commit()

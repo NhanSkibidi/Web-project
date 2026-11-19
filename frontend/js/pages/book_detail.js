@@ -485,12 +485,18 @@
         mainBtn.className = "btn-add-cart-main btn-reserve-mode";
         mainBtn.innerHTML = `<span style="font-size: 18px;">📋</span><span>Đặt trước tài liệu</span>`;
         mainBtn.onclick = async () => {
+          let resData = null;
           try {
             if (typeof api !== "undefined" && typeof api.createReservation === "function") {
               const u = typeof auth !== "undefined" ? auth.getUser() : null;
-              await api.createReservation({ book_isbn: book.isbn }, u?.id);
+              resData = await api.createReservation({ book_isbn: book.isbn }, u?.id);
             }
           } catch (err) {
+            // Báo lỗi nghiệp vụ từ Backend (ví dụ: đã quá 3 lượt, đã đặt cuốn này rồi, chưa hết sách...)
+            if (err && err.status && err.status >= 400) {
+              alert(`❌ Không thể đặt trước: ${err.message || "Yêu cầu không hợp lệ"}`);
+              return;
+            }
             console.warn("Backend reservation API offline, lưu trạng thái cục bộ:", err);
           }
 
@@ -499,7 +505,7 @@
             const list = raw ? JSON.parse(raw) : [];
             const exists = list.some((r) => r.book_isbn === book.isbn && (r.status === "WAITING" || r.status === "READY"));
             if (!exists) {
-              list.push({
+              list.push(resData || {
                 id: Date.now(),
                 user_id: 1,
                 book_isbn: book.isbn,
@@ -516,7 +522,8 @@
             }
           } catch {}
 
-          if (confirm(`✓ Đã gửi yêu cầu ĐẶT TRƯỚC cuốn "${book.title}" thành công!\nBạn đang ở vị trí #1 trong hàng chờ.\n\nBạn có muốn chuyển sang xem "Danh sách đặt trước của tôi" ngay không?`)) {
+          const qPos = resData?.queue_position || 1;
+          if (confirm(`✓ Đã gửi yêu cầu ĐẶT TRƯỚC cuốn "${book.title}" thành công!\nBạn đang ở vị trí #${qPos} trong hàng chờ.\n\nBạn có muốn chuyển sang xem "Danh sách đặt trước của tôi" ngay không?`)) {
             window.location.href = "reservations.html";
           }
         };

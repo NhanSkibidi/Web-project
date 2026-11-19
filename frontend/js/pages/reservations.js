@@ -91,10 +91,9 @@
     try {
       if (typeof api !== "undefined" && typeof api.getMyReservations === "function") {
         const res = await api.getMyReservations(user.id);
-        if (Array.isArray(res) && res.length > 0) {
+        if (Array.isArray(res)) {
           reservationsData = res;
         } else {
-          // Lấy từ LocalStorage lưu tạm nếu có
           const localStored = localStorage.getItem("ks25_reservations");
           reservationsData = localStored ? JSON.parse(localStored) : DEMO_RESERVATIONS;
         }
@@ -241,7 +240,7 @@
 
           <!-- Cột thao tác -->
           <div class="res-actions-col">
-            <a href="book_detail.html?book=dsa" class="btn-detail-link">Xem chi tiết sách →</a>
+            <a href="book_detail.html?book=${encodeURIComponent(item.book_isbn || item.book_id || '')}" class="btn-detail-link">Xem chi tiết sách →</a>
             ${cancelBtnHtml}
           </div>
         </div>

@@ -79,7 +79,12 @@ if os.path.isdir(frontend_dir):
     app.mount("/js", StaticFiles(directory=os.path.join(frontend_dir, "js")), name="js")
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dir, "assets")), name="assets")
 
+upload_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "uploads")
+)
+os.makedirs(upload_dir, exist_ok=True)
 
+app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 
 @app.get("/")
 def root():

@@ -231,65 +231,169 @@ function renderReaderLayout() {
   const footerEl = document.getElementById("app-footer");
 
   if (headerEl) {
-    const linksHtml = READER_MENU.map((item) => {
-      const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")));
-      return `<a href="${root}${item.href}" class="nav-link ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
-    }).join("");
+    const isHome = currentPath.endsWith("/index.html") || currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
+    const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/books.html");
+    const isLoanSlip = currentPath.endsWith("/loan_slip.html");
 
     // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
     const staffShortcutHtml =
       user && (user.role === "ADMIN" || user.role === "LIBRARIAN")
-        ? `<a href="${root}pages/staff-dashboard.html" class="btn btn-outline btn-small">⚡ Bàn làm việc Thủ thư</a>`
+        ? `<a href="${root}pages/staff-dashboard.html" class="topbar-nav-link" title="Bàn làm việc quản trị">⚡ Quản trị</a>`
         : "";
+
+    const notifHtml = `
+      <div class="notif-dropdown-container" id="notifDropdownContainer">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-badge" id="notifBadge">2</span>
+        </button>
+        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+          <div class="notif-header">
+            <div class="notif-title-group">
+              <span class="notif-title">Thông báo mượn trả</span>
+              <span class="notif-badge-pill">2 mới</span>
+            </div>
+            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
+          </div>
+          <div class="notif-list">
+            <a href="${root}pages/loan_slip.html" class="notif-item is-unread is-overdue">
+              <div class="notif-icon-box overdue">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
+                <span class="notif-time">10 phút trước • Quá hạn</span>
+              </div>
+            </a>
+            <a href="${root}pages/loan_slip.html" class="notif-item is-unread is-due-soon">
+              <div class="notif-icon-box due-soon">
+                <span class="material-symbols-outlined">alarm</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
+                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
+              </div>
+            </a>
+          </div>
+          <div class="notif-footer">
+            <a href="${root}pages/loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+          </div>
+        </div>
+      </div>
+    `;
 
     let userAreaHtml = "";
     if (user) {
-      const cardBadgeHtml =
-        user.role === "READER" && card?.card_code
-          ? `<span class="reader-card-pill" title="Mã thẻ thư viện">💳 ${getSafeText(card.card_code)}</span>`
-          : "";
-
+      const initial = (user.full_name || user.email || "U")[0].toUpperCase();
       userAreaHtml = `
-        <div class="header-user-area">
-          ${staffShortcutHtml}
-          ${cardBadgeHtml}
-          <a href="${root}pages/auth.html" class="user-chip" title="Xem thông tin tài khoản">
-            <span>👤 ${getSafeText(user.full_name || user.email)}</span>
-            <span class="user-chip-role">${getSafeText(ROLE_LABELS[user.role] || user.role)}</span>
+        <div class="topbar-right">
+          ${notifHtml}
+          <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            <span class="badge-dot"></span>
           </a>
-          <button type="button" id="header-logout-btn" class="btn btn-danger btn-small">Đăng xuất</button>
+          <div class="topbar-divider"></div>
+          <a href="${root}pages/auth.html" class="librarian-profile" title="Xem tài khoản cá nhân" style="text-decoration:none; color:inherit;">
+            <div class="librarian-avatar">${initial}</div>
+            <div class="librarian-info">
+              <span class="librarian-name">${getSafeText(user.full_name || user.email)}</span>
+              <span class="librarian-role">${getSafeText(ROLE_LABELS[user.role] || user.role)}</span>
+            </div>
+          </a>
+          <button type="button" id="header-logout-btn" class="topbar-icon-btn" title="Đăng xuất">
+            <span class="material-symbols-outlined">logout</span>
+          </button>
         </div>
       `;
     } else {
       userAreaHtml = `
-        <div class="header-user-area">
-          <a href="${root}pages/login.html#login" class="btn btn-small">Đăng nhập</a>
-          <a href="${root}pages/login.html#register" class="btn btn-primary btn-small">Đăng ký thẻ</a>
+        <div class="topbar-right">
+          ${notifHtml}
+          <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách">
+            <span class="material-symbols-outlined">shopping_bag</span>
+          </a>
+          <div class="topbar-divider"></div>
+          <a href="${root}pages/login.html#login" class="topbar-nav-link">Đăng nhập</a>
+          <a href="${root}pages/login.html#register" class="topbar-nav-link active">Đăng ký thẻ</a>
         </div>
       `;
     }
 
+    headerEl.className = "librarian-topbar reader-topbar";
     headerEl.innerHTML = `
-      <div class="container header-inner">
-        <a href="${root}index.html" class="brand">
-          <div class="brand-logo-box">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
+      <div class="topbar-left">
+        <a href="${root}index.html" class="brand-badge" title="UniLib - Thư viện số KS25">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined">local_library</span>
           </div>
-          <span>KS25 Library</span>
+          <div class="brand-text">
+            <span class="brand-name">UniLib</span>
+            <span class="brand-sub">Thư viện số KS25</span>
+          </div>
         </a>
-        <nav class="nav">${linksHtml}</nav>
-        ${userAreaHtml}
+        <nav class="topbar-nav">
+          <a href="${root}index.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
+          <a href="${root}pages/search.html" class="topbar-nav-link ${isSearch ? "active" : ""}">Tra cứu sách</a>
+          <a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
+          ${staffShortcutHtml}
+        </nav>
       </div>
+      ${userAreaHtml}
     `;
 
     document.getElementById("header-logout-btn")?.addEventListener("click", () => {
       auth.clearSession();
       window.location.href = `${root}pages/login.html#login`;
+    });
+
+    // Wire up in-app notification dropdown
+    const bellBtn = document.getElementById("notifBellBtn");
+    const notifMenu = document.getElementById("notifDropdownMenu");
+    const markReadBtn = document.getElementById("notifMarkReadBtn");
+    const notifBadge = document.getElementById("notifBadge");
+
+    if (bellBtn && notifMenu) {
+      bellBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isHidden = notifMenu.hasAttribute("hidden") || notifMenu.style.display === "none";
+        if (isHidden) {
+          notifMenu.removeAttribute("hidden");
+          notifMenu.style.display = "block";
+          bellBtn.setAttribute("aria-expanded", "true");
+        } else {
+          notifMenu.setAttribute("hidden", "");
+          notifMenu.style.display = "none";
+          bellBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    if (markReadBtn) {
+      markReadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".notif-item.is-unread").forEach((item) => item.classList.remove("is-unread"));
+        document.querySelectorAll(".notif-dot").forEach((dot) => (dot.style.display = "none"));
+        if (notifBadge) notifBadge.style.display = "none";
+        markReadBtn.textContent = "Đã đọc";
+        markReadBtn.style.opacity = "0.6";
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      const container = document.getElementById("notifDropdownContainer");
+      if (container && !container.contains(e.target) && notifMenu) {
+        notifMenu.setAttribute("hidden", "");
+        notifMenu.style.display = "none";
+        if (bellBtn) bellBtn.setAttribute("aria-expanded", "false");
+      }
     });
   }
 

@@ -8,80 +8,125 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <!-- CSS stylesheet (trang này nằm trong pages/ nên đi ngược lên ../) -->
     <link rel="stylesheet" href="../css/loan_basket.css">
 </head>
 <body data-page="cart">
 
-    <!-- HEADER -->
-    <header class="site-header">
-        <div class="header-container">
+    <!-- HEADER ĐỒNG BỘ THEO CHUẨN RETURNS & TASK T3CFF48 -->
+    <header class="librarian-topbar site-header">
+        <div class="topbar-left">
             <!-- Logo -->
-            <!-- Đường dẫn tính từ pages/loan_basket.html -->
-            <a href="../index.html" class="logo bounce-hover" data-page="home" aria-label="Trang chủ UniLib">
-                <div class="logo-box">
-                    <img src="../assets/images/Background+Shadow.png" alt="" class="logo-img" onerror="this.onerror=null; this.parentElement.classList.add('is-fallback'); this.remove()">
-                    <svg class="logo-fallback" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
+            <a href="../index.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">local_library</span>
                 </div>
-                <div class="logo-text">
-                    <span class="logo-title">UniLib</span>
-                    <span class="logo-subtitle">Thư viện số</span>
+                <div class="brand-text">
+                    <span class="brand-name">UniLib</span>
+                    <span class="brand-sub">Thư viện số KS25</span>
                 </div>
             </a>
 
             <!-- Mobile Menu Toggle Button -->
             <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
+                <span class="material-symbols-outlined">menu</span>
             </button>
 
             <!-- Navigation Menu -->
-            <nav class="nav-menu" id="navMenu">
-                <a href="../index.html" class="nav-link bounce-hover" data-page="home">Trang chủ</a>
-                <a href="books.html" class="nav-link bounce-hover" data-page="search">Tra cứu sách</a>
-                <a href="loan_slip.html" class="nav-link bounce-hover" data-page="my-loans">Phiếu mượn của tôi</a>
-                <a href="staff-dashboard.html" class="nav-link bounce-hover" data-page="admin">Quản trị thư viện</a>
+            <nav class="topbar-nav" id="navMenu">
+                <a href="../index.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
+                <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
+                <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans">Phiếu mượn của tôi</a>
+                <a href="staff-dashboard.html" class="topbar-nav-link" data-page="admin">Quản trị thư viện</a>
             </nav>
+        </div>
 
-            <!-- Header Right Area -->
-            <div class="header-right">
-                <a href="loan_basket.html" class="cart-icon-link bounce-hover" data-page="cart" aria-label="Giỏ mượn có 3 cuốn sách">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="8" cy="21" r="1"/>
-                        <circle cx="19" cy="21" r="1"/>
-                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                    </svg>
-                    <span class="cart-badge" id="cartBadge" aria-live="polite">3</span>
-                </a>
-
-                <div class="header-divider"></div>
-
-                <!-- User Account Dropdown -->
-                <div class="user-dropdown-container" id="userDropdownContainer">
-                    <button class="user-profile-btn bounce-hover" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
-                        <img src="../assets/images/Profile.png" alt="Avatar Nguyễn Văn An" class="user-avatar" onerror="this.onerror=null; this.replaceWith(createAvatarFallback('Nguyễn Văn An'))">
-                        <span class="user-name">Nguyễn Văn An</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                    <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="auth.html" class="dropdown-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            Tài khoản
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <button class="dropdown-item logout-item" id="logoutMenuBtn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            Đăng xuất
-                        </button>
+        <!-- Header Right Area -->
+        <div class="topbar-right">
+            <!-- Chuông thông báo in-app (Task T3CFF48) -->
+            <div class="notif-dropdown-container" id="notifDropdownContainer">
+                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="notif-badge" id="notifBadge">2</span>
+                </button>
+                <!-- BẢNG NOTIFICATION IN-APP -->
+                <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+                    <div class="notif-header">
+                        <div class="notif-title-group">
+                            <span class="notif-title">Thông báo mượn trả</span>
+                            <span class="notif-badge-pill">2 mới</span>
+                        </div>
+                        <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
                     </div>
+                    <div class="notif-list">
+                        <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
+                        <a href="loan_slip.html" class="notif-item is-unread is-overdue">
+                            <div class="notif-icon-box overdue">
+                                <span class="material-symbols-outlined">error</span>
+                            </div>
+                            <div class="notif-content">
+                                <div class="notif-item-title">
+                                    <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
+                                    <span class="notif-dot"></span>
+                                </div>
+                                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
+                                <span class="notif-time">10 phút trước • Quá hạn</span>
+                            </div>
+                        </a>
+                        <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
+                        <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
+                            <div class="notif-icon-box due-soon">
+                                <span class="material-symbols-outlined">alarm</span>
+                            </div>
+                            <div class="notif-content">
+                                <div class="notif-item-title">
+                                    <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
+                                    <span class="notif-dot"></span>
+                                </div>
+                                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
+                                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="notif-footer">
+                        <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Giỏ mượn sách -->
+            <a href="loan_basket.html" class="topbar-icon-btn active" data-page="cart" title="Giỏ mượn sách">
+                <span class="material-symbols-outlined">shopping_bag</span>
+                <span class="cart-badge-count" id="cartBadge" aria-live="polite">3</span>
+            </a>
+
+            <div class="topbar-divider"></div>
+
+            <!-- User Account Dropdown -->
+            <div class="user-dropdown-container" id="userDropdownContainer">
+                <button class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+                    <div class="librarian-avatar">A</div>
+                    <div class="librarian-info">
+                        <span class="librarian-name">Nguyễn Văn An</span>
+                        <span class="librarian-role">Sinh viên</span>
+                    </div>
+                    <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu">
+                    <a href="auth.html" class="dropdown-item">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        <span>Thông tin cá nhân</span>
+                    </a>
+                    <a href="loan_slip.html" class="dropdown-item">
+                        <span class="material-symbols-outlined">receipt_long</span>
+                        <span>Lịch sử phiếu mượn</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item text-danger" id="logoutMenuBtn">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Đăng xuất</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -386,6 +431,7 @@
     <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
     <!-- Script file -->
+    <script src="../js/notifications.js" defer></script>
     <script src="../js/pages/loan_basket.js" defer></script>
 </body>
 </html>

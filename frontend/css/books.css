@@ -97,6 +97,7 @@ body.books-body {
 
 .brand-badge:hover {
     transform: translateY(-2px);
+    text-decoration: none;
 }
 
 .brand-icon {
@@ -168,6 +169,7 @@ body.books-body {
     border-color: var(--color-brand);
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
+    text-decoration: none;
 }
 
 .topbar-nav-link:active {
@@ -252,6 +254,16 @@ body.books-body {
     box-shadow: 0 4px 8px rgba(27, 67, 50, 0.12);
 }
 
+.topbar-icon-btn .badge-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-danger);
+}
+
 .topbar-divider {
     width: 1px;
     height: 24px;
@@ -272,6 +284,7 @@ body.books-body {
 .librarian-profile:hover {
     transform: translateY(-2px);
     background: var(--color-surface);
+    text-decoration: none;
 }
 
 .librarian-avatar {

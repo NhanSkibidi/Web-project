@@ -154,3 +154,33 @@ class BookLoanHistoryResponse(BaseModel):
     total: int
     items: list[BookLoanHistoryItem]
 
+
+# ── SCHEMAS CHO GIA HẠN SÁCH (RENEWAL) ──────────────────────────
+
+class RenewalRequest(BaseModel):
+    """Yêu cầu gia hạn 1 cuốn sách đang mượn."""
+    user_id: int | None = Field(
+        default=None,
+        description="ID độc giả tự gia hạn (None nếu thủ thư gia hạn hộ)"
+    )
+    librarian_id: int | None = Field(
+        default=None,
+        description="ID thủ thư gia hạn hộ (None nếu độc giả tự gia hạn)"
+    )
+
+
+class RenewalResponse(BaseModel):
+    """Kết quả gia hạn sách thành công."""
+    loan_item_id: int
+    loan_id: int
+    loan_code: str
+    book_isbn: str
+    book_title: str
+    copy_code: str | None
+    renewal_count: int
+    max_renewals: int
+    old_due_date: str
+    new_due_date: str
+    renewed_by: str
+    message: str
+

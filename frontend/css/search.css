@@ -1,0 +1,623 @@
+/* ==========================================================
+   KS25 Library - CSS Dành Riêng Cho Trang Tra Cứu (search.css)
+   Bao gồm: Thanh tìm kiếm, Phạm vi tìm kiếm, Bộ lọc Sidebar, Lưới thẻ sách, Phân trang
+   ========================================================== */
+
+/* PHẦN HERO & TIÊU ĐỀ */
+.search-hero {
+  padding: 40px 0 24px;
+  text-align: center;
+}
+
+/* KHUNG TÌM KIẾM: DI CHUỘT VÀO DI CHUYỂN LÊN */
+.search-wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.search-wrapper:hover {
+  transform: translateY(-4px); /* Nhấc lên khi di chuột vào */
+}
+
+/* PHẠM VI TÌM KIẾM (TẤT CẢ, NHAN ĐỀ, TÁC GIẢ, ISBN, CHUYÊN NGÀNH)
+   - Yêu cầu của bạn: khi di vào chữ đổi trắng, ô thành xanh và di chuyển lên */
+.scope-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.scope-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  margin-right: 2px;
+}
+
+.scope-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+/* Hover & Active: Chữ đổi trắng, ô thành xanh rừng và di chuyển lên */
+.scope-pill:hover,
+.scope-pill.active {
+  background-color: var(--color-primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-primary) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(27, 67, 50, 0.2);
+}
+
+.scope-pill:active {
+  transform: translateY(-1px);
+}
+
+/* NÚT QUÉT MÃ VẠCH */
+.btn-barcode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text-sub);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-barcode:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: #FFFFFF;
+  transform: translateY(-2px);
+}
+
+/* BỐ CỤC TOÀN MÀN HÌNH CHUẨN THEO ĐÚNG ẢNH THIẾT KẾ MẪU FIGMA */
+.container,
+.search-page-container {
+  width: 100%;
+  max-width: 96%;
+  margin: 0 auto;
+  padding: 0 28px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+  .container,
+  .search-page-container {
+    max-width: 96%;
+    padding: 0 40px;
+  }
+}
+
+@media (min-width: 1800px) {
+  .container,
+  .search-page-container {
+    max-width: 97%;
+    padding: 0 48px;
+  }
+}
+
+.search-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  margin-top: 24px;
+  margin-bottom: 60px;
+  width: 100%;
+}
+
+/* SIDEBAR: BỘ LỌC TÌM KIẾM */
+.search-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.04);
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.filter-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.filter-reset-btn {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s;
+}
+.filter-reset-btn:hover {
+  color: var(--color-primary);
+}
+
+.filter-avail-pill {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+.filter-avail-pill:hover {
+  border-color: #86EFAC;
+  box-shadow: 0 2px 6px rgba(22, 101, 52, 0.08);
+}
+
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+  margin-bottom: 10px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13.5px;
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+.filter-item:hover {
+  color: var(--color-primary);
+}
+
+.filter-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.filter-count {
+  font-size: 12px;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.filter-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 16px 0;
+}
+
+.filter-suggestion-card {
+  background: #FFFDF5;
+  border: 1px solid #FEF3C7;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 24px;
+}
+.filter-suggestion-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400E;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.filter-suggestion-desc {
+  font-size: 12px;
+  color: #B45309;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.filter-suggestion-link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #B45309;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: gap 0.2s;
+}
+.filter-suggestion-link:hover {
+  gap: 8px;
+  text-decoration: underline;
+}
+
+/* KHU VỰC KẾT QUẢ BÊN PHẢI */
+.search-results-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.results-count-text {
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+.results-count-text strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sort-select {
+  border: 1px solid var(--color-border);
+  background: #FFFFFF;
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+}
+
+.view-toggle-group {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.view-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.view-btn.active, .view-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+}
+
+/* LƯỚI THẺ SÁCH KẾT QUẢ TÌM KIẾM (3 CỘT NHƯ ẢNH) */
+.books-search-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.book-search-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.04);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
+}
+.book-search-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 24px rgba(27, 67, 50, 0.1);
+}
+
+.book-card-cover {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background-color: #E2E8F0;
+  overflow: hidden;
+}
+.book-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.book-search-card:hover .book-card-cover img {
+  transform: scale(1.03);
+}
+
+.book-badge-avail {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(236, 253, 245, 0.95);
+  color: #15803D;
+  border: 1px solid #A7F3D0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(4px);
+}
+
+.book-badge-borrowed {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(254, 243, 199, 0.95);
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(4px);
+}
+
+.book-badge-shelf {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(26, 32, 44, 0.78);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.book-card-info {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.book-card-title {
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.35;
+  margin: 0 0 8px;
+  min-height: 42px;
+}
+
+.book-card-author {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.book-card-isbn {
+  font-size: 12px;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 16px;
+}
+
+.book-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.btn-borrow-online {
+  flex: 1;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.btn-borrow-online:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(27, 67, 50, 0.2);
+}
+
+.btn-reserve-online {
+  flex: 1;
+  background: #FFFBEB;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.btn-reserve-online:hover {
+  background: #FEF3C7;
+  transform: translateY(-2px);
+}
+
+.btn-bookmark-action {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #FFFFFF;
+  color: var(--color-text-sub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-bookmark-action:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}
+.btn-bookmark-action.bookmarked {
+  background: #ECFDF5;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* PHÂN TRANG */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+.page-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+.page-btn.active {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border-color: var(--color-primary);
+}
+
+.page-dots {
+  color: var(--color-muted);
+  padding: 0 4px;
+}
+
+/* MODAL QUÉT MÃ VẠCH */
+.barcode-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.barcode-modal {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  max-width: 440px;
+  width: 90%;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  text-align: center;
+  position: relative;
+}
+.barcode-scanner-line {
+  width: 100%;
+  height: 2px;
+  background: #EF4444;
+  box-shadow: 0 0 10px #EF4444;
+  animation: scanAnim 1.8s infinite ease-in-out alternate;
+}
+@keyframes scanAnim {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(120px); }
+}
+
+/* RESPONSIVE DESIGN TRANG TÌM KIẾM */
+@media (max-width: 1024px) {
+  .search-layout { flex-direction: column; }
+  .search-sidebar { width: 100%; }
+  .books-search-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .books-search-grid { grid-template-columns: 1fr; }
+  .scope-selector { justify-content: flex-start; }
+}

@@ -527,7 +527,7 @@
                         </div>
                     </div>
 
-                    <!-- Bảng Phiếu mượn quá hạn lâu nhất -->
+                    <!-- Bảng Phiếu mượn quá hạn lâu nhất & Sắp đến hạn (Task T3CFF48) -->
                     <div class="dashboard-card">
                         <div class="card-header-bar">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -535,11 +535,14 @@
                                     <span class="material-symbols-outlined" style="font-size: 20px;">alarm_on</span>
                                 </div>
                                 <div class="card-title-group">
-                                    <h2>Phiếu mượn quá hạn lâu nhất</h2>
-                                    <p>Cần liên hệ nhắc nhở hoặc khóa quyền mượn sách</p>
+                                    <h2 id="overdue-card-title">Phiếu mượn quá hạn</h2>
+                                    <p id="overdue-card-sub">Cần liên hệ nhắc nhở hoặc chuyển xử lý thu tiền phạt</p>
                                 </div>
                             </div>
-                            <span class="badge-count-pill pink">Cần thu hồi gấp</span>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <button type="button" id="tabOverdue" class="badge-count-pill red" style="cursor: pointer; border: 1px solid transparent; font-weight: 600;">Quá hạn</button>
+                                <button type="button" id="tabDueSoon" class="badge-count-pill" style="cursor: pointer; border: 1px solid #FCD34D; background: #FEF3C7; color: #D97706; font-weight: 600;">Sắp đến hạn (2 ngày)</button>
+                            </div>
                         </div>
 
                         <div style="overflow-x: auto;">
@@ -548,64 +551,30 @@
                                     <tr>
                                         <th>Mã Độc giả</th>
                                         <th>Họ và tên</th>
-                                        <th>Tựa sách</th>
-                                        <th style="text-align: right;">Quá hạn</th>
+                                        <th>Tựa sách &amp; Phiếu</th>
+                                        <th style="text-align: center;">Tình trạng</th>
+                                        <th style="text-align: right;">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="overdue-table-body">
                                     <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            23010412</td>
+                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">23010412</td>
                                         <td><strong>Trần Minh Khoa</strong></td>
-                                        <td
-                                            style="color: var(--color-text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            Lập trình Hướng đối tượng</td>
-                                        <td style="text-align: right;">
-                                            <span class="badge-count-pill red">18 ngày</span>
+                                        <td>
+                                            <div style="font-weight: 600; color: var(--color-text-primary);">Lập trình Hướng đối tượng</div>
+                                            <div style="font-size: 11px; color: var(--color-text-muted);">#PM-2024-0001</div>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            22010889</td>
-                                        <td><strong>Lê Hoàng Quân</strong></td>
-                                        <td
-                                            style="color: var(--color-text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            Toán Rời rạc Ứng dụng</td>
-                                        <td style="text-align: right;">
-                                            <span class="badge-count-pill red">14 ngày</span>
+                                        <td style="text-align: center;">
+                                            <span class="badge-count-pill red">18 ngày trễ</span>
+                                            <div style="font-size: 11px; color: #dc2626; font-weight: 600; margin-top: 2px;">Phạt: 36.000 đ</div>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            23020045</td>
-                                        <td><strong>Phạm Thị Mai</strong></td>
-                                        <td
-                                            style="color: var(--color-text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            Marketing Căn bản</td>
                                         <td style="text-align: right;">
-                                            <span class="badge-count-pill pink">10 ngày</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            21010115</td>
-                                        <td><strong>Ngô Tuấn Kiệt</strong></td>
-                                        <td
-                                            style="color: var(--color-text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            Kỹ thuật Điện tử số</td>
-                                        <td style="text-align: right;">
-                                            <span class="badge-count-pill pink">8 ngày</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            23010772</td>
-                                        <td><strong>Đỗ Bảo Ngọc</strong></td>
-                                        <td
-                                            style="color: var(--color-text-secondary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            Kỹ năng Giao tiếp đại học</td>
-                                        <td style="text-align: right;">
-                                            <span class="badge-count-pill pink">6 ngày</span>
+                                            <button type="button" class="btn-action-remind" data-loan="1" data-name="Trần Minh Khoa" style="border:none;background:#fee2e2;color:#dc2626;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px;" title="Gửi nhắc nhở in-app">
+                                                Nhắc nhở
+                                            </button>
+                                            <a href="fines.html?loan_code=PM-2024-0001" style="display:inline-block;border:none;background:#e2e8f0;color:#334155;padding:4px 8px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">
+                                                Thu phạt
+                                            </a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -613,10 +582,10 @@
                         </div>
 
                         <div class="card-table-footer">
-                            <span style="color: var(--color-text-muted);">Tổng cộng: 18 phiếu đang quá hạn</span>
-                            <button type="button" id="btnRemindOverdue" style="color: var(--color-danger);">
+                            <span id="overdue-footer-summary" style="color: var(--color-text-muted);">Tổng cộng: 1 phiếu đang quá hạn</span>
+                            <button type="button" id="btnRemindOverdue" style="color: var(--color-danger); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; font-weight: 600;">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span>
-                                <span>Gửi email nhắc nhở hàng loạt</span>
+                                <span>Gửi thông báo nhắc nhở hàng loạt</span>
                             </button>
                         </div>
                     </div>
@@ -850,6 +819,7 @@
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/utils.js"></script>
+    <script src="../js/notifications.js" defer></script>
     <script src="../js/pages/staff-dashboard.js"></script>
 </body>
 

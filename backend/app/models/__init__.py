@@ -17,4 +17,5 @@ from app.models.loan_item import LoanItem  # noqa: F401
 from app.models.reservation import Reservation, ReservationStatus  # noqa: F401
 
 from app.models.fine import Fine  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
 

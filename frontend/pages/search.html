@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tra cứu Danh mục Ấn bản Thư viện | KS25 Library</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../css/style.css?v=10.1">
+  <link rel="stylesheet" href="../css/search.css?v=10.1">
+</head>
+<body data-root="../">
+  <!-- 1. HEADER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER) -->
+  <header id="app-header">
+    <div class="container header-inner">
+      <a href="home.html" class="brand">
+        <div class="brand-icon">KS</div>
+        <div class="brand-text">
+          <span class="brand-title">KS25 Library</span>
+          <span class="brand-subtitle">Hệ thống thư viện số</span>
+        </div>
+      </a>
+      <nav class="nav" id="main-nav">
+        <a href="home.html" class="nav-item" onclick="handleNavClick(event, this)">Trang chủ</a>
+        <a href="search.html" class="nav-item active" onclick="handleNavClick(event, this)">Tra cứu sách</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="handleNavClick(event, this)">Phiếu mượn của tôi</a>
+        <a href="javascript:void(0)" class="nav-item" onclick="handleNavClick(event, this)">Quản trị thư viện</a>
+      </nav>
+      <div class="header-user-area">
+        <button type="button" class="btn-login" id="btn-login" onclick="handleLoginClick(event)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Đăng nhập</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. PHẦN HERO & THANH TÌM KIẾM TRUNG TÂM -->
+  <section class="search-hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span>🌿</span>
+        <span>KHO TÀI LIỆU HỌC THUẬT UNILIB • KS25 SYSTEM</span>
+      </div>
+
+      <h1 class="hero-title">Tra cứu Danh mục Ấn bản Thư viện</h1>
+      <p class="hero-subtitle">
+        Tìm kiếm trong hơn 140.000 đầu sách, giáo trình đại học, luận văn thạc sĩ và tạp chí nghiên cứu khoa học.
+      </p>
+
+      <!-- Khung tìm kiếm: Hợp nhất icon, input, quét mã vạch và nút tìm kiếm trên cùng 1 hàng -->
+      <div class="search-wrapper">
+        <div class="search-box" style="display: flex !important; flex-direction: row !important; align-items: center !important; width: 100% !important; background: #FFFFFF !important; border: 1px solid var(--color-border) !important; border-radius: var(--radius-lg) !important; padding: 8px 12px 8px 18px !important; box-sizing: border-box !important; gap: 12px !important; box-shadow: 0 4px 16px rgba(27, 67, 50, 0.07) !important;">
+          <span class="search-icon" style="font-size: 20px !important; color: var(--color-muted) !important; flex-shrink: 0 !important; display: flex !important; align-items: center !important; margin: 0 !important;">🔍</span>
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-input" 
+            value="Học máy và cấu trúc dữ liệu" 
+            placeholder="Nhập tên tài liệu, tác giả, chuyên ngành hoặc mã ISBN..."
+            onkeyup="handleSearchKeyup(event)"
+            style="flex: 1 1 auto !important; min-width: 180px !important; width: auto !important; border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; font-size: 16.5px !important; color: var(--color-text) !important; padding: 8px 0 !important;"
+          >
+          <button type="button" class="btn-barcode" onclick="openBarcodeModal()" title="Quét mã vạch trên gáy sách hoặc thẻ thư viện" style="flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 9px 16px !important; border: 1px solid var(--color-border) !important; border-radius: var(--radius) !important; background: var(--color-bg) !important; color: var(--color-text-sub) !important; font-size: 13.5px !important; font-weight: 600 !important; cursor: pointer !important; white-space: nowrap !important;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M2 4h2v16H2V4zm4 0h1v16H6V4zm3 0h2v16H9V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm4 0h2v16h-2V4z"/>
+            </svg>
+            <span>Quét mã vạch</span>
+          </button>
+          <button type="button" class="search-btn" onclick="executeSearch()" style="flex-shrink: 0 !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 10px 24px !important; border: none !important; border-radius: var(--radius) !important; background: var(--color-primary) !important; color: #FFFFFF !important; font-size: 15px !important; font-weight: 700 !important; cursor: pointer !important; white-space: nowrap !important;">
+            <span>Tìm kiếm</span>
+            <span>→</span>
+          </button>
+        </div>
+
+        <!-- Các ô phạm vi tìm kiếm: Ban đầu chữ đen; khi di chuột hoặc bấm thì chữ đổi trắng, ô thành xanh và di chuyển lên -->
+        <div class="scope-selector">
+          <span class="scope-label">Phạm vi:</span>
+          <button type="button" class="scope-pill" data-scope="all" onclick="selectScope('all', this)">Tất cả</button>
+          <button type="button" class="scope-pill" data-scope="title" onclick="selectScope('title', this)">Nhan đề</button>
+          <button type="button" class="scope-pill" data-scope="author" onclick="selectScope('author', this)">Tác giả</button>
+          <button type="button" class="scope-pill" data-scope="isbn" onclick="selectScope('isbn', this)">ISBN</button>
+          <button type="button" class="scope-pill" data-scope="category" onclick="selectScope('category', this)">Chủ đề / Chuyên ngành</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. KHU VỰC CHÍNH: BỘ LỌC BÊN TRÁI + DANH SÁCH SÁCH BÊN PHẢI -->
+  <div class="search-page-container">
+    <div class="search-layout">
+      <!-- SIDEBAR: BỘ LỌC TÌM KIẾM -->
+      <aside class="search-sidebar">
+        <div class="filter-header">
+          <h3 class="filter-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            Bộ lọc tìm kiếm
+          </h3>
+          <button type="button" class="filter-reset-btn" onclick="resetAllFilters()">Đặt lại</button>
+        </div>
+
+        <!-- 1. Chỉ hiện sách còn sẵn -->
+        <label class="filter-avail-pill" for="filter-avail-only">
+          <span style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:#166534;">
+            <span style="width:8px; height:8px; border-radius:50%; background:#16A34A;"></span>
+            Chỉ hiện sách còn sẵn
+          </span>
+          <input type="checkbox" id="filter-avail-only" class="filter-checkbox" checked onchange="applyFilters()">
+        </label>
+
+        <!-- 2. Thể loại & Chuyên ngành -->
+        <div class="filter-group">
+          <div class="filter-group-title">THỂ LOẠI & CHUYÊN NGÀNH</div>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-cat" value="Khoa học Máy tính" checked onchange="applyFilters()">
+              Khoa học Máy tính
+            </span>
+            <span class="filter-count">54</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-cat" value="Kinh tế & Quản trị" checked onchange="applyFilters()">
+              Kinh tế & Quản trị
+            </span>
+            <span class="filter-count">38</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-cat" value="Kỹ thuật Công nghệ" onchange="applyFilters()">
+              Kỹ thuật Công nghệ
+            </span>
+            <span class="filter-count">22</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-cat" value="Văn học & Nghệ thuật" onchange="applyFilters()">
+              Văn học & Nghệ thuật
+            </span>
+            <span class="filter-count">14</span>
+          </label>
+        </div>
+
+        <hr class="filter-divider">
+
+        <!-- 3. Vị trí kho & Kệ sách -->
+        <div class="filter-group">
+          <div class="filter-group-title">VỊ TRÍ KHO & KỆ SÁCH</div>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-shelf" value="Tầng 1 - Kệ A (Công nghệ)" checked onchange="applyFilters()">
+              Tầng 1 - Kệ A (Công nghệ)
+            </span>
+            <span class="filter-count">62</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-shelf" value="Tầng 2 - Kệ B (Kinh tế)" onchange="applyFilters()">
+              Tầng 2 - Kệ B (Kinh tế)
+            </span>
+            <span class="filter-count">41</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-shelf" value="Tầng 3 - Kệ C (Xã hội)" onchange="applyFilters()">
+              Tầng 3 - Kệ C (Xã hội)
+            </span>
+            <span class="filter-count">25</span>
+          </label>
+        </div>
+
+        <hr class="filter-divider">
+
+        <!-- 4. Ngôn ngữ ấn bản -->
+        <div class="filter-group">
+          <div class="filter-group-title">NGÔN NGỮ ẤN BẢN</div>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-lang" value="Tiếng Việt" checked onchange="applyFilters()">
+              Tiếng Việt
+            </span>
+            <span class="filter-count">89</span>
+          </label>
+          <label class="filter-item">
+            <span style="display:flex; align-items:center;">
+              <input type="checkbox" class="filter-checkbox filter-lang" value="English" checked onchange="applyFilters()">
+              English
+            </span>
+            <span class="filter-count">39</span>
+          </label>
+        </div>
+
+        <!-- Khung đề xuất sách -->
+        <div class="filter-suggestion-card">
+          <div class="filter-suggestion-title">
+            <span>💡</span> Không tìm thấy sách?
+          </div>
+          <div class="filter-suggestion-desc">
+            Bạn có thể gửi yêu cầu thủ thư bổ sung tài liệu mới vào kho.
+          </div>
+          <a href="javascript:void(0)" class="filter-suggestion-link" onclick="handleBookSuggestion()">
+            <span>Gửi đề xuất sách</span>
+            <span>→</span>
+          </a>
+        </div>
+      </aside>
+
+      <!-- KHU VỰC KẾT QUẢ TÌM KIẾM -->
+      <main class="search-results-main">
+        <!-- Thanh công cụ phía trên kết quả -->
+        <div class="results-toolbar">
+          <div class="results-count-text">
+            Tìm thấy <strong id="results-count">128</strong> kết quả 
+            <span style="color:var(--color-muted); margin: 0 6px;">•</span> 
+            <span id="results-page-indicator">Hiển thị trang 1/12</span>
+          </div>
+
+          <div class="results-actions">
+            <span style="font-size:13px; color:var(--color-text-sub);">Sắp xếp:</span>
+            <select id="sort-select" class="sort-select" onchange="handleSortChange(this.value)">
+              <option value="popular">Phổ biến nhất</option>
+              <option value="newest">Mới nhất</option>
+              <option value="available">Còn sẵn nhiều nhất</option>
+              <option value="title">Tên ấn bản A-Z</option>
+            </select>
+
+            <div class="view-toggle-group">
+              <button type="button" class="view-btn active" id="btn-grid" onclick="setViewMode('grid')" title="Chế độ xem lưới">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+                </svg>
+              </button>
+              <button type="button" class="view-btn" id="btn-list" onclick="setViewMode('list')" title="Chế độ xem danh sách">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LƯỚI 6 THẺ SÁCH CHUẨN THEO ẢNH MẪU -->
+        <div class="books-search-grid" id="books-results-grid">
+          <!-- Sẽ được render động qua JavaScript để hỗ trợ lọc và tìm kiếm -->
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <div class="pagination-container" id="pagination-controls">
+          <button type="button" class="page-btn" onclick="goToPage('prev')">&lt; Trang trước</button>
+          <button type="button" class="page-btn active" onclick="goToPage(1)">1</button>
+          <button type="button" class="page-btn" onclick="goToPage(2)">2</button>
+          <button type="button" class="page-btn" onclick="goToPage(3)">3</button>
+          <span class="page-dots">...</span>
+          <button type="button" class="page-btn" onclick="goToPage(12)">12</button>
+          <button type="button" class="page-btn" onclick="goToPage('next')">Trang kế &gt;</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 4. MODAL QUÉT MÃ VẠCH (BARCODE SCANNER SIMULATION) -->
+  <div class="barcode-modal-backdrop" id="barcode-modal" onclick="closeBarcodeModal(event)">
+    <div class="barcode-modal" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--color-primary);">Quét mã vạch tài liệu</h3>
+        <button style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="closeBarcodeModal()">&times;</button>
+      </div>
+      <div style="background:#1A202C; border-radius:8px; height:180px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff;">
+        <div class="barcode-scanner-line" style="position:absolute; top:20px;"></div>
+        <div style="text-align:center; opacity:0.8; font-size:13px;">
+          <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24" style="margin-bottom:8px;"><path d="M4 4h4v2H4v12h4v2H2V4h2zm16 0h-4v2h4v12h-4v2h6V4h-2zM8 7h2v10H8V7zm4 0h1v10h-1V7zm3 0h1v10h-1V7z"/></svg>
+          <div>Đặt mã vạch hoặc camera trước vạch quét</div>
+        </div>
+      </div>
+      <p style="font-size:12.5px; color:var(--color-muted); margin: 14px 0 16px;">Hệ thống nhận diện mã ISBN và số hiệu mã vạch lưu thông thư viện KS25.</p>
+      <button class="search-btn" style="width:100%; justify-content:center;" onclick="simulateBarcodeFound()">
+        <span>Mô phỏng quét mã ISBN: 978-604-0123-45</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. FOOTER THEO ĐÚNG THIẾT KẾ -->
+  <footer id="app-footer">
+    <div class="container footer-inner">
+      <div>© 2026 Thư viện số KS25. Bảo lưu mọi quyền.</div>
+      <div class="footer-links">
+        <a href="javascript:void(0)" onclick="alert('Trung tâm trợ giúp: Liên hệ thuvien@ks25.edu.vn hoặc Hotline: 024.1234.5678')">Trung tâm trợ giúp</a>
+        <a href="javascript:void(0)" onclick="alert('Quy chế mượn trả: Mượn tối đa 5 cuốn trong 14 ngày. Trễ hạn phạt 2.000đ/ngày.')">Quy định mượn trả</a>
+        <a href="javascript:void(0)" onclick="alert('Hỗ trợ sinh viên: Phòng tự học tầng 2, mở cửa 07:30 - 20:30 từ Thứ Hai - Thứ Bảy.')">Hỗ trợ sinh viên</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../js/config.js?v=9.0"></script>
+  <script src="../js/utils.js?v=9.0"></script>
+  <script src="../js/layout.js?v=9.0"></script>
+  <script src="../js/pages/search.js?v=9.0"></script>
+</body>
+</html>

@@ -120,12 +120,21 @@ const auth = {
   },
 };
 
-// ---------- Khởi tạo Axios Instance ----------
-const http = axios.create({
-  baseURL: CONFIG.API_BASE_URL,
-  timeout: 10000,
-  headers: { "Content-Type": "application/json" },
-});
+// ---------- Khởi tạo Axios Instance (an toàn không gây crash nếu chưa tải được thư viện) ----------
+const http = typeof axios !== "undefined"
+  ? axios.create({
+      baseURL: CONFIG.API_BASE_URL,
+      timeout: 10000,
+      headers: { "Content-Type": "application/json" },
+    })
+  : {
+      interceptors: { request: { use: () => {} }, response: { use: () => {} } },
+      get: async () => [],
+      post: async () => ({}),
+      put: async () => ({}),
+      patch: async () => ({}),
+      delete: async () => ({}),
+    };
 
 // 1. Request Interceptor: Tự động gắn JWT Bearer Token vào mọi request
 http.interceptors.request.use(

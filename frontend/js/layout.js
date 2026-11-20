@@ -17,9 +17,10 @@
 
 // Danh sách menu cho Cổng Độc giả (Header ngang)
 const READER_MENU = [
-  { href: "index.html", label: "Trang chủ & Tra cứu" },
-  { href: "pages/items.html", label: "Items (CRUD mẫu)" },
-  { href: "pages/auth.html", label: "Tài khoản & Thẻ" },
+  { href: "home.html", label: "Trang chủ" },
+  { href: "search.html", label: "Tra cứu sách" },
+  { href: "javascript:void(0)", label: "Phiếu mượn của tôi" },
+  { href: "javascript:void(0)", label: "Quản trị thư viện" },
 ];
 
 // Danh sách menu Sidebar cho Admin & Thủ thư (Cả nhóm thêm trang mới vào đây)
@@ -232,76 +233,55 @@ function renderReaderLayout() {
 
   if (headerEl) {
     const linksHtml = READER_MENU.map((item) => {
-      const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")));
-      return `<a href="${root}${item.href}" class="nav-link ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
+      const isCurrent = currentPath.endsWith("/" + item.href);
+      return `<a href="${item.href}" class="nav-item ${isCurrent ? "active" : ""}" onclick="handleNavClick(event, this)">${getSafeText(item.label)}</a>`;
     }).join("");
 
-    // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
-    const staffShortcutHtml =
-      user && (user.role === "ADMIN" || user.role === "LIBRARIAN")
-        ? `<a href="${root}pages/staff-dashboard.html" class="btn btn-outline btn-small">⚡ Bàn làm việc Thủ thư</a>`
-        : "";
-
-    let userAreaHtml = "";
-    if (user) {
-      const cardBadgeHtml =
-        user.role === "READER" && card?.card_code
-          ? `<span class="reader-card-pill" title="Mã thẻ thư viện">💳 ${getSafeText(card.card_code)}</span>`
-          : "";
-
-      userAreaHtml = `
-        <div class="header-user-area">
-          ${staffShortcutHtml}
-          ${cardBadgeHtml}
-          <a href="${root}pages/auth.html" class="user-chip" title="Xem thông tin tài khoản">
-            <span>👤 ${getSafeText(user.full_name || user.email)}</span>
-            <span class="user-chip-role">${getSafeText(ROLE_LABELS[user.role] || user.role)}</span>
-          </a>
-          <button type="button" id="header-logout-btn" class="btn btn-danger btn-small">Đăng xuất</button>
-        </div>
-      `;
-    } else {
-      userAreaHtml = `
-        <div class="header-user-area">
-          <a href="${root}pages/login.html#login" class="btn btn-small">Đăng nhập</a>
-          <a href="${root}pages/login.html#register" class="btn btn-primary btn-small">Đăng ký thẻ</a>
-        </div>
-      `;
-    }
+    const userAreaHtml = `
+      <div class="header-user-area">
+        <button type="button" class="btn-login" id="btn-login" onclick="handleLoginClick(event)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+          <span>Đăng nhập</span>
+        </button>
+      </div>
+    `;
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="${root}index.html" class="brand">
-          <div class="brand-logo-box">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
+        <a href="home.html" class="brand">
+          <div class="brand-icon">KS</div>
+          <div class="brand-text">
+            <span class="brand-title">KS25 Library</span>
+            <span class="brand-subtitle">Hệ thống thư viện số</span>
           </div>
-          <span>KS25 Library</span>
         </a>
-        <nav class="nav">${linksHtml}</nav>
+        <nav class="nav" id="main-nav">${linksHtml}</nav>
         ${userAreaHtml}
       </div>
     `;
 
-    document.getElementById("header-logout-btn")?.addEventListener("click", () => {
-      auth.clearSession();
-      window.location.href = `${root}pages/login.html#login`;
+    // Sticky header đổ bóng khi cuộn
+    window.addEventListener("scroll", () => {
+      if (headerEl) {
+        if (window.scrollY > 20) {
+          headerEl.classList.add("scrolled");
+        } else {
+          headerEl.classList.remove("scrolled");
+        }
+      }
     });
   }
 
-  if (footerEl) {
+  if (footerEl && !footerEl.querySelector(".footer-inner")) {
     footerEl.innerHTML = `
       <div class="container footer-inner">
-        <div>© ${new Date().getFullYear()} <strong>KS25 Library System</strong> · Đồ án thực tập CNTT (HN-KS25-CNTT1)</div>
+        <div>© ${new Date().getFullYear()} Thư viện số KS25. Bảo lưu mọi quyền.</div>
         <div class="footer-links">
-          <a href="${root}index.html">Cổng Độc giả</a>
-          <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
-          <a href="${root}pages/auth.html">Tài khoản & Thẻ</a>
-          <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>
+          <a href="javascript:void(0)">Trung tâm trợ giúp</a>
+          <a href="javascript:void(0)">Quy định mượn trả</a>
+          <a href="javascript:void(0)">Hỗ trợ sinh viên</a>
         </div>
       </div>
     `;
@@ -344,8 +324,8 @@ function renderStaffLayout() {
         const badgeHtml = item.badge
           ? `<span class="sidebar-badge">${getSafeText(item.badge)}</span>`
           : isRestricted
-          ? `<span class="sidebar-badge">🔒</span>`
-          : "";
+            ? `<span class="sidebar-badge">🔒</span>`
+            : "";
 
         return `
           <a href="${root}${item.href}" class="sidebar-link ${isActive ? "active" : ""}">
@@ -426,14 +406,13 @@ function renderStaffLayout() {
             <span>🔍</span>
             <input id="topbar-copy-code-input" type="text" placeholder="Tra nhanh copy_code (VD: BC-...)" autocomplete="off">
           </form>
-          ${
-            user
-              ? `<span class="user-chip">
+          ${user
+      ? `<span class="user-chip">
                   <span>${getSafeText(user.full_name || user.email)}</span>
                   <span class="user-chip-role">${getSafeText(user.role)}</span>
                 </span>`
-              : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
-          }
+      : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
+    }
         </div>
       </header>
 
@@ -510,5 +489,32 @@ function initLayout() {
     });
   }
 }
+
+function handleNavClick(e, el) {
+  if (el.getAttribute("href") === "javascript:void(0)" || el.getAttribute("href") === "#") {
+    if (e) e.preventDefault();
+  }
+  document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function handleLoginClick(e) {
+  if (e) e.preventDefault();
+  const btn = document.getElementById("btn-login");
+  if (!btn) return;
+  const isLogged = btn.classList.toggle("logged-in");
+  if (isLogged) {
+    btn.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16A34A;"></span><span>Độc giả KS25</span>`;
+    btn.style.color = "#16A34A";
+    btn.style.borderColor = "#16A34A";
+  } else {
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span>Đăng nhập</span>`;
+    btn.style.color = "var(--color-primary)";
+    btn.style.borderColor = "var(--color-primary)";
+  }
+}
+
+window.handleNavClick = handleNavClick;
+window.handleLoginClick = handleLoginClick;
 
 initLayout();

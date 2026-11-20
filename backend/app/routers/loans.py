@@ -13,6 +13,8 @@ from app.schemas.loan import (
     CounterBorrowReceiptResponse,
     ReaderLookupResponse,
     CopyLookupResponse,
+    RenewalRequest,
+    RenewalResponse,
 )
 from app.crud.loan_service import (
     create_online_loan,
@@ -24,6 +26,7 @@ from app.crud.loan_service import (
     get_copy_by_barcode,
     validate_counter_borrow,
     create_counter_loan,
+    renew_loan_item,
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
@@ -143,3 +146,28 @@ def handover(
 ):
     copies_data = [item.model_dump() for item in data.copies]
     return handover_loan(db, loan_id, librarian_id, copies_data)
+
+
+# ── API GIA HẠN SÁCH (RENEWAL) ──────────────────────────────────
+
+@router.patch("/items/{loan_item_id}/renew", response_model=RenewalResponse)
+def renew_item(
+    loan_item_id: int,
+    data: RenewalRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Gia hạn 1 cuốn sách đang mượn thêm 7 ngày.
+    Điều kiện:
+    - Cuốn sách chưa quá hạn (due_date >= hôm nay).
+    - Chưa gia hạn quá 1 lần (renewal_count < MAX_RENEWALS).
+    - Đầu sách không có ai đặt trước (reservations WAITING/READY).
+    - Phiếu mượn ở trạng thái BORROWED và cuốn sách chưa trả.
+    Hỗ trợ cả độc giả tự gia hạn (truyền user_id) và thủ thư gia hạn hộ (truyền librarian_id).
+    """
+    return renew_loan_item(
+        db,
+        loan_item_id=loan_item_id,
+        user_id=data.user_id,
+        librarian_id=data.librarian_id,
+    )

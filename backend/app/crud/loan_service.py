@@ -12,6 +12,7 @@ from app.models.loan_item import LoanItem
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.fine import Fine
+from app.models.reservation import Reservation
 from app.crud.copy_status_log import change_copy_status
 
 MAX_BORROW_BOOKS = 5       
@@ -933,3 +934,165 @@ def get_book_loan_history(db: Session, isbn: str):
         .order_by(Loan.borrowed_at.desc())
         .all()
     )
+
+
+# ==============================================================================
+#  GIA HẠN SÁCH (RENEWAL)
+#  Quy tắc:
+#   - Mỗi cuốn gia hạn tối đa MAX_RENEWALS lần (1 lần).
+#   - Mỗi lần gia hạn cộng thêm RENEWAL_DAYS ngày (7 ngày) vào hạn trả hiện tại.
+#   - Chỉ gia hạn được khi cuốn sách chưa quá hạn (due_date >= hôm nay).
+#   - Không gia hạn được nếu đầu sách đó đang có người đặt trước (reservations WAITING/READY).
+#   - Cả độc giả tự gia hạn hoặc thủ thư gia hạn hộ đều dùng chung API này.
+# ==============================================================================
+
+def renew_loan_item(
+    db: Session,
+    loan_item_id: int,
+    user_id: int | None = None,
+    librarian_id: int | None = None,
+) -> dict:
+    """
+    Gia hạn 1 cuốn sách (loan_item) thêm 7 ngày.
+
+    Parameters:
+        db: SQLAlchemy Session
+        loan_item_id: ID của dòng loan_items cần gia hạn
+        user_id: ID độc giả tự gia hạn (None nếu thủ thư gia hạn hộ)
+        librarian_id: ID thủ thư gia hạn hộ (None nếu độc giả tự gia hạn)
+
+    Returns:
+        dict chứa thông tin sau khi gia hạn thành công
+
+    Raises:
+        HTTPException 404: Không tìm thấy mục mượn
+        HTTPException 400: Vi phạm điều kiện gia hạn
+        HTTPException 409: Đầu sách đang có người đặt trước
+    """
+    try:
+        # 1. Tìm loan_item
+        item = db.query(LoanItem).filter(LoanItem.id == loan_item_id).first()
+        if not item:
+            raise HTTPException(
+                status_code=404,
+                detail="Không tìm thấy mục mượn sách cần gia hạn",
+            )
+
+        # 2. Kiểm tra loan đang ở trạng thái BORROWED
+        loan = db.query(Loan).filter(Loan.id == item.loan_id).first()
+        if not loan or loan.status != LoanStatus.BORROWED:
+            raise HTTPException(
+                status_code=400,
+                detail="Phiếu mượn không ở trạng thái đang mượn (BORROWED), không thể gia hạn",
+            )
+
+        # 3. Kiểm tra cuốn sách chưa trả (return_date phải NULL)
+        if item.return_date is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="Cuốn sách này đã được trả, không thể gia hạn",
+            )
+
+        # 4. Kiểm tra quyền: nếu user_id được truyền, phải trùng với chủ phiếu
+        if user_id is not None and loan.user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Bạn không có quyền gia hạn phiếu mượn của người khác",
+            )
+
+        # 5. Kiểm tra số lần gia hạn chưa vượt giới hạn
+        if item.renewal_count >= MAX_RENEWALS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cuốn sách này đã gia hạn {item.renewal_count}/{MAX_RENEWALS} lần, "
+                       f"không thể gia hạn thêm",
+            )
+
+        # 6. Kiểm tra chưa quá hạn (due_date >= ngày hiện tại)
+        now = datetime.now()
+        if item.due_date and item.due_date < now:
+            overdue_days = (now - item.due_date).days
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cuốn sách đã quá hạn {overdue_days} ngày, không thể gia hạn. "
+                       f"Vui lòng trả sách và thanh toán phí phạt quá hạn.",
+            )
+
+        # 7. Kiểm tra không có ai đặt trước đầu sách đó (WAITING hoặc READY)
+        has_reservation = (
+            db.query(Reservation)
+            .filter(
+                Reservation.book_isbn == item.book_isbn,
+                Reservation.status.in_(["WAITING", "READY"]),
+            )
+            .first()
+        )
+        if has_reservation:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Đầu sách '{item.book_isbn}' đang có độc giả khác đặt trước, "
+                       f"không thể gia hạn. Vui lòng trả sách đúng hạn.",
+            )
+
+        # 8. Thực hiện gia hạn: cộng thêm RENEWAL_DAYS ngày vào due_date
+        old_due_date = item.due_date
+        new_due_date = item.due_date + timedelta(days=RENEWAL_DAYS) if item.due_date else now + timedelta(days=RENEWAL_DAYS)
+        item.due_date = new_due_date
+        item.renewal_count += 1
+
+        # Cập nhật due_date trên phiếu Loan cha nếu tất cả item đều cùng hạn
+        # (Nếu phiếu chỉ có 1 cuốn hoặc cuốn này có hạn trả xa nhất)
+        all_items = db.query(LoanItem).filter(
+            LoanItem.loan_id == loan.id,
+            LoanItem.return_date.is_(None),
+        ).all()
+        max_due = max(
+            (i.due_date for i in all_items if i.due_date),
+            default=new_due_date,
+        )
+        loan.due_date = max_due
+
+        db.commit()
+        db.refresh(item)
+        db.refresh(loan)
+
+        # Lấy thông tin bổ sung cho response
+        book_title = "Không xác định"
+        copy_code_str = None
+        if item.copy:
+            copy_code_str = item.copy.copy_code
+        if item.book:
+            book_title = item.book.title
+
+        # Xác định người thực hiện
+        renewed_by = "Độc giả tự gia hạn"
+        if librarian_id:
+            lib_user = db.query(User).filter(User.id == librarian_id).first()
+            if lib_user:
+                renewed_by = f"Thủ thư {lib_user.full_name}"
+
+        return {
+            "loan_item_id": item.id,
+            "loan_id": loan.id,
+            "loan_code": loan.code,
+            "book_isbn": item.book_isbn,
+            "book_title": book_title,
+            "copy_code": copy_code_str,
+            "renewal_count": item.renewal_count,
+            "max_renewals": MAX_RENEWALS,
+            "old_due_date": old_due_date.strftime("%d/%m/%Y") if old_due_date else "—",
+            "new_due_date": new_due_date.strftime("%d/%m/%Y"),
+            "renewed_by": renewed_by,
+            "message": f"Gia hạn thành công! Hạn trả mới: {new_due_date.strftime('%d/%m/%Y')} "
+                       f"(+{RENEWAL_DAYS} ngày). Lần gia hạn {item.renewal_count}/{MAX_RENEWALS}.",
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi hệ thống khi gia hạn sách: {str(e)}",
+        )

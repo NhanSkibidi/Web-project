@@ -40,9 +40,25 @@ body {
 }
 
 .container {
-  max-width: 1180px;
+  width: 100%;
+  max-width: 96%;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: 96%;
+    padding: 0 44px;
+  }
+}
+
+@media (min-width: 1800px) {
+  .container {
+    max-width: 96%;
+    padding: 0 56px;
+  }
 }
 
 /* ==========================================================
@@ -842,14 +858,34 @@ body {
   padding: 24px 0;
   font-size: 13.5px;
   color: var(--color-muted);
+  width: 100%;
 }
 
-.footer-inner {
+#app-footer .footer-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  padding-left: 32px;
+  padding-right: 32px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+  #app-footer .footer-inner {
+    padding-left: 44px;
+    padding-right: 44px;
+  }
+}
+
+@media (min-width: 1800px) {
+  #app-footer .footer-inner {
+    padding-left: 56px;
+    padding-right: 56px;
+  }
 }
 
 .footer-links {

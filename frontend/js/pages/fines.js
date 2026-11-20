@@ -925,7 +925,7 @@
     });
 
     // Tìm kiếm nhanh trên topbar
-    document.getElementById("topbar-quick-search").addEventListener("keydown", (e) => {
+    document.getElementById("topbar-quick-search")?.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         document.getElementById("filter-keyword").value = e.target.value;
         loadFinesTable();

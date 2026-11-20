@@ -7,36 +7,101 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Newsreader:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap&subset=vietnamese" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   <link rel="stylesheet" href="../css/loan_slip.css" />
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header__inner">
-      <a class="brand" href="home.html" aria-label="UniLib - Trang chủ">
-        <img class="brand__logo" src="../assets/images/Background+Shadow.png" alt="" width="40" height="40" />
-        <span class="brand__text"><strong>UniLib</strong><small>Thư viện số</small></span>
+  <!-- Header đồng bộ theo chuẩn returns & Task T3CFF48 -->
+  <header class="librarian-topbar">
+    <div class="topbar-left">
+      <a class="brand-badge" href="../index.html" aria-label="UniLib - Trang chủ" title="UniLib - Về trang chủ">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
       </a>
-      <nav class="nav" aria-label="Điều hướng chính">
-        <a class="nav__link" href="home.html">Trang chủ</a>
-        <a class="nav__link" href="books.html">Tra cứu sách</a>
-        <a class="nav__link is-active" href="loan_slip.html" aria-current="page">Phiếu mượn của tôi</a>
-        <a class="nav__link" href="staff-dashboard.html">Quản trị thư viện</a>
+      <nav class="topbar-nav" aria-label="Điều hướng chính">
+        <a class="topbar-nav-link" href="../index.html">Trang chủ</a>
+        <a class="topbar-nav-link" href="search.html">Tra cứu sách</a>
+        <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page">Phiếu mượn của tôi</a>
+        <a class="topbar-nav-link" href="staff-dashboard.html">Quản trị thư viện</a>
       </nav>
-      <div class="header__right">
-        <a class="cart" href="loan_basket.html" aria-label="Giỏ mượn sách, 3 cuốn">
-          <i data-lucide="shopping-cart"></i><span class="cart__badge">3</span>
-        </a>
-        <span class="header__divider"></span>
-        <div class="account">
-          <button class="account__btn" id="accountBtn" aria-haspopup="true" aria-expanded="false">
-            <img src="../assets/images/Profile.png" alt="Ảnh đại diện" width="40" height="40" />
-            <span>Nguyễn Văn An</span>
-          </button>
-          <div class="account__menu" id="accountMenu" hidden>
-            <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
-            <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
+    </div>
+    <div class="topbar-right">
+      <!-- Chuông thông báo in-app (Task T3CFF48) -->
+      <div class="notif-dropdown-container" id="notifDropdownContainer">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-badge" id="notifBadge">2</span>
+        </button>
+        <!-- BẢNG NOTIFICATION IN-APP -->
+        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+          <div class="notif-header">
+            <div class="notif-title-group">
+              <span class="notif-title">Thông báo mượn trả</span>
+              <span class="notif-badge-pill">2 mới</span>
+            </div>
+            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
           </div>
+          <div class="notif-list">
+            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
+              <div class="notif-icon-box overdue">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
+                <span class="notif-time">10 phút trước • Quá hạn</span>
+              </div>
+            </a>
+            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
+              <div class="notif-icon-box due-soon">
+                <span class="material-symbols-outlined">alarm</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
+                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
+              </div>
+            </a>
+          </div>
+          <div class="notif-footer">
+            <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Giỏ mượn sách -->
+      <a class="topbar-icon-btn" href="loan_basket.html" aria-label="Giỏ mượn sách, 3 cuốn" title="Giỏ mượn sách">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <span class="cart-badge-count">3</span>
+      </a>
+
+      <div class="topbar-divider"></div>
+
+      <div class="account">
+        <button class="librarian-profile account__btn" id="accountBtn" aria-haspopup="true" aria-expanded="false" style="border:none; background:none;">
+          <div class="librarian-avatar">A</div>
+          <div class="librarian-info">
+            <span class="librarian-name">Nguyễn Văn An</span>
+            <span class="librarian-role">Sinh viên</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="account__menu" id="accountMenu" hidden>
+          <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
+          <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
         </div>
       </div>
     </div>
@@ -79,6 +144,7 @@
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../js/notifications.js" defer></script>
   <script src="../js/pages/loan_slip.js"></script>
 </body>
 </html>

@@ -91,6 +91,7 @@ body.returns-body {
 
 .brand-badge:hover {
   transform: translateY(-2px);
+  text-decoration: none;
 }
 
 .brand-icon {
@@ -160,6 +161,7 @@ body.returns-body {
   border-color: var(--color-brand);
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
+  text-decoration: none;
 }
 
 .topbar-nav-link:active {
@@ -269,6 +271,7 @@ body.returns-body {
 .librarian-profile:hover {
   transform: translateY(-2px);
   background: rgba(27, 67, 50, 0.05);
+  text-decoration: none;
 }
 
 .librarian-avatar {
@@ -862,7 +865,7 @@ body.returns-body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-paper);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -878,8 +881,8 @@ body.returns-body {
 }
 
 .returns-table th {
-  background: #F5F3EF;
-  color: var(--color-text-muted);
+  background: #FAF8F5;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -898,11 +901,11 @@ body.returns-body {
 }
 
 .returns-table tr:hover {
-  background: rgba(250, 248, 245, 0.7);
+  background: rgba(250, 248, 245, 0.75);
 }
 
 .returns-table tr.row-damaged {
-  background: rgba(254, 243, 199, 0.25);
+  background: transparent;
 }
 
 .book-title-cell {
@@ -1028,6 +1031,151 @@ body.returns-body {
   border-color: var(--color-brand);
 }
 
+/* ==========================================================================
+   TÌNH TRẠNG VẬT LÝ UI HIỆN ĐẠI & TRỰC QUAN
+   ========================================================================== */
+.condition-control-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.condition-select-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.condition-select-shell:focus-within {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.12);
+}
+
+.condition-select-shell.is-normal {
+  border-color: #A7F3D0;
+  background: #F0FDF4;
+}
+
+.condition-select-shell.is-light-damage {
+  border-color: #FDE68A;
+  background: #FFFBEB;
+}
+
+.condition-select-shell.is-heavy-damage {
+  border-color: #FECDD3;
+  background: #FFF1F2;
+}
+
+.condition-select-shell.is-lost {
+  border-color: #FECACA;
+  background: #FEF2F2;
+}
+
+.condition-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+.condition-select-shell.is-normal .condition-icon {
+  color: var(--color-success);
+}
+.condition-select-shell.is-light-damage .condition-icon {
+  color: var(--color-amber);
+}
+.condition-select-shell.is-heavy-damage .condition-icon,
+.condition-select-shell.is-lost .condition-icon {
+  color: var(--color-danger);
+}
+
+.condition-select-native {
+  width: 100%;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 22px;
+}
+
+.condition-arrow {
+  position: absolute;
+  right: 8px;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+/* Badge trạng thái đạt chuẩn */
+.condition-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.condition-status-pill.pill-normal {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.condition-status-pill .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* Ô nhập ghi chú hỏng hóc có icon */
+.condition-note-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #FCD34D;
+  border-radius: 6px;
+  padding: 0 8px;
+  box-shadow: 0 1px 2px rgba(245, 158, 11, 0.08);
+}
+
+.condition-note-wrap:focus-within {
+  border-color: #D97706;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.15);
+}
+
+.condition-note-wrap .note-icon {
+  font-size: 16px;
+  color: #D97706;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.condition-note-wrap .condition-note-input {
+  width: 100%;
+  height: 30px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  outline: none;
+  margin: 0;
+  padding: 0;
+}
+
 .fine-amount-display {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
@@ -1059,7 +1207,7 @@ body.returns-body {
 
 .table-footer-strip {
   padding: 14px 20px;
-  background: var(--color-paper);
+  background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
@@ -1288,30 +1436,342 @@ body.returns-body {
   border-color: var(--color-brand);
 }
 
-.checkbox-group {
-  margin-top: 14px;
+/* ==========================================================================
+   VIETQR PAYMENT BOX (KHUNG MÃ QR ĐỘNG CHUẨN NAPAS 247)
+   ========================================================================== */
+.vietqr-container {
+  background: #FFFFFF;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  animation: fadeInQR 0.25s ease-out;
+}
+
+@keyframes fadeInQR {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vietqr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--color-border);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.vietqr-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vietqr-badge {
+  background: #0054A6;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.napas-badge {
+  background: #EA580C;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.vietqr-live-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.vietqr-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  animation: qrPulse 1.6s infinite;
+}
+
+@keyframes qrPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.vietqr-code-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.vietqr-frame-box {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  background: #FFFFFF;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 4 góc ngắm căn scanner */
+.qr-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-brand);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.qr-top-left {
+  top: 4px;
+  left: 4px;
+  border-width: 2.5px 0 0 2.5px;
+  border-top-left-radius: 4px;
+}
+
+.qr-top-right {
+  top: 4px;
+  right: 4px;
+  border-width: 2.5px 2.5px 0 0;
+  border-top-right-radius: 4px;
+}
+
+.qr-bottom-left {
+  bottom: 4px;
+  left: 4px;
+  border-width: 0 0 2.5px 2.5px;
+  border-bottom-left-radius: 4px;
+}
+
+.qr-bottom-right {
+  bottom: 4px;
+  right: 4px;
+  border-width: 0 2.5px 2.5px 0;
+  border-bottom-right-radius: 4px;
+}
+
+.vietqr-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.vietqr-scan-guide {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.vietqr-scan-guide .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--color-brand);
+}
+
+.vietqr-details-table {
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.vietqr-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 12px;
 }
 
-.checkbox-group label {
+.vietqr-detail-row .label {
+  color: var(--color-text-muted);
+  font-size: 11.5px;
+}
+
+.vietqr-detail-row .val {
+  color: var(--color-text-primary);
+}
+
+.vietqr-detail-row.highlight-amount {
+  border-top: 1px dashed var(--color-border);
+  border-bottom: 1px dashed var(--color-border);
+  padding: 6px 0;
+  margin: 2px 0;
+}
+
+.vietqr-detail-row.highlight-amount .val {
+  font-size: 15px;
+}
+
+.val-copy-group {
   display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-copy-chip {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-copy-chip:hover {
+  background: var(--color-brand-light);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  transform: translateY(-1px);
+}
+
+.btn-copy-chip .material-symbols-outlined {
+  font-size: 13px;
+}
+
+.vietqr-auto-alert {
+  margin-top: 10px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #15803D;
+  font-weight: 500;
+}
+
+.vietqr-auto-alert .material-symbols-outlined {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   CUSTOM TICK / CHECKBOX COMPONENT (ĐỒNG BỘ TOÀN TRANG)
+   ========================================================================== */
+.custom-tick-label {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   user-select: none;
+  position: relative;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.custom-tick-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
   margin: 0;
-  font-weight: normal;
+  pointer-events: none;
+}
+
+.custom-tick-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #CBD5E1;
+  background: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.custom-tick-box .tick-icon {
+  font-size: 14px;
+  color: #FFFFFF;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.custom-tick-label:hover .custom-tick-box {
+  border-color: var(--color-brand);
+  background: #F8FAFC;
+}
+
+.custom-tick-input:focus-visible + .custom-tick-box {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.custom-tick-input:checked + .custom-tick-box {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: 0 2px 5px rgba(27, 67, 50, 0.25);
+}
+
+.custom-tick-input:checked + .custom-tick-box .tick-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.custom-tick-text {
+  color: var(--color-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.custom-tick-label:hover .custom-tick-text {
+  color: var(--color-text-primary);
+}
+
+.checkbox-group {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .cta-actions {
   margin-top: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-confirm-action {
@@ -1340,22 +1800,47 @@ body.returns-body {
   transform: scale(0.99);
 }
 
+/* ==========================================================================
+   NÚT HỦY BỎ LƯỢT TIẾP NHẬN (RED DESTRUCTIVE ACTION BUTTON ĐỒNG BỘ ĐẸP MẮT)
+   ========================================================================== */
 .btn-cancel-action {
   width: 100%;
-  height: 36px;
-  background: transparent;
-  color: var(--color-text-muted);
-  border: none;
+  height: 40px;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1.5px solid #FECACA;
   border-radius: var(--radius-btn);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.05);
+}
+
+.btn-cancel-action .material-symbols-outlined {
+  font-size: 18px;
+  transition: transform 0.25s ease;
 }
 
 .btn-cancel-action:hover {
-  background: #F5F3EF;
-  color: var(--color-text-primary);
+  background: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.28);
+  transform: translateY(-2px);
+}
+
+.btn-cancel-action:hover .material-symbols-outlined {
+  transform: rotate(-45deg);
+}
+
+.btn-cancel-action:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);
 }
 
 /* Biểu phí phạt tham chiếu */

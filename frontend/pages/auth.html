@@ -10,30 +10,35 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   
   <link rel="stylesheet" href="../css/auth.css">
 </head>
 <body class="auth-page">
 
-  <!-- Top Navigation Header -->
-  <header class="auth-header">
-    <div class="auth-header-inner">
-      <a href="../index.html" class="auth-brand" title="Trở về Trang chủ">
-        <div class="auth-brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
+  <!-- Top Navigation Header đồng bộ theo chuẩn returns -->
+  <header class="librarian-topbar">
+    <div class="topbar-left">
+      <a href="../index.html" class="brand-badge" title="UniLib - Trở về Trang chủ">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
         </div>
-        <span class="auth-brand-name">KS25 Library</span>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
       </a>
+      <nav class="topbar-nav">
+        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="search.html" class="topbar-nav-link">Tra cứu sách</a>
+      </nav>
+    </div>
 
-      <div class="auth-header-actions">
-        <div class="lang-switch" title="Chuyển đổi ngôn ngữ / Language / 言語">
-          <button type="button" class="lang-btn active" data-lang="vi">VN</button>
-          <button type="button" class="lang-btn" data-lang="en">EN</button>
-          <button type="button" class="lang-btn" data-lang="ja">JP</button>
-        </div>
+    <div class="topbar-right">
+      <div class="lang-switch" title="Chuyển đổi ngôn ngữ / Language / 言語">
+        <button type="button" class="lang-btn active" data-lang="vi">VN</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="ja">JP</button>
       </div>
     </div>
   </header>

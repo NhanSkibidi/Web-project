@@ -6,6 +6,7 @@ from app.models.BookCopy import BookCopy
 from app.models.loan import Loan
 from app.models.loan_item import LoanItem
 from app.crud.fine import create_overdue_fine_if_applicable
+from app.crud.reservation import process_returned_copy_for_reservation
 
 
 def return_single_book_copy(
@@ -43,7 +44,8 @@ def return_single_book_copy(
     try:
         now = datetime.now()
         loan_item.return_date = now
-        copy.status = "AVAILABLE"
+        # Tự động kích hoạt chuyển sách cho độc giả đang đặt trước (READY) hoặc về AVAILABLE
+        process_returned_copy_for_reservation(db, copy)
 
         loan = db.query(Loan).filter(Loan.id == loan_item.loan_id).first()
         fine = None
@@ -108,7 +110,7 @@ def return_entire_loan(db: Session, loan_id: int):
             if item.copy_id:
                 copy = db.query(BookCopy).filter(BookCopy.id == item.copy_id).first()
                 if copy:
-                    copy.status = "AVAILABLE"
+                    process_returned_copy_for_reservation(db, copy)
             fine = create_overdue_fine_if_applicable(db, loan, item, now)
             if fine:
                 fines_created.append(fine)

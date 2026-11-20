@@ -134,6 +134,44 @@
         </section>
       </div>
     </div>
+
+    <!-- 3. QUẢN LÝ ĐẶT TRƯỚC SÁCH (T3CFCAC): DANH SÁCH LƯỢT READY CẦN CHUẨN BỊ -->
+    <section id="ready-reservations-section" class="card" style="margin-top: 24px; border: 1.5px solid #86EFAC;">
+      <div class="list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 22px;">📦</span>
+            <h2 style="margin: 0; color: #166534;">Sách đặt trước cần chuẩn bị tại quầy (READY)</h2>
+            <span id="ready-res-count" style="background: #DCFCE7; color: #166534; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 12.5px;">0 đơn</span>
+          </div>
+          <p class="muted" style="margin: 4px 0 0;">
+            Khi bạn đọc trả sách, hệ thống tự động giữ sách cho người đầu hàng trong 2 ngày (chuyển sang READY). Thủ thư lấy sách xếp lên kệ chờ và giao khi độc giả đến nhận.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-check-expired-res" type="button" class="btn btn-small" title="Quét đơn quá hạn 2 ngày để chuyển cho người tiếp theo">⏱ Quét quá hạn</button>
+          <button id="btn-reload-ready-res" type="button" class="btn btn-small">↻ Làm mới</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th>Độc giả</th>
+              <th>Đầu sách</th>
+              <th>Bản sao (Barcode)</th>
+              <th>Hạn lấy (Giữ 2 ngày)</th>
+              <th>Trạng thái</th>
+              <th class="text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="ready-res-table-body">
+            <tr><td colspan="7" class="muted">Đang tải danh sách đặt trước READY...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <footer id="app-footer"></footer>

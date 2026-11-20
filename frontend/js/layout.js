@@ -17,9 +17,10 @@
 
 // Danh sách menu cho Cổng Độc giả (Header ngang)
 const READER_MENU = [
-  { href: "index.html", label: "Trang chủ & Tra cứu" },
-  { href: "pages/items.html", label: "Items (CRUD mẫu)" },
-  { href: "pages/auth.html", label: "Tài khoản & Thẻ" },
+  { href: "pages/home.html", label: "Trang chủ" },
+  { href: "pages/search.html", label: "Tra cứu sách" },
+  { href: "pages/loan_basket.html", label: "Phiếu mượn của tôi" },
+  { href: "pages/staff-dashboard.html", label: "Quản trị thư viện" },
 ];
 
 // Danh sách menu Sidebar cho Admin & Thủ thư (Cả nhóm thêm trang mới vào đây)
@@ -48,6 +49,12 @@ const STAFF_SIDEBAR_GROUPS = [
         href: "pages/staff-dashboard.html#loans",
         label: "Duyệt mượn Online",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
+      },
+      {
+        href: "pages/staff-dashboard.html#ready-reservations-section",
+        label: "Sách đặt trước (READY)",
+        badge: "READY",
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
       },
     ],
   },
@@ -231,11 +238,13 @@ function renderReaderLayout() {
   const footerEl = document.getElementById("app-footer");
 
   if (headerEl) {
+    const cleanPath = (currentPath.split("/").pop() || "home.html").toLowerCase();
     const linksHtml = READER_MENU.map((item) => {
+      const itemFile = item.href.split("/").pop().toLowerCase();
       const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")));
-      return `<a href="${root}${item.href}" class="nav-link ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
+        cleanPath === itemFile ||
+        (itemFile === "home.html" && (cleanPath === "" || cleanPath === "index.html" || cleanPath === "home.html"));
+      return `<a href="${root}${item.href}" class="nav-item ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
     }).join("");
 
     // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
@@ -265,27 +274,42 @@ function renderReaderLayout() {
     } else {
       userAreaHtml = `
         <div class="header-user-area">
-          <a href="${root}pages/login.html#login" class="btn btn-small">Đăng nhập</a>
-          <a href="${root}pages/login.html#register" class="btn btn-primary btn-small">Đăng ký thẻ</a>
+          <a href="${root}pages/login.html#login" class="btn-login">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span>Đăng nhập</span>
+          </a>
         </div>
       `;
     }
 
     headerEl.innerHTML = `
       <div class="container header-inner">
-        <a href="${root}index.html" class="brand">
-          <div class="brand-logo-box">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
+        <a href="${root}pages/home.html" class="brand brand-badge">
+          <div class="brand-icon">
+            <span class="material-symbols-outlined">local_library</span>
           </div>
-          <span>KS25 Library</span>
+          <div class="brand-text">
+            <span class="brand-name brand-title">UniLib</span>
+            <span class="brand-sub brand-subtitle">Thư viện số KS25</span>
+          </div>
         </a>
-        <nav class="nav">${linksHtml}</nav>
+        <nav class="nav" id="main-nav">${linksHtml}</nav>
         ${userAreaHtml}
       </div>
     `;
+
+    // Sticky header đổ bóng khi cuộn
+    window.addEventListener("scroll", () => {
+      if (headerEl) {
+        if (window.scrollY > 20) {
+          headerEl.classList.add("scrolled");
+        } else {
+          headerEl.classList.remove("scrolled");
+        }
+      }
+    });
 
     document.getElementById("header-logout-btn")?.addEventListener("click", () => {
       auth.clearSession();

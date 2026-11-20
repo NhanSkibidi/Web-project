@@ -181,8 +181,22 @@ http.interceptors.response.use(
 // ---------- Các hàm gọi API tiện lợi ----------
 const api = {
   get: (path, params) => http.get(path, { params }).then((res) => res.data),
-  post: (path, body) => http.post(path, body).then((res) => res.data),
-  put: (path, body) => http.put(path, body).then((res) => res.data),
-  patch: (path, body) => http.patch(path, body).then((res) => res.data),
-  delete: (path) => http.delete(path).then((res) => res.data),
+  post: (path, body, config) => http.post(path, body, config).then((res) => res.data),
+  put: (path, body, config) => http.put(path, body, config).then((res) => res.data),
+  patch: (path, body, config) => http.patch(path, body, config).then((res) => res.data),
+  delete: (path, config) => http.delete(path, config).then((res) => res.data),
+
+  // ---------- Quản lý Đặt trước sách (T3CFCAC) ----------
+  createReservation: (data, userId) =>
+    api.post("/reservations", data, userId ? { params: { user_id: userId } } : undefined),
+  getMyReservations: (userId) =>
+    api.get("/reservations/my", userId ? { user_id: userId } : undefined),
+  getStaffReadyReservations: () =>
+    api.get("/reservations/staff/ready"),
+  cancelReservation: (id, userId) =>
+    api.post(`/reservations/${id}/cancel`, {}, userId ? { params: { user_id: userId } } : undefined),
+  fulfillReservation: (id) =>
+    api.post(`/reservations/${id}/fulfill`, {}),
+  checkExpiredReservations: () =>
+    api.post("/reservations/check-expired", {}),
 };

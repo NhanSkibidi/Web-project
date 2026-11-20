@@ -23,6 +23,7 @@ from app.routers import (
     health,
     items,
     loans,
+    reservation,
     return_book,
     loans_item
 )
@@ -67,6 +68,7 @@ app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
+app.include_router(reservation.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
 
 # Phục vụ giao diện tĩnh Frontend qua FastAPI

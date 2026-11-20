@@ -12,6 +12,8 @@ from app.schemas.loan import (
     ReaderLookupResponse,
     CopyLookupResponse,
     CounterBorrowReceiptResponse,
+    RenewalRequest,
+    RenewalResponse,
 )
 from app.schemas.loan_item import LoanItemCreate, LoanItemResponse
 from app.schemas.reservation import (

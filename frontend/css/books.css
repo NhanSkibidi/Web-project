@@ -163,23 +163,32 @@ body.books-body {
 }
 
 .topbar-nav-link:hover {
-    color: var(--color-brand);
-    background: var(--color-surface);
-    border-color: var(--color-border);
+    color: #ffffff;
+    background: var(--color-brand);
+    border-color: var(--color-brand);
     transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(27, 67, 50, 0.12);
+    box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
 }
 
 .topbar-nav-link:active {
     transform: translateY(-1px) scale(0.97);
-    box-shadow: 0 2px 4px rgba(27, 67, 50, 0.08);
+    box-shadow: 0 2px 4px rgba(27, 67, 50, 0.12);
 }
 
 .topbar-nav-link.active {
-    color: var(--color-brand);
-    background: var(--color-brand-light);
-    border-color: rgba(27, 67, 50, 0.2);
+    color: #ffffff;
+    background: var(--color-brand);
+    border-color: var(--color-brand);
     font-weight: 700;
+    box-shadow: 0 2px 8px rgba(27, 67, 50, 0.25);
+}
+
+.topbar-nav-link.active:hover {
+    background: var(--color-brand-hover);
+    border-color: var(--color-brand-hover);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(27, 67, 50, 0.35);
 }
 
 .topbar-right {

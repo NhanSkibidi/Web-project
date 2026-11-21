@@ -222,16 +222,31 @@ function initEventListeners() {
 
   // Nút quy định tính phạt
   const btnViewPolicy = document.getElementById("btn-view-policy");
-  if (btnViewPolicy) {
+  const policyModal = document.getElementById("policy-modal");
+  const btnClosePolicy = document.getElementById("btn-close-policy-modal");
+  const btnClosePolicyX = document.getElementById("btn-close-policy-x");
+
+  if (btnViewPolicy && policyModal) {
     btnViewPolicy.addEventListener("click", () => {
-      alert(
-        "QUY ĐỊNH TÍNH PHẠT THƯ VIỆN KS25:\n\n" +
-        "1. Quá hạn: 2.000 VNĐ / cuốn / ngày quá hạn.\n" +
-        "2. Hư hỏng nhẹ (Rách, bẩn, vẽ): 20.000đ.\n" +
-        "3. Hư hỏng nặng: 50% giá bìa niêm yết.\n" +
-        "4. Mất sách: 100% giá bìa niêm yết.\n" +
-        "5. Thẻ thư viện tự động mở khóa sau khi thanh toán hết nợ phạt."
-      );
+      policyModal.classList.remove("hidden");
+    });
+  }
+
+  const hidePolicy = () => {
+    if (policyModal) policyModal.classList.add("hidden");
+  };
+
+  if (btnClosePolicy) btnClosePolicy.addEventListener("click", hidePolicy);
+  if (btnClosePolicyX) btnClosePolicyX.addEventListener("click", hidePolicy);
+
+  if (policyModal) {
+    policyModal.addEventListener("click", (e) => {
+      if (e.target === policyModal) hidePolicy();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !policyModal.classList.contains("hidden")) {
+        hidePolicy();
+      }
     });
   }
 }

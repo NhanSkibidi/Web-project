@@ -32,16 +32,10 @@
       <nav class="topbar-nav">
         <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
         <a href="../index.html" class="topbar-nav-link">Tra cứu sách</a>
-        <a href="../index.html" class="topbar-nav-link">Phiếu mượn</a>
-        <a href="returns.html" class="topbar-nav-link active">Quản trị quầy thủ thư</a>
       </nav>
     </div>
 
     <div class="topbar-right">
-      <div class="topbar-search">
-        <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Tra cứu mã sách, độc giả...">
-      </div>
       <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
         <span class="material-symbols-outlined">shopping_bag</span>
         <span class="badge-dot"></span>
@@ -83,6 +77,10 @@
       <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
         <span class="material-symbols-outlined">assignment_return</span>
         <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
       </a>
       <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
         <span class="material-symbols-outlined">badge</span>
@@ -366,30 +364,6 @@
               </button>
             </div>
           </section>
-
-          <!-- Biểu phí tham chiếu -->
-          <section class="panel-card policy-card">
-            <div class="card-title-group" style="margin-bottom: 8px;">
-              <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-text-muted);">gavel</span>
-              <span style="font-size: 12px; font-weight: 700; text-transform: uppercase;">Biểu phí phạt tham chiếu nhanh</span>
-            </div>
-            <ul class="policy-list">
-              <li><strong>Quá hạn:</strong> 2.000 VNĐ / ấn bản / mỗi ngày trễ hạn.</li>
-              <li><strong>Hư hỏng nhẹ:</strong> Viết vẽ, gấp nếp, rách nhẹ bìa: 20.000 – 50.000 VNĐ.</li>
-              <li><strong>Mất sách / Không phục hồi:</strong> 100% giá bìa niêm yết + 30.000 VNĐ phí nghiệp vụ.</li>
-              <li><strong>Mở khóa thẻ:</strong> Thẻ thư viện tự động kích hoạt lại ngay sau khi hoàn tất thanh toán.</li>
-            </ul>
-          </section>
-
-          <!-- Backend Spec Card -->
-          <section class="panel-card dev-pill">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">FastAPI Backend Endpoint</span>
-              <span class="badge-post">POST / GET</span>
-            </div>
-            <div style="font-weight: 600; color: var(--color-text-primary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">/api/returns/item · /api/fines/report-issue</div>
-            <div style="font-size: 10px; color: var(--color-text-muted); margin-top: 2px;">Payload: {copy_code, issue_type, note} · /api/fines/{id}/pay</div>
-          </section>
         </div>
       </div>
     </main>
@@ -455,6 +429,133 @@
         </button>
         <button id="btn-finish-modal" type="button" class="modal-btn-finish">
           Đóng &amp; Tiếp nhận mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MODAL QUY ĐỊNH TÍNH PHẠT HIỆN ĐẠI & CHUYÊN NGHIỆP -->
+  <div id="policy-modal" class="modal-overlay hidden">
+    <div class="modal-box policy-modal-box">
+      <!-- Nút đóng tròn hiện đại -->
+      <button type="button" class="policy-modal-close" id="btn-close-policy-x" title="Đóng">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <!-- Header modal cao cấp -->
+      <div class="policy-modal-header">
+        <div class="policy-header-badge">
+          <span class="material-symbols-outlined">balance</span>
+        </div>
+        <div class="policy-header-text">
+          <div class="policy-header-topline">
+            <span class="policy-chip">Quy chế Thư viện KS25</span>
+            <span class="policy-chip-sub font-mono">Ban hành 2026</span>
+          </div>
+          <h2 class="policy-modal-title font-headline">Biểu Phí Phạt &amp; Quy Định Bồi Hoàn</h2>
+          <p class="policy-modal-subtitle">
+            Chính sách bảo toàn tài sản, chế tài xử lý trễ hạn và bồi hoàn ấn phẩm áp dụng cho toàn bộ bạn đọc.
+          </p>
+        </div>
+      </div>
+
+      <!-- Lưới 4 thẻ vi phạm chuẩn trực quan (2 cột x 2 hàng) -->
+      <div class="policy-cards-grid">
+        <!-- 1. Trả quá hạn -->
+        <div class="policy-card-item card-overdue">
+          <div class="card-item-top">
+            <div class="card-item-icon">
+              <span class="material-symbols-outlined">history_toggle_off</span>
+            </div>
+            <span class="card-item-badge">Trễ hạn</span>
+          </div>
+          <div class="card-item-main">
+            <h4 class="card-item-title">Quá hạn trả sách</h4>
+            <div class="card-item-price font-mono">2.000 ₫ <span>/ ngày / cuốn</span></div>
+            <p class="card-item-desc">
+              Tự động tính sau 24h kể từ hạn trả. Tiền phạt = Số ngày trễ × 2.000 ₫.
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. Hư hỏng nhẹ -->
+        <div class="policy-card-item card-damaged">
+          <div class="card-item-top">
+            <div class="card-item-icon">
+              <span class="material-symbols-outlined">edit_note</span>
+            </div>
+            <span class="card-item-badge">Hỏng nhẹ</span>
+          </div>
+          <div class="card-item-main">
+            <h4 class="card-item-title">Viết vẽ, bẩn, rách mép</h4>
+            <div class="card-item-price font-mono">20.000 – 50.000 ₫</div>
+            <p class="card-item-desc">
+              Áp dụng cho ấn phẩm có thể phục hồi bằng kỹ thuật ép nhiệt và vệ sinh bề mặt giấy.
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. Hư hỏng nặng -->
+        <div class="policy-card-item card-severe">
+          <div class="card-item-top">
+            <div class="card-item-icon">
+              <span class="material-symbols-outlined">broken_image</span>
+            </div>
+            <span class="card-item-badge">Hỏng nặng</span>
+          </div>
+          <div class="card-item-main">
+            <h4 class="card-item-title">Rách nát, thấm nước, mất trang</h4>
+            <div class="card-item-price font-mono">50% <span>giá bìa niêm yết</span></div>
+            <p class="card-item-desc">
+              Áp dụng khi ấn phẩm bị hư hại trên 30% nội dung hoặc mất khả năng phục hồi nguyên trạng.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4. Làm mất sách -->
+        <div class="policy-card-item card-lost">
+          <div class="card-item-top">
+            <div class="card-item-icon">
+              <span class="material-symbols-outlined">search_off</span>
+            </div>
+            <span class="card-item-badge">Mất sách</span>
+          </div>
+          <div class="card-item-main">
+            <h4 class="card-item-title">Mất ấn bản / Không thu hồi</h4>
+            <div class="card-item-price font-mono">100% giá <span>+ 30.000 ₫</span></div>
+            <p class="card-item-desc">
+              Bồi thường 100% giá bìa cộng 30.000 ₫ chi phí mua bổ sung, biên mục và dán chip RFID.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khung quyền lợi & quy chế mở khóa thẻ -->
+      <div class="policy-footer-note">
+        <div class="note-icon-wrap">
+          <span class="material-symbols-outlined">verified_user</span>
+        </div>
+        <div class="note-content-wrap">
+          <div class="note-row">
+            <strong>Mở khóa thẻ tự động:</strong>
+            <span>Thẻ thư viện tự động kích hoạt quyền mượn sách tức thì ngay sau khi hoàn tất thanh toán.</span>
+          </div>
+          <div class="note-row">
+            <strong>Thẩm quyền miễn giảm:</strong>
+            <span>Chỉ Quản trị viên (Admin) có quyền phê duyệt miễn giảm tiền phạt cho trường hợp bất khả kháng.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer các nút hành động -->
+      <div class="policy-modal-footer">
+        <a href="fines.html" class="policy-btn-link">
+          <span class="material-symbols-outlined">payments</span>
+          <span>Đến Quầy Xử lý tiền phạt</span>
+        </a>
+        <button id="btn-close-policy-modal" type="button" class="policy-btn-primary">
+          <span>Đã hiểu &amp; Đóng</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
         </button>
       </div>
     </div>

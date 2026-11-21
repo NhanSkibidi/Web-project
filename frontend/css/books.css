@@ -478,9 +478,130 @@ body.books-body {
     color: var(--color-success);
 }
 
+/* Mobile Menu Button & Drawer Support */
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    color: var(--color-brand);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: var(--color-brand-light);
+}
+
+.sidebar-close-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.sidebar-close-btn:hover {
+    color: var(--color-text-primary);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    transition: opacity 0.25s ease;
+}
+
+.sidebar-backdrop.hidden {
+    display: none;
+}
+
 @media (max-width: 900px) {
-    .sidebar-rail {
+    .mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    .sidebar-close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .topbar-left {
+        gap: 12px;
+    }
+
+    .topbar-nav {
         display: none;
+    }
+
+    .sidebar-rail {
+        display: flex;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 270px;
+        z-index: 1000;
+        background-color: #FFFFFF;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.22);
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 16px 12px;
+    }
+
+    .sidebar-rail.mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-rail:hover {
+        width: 270px;
+    }
+
+    .sidebar-rail .rail-label {
+        opacity: 1;
+        display: inline;
+    }
+
+    .sidebar-rail .sidebar-rail-header {
+        opacity: 1;
+        height: auto;
+        padding: 8px 6px 14px;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar-rail .sidebar-status-details {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .librarian-topbar {
+        padding: 0 12px;
+    }
+
+    .brand-sub {
+        display: none;
+    }
+
+    .librarian-info {
+        display: none;
+    }
+
+    .topbar-right {
+        gap: 8px;
     }
 }
 
@@ -619,6 +740,28 @@ body.books-body {
     transform: scale(0.98);
 }
 
+@media (max-width: 640px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .header-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-header-export,
+    .btn-header-create {
+        flex: 1;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+}
+
 /* ==========================================================================
    4. METRIC SUMMARY STAT CARDS (4 THẺ THỐNG KÊ)
    ========================================================================== */
@@ -632,10 +775,35 @@ body.books-body {
 @media (max-width: 1024px) {
     .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 }
 
 @media (max-width: 580px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .metric-card {
+        padding: 12px 14px;
+    }
+
+    .metric-number {
+        font-size: 22px;
+    }
+
+    .metric-icon-box {
+        width: 36px;
+        height: 36px;
+    }
+
+    .metric-icon-box .material-symbols-outlined {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 380px) {
     .metrics-grid {
         grid-template-columns: 1fr;
     }
@@ -2679,6 +2847,212 @@ body.books-body {
 .toast-item.error {
     background: var(--color-danger);
 }
+
+/* ==========================================================================
+   10. TOÀN DIỆN RESPONSIVE CHO BẢNG SÁCH, PHÂN TRANG & MODAL 1, MODAL 2
+   ========================================================================== */
+@media (max-width: 900px) {
+    .filter-toolbar {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .filter-actions {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .btn-filter-apply {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Modal 2 Responsive (<= 900px) */
+    .copies-hfd-modal {
+        width: 96vw;
+        max-height: 94vh;
+        border-radius: 12px;
+    }
+
+    .copies-hfd-header {
+        padding: 14px 16px 10px;
+    }
+
+    .copies-hfd-title {
+        font-size: 19px;
+    }
+
+    .copies-hfd-status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .status-pills-group {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .copies-hfd-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        gap: 14px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .copies-hfd-body {
+        padding: 14px 16px;
+    }
+
+    .copies-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .copies-actions-cluster {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .copies-actions-cluster .search-input-wrap {
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .form-grid-4 {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .copies-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .copies-table {
+        min-width: 680px;
+    }
+
+    .copies-hfd-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .footer-api-spec {
+        display: none;
+    }
+
+    .footer-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .footer-actions button {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 860px) {
+    .book-modal-box {
+        width: 95vw;
+        max-height: 92vh;
+        border-radius: 12px;
+    }
+
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .table-pagination-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    .table-card {
+        border-radius: 10px;
+    }
+
+    .books-table th,
+    .books-table td {
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 540px) {
+    /* Modal 1 inner grids */
+    .modal-header-bar {
+        padding: 12px 16px;
+    }
+
+    .modal-scrollable-body {
+        padding: 14px 16px;
+    }
+
+    .modal-form-grid div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    .modal-footer-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .modal-api-tag {
+        display: none;
+    }
+
+    .modal-footer-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .modal-footer-actions button {
+        flex: 1;
+        justify-content: center;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    /* Modal 2 drawer on small mobile */
+    .form-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .drawer-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .drawer-footer button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .status-form-col.status-select-col {
+        min-width: auto;
+    }
+
+    .status-drawer-form {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Helper utilities for Stitch high-fidelity alignment */
 .text-center {
     text-align: center;

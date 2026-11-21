@@ -33,6 +33,19 @@ class Settings(BaseSettings):
     # Chuỗi các origin cách nhau bằng dấu phẩy, hoặc "*"
     CORS_ORIGINS: str = "*"
 
+    # Cấu hình SMTP gửi email nhắc hạn trả sách & sách đặt trước (Task T3D003D)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""  # Gmail App Password (16 ký tự)
+    SMTP_FROM_NAME: str = "Thư viện Số UniLib KS25"
+    SMTP_USE_TLS: bool = True
+
+    @property
+    def smtp_configured(self) -> bool:
+        """Trả về True khi đã cấu hình đầy đủ Gmail SMTP User & App Password."""
+        return bool(self.SMTP_USER.strip() and self.SMTP_PASSWORD.strip())
+
     @property
     def database_url(self) -> str:
         import os

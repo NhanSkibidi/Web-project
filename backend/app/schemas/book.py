@@ -82,6 +82,7 @@ class BookSearchItem(BaseModel):
     authors: List[AuthorSummary] = []
     total_copies: int
     available_copies: int
+    shelf_location: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

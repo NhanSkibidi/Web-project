@@ -161,7 +161,7 @@ function checkPageAccess() {
           </div>
           <div class="guard-actions">
             <a href="${root}pages/login.html#login" class="btn btn-primary">Đăng nhập ngay →</a>
-            <a href="${root}index.html" class="btn">Về Trang chủ</a>
+            <a href="${root}pages/home.html" class="btn">Về Trang chủ</a>
           </div>
         </div>
       </div>
@@ -232,9 +232,7 @@ function renderReaderLayout() {
 
   if (headerEl) {
     const linksHtml = READER_MENU.map((item) => {
-      const isActive =
-        currentPath.endsWith("/" + item.href) ||
-        (item.href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")));
+      const isActive = currentPath.endsWith("/" + item.href);
       return `<a href="${root}${item.href}" class="nav-link ${isActive ? "active" : ""}">${getSafeText(item.label)}</a>`;
     }).join("");
 
@@ -298,7 +296,7 @@ function renderReaderLayout() {
       <div class="container footer-inner">
         <div>© ${new Date().getFullYear()} <strong>KS25 Library System</strong> · Đồ án thực tập CNTT (HN-KS25-CNTT1)</div>
         <div class="footer-links">
-          <a href="${root}index.html">Cổng Độc giả</a>
+          <a href="${root}pages/home.html">Cổng Độc giả</a>
           <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
           <a href="${root}pages/auth.html">Tài khoản & Thẻ</a>
           <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>

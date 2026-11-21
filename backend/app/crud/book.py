@@ -15,10 +15,14 @@ from app.models.loan_item import LoanItem
 def get_books_paginated(
     db: Session,
     keyword: Optional[str] = None,
+    scope: str = "all",
     category_id: Optional[int] = None,
+    category_ids: Optional[List[int]] = None,
     author_id: Optional[int] = None,
     publisher_id: Optional[int] = None,
     publish_year: Optional[int] = None,
+    languages: Optional[List[str]] = None,
+    shelf_locations: Optional[List[str]] = None,
     available_only: bool = False,
     sort_by: str = "created_at",
     sort_order: str = "desc",
@@ -26,7 +30,7 @@ def get_books_paginated(
     page_size: int = 10,
 ) -> Tuple[List[Book], int, int]:
     """
-    Truy vấn danh sách sách có tìm kiếm từ khoá, lọc nhiều tiêu chí, sắp xếp và phân trang.
+    Truy vấn danh sách sách có tìm kiếm từ khoá (theo phạm vi), lọc nhiều tiêu chí, sắp xếp và phân trang.
     """
     query = db.query(Book).filter(Book.is_deleted == False)  # noqa: E712
 
@@ -38,19 +42,32 @@ def get_books_paginated(
         .outerjoin(BookAuthor.author)
     )
 
-    # 1. Tìm theo từ khoá (tên sách, ISBN, tên tác giả)
-    if keyword:
+    # 1. Tìm theo từ khoá (theo phạm vi: all / title / author / isbn / category)
+    if keyword and keyword.strip():
         kw = f"%{keyword.strip()}%"
-        query = query.filter(
-            or_(
-                Book.title.ilike(kw),
-                Book.isbn.ilike(kw),
-                Author.name.ilike(kw),
+        sc = (scope or "all").strip().lower()
+        if sc == "title":
+            query = query.filter(Book.title.ilike(kw))
+        elif sc == "author":
+            query = query.filter(Author.name.ilike(kw))
+        elif sc == "isbn":
+            query = query.filter(Book.isbn.ilike(kw))
+        elif sc == "category":
+            query = query.filter(Category.name.ilike(kw))
+        else:
+            query = query.filter(
+                or_(
+                    Book.title.ilike(kw),
+                    Book.isbn.ilike(kw),
+                    Author.name.ilike(kw),
+                    Category.name.ilike(kw),
+                )
             )
-        )
 
-    # 2. Lọc theo thể loại, NXB, năm xuất bản, tác giả
-    if category_id:
+    # 2. Lọc theo thể loại, NXB, năm xuất bản, tác giả, ngôn ngữ
+    if category_ids:
+        query = query.filter(Book.category_id.in_(category_ids))
+    elif category_id:
         query = query.filter(Book.category_id == category_id)
     if publisher_id:
         query = query.filter(Book.publisher_id == publisher_id)
@@ -58,10 +75,16 @@ def get_books_paginated(
         query = query.filter(Book.publish_year == publish_year)
     if author_id:
         query = query.filter(Author.id == author_id)
+    if languages:
+        query = query.filter(Book.language.in_(languages))
 
-    # Lọc sách còn bản sao có thể mượn (AVAILABLE)
-    if available_only:
-        query = query.join(Book.copies).filter(BookCopy.status == "AVAILABLE")
+    # Lọc sách còn bản sao / vị trí kệ
+    if available_only or shelf_locations:
+        query = query.join(Book.copies)
+        if available_only:
+            query = query.filter(BookCopy.status == "AVAILABLE")
+        if shelf_locations:
+            query = query.filter(BookCopy.shelf_location.in_(shelf_locations))
 
     # Đếm tổng số đầu sách khớp điều kiện
     total = query.with_entities(func.count(distinct(Book.isbn))).scalar() or 0

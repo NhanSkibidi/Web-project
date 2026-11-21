@@ -28,6 +28,9 @@ from app.models.Category import Category
 from app.models.Publisher import Publisher
 from app.models.library_card import CardStatus, CardType, LibraryCard
 from app.models.user import User, UserRole, UserStatus
+from app.models.loan import Loan, LoanStatus, BorrowType
+from app.models.loan_item import LoanItem
+from app.models.notification import Notification
 
 # ==============================================================================
 # 1. CẤU HÌNH & DỮ LIỆU TÀI KHOẢN (USERS & LIBRARY CARDS)
@@ -359,15 +362,132 @@ def seed_books_and_catalogs(db: Session) -> None:
 
 
 # ==============================================================================
-# 5. HÀM CHÍNH GỘP TẤT CẢ (ENTRY POINTS)
+# 5. DỮ LIỆU PHIẾU MƯỢN MẪU (QUÁ HẠN, SẮP ĐẾN HẠN & THÔNG BÁO)
+# ==============================================================================
+
+def seed_loans_and_overdue(db: Session) -> None:
+    """Tạo các phiếu mượn quá hạn và sắp đến hạn mẫu phục vụ Task T3CFF48."""
+    existing_loans = db.query(Loan).first()
+    if existing_loans:
+        print("[SEED LOANS] Đã có dữ liệu phiếu mượn, bỏ qua.")
+        return
+
+    readers = db.query(User).filter(User.role == UserRole.READER).limit(5).all()
+    if not readers:
+        return
+
+    copies = db.query(BookCopy).filter(BookCopy.status == "AVAILABLE").limit(10).all()
+    if not copies:
+        return
+
+    now = datetime.now()
+
+    # 1. Phiếu quá hạn 18 ngày cho reader[0]
+    c1 = copies[0]
+    c1.status = "BORROWED"
+    l1 = Loan(
+        user_id=readers[0].id,
+        borrow_type=BorrowType.WALK_IN,
+        status=LoanStatus.BORROWED,
+        created_at=now - timedelta(days=32),
+        borrowed_at=now - timedelta(days=32),
+        due_date=now - timedelta(days=18),
+    )
+    db.add(l1)
+    db.flush()
+    i1 = LoanItem(
+        loan_id=l1.id,
+        book_isbn=c1.book_isbn,
+        copy_id=c1.id,
+        due_date=now - timedelta(days=18),
+        renewal_count=0,
+    )
+    db.add(i1)
+
+    # 2. Phiếu quá hạn 14 ngày cho reader[1]
+    if len(copies) > 1 and len(readers) > 1:
+        c2 = copies[1]
+        c2.status = "BORROWED"
+        l2 = Loan(
+            user_id=readers[1].id,
+            borrow_type=BorrowType.WALK_IN,
+            status=LoanStatus.BORROWED,
+            created_at=now - timedelta(days=28),
+            borrowed_at=now - timedelta(days=28),
+            due_date=now - timedelta(days=14),
+        )
+        db.add(l2)
+        db.flush()
+        i2 = LoanItem(
+            loan_id=l2.id,
+            book_isbn=c2.book_isbn,
+            copy_id=c2.id,
+            due_date=now - timedelta(days=14),
+            renewal_count=0,
+        )
+        db.add(i2)
+
+    # 3. Phiếu sắp đến hạn trong 1 ngày cho reader[2]
+    if len(copies) > 2 and len(readers) > 2:
+        c3 = copies[2]
+        c3.status = "BORROWED"
+        l3 = Loan(
+            user_id=readers[2].id,
+            borrow_type=BorrowType.ONLINE,
+            status=LoanStatus.BORROWED,
+            created_at=now - timedelta(days=13),
+            borrowed_at=now - timedelta(days=13),
+            due_date=now + timedelta(days=1),
+        )
+        db.add(l3)
+        db.flush()
+        i3 = LoanItem(
+            loan_id=l3.id,
+            book_isbn=c3.book_isbn,
+            copy_id=c3.id,
+            due_date=now + timedelta(days=1),
+            renewal_count=0,
+        )
+        db.add(i3)
+
+    # 4. Phiếu sắp đến hạn trong 2 ngày cho reader[3]
+    if len(copies) > 3 and len(readers) > 3:
+        c4 = copies[3]
+        c4.status = "BORROWED"
+        l4 = Loan(
+            user_id=readers[3].id,
+            borrow_type=BorrowType.ONLINE,
+            status=LoanStatus.BORROWED,
+            created_at=now - timedelta(days=12),
+            borrowed_at=now - timedelta(days=12),
+            due_date=now + timedelta(days=2),
+        )
+        db.add(l4)
+        db.flush()
+        i4 = LoanItem(
+            loan_id=l4.id,
+            book_isbn=c4.book_isbn,
+            copy_id=c4.id,
+            due_date=now + timedelta(days=2),
+            renewal_count=0,
+        )
+        db.add(i4)
+
+    db.commit()
+    print("[SEED LOANS] Đã tạo các phiếu mượn quá hạn và sắp đến hạn mẫu thành công!")
+
+
+# ==============================================================================
+# 6. HÀM CHÍNH GỘP TẤT CẢ (ENTRY POINTS)
 # ==============================================================================
 
 def seed_data(db: Session | None = None) -> None:
-    """Hàm chạy toàn bộ quá trình seed (cả users lẫn books)."""
+    """Hàm chạy toàn bộ quá trình seed (cả users, books lẫn loans)."""
     if db is not None:
         try:
             seed_users_and_cards(db)
             seed_books_and_catalogs(db)
+            seed_loans_and_overdue(db)
         except Exception as e:
             db.rollback()
             print("[SEED] Lỗi:", e)
@@ -377,6 +497,7 @@ def seed_data(db: Session | None = None) -> None:
             try:
                 seed_users_and_cards(session)
                 seed_books_and_catalogs(session)
+                seed_loans_and_overdue(session)
             except Exception as e:
                 session.rollback()
                 print("[SEED] Lỗi:", e)

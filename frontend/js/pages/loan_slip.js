@@ -8,6 +8,16 @@
   const seed = () => {
     const now = Date.now();
     return [
+      { id: 'PM-2024-0082', status: 'borrowing', borrowedAt: now - 32 * DAY, dueAt: now - 18 * DAY, renewed: false,
+        place: 'Quầy Thủ thư Tầng 1',
+        books: [
+          { title: 'Cấu trúc Dữ liệu & Giải thuật', author: 'Nguyễn Đức Nghĩa', code: 'DS-1082-VN', shelf: 'Kệ: A1-02', img: 'Overlay+Border+Shadow.png' }
+        ] },
+      { id: 'PM-2024-0095', status: 'borrowing', borrowedAt: now - 13 * DAY, dueAt: now + 1 * DAY, renewed: false,
+        place: 'Tự phục vụ Self-Check #01',
+        books: [
+          { title: 'Hệ thống Cơ sở Dữ liệu hiện đại', author: 'Abraham Silberschatz', code: 'DB-4401-X', shelf: 'Kệ: B1-08', img: 'Overlay+Border+Shadow (1).png' }
+        ] },
       { id: 'PM-8841', status: 'borrowing', borrowedAt: now - 10 * DAY, dueAt: now + 4 * DAY, renewed: false,
         place: 'Quầy Thủ thư Tầng 2',
         books: [
@@ -51,26 +61,47 @@
   /* ---------- Render ---------- */
   function filtered() {
     const q = norm(query.trim());
-    return loans.filter(l => (filter === 'all' || l.status === filter) &&
-      (!q || norm(l.id).includes(q) || l.books.some(b => norm(b.title).includes(q))));
+    return loans.filter(l => {
+      if (filter === 'overdue') return isOverdue(l);
+      if (filter === 'due_soon') {
+        const d = daysLeft(l);
+        return l.status === 'borrowing' && d >= 0 && d <= 2;
+      }
+      if (filter !== 'all' && l.status !== filter) return false;
+      return !q || norm(l.id).includes(q) || l.books.some(b => norm(b.title).includes(q));
+    });
   }
 
   function renderStats() {
     const borrowing = loans.filter(l => l.status === 'borrowing');
     const pending = loans.filter(l => l.status === 'pending');
     const overdue = countBooks(borrowing.filter(isOverdue));
-    const card = (img, label, num, unit, badge) => `
-      <article class="stat"><div class="stat__icon"><img src="${IMG}${img}" alt="" width="28" height="28"></div>
-        <div class="stat__body"><span class="stat__label">${label}</span><div class="stat__num">${num} <small>${unit}</small></div></div>${badge}</article>`;
+    const card = (img, label, num, unit, badge, filterKey) => `
+      <article class="stat" style="cursor: pointer;" onclick="window.setSlipFilter && window.setSlipFilter('${filterKey}')">
+        <div class="stat__icon"><img src="${IMG}${img}" alt="" width="28" height="28"></div>
+        <div class="stat__body"><span class="stat__label">${label}</span><div class="stat__num">${num} <small>${unit}</small></div></div>${badge}
+      </article>`;
     $('#stats').innerHTML =
-      card('đang_muon.png', 'Đang mượn', countBooks(borrowing), 'cuốn', `<span class="badge badge--ok badge--dot">${borrowing.length} phiếu</span>`) +
-      card('cho_duyet.png', 'Chờ duyệt', pending.length, 'phiếu', '<span class="badge badge--warn badge--dot">Đang xử lý</span>') +
-      card('qua_han.png', 'Quá hạn', overdue, 'cuốn', overdue ? '<span class="badge badge--danger">Cần xử lý</span>' : '<span class="badge badge--ok">An toàn</span>');
+      card('đang_muon.png', 'Đang mượn', countBooks(borrowing), 'cuốn', `<span class="badge badge--ok badge--dot">${borrowing.length} phiếu</span>`, 'borrowing') +
+      card('cho_duyet.png', 'Chờ duyệt', pending.length, 'phiếu', '<span class="badge badge--warn badge--dot">Đang xử lý</span>', 'pending') +
+      card('qua_han.png', 'Quá hạn', overdue, 'cuốn', overdue ? '<span class="badge badge--danger">Cần xử lý</span>' : '<span class="badge badge--ok">An toàn</span>', 'overdue');
   }
 
   function renderTabs() {
-    const c = s => (s === 'all' ? loans.length : loans.filter(l => l.status === s).length);
-    const tabs = [['all', 'Tất cả'], ['borrowing', 'Đang mượn'], ['pending', 'Chờ duyệt'], ['returned', 'Đã trả']];
+    const c = s => {
+      if (s === 'all') return loans.length;
+      if (s === 'overdue') return loans.filter(isOverdue).length;
+      if (s === 'due_soon') return loans.filter(l => l.status === 'borrowing' && daysLeft(l) >= 0 && daysLeft(l) <= 2).length;
+      return loans.filter(l => l.status === s).length;
+    };
+    const tabs = [
+      ['all', 'Tất cả'],
+      ['borrowing', 'Đang mượn'],
+      ['overdue', 'Quá hạn'],
+      ['due_soon', 'Sắp đến hạn (2 ngày)'],
+      ['pending', 'Chờ duyệt'],
+      ['returned', 'Đã trả']
+    ];
     $('#tabs').innerHTML = tabs.map(([k, t]) =>
       `<button class="tab ${filter === k ? 'is-active' : ''}" role="tab" aria-selected="${filter === k}" data-filter="${k}">${t} (${c(k)})</button>`).join('');
   }
@@ -85,11 +116,35 @@
     const books = l.books.map(bookHTML).join('');
     let badge, right, note = '', foot;
     if (l.status === 'borrowing') {
-      badge = '<span class="badge badge--ok badge--dot">Đang mượn</span>';
+      const d = daysLeft(l);
+      if (d < 0) {
+        badge = '<span class="badge badge--danger badge--dot">Quá hạn</span>';
+        const fineEst = (-d * 2000).toLocaleString('vi-VN');
+        note = `<div class="note" style="background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:12px 16px; border-radius:10px; margin-bottom:14px; display:flex; gap:12px; align-items:center;">
+          <span class="material-symbols-outlined" style="color:#dc2626; font-size:24px; flex-shrink:0;">error</span>
+          <div>
+            <div style="font-weight:700; font-size:14px; color:#b91c1c;">CẢNH BÁO QUÁ HẠN (${-d} NGÀY)</div>
+            <p style="margin:2px 0 0; font-size:13px; color:#7f1d1d;">Phiếu mượn đã quá hạn quy định. Tiền phạt tạm tính: <strong style="color:#dc2626; font-size:14px;">${fineEst} đ</strong> (2.000 đ/ngày). Vui lòng mang sách tới quầy Thư viện KS25 để hoàn trả sớm nhất.</p>
+          </div>
+        </div>`;
+      } else if (d <= 2) {
+        badge = '<span class="badge badge--warn badge--dot">Sắp đến hạn</span>';
+        const statusTxt = d === 0 ? 'hôm nay' : `trong ${d} ngày tới`;
+        note = `<div class="note" style="background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:12px 16px; border-radius:10px; margin-bottom:14px; display:flex; gap:12px; align-items:center;">
+          <span class="material-symbols-outlined" style="color:#d97706; font-size:24px; flex-shrink:0;">alarm</span>
+          <div>
+            <div style="font-weight:700; font-size:14px; color:#b45309;">NHẮC NHỞ HẠN TRẢ (${d === 0 ? 'HÔM NAY' : 'CÒN ' + d + ' NGÀY'})</div>
+            <p style="margin:2px 0 0; font-size:13px; color:#78350f;">Phiếu mượn sẽ hết hạn <strong>${statusTxt}</strong>. Bạn có thể bấm nút "Gia hạn thêm (+7 ngày)" bên dưới nếu chưa từng gia hạn, hoặc chuẩn bị trả sách tại quầy.</p>
+          </div>
+        </div>`;
+      } else {
+        badge = '<span class="badge badge--ok badge--dot">Đang mượn</span>';
+      }
+
       right = `<i data-lucide="calendar"></i><span>Hạn trả:</span><span class="mono">${fmtDate(l.dueAt)}</span>${dueBadge(l)}`;
       foot = `<span class="meta-text"><i data-lucide="clock"></i><span>Mượn ngày <b class="mono">${fmtDate(l.borrowedAt)}</b> tại ${esc(l.place)}</span></span>
         <div class="actions">
-          <button class="btn btn--outline" data-act="renew" ${l.renewed ? 'disabled title="Phiếu này đã được gia hạn 1 lần"' : ''}><i data-lucide="refresh-cw"></i>Gia hạn thêm (+7 ngày)</button>
+          <button class="btn btn--outline" data-act="renew" ${l.renewed || d < 0 ? 'disabled title="' + (d < 0 ? 'Sách đã quá hạn, không thể gia hạn online' : 'Phiếu này đã được gia hạn 1 lần') + '"' : ''}><i data-lucide="refresh-cw"></i>Gia hạn thêm (+7 ngày)</button>
           <button class="btn btn--icon" data-act="print" aria-label="In phiếu" title="In phiếu"><i data-lucide="printer"></i></button></div>`;
     } else if (l.status === 'pending') {
       badge = '<span class="badge badge--warn badge--dot">Chờ duyệt</span>';
@@ -218,6 +273,20 @@
     setMenu(false);
     if (await dialog({ type: 'info', title: 'Đăng xuất?', msg: 'Bạn sẽ thoát khỏi phiên làm việc hiện tại.', ok: 'Đăng xuất' })) window.location.href = 'login.html';
   });
+
+  // Hỗ trợ chọn nhanh filter hoặc tra cứu phiếu qua URL
+  window.setSlipFilter = (newFilter) => {
+    filter = newFilter;
+    page = 1;
+    render();
+  };
+
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('filter')) filter = urlParams.get('filter');
+    if (urlParams.get('loan_id')) query = urlParams.get('loan_id');
+    if (urlParams.get('q')) query = urlParams.get('q');
+  } catch (e) { /* ignore */ }
 
   // Cập nhật "Còn X ngày" mỗi phút
   setInterval(render, 60 * 1000);

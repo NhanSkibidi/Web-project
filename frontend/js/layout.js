@@ -600,6 +600,16 @@ function initLayout() {
     renderReaderLayout();
   }
 
+  // Tự động kích hoạt chuông thông báo in-app (Task T3CFF48)
+  if (window.unilibNotifications && window.unilibNotifications.load) {
+    window.unilibNotifications.load();
+  } else if (!document.querySelector('script[src*="notifications.js"]')) {
+    const s = document.createElement("script");
+    s.src = `${document.body.dataset.root || ""}js/notifications.js`;
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+
   // Kiểm tra quyền truy cập trang theo data-roles
   const allowed = checkPageAccess();
   if (!allowed) return;

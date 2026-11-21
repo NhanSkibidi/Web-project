@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -15,6 +15,11 @@ from app.schemas.loan import (
     CopyLookupResponse,
     RenewalRequest,
     RenewalResponse,
+    OverdueListResponse,
+    DueSoonListResponse,
+    InAppNotificationListResponse,
+    RemindLoanRequest,
+    RemindLoanResponse,
 )
 from app.crud.loan_service import (
     create_online_loan,
@@ -27,11 +32,19 @@ from app.crud.loan_service import (
     validate_counter_borrow,
     create_counter_loan,
     renew_loan_item,
+    get_overdue_loans,
+    get_due_soon_loans,
+    sync_and_get_notifications,
+    mark_notification_read,
+    mark_all_notifications_read,
+    remind_overdue_loan,
+    remind_all_overdue,
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
 readers_router = APIRouter(prefix="/readers", tags=["Readers"])
 copies_router = APIRouter(prefix="/copies", tags=["Copies"])
+notifications_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
 # ── API TRA CỨU ĐỘC GIẢ (READERS) ──────────────────────────────
@@ -171,3 +184,103 @@ def renew_item(
         user_id=data.user_id,
         librarian_id=data.librarian_id,
     )
+
+
+# ── API TASK T3CFF48: QUÁ HẠN, SẮP ĐẾN HẠN & NHẮC TRẢ SÁCH ─────────
+
+@router.get("/overdue", response_model=OverdueListResponse)
+def get_overdue(
+    user_id: int | None = Query(default=None, description="Lọc theo ID độc giả"),
+    search: str | None = Query(default=None, description="Tìm theo tên độc giả, email, tựa sách, mã vạch..."),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+):
+    """
+    Lấy danh sách các phiếu mượn / cuốn sách đang bị quá hạn.
+    - Tính số ngày quá hạn và tiền phạt tạm tính theo quy chuẩn KS25 (2.000 đ/ngày).
+    - Ưu tiên hiển thị phiếu quá hạn lâu nhất lên đầu.
+    """
+    return get_overdue_loans(db, user_id=user_id, search=search, skip=skip, limit=limit)
+
+
+@router.get("/due-soon", response_model=DueSoonListResponse)
+def get_due_soon(
+    user_id: int | None = Query(default=None, description="Lọc theo ID độc giả"),
+    days: int = Query(default=2, ge=1, le=7, description="Số ngày sắp đến hạn (mặc định 2 ngày)"),
+    search: str | None = Query(default=None, description="Tìm theo tên độc giả, tựa sách, mã vạch..."),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+):
+    """
+    Lấy danh sách các cuốn sách sắp đến hạn trong vòng `days` ngày (mặc định 2 ngày).
+    - Trả về nhãn trạng thái thân thiện: "Hôm nay (hết hạn)", "Còn 1 ngày", "Còn 2 ngày".
+    """
+    return get_due_soon_loans(db, user_id=user_id, days=days, search=search, skip=skip, limit=limit)
+
+
+@router.get("/notifications/my", response_model=InAppNotificationListResponse)
+@notifications_router.get("/my", response_model=InAppNotificationListResponse)
+def get_my_notifications(
+    user_id: int | None = Query(default=None, description="ID độc giả (None: lấy tất cả hoặc hệ thống)"),
+    limit: int = Query(default=30, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """
+    Lấy danh sách thông báo in-app cho chuông thông báo trên topbar header.
+    Tự động đồng bộ và sinh thông báo nhắc nhở cho các sách quá hạn và sắp đến hạn.
+    """
+    return sync_and_get_notifications(db, user_id=user_id, limit=limit)
+
+
+@router.patch("/notifications/{notification_id}/read")
+@notifications_router.patch("/{notification_id}/read")
+def read_notification(
+    notification_id: int,
+    user_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    """Đánh dấu một thông báo là đã đọc."""
+    success = mark_notification_read(db, notification_id, user_id=user_id)
+    return {"success": success, "notification_id": notification_id}
+
+
+@router.post("/notifications/mark-all-read")
+@notifications_router.post("/mark-all-read")
+def mark_all_read(
+    user_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    """Đánh dấu toàn bộ thông báo in-app là đã đọc."""
+    count = mark_all_notifications_read(db, user_id=user_id)
+    return {"success": True, "updated_count": count}
+
+
+@router.post("/{loan_id}/remind", response_model=RemindLoanResponse)
+def remind_reader(
+    loan_id: int,
+    data: RemindLoanRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Thủ thư gửi thông báo in-app nhắc trả sách quá hạn cho độc giả của phiếu mượn.
+    """
+    return remind_overdue_loan(
+        db,
+        loan_id=loan_id,
+        librarian_id=data.librarian_id,
+        custom_message=data.message,
+    )
+
+
+@router.post("/remind-all-overdue")
+def remind_all(
+    librarian_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    """
+    Thủ thư gửi thông báo in-app nhắc nhở hàng loạt đến tất cả độc giả đang có sách quá hạn.
+    """
+    return remind_all_overdue(db, librarian_id=librarian_id)
+

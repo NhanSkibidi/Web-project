@@ -132,12 +132,6 @@ def create_online_loan(
                 detail="Không được chọn trùng đầu sách",
             )
 
-        if len(book_isbns) > MAX_BORROW_BOOKS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Một lần mượn tối đa {MAX_BORROW_BOOKS} cuốn",
-            )
-
         user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
@@ -163,7 +157,7 @@ def create_online_loan(
         selected_copies: list[BookCopy] = []
 
         for isbn in book_isbns:
-            book = db.query(Book).filter(Book.isbn == isbn).first()
+            book = db.query(Book).filter(Book.isbn == isbn, Book.is_deleted == False).first()  # noqa: E712
 
             if not book:
                 raise HTTPException(
@@ -505,6 +499,89 @@ def handover_loan(
     except Exception:
         db.rollback()
         raise
+
+
+def get_loans_history(
+    db: Session,
+    user_id: int | None = None,
+    status_filter: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    """
+    Lấy danh sách lịch sử mượn trả từ module Mượn (lọc theo user_id và status).
+    Dùng cho trang Chi tiết độc giả, bảng Độc giả & Phiếu mượn của tôi.
+    """
+    query = db.query(Loan).order_by(Loan.id.desc())
+
+    if user_id is not None:
+        query = query.filter(Loan.user_id == user_id)
+
+    if status_filter and status_filter.strip():
+        st = status_filter.strip().upper()
+        try:
+            query = query.filter(Loan.status == LoanStatus(st))
+        except ValueError:
+            return []
+
+    loans = query.limit(limit).all()
+    now = datetime.now()
+    results: list[dict] = []
+
+    for loan in loans:
+        reader = db.query(User).filter(User.id == loan.user_id).first()
+        items_out: list[dict] = []
+
+        for li in loan.loan_items:
+            book = db.query(Book).filter(Book.isbn == li.book_isbn).first()
+            copy = db.query(BookCopy).filter(BookCopy.id == li.copy_id).first() if li.copy_id else None
+
+            eff_due = li.due_date or loan.due_date
+            is_overdue = False
+            overdue_days = 0
+            estimated_fine = 0.0
+
+            if eff_due and li.return_date is None and loan.status == LoanStatus.BORROWED:
+                if now.date() > eff_due.date():
+                    is_overdue = True
+                    overdue_days = (now.date() - eff_due.date()).days
+                    estimated_fine = float(overdue_days * 2000)
+            elif eff_due and li.return_date is not None:
+                if li.return_date.date() > eff_due.date():
+                    is_overdue = True
+                    overdue_days = (li.return_date.date() - eff_due.date()).days
+                    estimated_fine = float(overdue_days * 2000)
+
+            items_out.append({
+                "id": li.id,
+                "loan_id": li.loan_id,
+                "book_isbn": li.book_isbn,
+                "book_title": book.title if book else li.book_isbn,
+                "copy_id": li.copy_id,
+                "copy_code": copy.copy_code if copy else None,
+                "due_date": eff_due,
+                "renewal_count": li.renewal_count or 0,
+                "return_date": li.return_date,
+                "is_overdue": is_overdue,
+                "overdue_days": overdue_days,
+                "estimated_fine": estimated_fine,
+            })
+
+        results.append({
+            "id": loan.id,
+            "user_id": loan.user_id,
+            "reader_name": reader.full_name if reader else None,
+            "processed_by": loan.processed_by,
+            "borrow_type": loan.borrow_type.value if hasattr(loan.borrow_type, "value") else str(loan.borrow_type),
+            "status": loan.status.value if hasattr(loan.status, "value") else str(loan.status),
+            "reject_reason": loan.reject_reason,
+            "created_at": loan.created_at,
+            "borrowed_at": loan.borrowed_at,
+            "due_date": loan.due_date,
+            "loan_items": items_out,
+        })
+
+    return results
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 6) Nghiệp vụ mượn sách trực tiếp tại quầy (Counter Borrowing)

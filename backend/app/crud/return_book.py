@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.models.BookCopy import BookCopy
-from app.models.loan import Loan
+from app.models.loan import Loan, LoanStatus
 from app.models.loan_item import LoanItem
 from app.crud.fine import create_overdue_fine_if_applicable
 
@@ -59,7 +59,7 @@ def return_single_book_copy(
                 .count()
             )
             if remaining_items == 0:
-                loan.status = "RETURNED"
+                loan.status = LoanStatus.RETURNED
 
         db.commit()
         db.refresh(loan_item)
@@ -113,7 +113,7 @@ def return_entire_loan(db: Session, loan_id: int):
             if fine:
                 fines_created.append(fine)
 
-        loan.status = "RETURNED"
+        loan.status = LoanStatus.RETURNED
         db.commit()
         total_fine = sum(f.amount for f in fines_created)
         return {

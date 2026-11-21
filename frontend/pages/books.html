@@ -26,6 +26,9 @@
     <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
     <header class="librarian-topbar">
         <div class="topbar-left">
+            <button id="btn-toggle-sidebar" class="mobile-menu-btn" type="button" aria-label="Mở menu điều hướng" title="Mở danh mục điều hướng">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <a href="../index.html" class="brand-badge">
                 <div class="brand-icon">
                     <span class="material-symbols-outlined">local_library</span>
@@ -56,11 +59,17 @@
         </div>
     </header>
 
+    <!-- LỚP PHỦ BACKDROP KHI MỞ MENU TRÊN THIẾT BỊ DI ĐỘNG -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
     <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG) -->
     <aside id="app-sidebar" class="sidebar-rail">
         <div class="sidebar-rail-header">
             <span>Phân hệ Thủ thư</span>
             <span class="version-pill">v1.2</span>
+            <button id="btn-close-sidebar" class="sidebar-close-btn" type="button" aria-label="Đóng menu">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
         <nav class="sidebar-rail-nav">
             <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
@@ -122,7 +131,7 @@
                     </div>
                     <h1 class="page-title">Quản lý đầu sách</h1>
                     <p class="page-subtitle">
-                        Quản lý hệ thống danh mục, mã ISBN và phân bổ bản sao vật lý tại các giá sách theo chuẩn KS25.
+                        Hệ thống danh mục đầu sách và bản sao vật lý.
                     </p>
                 </div>
                 <div class="header-actions">
@@ -133,7 +142,7 @@
                     </button>
                     <button id="btn-open-create-book" type="button" class="btn-header-create">
                         <span class="material-symbols-outlined">add_circle</span>
-                        <span>+ Thêm đầu sách mới</span>
+                        <span>+ Thêm đầu sách</span>
                     </button>
                 </div>
             </div>
@@ -203,7 +212,7 @@
                 <div class="filter-search-wrap">
                     <span class="material-symbols-outlined">search</span>
                     <input type="text" id="filter-search-input"
-                        placeholder="Tìm theo tên sách, tác giả, mã ISBN hoặc mã đầu sách...">
+                        placeholder="Tìm theo tên sách, tác giả, ISBN...">
                 </div>
                 <div>
                     <select id="filter-category" class="filter-select">
@@ -301,8 +310,7 @@
                             <span id="modal-book-heading">Thêm mới đầu sách &amp; Thiết lập bản sao</span>
                             <span id="modal-book-badge" class="mode-badge">Chế độ: Tạo mới</span>
                         </h2>
-                        <p class="modal-subtext">Nhập siêu dữ liệu chuẩn học thuật và khởi tạo danh mục mã vạch vật lý
-                        </p>
+                        <p class="modal-subtext">Nhập thông tin sách và thiết lập bản sao ban đầu.</p>
                     </div>
                 </div>
                 <button id="closeModalBtn" type="button" class="btn-close-modal" title="Đóng cửa sổ">

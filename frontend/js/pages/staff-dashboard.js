@@ -10,6 +10,14 @@
   // Biến lưu trữ biểu đồ Chart.js
   let copyStatusChartInstance = null;
   let categoryBarChartInstance = null;
+  let borrowingTrendChartInstance = null;
+
+  // Trạng thái bộ lọc thống kê (Task T3CFF62)
+  let currentPeriod = "month";
+  let currentGroupBy = "day";
+  let currentStartDate = "";
+  let currentEndDate = "";
+  let lastDashboardPayload = null;
 
   // Biến lưu trữ dữ liệu Quá hạn & Sắp đến hạn (Task T3CFF48)
   let currentOverdueSubtab = "overdue"; // 'overdue' hoặc 'duesoon'
@@ -118,10 +126,10 @@
             tooltip: {
               callbacks: {
                 label: function (context) {
-                  const total = 5680;
-                  const value = context.raw;
+                  const total = context.dataset.data.reduce((sum, n) => sum + Number(n || 0), 0) || 1;
+                  const value = Number(context.raw || 0);
                   const percentage = ((value / total) * 100).toFixed(1);
-                  return ` ${context.label}: ${value.toLocaleString()} cuốn (${percentage}%)`;
+                  return ` ${context.label}: ${value.toLocaleString("vi-VN")} cuốn (${percentage}%)`;
                 },
               },
             },
@@ -174,9 +182,103 @@
         },
       });
     }
+    // 3. Combo Chart (Task T3CFF62): Lượt mượn, Lượt trả & Tiền phạt đã thu theo ngày/tháng
+    const ctxTrend = document.getElementById("borrowingTrendChart");
+    if (ctxTrend && !borrowingTrendChartInstance && typeof Chart !== "undefined") {
+      borrowingTrendChartInstance = new Chart(ctxTrend, {
+        type: "bar",
+        data: {
+          labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+          datasets: [
+            {
+              type: "line",
+              label: "Lượt mượn",
+              data: [42, 55, 48, 63, 71, 38, 25],
+              borderColor: "#1B4332",
+              backgroundColor: "rgba(27, 67, 50, 0.12)",
+              borderWidth: 2.5,
+              tension: 0.35,
+              fill: true,
+              pointRadius: 3.5,
+              pointBackgroundColor: "#1B4332",
+              yAxisID: "y",
+            },
+            {
+              type: "bar",
+              label: "Lượt trả",
+              data: [35, 44, 41, 52, 60, 32, 20],
+              backgroundColor: "rgba(82, 121, 111, 0.45)",
+              borderRadius: 5,
+              maxBarThickness: 24,
+              yAxisID: "y",
+            },
+            {
+              type: "line",
+              label: "Tiền phạt đã thu (VNĐ)",
+              data: [40000, 60000, 20000, 120000, 80000, 60000, 40000],
+              borderColor: "#D97706",
+              backgroundColor: "rgba(217, 119, 6, 0.15)",
+              borderWidth: 2,
+              borderDash: [5, 4],
+              tension: 0.3,
+              pointRadius: 3,
+              pointBackgroundColor: "#D97706",
+              yAxisID: "y1",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              align: "end",
+              labels: { boxWidth: 12, font: { family: "Plus Jakarta Sans", size: 12 } },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  if (ctx.dataset.yAxisID === "y1") {
+                    return ` ${ctx.dataset.label}: ${Number(ctx.raw || 0).toLocaleString("vi-VN")} đ`;
+                  }
+                  return ` ${ctx.dataset.label}: ${ctx.raw} lượt`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: "JetBrains Mono", size: 11 }, color: "#515F74" },
+            },
+            y: {
+              type: "linear",
+              position: "left",
+              beginAtZero: true,
+              title: { display: true, text: "Lượt mượn / trả", font: { size: 11 } },
+              grid: { color: "#E6E2D8", drawBorder: false },
+              ticks: { precision: 0, font: { family: "JetBrains Mono", size: 11 } },
+            },
+            y1: {
+              type: "linear",
+              position: "right",
+              beginAtZero: true,
+              title: { display: true, text: "Tiền phạt (VNĐ)", font: { size: 11 }, color: "#B45309" },
+              grid: { drawOnChartArea: false },
+              ticks: {
+                font: { family: "JetBrains Mono", size: 10 },
+                color: "#B45309",
+                callback: (val) => `${Number(val).toLocaleString("vi-VN")}đ`,
+              },
+            },
+          },
+        },
+      });
+    }
   }
-
-  // Chuyển đổi giữa 4 trạng thái hệ thống
   function switchState(targetId) {
     const states = ["state-success", "state-loading", "state-empty", "state-error"];
     states.forEach((id) => {
@@ -230,6 +332,7 @@
       setTimeout(() => {
         if (copyStatusChartInstance) copyStatusChartInstance.resize();
         if (categoryBarChartInstance) categoryBarChartInstance.resize();
+        if (borrowingTrendChartInstance) borrowingTrendChartInstance.resize();
       }, 60);
     }
   }
@@ -244,10 +347,27 @@
     }, 1000);
   }
 
-  // Cập nhật số liệu theo khoảng thời gian
+  // Cập nhật số liệu theo khoảng thời gian (Task T3CFF62)
   function setTimeFilter(filterKey) {
-    const data = TIME_DATA[filterKey] || TIME_DATA.week;
+    currentPeriod = filterKey;
+    currentStartDate = "";
+    currentEndDate = "";
 
+    // Tự động chuyển sang theo tháng khi chọn Năm nay
+    if (filterKey === "year") {
+      currentGroupBy = "month";
+      document.querySelectorAll(".group-btn").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-group") === "month");
+      });
+    }
+
+    // Đổi active button
+    document.querySelectorAll(".time-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-time") === filterKey);
+    });
+
+    // Cập nhật ngay mock fallback trước khi chờ API
+    const data = TIME_DATA[filterKey] || TIME_DATA.month;
     const totalBooksEl = document.getElementById("stat-total-books");
     const booksTrendEl = document.getElementById("stat-books-trend");
     const totalCopiesEl = document.getElementById("stat-total-copies");
@@ -270,70 +390,217 @@
     if (activeReadersEl) activeReadersEl.textContent = data.activeReaders;
     if (readersBreakdownEl) readersBreakdownEl.textContent = data.readersBreakdown;
 
-    // Cập nhật dữ liệu biểu đồ
-    if (copyStatusChartInstance && data.copyStatus) {
-      copyStatusChartInstance.data.datasets[0].data = data.copyStatus;
-      copyStatusChartInstance.update();
-    }
-    if (categoryBarChartInstance && data.categoryCounts) {
-      categoryBarChartInstance.data.datasets[0].data = data.categoryCounts;
-      categoryBarChartInstance.update();
+    loadDashboardStatistics(true);
+  }
+
+  // ── TASK T3CFF62: ĐỒNG BỘ DASHBOARD THỐNG KÊ TỪ /api/statistics/dashboard ──
+  async function loadDashboardStatistics(showNotify = false) {
+    if (typeof api === "undefined") return;
+
+    const params = {
+      group_by: currentGroupBy,
+    };
+    if (currentStartDate && currentEndDate) {
+      params.start_date = currentStartDate;
+      params.end_date = currentEndDate;
+      params.period = "custom";
+    } else {
+      params.period = currentPeriod;
     }
 
-    // Đổi active button
-    document.querySelectorAll(".time-btn").forEach((btn) => {
-      if (btn.getAttribute("data-time") === filterKey) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
+    try {
+      const res = await api.get("/statistics/dashboard", params);
+      if (!res || !res.summary) return;
+      lastDashboardPayload = res;
+
+      const s = res.summary;
+
+      // Đồng bộ input date picker với khoảng ngày thực tế server trả về
+      const startInput = document.getElementById("filter-start-date");
+      const endInput = document.getElementById("filter-end-date");
+      if (startInput && res.start_date) startInput.value = res.start_date;
+      if (endInput && res.end_date) endInput.value = res.end_date;
+
+      const rangeBadge = document.getElementById("trend-range-badge");
+      if (rangeBadge && res.start_date && res.end_date) {
+        const fmtD = (iso) => iso.split("-").reverse().join("/");
+        rangeBadge.textContent = `${fmtD(res.start_date)} – ${fmtD(res.end_date)}`;
       }
-    });
 
-    const labelMap = { today: "Hôm nay", week: "Tuần này", month: "Tháng này" };
-    showToast(`Đã đồng bộ số liệu thống kê: ${labelMap[filterKey] || filterKey}`);
+      // 1. Cập nhật 5 KPI Cards
+      const setTxt = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setTxt("stat-total-books", Number(s.total_books).toLocaleString("vi-VN"));
+      setTxt("stat-books-trend", `Tổng ${Number(s.total_copies).toLocaleString("vi-VN")} bản sao`);
+      setTxt("stat-total-copies", Number(s.total_copies).toLocaleString("vi-VN"));
+      setTxt("stat-avail-copies", `${Number(s.available_copies).toLocaleString("vi-VN")} rảnh`);
+      setTxt("stat-borrowed-copies", `${Number(s.borrowed_copies).toLocaleString("vi-VN")} mượn`);
+      setTxt("stat-damaged-copies", `${Number(s.damaged_or_lost_copies).toLocaleString("vi-VN")} mất/hỏng`);
+      setTxt("stat-active-loans", Number(s.loans_in_period).toLocaleString("vi-VN"));
+      setTxt("stat-overdue-loans", `${Number(s.overdue_books_count).toLocaleString("vi-VN")} sách quá hạn`);
+      setTxt("stat-fines-collected", `${Number(s.collected_fines_amount || 0).toLocaleString("vi-VN")} đ`);
+      setTxt(
+        "stat-fines-meta",
+        `${s.collected_fines_count || 0} biên lai • Nợ: ${Number(s.unpaid_fines_amount || 0).toLocaleString("vi-VN")} đ`
+      );
+      setTxt("stat-active-readers", Number(s.active_readers).toLocaleString("vi-VN"));
+      setTxt("stat-readers-breakdown", `Đang giữ ${s.active_loans} phiếu mượn`);
+
+      // 2. Cập nhật Biểu đồ Doughnut: Tình trạng bản sao + số liệu chi tiết bên cạnh
+      if (copyStatusChartInstance) {
+        copyStatusChartInstance.data.datasets[0].data = [
+          s.available_copies,
+          s.borrowed_copies,
+          s.damaged_or_lost_copies,
+        ];
+        copyStatusChartInstance.update();
+      }
+      const totalC = Number(s.total_copies) || 0;
+      const pctOf = (v) => (totalC > 0 ? ((v / totalC) * 100).toFixed(1) : "0.0");
+      setTxt("copy-sub-text", `Phân bổ trạng thái ${totalC.toLocaleString("vi-VN")} cuốn sách`);
+      setTxt("copy-total-badge", `TỔNG: ${totalC.toLocaleString("vi-VN")}`);
+      setTxt("copy-avail-percent", `${pctOf(s.available_copies)}%`);
+      setTxt("copy-avail-val", Number(s.available_copies).toLocaleString("vi-VN"));
+      setTxt("copy-avail-pct", `(${pctOf(s.available_copies)}%)`);
+      setTxt("copy-borrowed-val", Number(s.borrowed_copies).toLocaleString("vi-VN"));
+      setTxt("copy-borrowed-pct", `(${pctOf(s.borrowed_copies)}%)`);
+      setTxt("copy-damaged-val", Number(s.damaged_or_lost_copies).toLocaleString("vi-VN"));
+      setTxt("copy-damaged-pct", `(${pctOf(s.damaged_or_lost_copies)}%)`);
+
+      // 3. Cập nhật Biểu đồ Lượt mượn, Lượt trả & Tiền phạt theo ngày/tháng
+      if (borrowingTrendChartInstance && Array.isArray(res.borrowing_trend)) {
+        borrowingTrendChartInstance.data.labels = res.borrowing_trend.map((p) => p.label);
+        borrowingTrendChartInstance.data.datasets[0].data = res.borrowing_trend.map((p) => p.borrow_count);
+        borrowingTrendChartInstance.data.datasets[1].data = res.borrowing_trend.map((p) => p.return_count);
+        borrowingTrendChartInstance.data.datasets[2].data = res.borrowing_trend.map((p) => p.fine_collected);
+        borrowingTrendChartInstance.update();
+      }
+
+      // 4. Cập nhật Biểu đồ & Bảng Thể loại phổ biến
+      if (Array.isArray(res.popular_categories) && res.popular_categories.length > 0) {
+        const catPalette = ["#1B4332", "#2D6A4F", "#52796F", "#84A98C", "#B5C99A", "#CAD2C5"];
+        if (categoryBarChartInstance) {
+          categoryBarChartInstance.data.labels = res.popular_categories.map((c) => c.category_name);
+          categoryBarChartInstance.data.datasets[0].label = "Lượt mượn";
+          categoryBarChartInstance.data.datasets[0].data = res.popular_categories.map((c) => c.borrow_count || c.book_count);
+          categoryBarChartInstance.data.datasets[0].backgroundColor = res.popular_categories.map(
+            (_, idx) => catPalette[idx % catPalette.length]
+          );
+          categoryBarChartInstance.update();
+        }
+
+        const catTbody = document.getElementById("category-table-body");
+        if (catTbody) {
+          catTbody.innerHTML = res.popular_categories
+            .map((c, idx) => {
+              const color = catPalette[idx % catPalette.length];
+              return `
+                <tr>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span class="dot-color" style="background: ${color};"></span>
+                      <span>${escapeHtml(c.category_name)}</span>
+                    </div>
+                  </td>
+                  <td style="text-align: center;" class="font-mono"><strong>${c.book_count}</strong></td>
+                  <td style="text-align: center;" class="font-mono">${c.percentage}%</td>
+                  <td style="text-align: right; color: var(--color-success); font-weight: 600;" class="font-mono">${c.borrow_count} lượt</td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+      }
+
+      // 5. Cập nhật Bảng Top Sách mượn nhiều nhất
+      const topTbody = document.getElementById("top-books-tbody");
+      const topFooter = document.getElementById("top-books-footer");
+      if (topTbody && Array.isArray(res.top_borrowed_books)) {
+        if (res.top_borrowed_books.length === 0) {
+          topTbody.innerHTML = `
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 24px; color: #64748b;">
+                Chưa có lượt mượn sách nào trong khoảng thời gian đã chọn.
+              </td>
+            </tr>
+          `;
+        } else {
+          const maxBorrow = Math.max(...res.top_borrowed_books.map((b) => b.borrow_count), 1);
+          topTbody.innerHTML = res.top_borrowed_books
+            .map((b) => {
+              const rankCls = b.rank <= 3 ? `rank-${b.rank}` : "";
+              const pct = Math.round((b.borrow_count / maxBorrow) * 100);
+              const availCls = b.available_copies <= 1 ? "red" : "blue";
+              return `
+                <tr>
+                  <td style="text-align: center;"><span class="rank-pill ${rankCls}">#${b.rank}</span></td>
+                  <td>
+                    <strong title="${escapeHtml(b.title)}">${escapeHtml(b.title)}</strong>
+                    <div style="font-size: 11px; color: var(--color-text-muted);">${escapeHtml(b.category_name)} • ISBN: ${escapeHtml(b.isbn)}</div>
+                  </td>
+                  <td style="text-align: center;">
+                    <div class="borrow-progress-wrap">
+                      <div class="borrow-progress-bar"><div class="borrow-progress-fill" style="width:${pct}%"></div></div>
+                      <strong class="font-mono">${b.borrow_count}</strong>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <span class="badge-count-pill ${availCls}">${b.available_copies} / ${b.total_copies}</span>
+                  </td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+        if (topFooter) {
+          topFooter.textContent = `Top ${res.top_borrowed_books.length} đầu sách mượn nhiều nhất trong kỳ`;
+        }
+      }
+
+      if (showNotify) {
+        const labelMap = { today: "Hôm nay", week: "Tuần này", month: "Tháng này", year: "Năm nay", custom: "Khoảng ngày tùy chọn" };
+        showToast(`Đã đồng bộ số liệu thống kê: ${labelMap[res.period] || res.period}`);
+      }
+    } catch (err) {
+      if (showNotify) {
+        const labelMap = { today: "Hôm nay", week: "Tuần này", month: "Tháng này", year: "Năm nay" };
+        showToast(`Đang hiển thị số liệu mẫu (${labelMap[currentPeriod] || currentPeriod})`, "warning");
+      }
+    }
+  }
+
+  // Xuất file CSV (mở trực tiếp bằng Excel) từ dữ liệu thống kê hiện tại
+  function exportStatisticsCsv() {
+    const rows = [["Ngày/Tháng", "Lượt mượn", "Lượt trả", "Tiền phạt đã thu (VNĐ)"]];
+    if (lastDashboardPayload && Array.isArray(lastDashboardPayload.borrowing_trend)) {
+      lastDashboardPayload.borrowing_trend.forEach((p) => {
+        rows.push([p.label, p.borrow_count, p.return_count, p.fine_collected]);
+      });
+    } else if (borrowingTrendChartInstance) {
+      const labels = borrowingTrendChartInstance.data.labels || [];
+      const b = borrowingTrendChartInstance.data.datasets[0].data || [];
+      const r = borrowingTrendChartInstance.data.datasets[1].data || [];
+      const f = borrowingTrendChartInstance.data.datasets[2].data || [];
+      labels.forEach((lbl, i) => rows.push([lbl, b[i] || 0, r[i] || 0, f[i] || 0]));
+    }
+    const csvContent = "\uFEFF" + rows.map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Thong_ke_thu_vien_KS25_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast("Đã tải xuống báo cáo thống kê (.csv mở bằng Excel)!");
   }
 
   // Tải dữ liệu thực tế từ API Backend nếu có kết nối
   async function syncLiveDataFromApi() {
-    if (typeof api === "undefined") return;
-
-    try {
-      // 1. Thống kê đầu sách
-      const bookRes = await api.get("/books/search", { page: 1, page_size: 1 });
-      if (bookRes && typeof bookRes.total === "number" && bookRes.total > 0) {
-        const totalBooksEl = document.getElementById("stat-total-books");
-        if (totalBooksEl) totalBooksEl.textContent = Number(bookRes.total).toLocaleString("vi-VN");
-      }
-
-      // 2. Thống kê bản sao
-      const copiesRes = await api.get("/book_copies");
-      if (Array.isArray(copiesRes) && copiesRes.length > 0) {
-        const total = copiesRes.length;
-        const avail = copiesRes.filter((c) => c.status === "AVAILABLE").length;
-        const borrowed = copiesRes.filter((c) => c.status === "BORROWED").length;
-        const damaged = copiesRes.filter((c) => ["LOST", "DAMAGED", "MAINTENANCE"].includes(c.status)).length;
-
-        const totalCopiesEl = document.getElementById("stat-total-copies");
-        const availCopiesEl = document.getElementById("stat-avail-copies");
-        const borrowedCopiesEl = document.getElementById("stat-borrowed-copies");
-        const damagedCopiesEl = document.getElementById("stat-damaged-copies");
-
-        if (totalCopiesEl) totalCopiesEl.textContent = total.toLocaleString("vi-VN");
-        if (availCopiesEl) availCopiesEl.textContent = `${avail.toLocaleString("vi-VN")} rảnh`;
-        if (borrowedCopiesEl) borrowedCopiesEl.textContent = `${borrowed.toLocaleString("vi-VN")} mượn`;
-        if (damagedCopiesEl) damagedCopiesEl.textContent = `${damaged.toLocaleString("vi-VN")} mất/hỏng`;
-
-        if (copyStatusChartInstance) {
-          copyStatusChartInstance.data.datasets[0].data = [avail, borrowed, damaged];
-          copyStatusChartInstance.update();
-        }
-      }
-
-      // 3. Đồng bộ danh sách Quá hạn & Sắp đến hạn (Task T3CFF48)
-      await syncOverdueData();
-    } catch {
-      // Backend offline hoặc chưa có dữ liệu -> dùng mock data mặc định
-    }
+    await Promise.allSettled([loadDashboardStatistics(false), syncOverdueData()]);
   }
 
   // ── TASK T3CFF48: XỬ LÝ DỮ LIỆU QUÁ HẠN & SẮP ĐẾN HẠN ─────────────────
@@ -544,7 +811,6 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
-  }
 
   // Khởi tạo và lắng nghe các sự kiện
   function init() {
@@ -559,11 +825,46 @@
       });
     });
 
-    // 2. Chuyển đổi thời gian lọc
+    // 2. Chuyển đổi thời gian lọc nhanh
     document.querySelectorAll(".time-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const timeKey = btn.getAttribute("data-time");
         setTimeFilter(timeKey);
+      });
+    });
+
+    // 2b. Lọc theo khoảng ngày tùy chỉnh (Từ ngày -> Đến ngày)
+    const btnApplyRange = document.getElementById("btnApplyDateRange");
+    if (btnApplyRange) {
+      btnApplyRange.addEventListener("click", () => {
+        const sVal = document.getElementById("filter-start-date")?.value || "";
+        const eVal = document.getElementById("filter-end-date")?.value || "";
+        if (!sVal || !eVal) {
+          showToast("Vui lòng chọn đầy đủ Từ ngày và Đến ngày!", "warning");
+          return;
+        }
+        if (sVal > eVal) {
+          showToast("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "error");
+          return;
+        }
+        currentStartDate = sVal;
+        currentEndDate = eVal;
+        currentPeriod = "custom";
+        document.querySelectorAll(".time-btn").forEach((b) => b.classList.remove("active"));
+        loadDashboardStatistics(true);
+      });
+    }
+
+    // 2c. Chuyển đổi gom nhóm biểu đồ: Theo ngày / Theo tháng
+    document.querySelectorAll(".group-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const g = btn.getAttribute("data-group");
+        if (!g || g === currentGroupBy) return;
+        currentGroupBy = g;
+        document.querySelectorAll(".group-btn").forEach((b) => {
+          b.classList.toggle("active", b.getAttribute("data-group") === g);
+        });
+        loadDashboardStatistics(true);
       });
     });
 
@@ -589,11 +890,9 @@
           if (type === "print") {
             window.print();
           } else if (type === "pdf") {
-            showToast("Đang kết xuất báo cáo thống kê định dạng PDF...");
-            setTimeout(() => showToast("Đã tải xuống file: Bao_cao_thong_ke_KS25.pdf"), 1000);
+            window.print();
           } else if (type === "xlsx") {
-            showToast("Đang trích xuất dữ liệu bảng tính Excel (.xlsx)...");
-            setTimeout(() => showToast("Đã tải xuống file: So_lieu_tong_quan_KS25.xlsx"), 1000);
+            exportStatisticsCsv();
           }
         });
       });

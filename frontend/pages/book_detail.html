@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Cấu trúc Dữ liệu & Giải thuật nâng cao | Thư viện số KS25</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=10.1">
+  <link rel="stylesheet" href="../css/book_detail.css?v=1.1">
+</head>
+
+<body data-root="../" data-roles="READER,LIBRARIAN,ADMIN">
+
+  <!-- 1. HEADER CỐ ĐỊNH: ĐỒNG BỘ THEO CHUẨN RETURNS & TASK T3CFF48 -->
+  <header class="librarian-topbar" id="app-header">
+    <div class="topbar-left">
+      <a href="../index.html" class="brand-badge" title="Về trang chủ UniLib">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
+      </a>
+
+      <!-- Menu điều hướng đồng bộ -->
+      <nav class="topbar-nav" id="main-nav">
+        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="search.html" class="topbar-nav-link active">Tra cứu sách</a>
+        <a href="loan_slip.html" class="topbar-nav-link">Phiếu mượn của tôi</a>
+        <a href="staff-dashboard.html" class="topbar-nav-link">Quản trị thư viện</a>
+      </nav>
+    </div>
+
+    <!-- Góc phải: Chuông thông báo + Giỏ hàng + Avatar người dùng -->
+    <div class="topbar-right">
+      <!-- Chuông thông báo in-app (Task T3CFF48) -->
+      <div class="notif-dropdown-container" id="notifDropdownContainer">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-badge" id="notifBadge">2</span>
+        </button>
+        <!-- BẢNG NOTIFICATION IN-APP -->
+        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+          <div class="notif-header">
+            <div class="notif-title-group">
+              <span class="notif-title">Thông báo mượn trả</span>
+              <span class="notif-badge-pill">2 mới</span>
+            </div>
+            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
+          </div>
+          <div class="notif-list">
+            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
+              <div class="notif-icon-box overdue">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
+                <span class="notif-time">10 phút trước • Quá hạn</span>
+              </div>
+            </a>
+            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
+              <div class="notif-icon-box due-soon">
+                <span class="material-symbols-outlined">alarm</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
+                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
+              </div>
+            </a>
+          </div>
+          <div class="notif-footer">
+            <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nút Giỏ Hàng Mượn Sách -->
+      <a href="loan_basket.html" class="topbar-icon-btn" id="headerCartBtn" title="Xem giỏ sách đang mượn">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <span class="cart-badge-count" id="headerCartBadge">0</span>
+      </a>
+
+      <div class="topbar-divider"></div>
+
+      <!-- Avatar Người dùng -->
+      <div class="librarian-profile" id="headerUserProfile" onclick="window.location.href='auth.html'" title="Tài khoản cá nhân">
+        <div class="librarian-avatar" id="headerUserAvatar">U</div>
+        <div class="librarian-info">
+          <span class="librarian-name" id="headerUserName">User</span>
+          <span class="librarian-role" id="headerUserRole">Sinh viên</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MÀN HÌNH BẢO VỆ XÁC THỰC (BẮT BUỘC ĐĂNG NHẬP MỚI VÀO ĐƯỢC) -->
+  <div id="authGuardOverlay" class="auth-guard-overlay" style="display: none;">
+    <div class="auth-guard-card">
+      <div class="auth-guard-icon">🔒</div>
+      <h2 class="auth-guard-title">Yêu cầu đăng nhập</h2>
+      <p class="auth-guard-desc">
+        Trang thông tin chi tiết ấn bản và lưu thông bản sao vật lý yêu cầu độc giả xác thực tài khoản sinh viên thư viện KS25.
+      </p>
+      <div class="auth-guard-actions">
+        <a href="login.html#login" class="btn-guard-login">Đăng nhập tài khoản cá nhân →</a>
+        <button type="button" class="btn-guard-demo" onclick="demoLoginAsStudent()">
+          ⚡ Dùng tài khoản Demo Sinh viên (Trải nghiệm nhanh)
+        </button>
+        <button type="button" class="btn-guard-demo" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;" onclick="document.getElementById('authGuardOverlay').style.display='none'">
+          ✕ Đóng & Xem thông tin sách
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- 2. BREADCRUMB & NÚT QUAY LẠI -->
+    <div class="breadcrumb-bar">
+      <div class="breadcrumb-links">
+        <a href="home.html">🏠 Trang chủ</a>
+        <span>/</span>
+        <a href="search.html">Giáo trình & Tài liệu</a>
+        <span>/</span>
+        <a href="search.html">Công nghệ Thông tin</a>
+        <span>/</span>
+        <span class="breadcrumb-current" id="breadcrumbBookTitle">Cấu trúc Dữ liệu & Giải thuật nâng cao</span>
+      </div>
+      <a href="search.html" class="btn-back-catalog">
+        <span>←</span>
+        <span>Quay lại</span>
+      </a>
+    </div>
+
+    <!-- 3. BỐ CỤC 2 CỘT CHÍNH -->
+    <div class="detail-grid">
+
+      <!-- CỘT TRÁI (BÌA SÁCH, THÊM GIỎ, THÔNG SỐ, VỊ TRÍ KỆ) -->
+      <aside class="detail-left">
+
+        <!-- Showcase bìa sách 3D sống động -->
+        <div class="book-cover-showcase">
+          <div class="book-3d-wrap" id="mainBookCoverWrap">
+            <!-- Bìa sách xanh lục đậm Cấu trúc dữ liệu & Giải thuật -->
+            <div style="width:100%; height:100%; background: linear-gradient(145deg, #16382a, #0d231a); color:#fff; padding:28px 20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: inset 4px 0 10px rgba(0,0,0,0.5);">
+              <div>
+                <div style="font-size:11px; letter-spacing:2px; font-weight:700; color:#a7f3d0; text-transform:uppercase;">GIÁO TRÌNH ĐẠI HỌC</div>
+                <h3 style="font-family:var(--font-serif); font-size:23px; font-weight:800; margin:16px 0 8px; line-height:1.2; color:#ffffff;">
+                  CẤU TRÚC DỮ LIỆU<br>& GIẢI THUẬT
+                </h3>
+                <div style="font-size:13px; color:#d1fae5; font-weight:600;">TS. LÊ HOÀNG NAM</div>
+              </div>
+
+              <!-- Họa tiết đồ thị cây nhị phân trang trí phong cách công nghệ -->
+              <div style="text-align:center; opacity:0.35; margin:10px 0;">
+                <svg width="120" height="90" viewBox="0 0 120 90" fill="none" stroke="#6ee7b7" stroke-width="1.5">
+                  <circle cx="60" cy="15" r="7" />
+                  <circle cx="30" cy="45" r="6" />
+                  <circle cx="90" cy="45" r="6" />
+                  <circle cx="15" cy="75" r="5" />
+                  <circle cx="45" cy="75" r="5" />
+                  <circle cx="75" cy="75" r="5" />
+                  <circle cx="105" cy="75" r="5" />
+                  <line x1="55" y1="20" x2="35" y2="40" />
+                  <line x1="65" y1="20" x2="85" y2="40" />
+                  <line x1="26" y1="50" x2="18" y2="70" />
+                  <line x1="34" y1="50" x2="42" y2="70" />
+                  <line x1="86" y1="50" x2="78" y2="70" />
+                  <line x1="94" y1="50" x2="102" y2="70" />
+                </svg>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.15); padding-top:10px;">
+                <span>NXB ĐẠI HỌC QUỐC GIA</span>
+                <span>TÁI BẢN LẦN 3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trạng thái khả dụng -->
+          <div class="availability-pill" id="bookAvailabilityPill">
+            <span class="status-dot"></span>
+            <span id="bookAvailabilityText">Còn 5 / 8 bản sao khả dụng</span>
+          </div>
+
+          <!-- NÚT THÊM VÀO GIỎ MƯỢN (CÓ HIỆU ỨNG BAY VÀO ICON GIỎ HÀNG) -->
+          <button type="button" class="btn-add-cart-main" id="btnMainAddCart" onclick="addToCartWithAnimation(event)">
+            <span style="font-size: 18px;">🛒</span>
+            <span>Thêm vào giỏ mượn</span>
+          </button>
+
+          <!-- Nút đặt mượn trực tiếp -->
+          <button type="button" class="btn-reserve-direct" onclick="alert('Tính năng mượn nhanh trực tiếp: Đã gửi yêu cầu giữ sách tại Quầy thủ thư tầng 1!')">
+            <span>📱</span>
+            <span>Đặt mượn trực tiếp</span>
+          </button>
+
+          <!-- Nút tiện ích: Lưu, Chia sẻ, Báo lỗi -->
+          <div class="action-buttons-row">
+            <button type="button" class="btn-util-icon" onclick="alert('Đã lưu tài liệu vào danh sách yêu thích!')">
+              <span>🔖</span>
+              <span>Lưu tài liệu</span>
+            </button>
+            <button type="button" class="btn-util-icon" onclick="navigator.clipboard.writeText(window.location.href); alert('Đã sao chép liên kết chia sẻ!');">
+              <span>🔗</span>
+              <span>Chia sẻ</span>
+            </button>
+            <button type="button" class="btn-util-icon" onclick="alert('Đã mở biểu mẫu phản hồi về thông tin tài liệu!')">
+              <span>🚩</span>
+              <span>Báo lỗi</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Khung Thông số thư mục chuẩn mực -->
+        <div class="card-spec">
+          <div class="card-spec-header">
+            <span>📋</span>
+            <span>Thông số thư mục</span>
+          </div>
+          <table class="spec-table">
+            <tbody>
+              <tr>
+                <td class="spec-label">Phân loại DDC</td>
+                <td class="spec-val" id="specDdc">005.1 D978</td>
+              </tr>
+              <tr>
+                <td class="spec-label">Mã ISBN</td>
+                <td class="spec-val" id="specIsbn">978-604-8-31298-1</td>
+              </tr>
+              <tr>
+                <td class="spec-label">Định dạng</td>
+                <td class="spec-val" id="specFormat">Bìa mềm cao cấp</td>
+              </tr>
+              <tr>
+                <td class="spec-label">Số trang</td>
+                <td class="spec-val" id="specPages">480 trang chuẩn</td>
+              </tr>
+              <tr>
+                <td class="spec-label">Ngôn ngữ</td>
+                <td class="spec-val" id="specLanguage">Tiếng Việt (Thuật ngữ EN)</td>
+              </tr>
+              <tr>
+                <td class="spec-label">Kích thước</td>
+                <td class="spec-val" id="specSize">16 x 24 cm</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Khung Vị trí kệ chính -->
+        <div class="card-shelf-location">
+          <div class="shelf-icon-box">
+            <span>📚</span>
+          </div>
+          <div class="shelf-info-text">
+            <span class="shelf-info-label">Vị trí kệ chính</span>
+            <span class="shelf-info-code" id="shelfLocationCode">KHO-IT / Tầng 1 / Kệ A3-02</span>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- CỘT PHẢI (CHI TIẾT NỘI DUNG, THỐNG KÊ, TABS, BẢNG BẢN SAO) -->
+      <section class="detail-right">
+
+        <!-- Tags chuyên ngành -->
+        <div class="tag-pills-row" id="bookTagPills">
+          <span class="tag-badge">Khoa học Máy tính</span>
+          <span class="tag-badge">Lập trình ứng dụng</span>
+          <span class="tag-badge">Cấu trúc Dữ liệu & Giải thuật</span>
+          <span class="tag-badge tag-badge-highlight">Giáo trình Chuẩn Bộ GD&ĐT</span>
+        </div>
+
+        <!-- Tiêu đề sách -->
+        <h1 class="book-detail-title" id="bookTitle">Cấu trúc Dữ liệu & Giải thuật nâng cao</h1>
+
+        <!-- Tác giả, Nhà xuất bản -->
+        <div class="author-pub-meta" id="bookAuthorPubMeta">
+          <span>👤 Chủ biên: <strong id="metaAuthor">TS. Lê Hoàng Nam</strong></span>
+          <span>•</span>
+          <span>Đồng tác giả: <strong id="metaCoAuthor">ThS. Trần Minh Quang</strong></span>
+          <span>•</span>
+          <span>🏢 <strong id="metaPublisher">NXB Giáo Dục Việt Nam (2023)</strong></span>
+        </div>
+
+        <!-- 4 Thẻ số liệu thống kê -->
+        <div class="stats-cards-grid">
+          <div class="stat-box-card">
+            <div class="stat-box-top">
+              <span style="color:#F59E0B;">★</span>
+              <span><span id="statRating">4.8</span> <span style="font-size:12px; color:var(--color-muted); font-weight:500;">/5</span></span>
+            </div>
+            <div class="stat-box-sub" id="statReviewCount">38 nhận xét học thuật</div>
+          </div>
+
+          <div class="stat-box-card">
+            <div class="stat-box-top">
+              <span>📖</span>
+              <span id="statBorrowCount">142</span>
+            </div>
+            <div class="stat-box-sub">Lượt mượn trong kỳ</div>
+          </div>
+
+          <div class="stat-box-card">
+            <div class="stat-box-top">
+              <span style="color:#10B981;">🔄</span>
+              <span id="statEdition">Lần 3</span>
+            </div>
+            <div class="stat-box-sub" id="statEditionSub">Tái bản có chỉnh lý</div>
+          </div>
+
+          <div class="stat-box-card">
+            <div class="stat-box-top">
+              <span>📅</span>
+              <span style="font-size:14.5px;" id="statImportDate">15/08/2023</span>
+            </div>
+            <div class="stat-box-sub">Ngày nhập kho</div>
+          </div>
+        </div>
+
+        <!-- Tabs chuyển đổi nội dung -->
+        <div class="tab-nav-bar">
+          <button type="button" class="tab-nav-btn active" onclick="switchDetailTab('summary', this)">
+            <span>📑</span>
+            <span>Thông tin chi tiết</span>
+          </button>
+          <button type="button" class="tab-nav-btn" onclick="switchDetailTab('copies', this)">
+            <span>📦</span>
+            <span>Danh sách bản sao vật lý</span>
+            <span class="tab-pill-count" id="tabCopiesCount">8</span>
+          </button>
+          <button type="button" class="tab-nav-btn" onclick="switchDetailTab('reviews', this)">
+            <span>💬</span>
+            <span>Đánh giá & Thảo luận</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: TÓM TẮT HỌC THUẬT -->
+        <div id="tab-pane-summary" class="tab-pane-content active">
+          <div class="summary-card">
+            <h4 class="summary-title">
+              <span>📝</span>
+              <span>Tóm tắt nội dung học thuật</span>
+            </h4>
+            <p class="summary-desc-text" id="bookSummaryText">
+              Giáo trình cung cấp các kiến thức cốt lõi và chuyên sâu về cấu trúc dữ liệu tuyến tính, cây nhị phân cân bằng (AVL, Red-Black Trees), đồ thị định hướng và các giải thuật tối ưu hóa phức tạp như Dijkstra, A* Search và Quy hoạch động. Giáo trình được thiết kế chuẩn mực với hệ thống mã nguồn mẫu cụ thể bằng C++20 và Java 17, kèm theo các bài toán thực tiễn phân tích độ phức tạp thời gian O(n log n) và kiểm thử bộ nhớ. Phù hợp cho sinh viên chuyên ngành Kỹ thuật Phần mềm, Khoa học Máy tính và kỹ sư chuẩn bị cho các kỳ thi lập trình quốc tế ACM-ICPC.
+            </p>
+
+            <div class="summary-highlights-grid" id="bookHighlightsGrid">
+              <div class="highlight-box">
+                <span class="highlight-check">✓</span>
+                <span>Đầy đủ 14 chương từ cấu trúc cơ bản đến giải thuật mạng luồng cực đại</span>
+              </div>
+              <div class="highlight-box">
+                <span class="highlight-check">✓</span>
+                <span>Tích hợp mã QR truy cập kho mã nguồn bài tập trực tuyến</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: REVIEW (Ẩn mặc định) -->
+        <div id="tab-pane-reviews" class="tab-pane-content">
+          <div class="summary-card">
+            <h4 class="summary-title">Đánh giá từ độc giả sinh viên</h4>
+            <p style="color:var(--color-text-sub); font-size:14px; margin-bottom:14px;">
+              "Sách viết rất rõ ràng, ví dụ trực quan về Red-Black Tree và Đồ thị giúp mình qua môn Giải thuật điểm A!" – <em>Trần Hoàng Long (K24 CNTT)</em>
+            </p>
+          </div>
+        </div>
+
+        <!-- BẢNG HIỆN TRẠNG LƯU THÔNG CÁC BẢN SAO VẬT LÝ (HIỂN THỊ TRỰC TIẾP CHUẨN THIẾT KẾ) -->
+        <div class="copies-section">
+          <div class="copies-section-header">
+            <div class="copies-heading-area">
+              <div class="copies-title-row">
+                <h3 class="copies-title">Hiện trạng bản sao</h3>
+                <span class="badge-copies-count" id="badgeCopiesCount">8 bản sao</span>
+              </div>
+              <span class="copies-subtitle">Tra cứu vị trí giá sách theo thời gian thực</span>
+            </div>
+
+            <!-- Bộ lọc theo kho -->
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:13px; color:var(--color-text-sub);">Lọc theo kho:</span>
+              <select class="filter-copies-select" onchange="handleCopiesFilter(this)">
+                <option value="all">Tất cả các kho (8)</option>
+                <option value="Tầng 1">Tầng 1 – Kho Kỹ thuật</option>
+                <option value="Tầng 2">Tầng 2 – Phòng Nghiên cứu</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Bảng chi tiết bản sao -->
+          <div class="copies-table-wrap">
+            <table class="copies-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">STT</th>
+                  <th>MÃ VẠCH (BARCODE)</th>
+                  <th>VỊ TRÍ KHO & KỆ SÁCH</th>
+                  <th>LOẠI TÀI LIỆU</th>
+                  <th>TÌNH TRẠNG</th>
+                  <th style="text-align: right;">THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="copiesTableBody">
+                <!-- Sẽ được đồng bộ render từ book_detail.js -->
+                <!-- 01 -->
+                <tr>
+                  <td class="stt-cell">01</td>
+                  <td><span class="barcode-badge">BS-IT-001</span></td>
+                  <td>
+                    <div class="location-cell">
+                      <span>📍</span>
+                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
+                    </div>
+                  </td>
+                  <td>Mượn về nhà (14 ngày)</td>
+                  <td><span class="status-badge-avail">● Khả dụng</span></td>
+                  <td style="text-align: right;">
+                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-001')">
+                      Mượn
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 02 -->
+                <tr>
+                  <td class="stt-cell">02</td>
+                  <td><span class="barcode-badge">BS-IT-002</span></td>
+                  <td>
+                    <div class="location-cell">
+                      <span>📍</span>
+                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
+                    </div>
+                  </td>
+                  <td>Mượn về nhà (14 ngày)</td>
+                  <td><span class="status-badge-avail">● Khả dụng</span></td>
+                  <td style="text-align: right;">
+                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-002')">
+                      Mượn
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 03 -->
+                <tr>
+                  <td class="stt-cell">03</td>
+                  <td><span class="barcode-badge">BS-IT-003</span></td>
+                  <td>
+                    <div class="location-cell">
+                      <span>🏛️</span>
+                      <span>Tầng 2 – Phòng Nghiên cứu</span>
+                    </div>
+                  </td>
+                  <td>Đọc tại chỗ</td>
+                  <td><span class="status-badge-avail">● Khả dụng</span></td>
+                  <td style="text-align: right;">
+                    <button type="button" class="btn-copy-action btn-copy-onsite" onclick="alert('Đã đăng ký chỗ ngồi đọc bản in BS-IT-003 tại Phòng Nghiên cứu Tầng 2!')">
+                      Đọc tại chỗ
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 04 -->
+                <tr>
+                  <td class="stt-cell">04</td>
+                  <td><span class="barcode-badge">BS-IT-004</span></td>
+                  <td>
+                    <div class="location-cell">
+                      <span>📍</span>
+                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
+                    </div>
+                  </td>
+                  <td>Mượn về nhà</td>
+                  <td>
+                    <div class="status-badge-borrowed">
+                      <span>Đang mượn</span>
+                      <small>Hạn trả: 28/10/2026</small>
+                    </div>
+                  </td>
+                  <td style="text-align: right;">
+                    <button type="button" class="btn-copy-action btn-copy-reserve" onclick="alert('Đã xếp bạn vào hàng đợi đặt trước bản sao BS-IT-004 khi có người trả sách!')">
+                      Đặt trước
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- 05 -->
+                <tr>
+                  <td class="stt-cell">05</td>
+                  <td><span class="barcode-badge">BS-IT-005</span></td>
+                  <td>
+                    <div class="location-cell">
+                      <span>📍</span>
+                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
+                    </div>
+                  </td>
+                  <td>Mượn về nhà (14 ngày)</td>
+                  <td><span class="status-badge-avail">● Khả dụng</span></td>
+                  <td style="text-align: right;">
+                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-005')">
+                      Mượn
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Nhắc nhở quy định -->
+          <div class="copies-footer-notice">
+            <div>ⓘ Sinh viên được mượn tối đa <strong>3 bản in</strong> cùng lúc trong thời hạn <strong>14 ngày</strong>.</div>
+            <a href="javascript:void(0)" onclick="alert('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.')">
+              Xem nội quy mượn trả →
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- 4. TÀI LIỆU HỌC TẬP CÙNG CHUYÊN NGÀNH -->
+    <section class="related-section">
+      <div class="related-header">
+        <div>
+          <h3 class="related-title">Tài liệu học tập cùng chuyên ngành</h3>
+          <p class="related-subtitle">Các giáo trình và tài liệu nghiên cứu tương thích theo lộ trình ngành CNTT</p>
+        </div>
+        <a href="search.html" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">Xem tất cả &gt;</a>
+      </div>
+
+      <div class="related-grid" id="relatedBooksGrid">
+        <!-- Render động qua JavaScript -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 5. CHÂN TRANG ĐỒNG BỘ -->
+  <footer id="app-footer">
+    <div class="container footer-inner">
+      <div>© 2026 Thư viện số KS25. Bảo lưu mọi quyền.</div>
+      <div class="footer-links">
+        <a href="javascript:void(0)" onclick="alert('Trung tâm trợ giúp: Liên hệ thuvien@ks25.edu.vn hoặc Hotline: 024.1234.5678')">Trung tâm trợ giúp</a>
+        <a href="javascript:void(0)" onclick="alert('Quy chế mượn trả: Mượn tối đa 5 cuốn trong 14 ngày. Trễ hạn phạt 2.000đ/ngày.')">Quy định mượn trả</a>
+        <a href="javascript:void(0)" onclick="alert('Hỗ trợ sinh viên: Phòng tự học tầng 2, mở cửa 07:30 - 20:30 từ Thứ Hai - Thứ Bảy.')">Hỗ trợ sinh viên</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/notifications.js" defer></script>
+  <script src="../js/pages/book_detail.js?v=1.0"></script>
+</body>
+
+</html>

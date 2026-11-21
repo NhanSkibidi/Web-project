@@ -28,4 +28,4 @@ class LoanItem(Base):
     
     loan: Mapped["Loan"] = relationship("Loan", back_populates="loan_items")
     book: Mapped["Book"] = relationship("Book")
-    copy: Mapped["BookCopy | None"] = relationship("BookCopy")
+    copy: Mapped["BookCopy | None"] = relationship("BookCopy", back_populates="loan_items")

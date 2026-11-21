@@ -134,9 +134,24 @@ def get_book_by_isbn(db: Session, isbn: str):
     total_copies = len(book.copies)
 
     available_copies = 0
+    lost_copies = 0
+    damage_copies = 0
+    disposed_copies = 0
+    borrowed_copies = 0
+    reserved_copies = 0
     for copy in book.copies:
         if copy.status == "AVAILABLE":
             available_copies += 1
+        elif copy.status == "LOST":
+            lost_copies += 1
+        elif copy.status == "DAMAGED":
+            damage_copies += 1
+        elif copy.status == "DISPOSED":
+            disposed_copies += 1
+        elif copy.status == "BORROWED":
+            borrowed_copies += 1
+        elif copy.status == "RESERVED":
+            reserved_copies += 1
 
     authors = []
     for ba in book.book_authors:
@@ -147,6 +162,11 @@ def get_book_by_isbn(db: Session, isbn: str):
         "book": book,
         "total_copies": total_copies,
         "available_copies": available_copies,
+        "borrowed_copies": borrowed_copies,
+        "reserved_copies": reserved_copies,
+        "lost_copies": lost_copies,
+        "damage_copies": damage_copies,
+        "disposed_copies": disposed_copies,
         "authors": authors
     }
 
@@ -306,3 +326,16 @@ def delete_book(db: Session, isbn: str):
     db.commit()
 
     return "deleted"
+
+def update_book_cover(db: Session, isbn: str, cover_image: str):
+    book = db.query(Book).filter(Book.isbn == isbn).first()
+
+    if not book:
+        return None
+
+    book.cover_image = cover_image
+
+    db.commit()
+    db.refresh(book)
+
+    return book

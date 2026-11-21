@@ -54,9 +54,7 @@ CREATE TABLE IF NOT EXISTS library_cards (
 CREATE TABLE IF NOT EXISTS categories (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(100) NOT NULL UNIQUE,
-  description TEXT NULL,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  description TEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Bảng publishers (Nhà xuất bản)
@@ -64,19 +62,16 @@ CREATE TABLE IF NOT EXISTS publishers (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(255) NOT NULL UNIQUE,
   address     VARCHAR(255) NULL,
-  description TEXT NULL,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  phone       VARCHAR(20) NULL,
+  email       VARCHAR(100) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. Bảng authors (Tác giả)
 CREATE TABLE IF NOT EXISTS authors (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(255) NOT NULL,
-  biography   TEXT NULL,
-  nationality VARCHAR(100) NULL,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  bio         TEXT NULL,
+  nationality VARCHAR(100) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 7. Bảng books (Đầu sách)
@@ -131,28 +126,7 @@ CREATE TABLE IF NOT EXISTS copy_status_logs (
   old_status   VARCHAR(20) NULL,
   new_status   ENUM('AVAILABLE', 'BORROWED', 'RESERVED', 'LOST', 'DAMAGED', 'DISPOSED') NOT NULL,
   changed_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  reason       TEXT NULL,
   CONSTRAINT fk_csl_copy FOREIGN KEY (book_copy_id) REFERENCES book_copies (id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 10b. Bảng card_action_logs (Lịch sử gia hạn, khoá/mở thẻ thư viện kèm lý do)
-CREATE TABLE IF NOT EXISTS card_action_logs (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  card_id         INT NOT NULL,
-  reader_id       INT NOT NULL,
-  action          VARCHAR(30) NOT NULL,
-  old_status      VARCHAR(20) NULL,
-  new_status      VARCHAR(20) NOT NULL,
-  reason          VARCHAR(500) NULL,
-  old_expiry_date DATE NULL,
-  new_expiry_date DATE NULL,
-  performed_by    INT NULL,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_cal_card (card_id),
-  INDEX idx_cal_reader (reader_id),
-  CONSTRAINT fk_cal_card FOREIGN KEY (card_id) REFERENCES library_cards (id) ON DELETE CASCADE,
-  CONSTRAINT fk_cal_reader FOREIGN KEY (reader_id) REFERENCES users (id) ON DELETE CASCADE,
-  CONSTRAINT fk_cal_staff FOREIGN KEY (performed_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 11. Bảng loans (Phiếu mượn sách)
@@ -222,6 +196,42 @@ CREATE TABLE IF NOT EXISTS fines (
   CONSTRAINT fk_fines_loan FOREIGN KEY (loan_id) REFERENCES loans (id),
   CONSTRAINT fk_fines_copy FOREIGN KEY (book_copy_id) REFERENCES book_copies (id),
   CONSTRAINT fk_fines_collector FOREIGN KEY (collected_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 15. Bảng card_action_logs (Lịch sử gia hạn, khoá/mở khoá, tự động hết hạn thẻ)
+CREATE TABLE IF NOT EXISTS card_action_logs (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  card_id         INT NOT NULL,
+  reader_id       INT NOT NULL,
+  action          VARCHAR(30) NOT NULL,
+  old_status      VARCHAR(20) NULL,
+  new_status      VARCHAR(20) NOT NULL,
+  reason          TEXT NULL,
+  old_expiry_date DATE NULL,
+  new_expiry_date DATE NULL,
+  performed_by    INT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_cal_card (card_id),
+  INDEX idx_cal_reader (reader_id),
+  CONSTRAINT fk_cal_card FOREIGN KEY (card_id) REFERENCES library_cards (id),
+  CONSTRAINT fk_cal_reader FOREIGN KEY (reader_id) REFERENCES users (id),
+  CONSTRAINT fk_cal_performer FOREIGN KEY (performed_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 16. Bảng notifications (Thông báo nhắc hạn & quá hạn in-app)
+CREATE TABLE IF NOT EXISTS notifications (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT NOT NULL,
+  loan_id      INT NULL,
+  loan_item_id INT NULL,
+  title        VARCHAR(255) NOT NULL,
+  message      TEXT NOT NULL,
+  type         VARCHAR(30) NOT NULL DEFAULT 'SYSTEM',
+  is_read      BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_notif_user (user_id),
+  CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users (id),
+  CONSTRAINT fk_notif_loan FOREIGN KEY (loan_id) REFERENCES loans (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

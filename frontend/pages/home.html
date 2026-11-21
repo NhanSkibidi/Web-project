@@ -1,253 +1,448 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tra cứu Danh mục Ấn bản Thư viện | UniLib KS25</title>
+  <title>KS25 Library - Cổng Tra Cứu Tài Liệu & Sách Học Tập</title>
   <link rel="icon" href="../assets/images/logo.svg">
-  <link rel="stylesheet" href="../css/catalog.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=9.8">
+  <link rel="stylesheet" href="../css/home.css?v=9.8">
 </head>
-<body class="catalog-page">
 
-  <!-- 1. TOP HEADER BAR -->
-  <header class="unilib-header">
-    <div class="unilib-header-inner">
-      <div class="unilib-header-left">
-        <a href="home.html" class="unilib-brand">
-          <div class="unilib-brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-          </div>
-          <div>
-            <span class="unilib-brand-title">UniLib</span>
-            <span class="unilib-brand-sub">Thư viện số</span>
-          </div>
-        </a>
+<body data-root="../">
 
-        <nav class="unilib-nav">
-          <a href="home.html">Trang chủ</a>
-          <a href="home.html#catalog" class="active">Tra cứu sách</a>
-          <a href="loan_slip.html">Phiếu mượn của tôi</a>
-          <a href="readers.html" id="nav-staff-link">Quản trị thư viện</a>
-        </nav>
+  <!-- HEADER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER) ĐƯỢC TỰ ĐỘNG RENDER BỞI LAYOUT.JS -->
+  <header id="app-header"></header>
+
+  <main class="container">
+
+    <!-- 1. HERO & KHUNG TÌM KIẾM (DI CHUỘT VÀO DI CHUYỂN LÊN) -->
+    <section class="hero-section">
+      <div class="hero-pill">
+        <span>📖</span>
+        <span>Cổng tra cứu tài liệu học tập & nghiên cứu</span>
       </div>
 
-      <div class="unilib-header-right">
-        <a href="loan_basket.html" class="header-cart-btn" title="Giỏ mượn sách">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span id="header-basket-badge" class="header-cart-badge">0</span>
-        </a>
+      <h1 class="hero-title">Tra cứu tài liệu & Sách học tập</h1>
+      <p class="hero-subtitle">
+        Hệ thống thư viện số hỗ trợ sinh viên truy cập nguồn học liệu chính thống, sách chuyên ngành và tài liệu nghiên
+        cứu cập nhật liên tục.
+      </p>
 
-        <a id="header-user-link" href="login.html#login" class="header-user-profile">
-          <div id="header-user-avatar" class="header-avatar">?</div>
-          <div>
-            <span id="header-user-name" class="header-user-name">Đăng nhập</span>
-            <span id="header-user-meta" class="header-user-meta">Khách tham quan</span>
+      <!-- Khung tìm kiếm có hiệu ứng hover di chuyển lên -->
+      <div class="search-wrapper" id="search-wrapper">
+        <form class="search-box" id="search-form" onsubmit="handleSearch(event)">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" class="search-input"
+            placeholder="Nhập tên tài liệu, tác giả, chuyên ngành hoặc mã ISBN..." autocomplete="off" />
+          <select class="search-select" id="search-category" title="Chọn chuyên ngành">
+            <option value="">Tất cả ngành học</option>
+            <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+            <option value="Văn học">Văn học</option>
+            <option value="Kinh tế">Kinh tế</option>
+            <option value="Kỹ năng sống">Kỹ năng sống</option>
+            <option value="Lịch sử">Lịch sử</option>
+            <option value="Khoa học">Khoa học</option>
+            <option value="Tâm lý học">Tâm lý học</option>
+            <option value="Giáo dục">Giáo dục</option>
+            <option value="Thiếu nhi">Thiếu nhi</option>
+            <option value="Ngoại ngữ">Ngoại ngữ</option>
+          </select>
+          <button type="submit" class="search-btn">
+            <span>Tìm kiếm</span>
+            <span>→</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Thống kê nhanh -->
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <span>📖</span>
+          <span><strong>10</strong> Chuyên ngành đào tạo</span>
+        </div>
+        <div class="stat-pill">
+          <span>✓</span>
+          <span><strong>12.500+</strong> Đầu sách & Bản sao</span>
+        </div>
+        <div class="stat-pill">
+          <span>👥</span>
+          <span><strong>3.200+</strong> Độc giả sinh viên</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. DANH MỤC CHUYÊN NGÀNH: CHỈ HIỆN 5 CÁI, BẤM "XEM TẤT CẢ" ĐỂ MỞ RỘNG -->
+    <section>
+      <div class="section-header">
+        <div>
+          <span class="section-tag">Khám phá theo ngành</span>
+          <h2 class="section-title">Danh mục chuyên ngành</h2>
+        </div>
+        <a href="javascript:void(0)" class="section-link" id="toggle-category-btn" onclick="toggleCategories()">
+          <span id="header-cat-text">Xem tất cả danh mục (10 ngành)</span>
+          <span id="header-cat-arrow">&gt;</span>
+        </a>
+      </div>
+
+      <div class="category-grid" id="category-grid">
+        <!-- 1. Công nghệ TT -->
+        <div class="category-card" onclick="handleCategoryFilter('Công nghệ thông tin')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           </div>
-        </a>
+          <div class="category-name">Công nghệ TT</div>
+          <div class="category-count">3.410 sách</div>
+        </div>
 
-        <button id="btn-header-logout" type="button" class="header-icon-action" title="Đăng xuất" hidden>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
+        <!-- 2. Toán & Thống kê -->
+        <div class="category-card" onclick="handleCategoryFilter('Toán & Thống kê')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="category-name">Toán & Thống kê</div>
+          <div class="category-count">1.820 sách</div>
+        </div>
+
+        <!-- 3. Kinh tế - QTKD -->
+        <div class="category-card" onclick="handleCategoryFilter('Kinh tế')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <div class="category-name">Kinh tế - QTKD</div>
+          <div class="category-count">2.640 sách</div>
+        </div>
+
+        <!-- 4. Mạng & Hệ thống -->
+        <div class="category-card" onclick="handleCategoryFilter('Mạng & Hệ thống')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+          </div>
+          <div class="category-name">Mạng & Hệ thống</div>
+          <div class="category-count">1.190 sách</div>
+        </div>
+
+        <!-- 5. Ngoại ngữ -->
+        <div class="category-card" onclick="handleCategoryFilter('Ngoại ngữ')">
+          <div class="category-icon" style="font-weight:700; font-size:18px;">文A</div>
+          <div class="category-name">Ngoại ngữ</div>
+          <div class="category-count">1.950 sách</div>
+        </div>
+
+        <!-- 6. Kỹ năng sinh viên (Ẩn ban đầu, hiện khi bấm Xem tất cả) -->
+        <div class="category-card category-card-extra" onclick="handleCategoryFilter('Kỹ năng sống')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div class="category-name">Kỹ năng sinh viên</div>
+          <div class="category-count">850 sách</div>
+        </div>
+
+        <!-- 7. Văn học (Ẩn ban đầu) -->
+        <div class="category-card category-card-extra" onclick="handleCategoryFilter('Văn học')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div class="category-name">Văn học & Nghệ thuật</div>
+          <div class="category-count">1.420 sách</div>
+        </div>
+
+        <!-- 8. Lịch sử (Ẩn ban đầu) -->
+        <div class="category-card category-card-extra" onclick="handleCategoryFilter('Lịch sử')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+          </div>
+          <div class="category-name">Lịch sử & Triết học</div>
+          <div class="category-count">760 sách</div>
+        </div>
+
+        <!-- 9. Khoa học (Ẩn ban đầu) -->
+        <div class="category-card category-card-extra" onclick="handleCategoryFilter('Khoa học')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <div class="category-name">Khoa học & Tự nhiên</div>
+          <div class="category-count">930 sách</div>
+        </div>
+
+        <!-- 10. Tâm lý & Giáo dục (Ẩn ban đầu) -->
+        <div class="category-card category-card-extra" onclick="handleCategoryFilter('Giáo dục')">
+          <div class="category-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <div class="category-name">Tâm lý & Giáo dục</div>
+          <div class="category-count">620 sách</div>
+        </div>
+      </div>
+
+      <!-- Nút bấm xem thêm danh mục bên dưới -->
+      <div class="category-toggle-container">
+        <button type="button" class="btn-toggle-categories" id="btn-toggle-categories" onclick="toggleCategories()">
+          <span id="toggle-cat-text">Xem thêm 5 ngành học khác</span>
+          <span id="toggle-cat-arrow">▼</span>
         </button>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <!-- 2. CENTERED HERO SEARCH -->
-  <section class="catalog-hero">
-    <div class="hero-eyebrow">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-      </svg>
-      KHO TÀI LIỆU HỌC THUẬT UNILIB • KS25 SYSTEM
-    </div>
-    <h1>Tra cứu Danh mục Ấn bản Thư viện</h1>
-    <p>Tìm kiếm trong kho đầu sách, giáo trình đại học, tài liệu chuyên ngành và kiểm tra tức thì bản sao vật lý sẵn sàng mượn.</p>
-
-    <form id="hero-search-form" class="hero-search-bar">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2.2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input
-        id="catalog-keyword"
-        type="search"
-        placeholder="Nhập tên sách, tác giả, mã ISBN (VD: Clean Code, Nguyễn Nhật Ánh...)"
-        autocomplete="off"
-      >
-      <button id="btn-open-barcode" type="button" class="btn-barcode" title="Tra cứu theo mã vạch / copy_code">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"></path>
-        </svg>
-        Quét mã vạch
-      </button>
-      <button type="submit" class="btn-hero-search">Tìm kiếm</button>
-    </form>
-
-    <div class="scope-bar" id="scope-bar">
-      <span class="scope-label">Phạm vi:</span>
-      <button type="button" class="scope-pill active" data-scope="all">Tất cả</button>
-      <button type="button" class="scope-pill" data-scope="title">Nhan đề</button>
-      <button type="button" class="scope-pill" data-scope="author">Tác giả</button>
-      <button type="button" class="scope-pill" data-scope="isbn">ISBN</button>
-      <button type="button" class="scope-pill" data-scope="category">Chủ đề / Chuyên ngành</button>
-    </div>
-  </section>
-
-  <!-- 3. TWO-COLUMN CATALOG CONTENT (NO AI CHAT POPUP) -->
-  <main id="catalog" class="catalog-main">
-    <!-- Left Filter Sidebar -->
-    <aside class="filter-sidebar">
-      <div class="filter-header">
-        <span class="filter-header-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="4" y1="21" x2="4" y2="14"></line>
-            <line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line>
-            <line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line>
-            <line x1="9" y1="8" x2="15" y2="8"></line>
-            <line x1="17" y1="16" x2="23" y2="16"></line>
-          </svg>
-          Bộ lọc tìm kiếm
-        </span>
-        <button id="btn-reset-filters" type="button" class="filter-reset-btn">Đặt lại</button>
-      </div>
-
-      <label class="avail-toggle-box">
-        <span><span class="avail-dot"></span>Chỉ hiện sách còn sẵn</span>
-        <input id="filter-avail-only" type="checkbox">
-      </label>
-
-      <div class="filter-group">
-        <div class="filter-group-title">Thể loại &amp; Chuyên ngành</div>
-        <div id="facet-categories" class="filter-check-list">
-          <span style="font-size:12.5px; color:var(--muted);">Đang tải thể loại...</span>
+    <!-- 3. TÀI LIỆU MỚI NHẬP HỌC KỲ NÀY / KẾT QUẢ TÌM KIẾM (HIỂN THỊ ĐẦY ĐỦ NHIỀU SÁCH, PHÂN TRANG VÀ XEM TẤT CẢ) -->
+    <section id="books-section">
+      <div class="section-header" id="books-section-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span
+            style="display:inline-block; width:4px; height:22px; background:var(--color-primary); border-radius:2px;"></span>
+          <h2 class="section-title" id="books-section-title">Tài liệu mới nhập học kỳ này</h2>
         </div>
       </div>
 
-      <div class="filter-group">
-        <div class="filter-group-title">Vị trí kho &amp; Kệ sách</div>
-        <div id="facet-shelves" class="filter-check-list">
-          <span style="font-size:12.5px; color:var(--muted);">Đang tải kệ sách...</span>
+      <!-- Banner thông báo khi tìm kiếm hoặc lọc -->
+      <div id="search-status-banner"
+        style="display:none; margin-bottom:18px; background:#fff; border:1px solid var(--color-border); border-left:4px solid var(--color-primary); border-radius:var(--radius); padding:12px 18px; align-items:center; justify-content:space-between; box-shadow:0 1px 4px rgba(27,67,50,0.06);">
+        <div style="display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--color-text);">
+          <span>🔍</span>
+          <span id="search-status-text">Đang tìm kiếm...</span>
+        </div>
+        <button onclick="clearSearchFilter()"
+          style="border:1px solid var(--color-border); background:var(--color-bg); padding:5px 12px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer; font-weight:600; color:var(--color-danger); transition:all 0.2s ease;">
+          ✕ Xóa tìm kiếm (Xem tất cả)
+        </button>
+      </div>
+
+      <div class="books-grid" id="new-books-grid">
+
+        <!-- Sách 1: Clean Code -->
+        <div class="book-card">
+          <a href="book_detail.html?book=cleancode" style="display:block;text-decoration:none;">
+            <div class="book-cover" style="background: linear-gradient(135deg, #1e3a8a, #0f172a); cursor: pointer;">
+              <span class="shelf-badge">Kệ: A1-12</span>
+              <div class="book-cover-content">
+                <div class="book-cover-tag">CLEAN CODE</div>
+                <div class="book-cover-title">Kiến Trúc Mã Sạch</div>
+                <div class="book-cover-author">Robert C. Martin</div>
+              </div>
+            </div>
+          </a>
+          <div class="book-meta">
+            <span class="badge-cat">CNTT</span>
+            <span class="badge-status status-available">● Còn 4 cuốn</span>
+          </div>
+          <h3 class="book-title"><a href="book_detail.html?book=cleancode" style="color:inherit;text-decoration:none;">Kiến Trúc Mã Sạch (Clean Code)</a></h3>
+          <div class="book-author">Robert C. Martin</div>
+          <div class="book-actions">
+            <a href="book_detail.html?book=cleancode" class="btn-detail">Chi tiết</a>
+            <button class="btn-borrow" onclick="borrowBook('Kiến Trúc Mã Sạch (Clean Code)')">🛒 Mượn</button>
+          </div>
+        </div>
+
+        <!-- Sách 2: Trí Tuệ Nhân Tạo Hiện Đại -->
+        <div class="book-card">
+          <a href="book_detail.html?book=python" style="display:block;text-decoration:none;">
+            <div class="book-cover" style="background: linear-gradient(135deg, #0284c7, #0369a1); cursor: pointer;">
+              <span class="shelf-badge">Kệ: B1-06</span>
+              <div class="book-cover-content">
+                <div class="book-cover-tag">ARTIFICIAL INTELLIGENCE</div>
+                <div class="book-cover-title">Trí Tuệ Nhân Tạo Hiện Đại</div>
+                <div class="book-cover-author">Stuart Russell & Peter Norvig</div>
+              </div>
+            </div>
+          </a>
+          <div class="book-meta">
+            <span class="badge-cat">Trí tuệ nhân tạo</span>
+            <span class="badge-status status-available">● Còn 7 cuốn</span>
+          </div>
+          <h3 class="book-title"><a href="book_detail.html?book=python" style="color:inherit;text-decoration:none;">Trí Tuệ Nhân Tạo Hiện Đại</a></h3>
+          <div class="book-author">Stuart Russell & Peter Norvig</div>
+          <div class="book-actions">
+            <a href="book_detail.html?book=python" class="btn-detail">Chi tiết</a>
+            <button class="btn-borrow" onclick="borrowBook('Trí Tuệ Nhân Tạo Hiện Đại')">🛒 Mượn</button>
+          </div>
+        </div>
+
+        <!-- Sách 3: Nguyên Lý Hệ Cơ Sở Dữ Liệu -->
+        <div class="book-card">
+          <a href="book_detail.html?book=hethong" style="display:block;text-decoration:none;">
+            <div class="book-cover" style="background: linear-gradient(135deg, #334155, #1e293b); cursor: pointer;">
+              <span class="shelf-badge">Kệ: A2-09</span>
+              <div class="book-cover-content">
+                <div class="book-cover-tag">DATABASE SYSTEMS</div>
+                <div class="book-cover-title">Nguyên Lý Hệ CSDL</div>
+                <div class="book-cover-author">Abraham Silberschatz</div>
+              </div>
+            </div>
+          </a>
+          <div class="book-meta">
+            <span class="badge-cat">Cơ sở dữ liệu</span>
+            <span class="badge-status status-out">● Đang hết</span>
+          </div>
+          <h3 class="book-title"><a href="book_detail.html?book=hethong" style="color:inherit;text-decoration:none;">Nguyên Lý Hệ Cơ Sở Dữ Liệu</a></h3>
+          <div class="book-author">Abraham Silberschatz</div>
+          <div class="book-actions">
+            <a href="book_detail.html?book=hethong" class="btn-detail">Chi tiết</a>
+            <button class="btn-borrow" disabled>Hết sách</button>
+          </div>
+        </div>
+
+        <!-- Sách 4: Kinh Tế Vi Mô Ứng Dụng -->
+        <div class="book-card">
+          <a href="book_detail.html?book=kientruc" style="display:block;text-decoration:none;">
+            <div class="book-cover" style="background: linear-gradient(135deg, #b45309, #78350f); cursor: pointer;">
+              <span class="shelf-badge">Kệ: C2-01</span>
+              <div class="book-cover-content">
+                <div class="book-cover-tag">MICROECONOMICS</div>
+                <div class="book-cover-title">Kinh Tế Vi Mô Ứng Dụng</div>
+                <div class="book-cover-author">N. Gregory Mankiw</div>
+              </div>
+            </div>
+          </a>
+          <div class="book-meta">
+            <span class="badge-cat">Kinh tế học</span>
+            <span class="badge-status status-available">● Còn 12 cuốn</span>
+          </div>
+          <h3 class="book-title"><a href="book_detail.html?book=kientruc" style="color:inherit;text-decoration:none;">Kinh Tế Vi Mô Ứng Dụng</a></h3>
+          <div class="book-author">N. Gregory Mankiw</div>
+          <div class="book-actions">
+            <a href="book_detail.html?book=kientruc" class="btn-detail">Chi tiết</a>
+            <button class="btn-borrow" onclick="borrowBook('Kinh Tế Vi Mô Ứng Dụng')">🛒 Mượn</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Phân trang & Nút chuyển đổi hiển thị toàn bộ 16 cuốn sách -->
+      <div class="books-pagination-container" id="books-pagination-container">
+        <div class="books-pagination-pills">
+          <button class="page-pill-btn" onclick="prevCarousel()" id="btn-prev-page">« Trang trước</button>
+          <div class="page-numbers" id="page-numbers-container">
+            <button class="page-number-btn active" onclick="goToCarouselPage(1)">1</button>
+            <button class="page-number-btn" onclick="goToCarouselPage(2)">2</button>
+            <button class="page-number-btn" onclick="goToCarouselPage(3)">3</button>
+            <button class="page-number-btn" onclick="goToCarouselPage(4)">4</button>
+          </div>
+          <button class="page-pill-btn" onclick="nextCarousel()" id="btn-next-page">Trang tiếp »</button>
         </div>
       </div>
+    </section>
 
-      <div class="filter-group">
-        <div class="filter-group-title">Ngôn ngữ ấn bản</div>
-        <div id="facet-languages" class="filter-check-list">
-          <span style="font-size:12.5px; color:var(--muted);">Đang tải ngôn ngữ...</span>
+    <!-- 4. 2 CỘT DƯỚI: MƯỢN NHIỀU TRONG TUẦN & QUY CHẾ MƯỢN -->
+    <section class="bottom-grid">
+
+      <!-- Cột trái: Mượn nhiều trong tuần -->
+      <div class="trending-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <h3 style="font-size:20px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+            <span>📈</span>
+            <span>Mượn nhiều trong tuần</span>
+          </h3>
+          <span style="font-size:12px; color:var(--color-muted);">Cập nhật 2 giờ trước</span>
         </div>
-      </div>
 
-      <div class="suggest-book-box">
-        <div class="suggest-book-title">❓ Không tìm thấy sách?</div>
-        <div>Bạn có thể gửi yêu cầu thủ thư bổ sung tài liệu mới vào kho thư viện.</div>
-        <button id="btn-open-suggest" type="button" class="suggest-book-link">Gửi đề xuất →</button>
-      </div>
-    </aside>
+        <div class="trending-list">
+          <!-- Rank 1 -->
+          <div class="trending-item">
+            <div class="trending-left">
+              <span class="trending-rank">1</span>
+              <div class="trending-info">
+                <h5>Giải thuật & Cấu trúc dữ liệu thực hành</h5>
+                <p>ThS. Nguyễn Đức Hưng • Kệ CNTT-08</p>
+              </div>
+            </div>
+            <div class="trending-right">
+              <span class="trending-count">148 lượt</span>
+              <button class="trending-add-btn" onclick="quickAdd('Giải thuật & Cấu trúc dữ liệu')">+</button>
+            </div>
+          </div>
 
-    <!-- Right Book Catalog Grid -->
-    <section>
-      <div class="catalog-toolbar">
-        <div id="catalog-result-info" class="toolbar-result-count">Đang tải danh mục sách...</div>
-        <div class="toolbar-controls">
-          <span style="font-size:12.5px; color:var(--muted);">Sắp xếp:</span>
-          <select id="catalog-sort" class="toolbar-sort-select">
-            <option value="created_at:desc">Mới cập nhật nhất</option>
-            <option value="title:asc">Nhan đề (A → Z)</option>
-            <option value="publish_year:desc">Năm xuất bản mới nhất</option>
-            <option value="price:asc">Giá bìa tăng dần</option>
-          </select>
-          <div class="view-mode-group">
-            <button id="btn-view-grid" type="button" class="view-mode-btn active" title="Dạng lưới">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
-            </button>
-            <button id="btn-view-list" type="button" class="view-mode-btn" title="Dạng danh sách">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-              </svg>
-            </button>
+          <!-- Rank 2 -->
+          <div class="trending-item">
+            <div class="trending-left">
+              <span class="trending-rank">2</span>
+              <div class="trending-info">
+                <h5>Đại số tuyến tính & Ứng dụng Học máy</h5>
+                <p>GS. Gilbert Strang • Kệ TOÁN-02</p>
+              </div>
+            </div>
+            <div class="trending-right">
+              <span class="trending-count">124 lượt</span>
+              <button class="trending-add-btn" onclick="quickAdd('Đại số tuyến tính')">+</button>
+            </div>
+          </div>
+
+          <!-- Rank 3 -->
+          <div class="trending-item">
+            <div class="trending-left">
+              <span class="trending-rank">3</span>
+              <div class="trending-info">
+                <h5>Nhập môn Mạng Máy Tính (Computer Networking)</h5>
+                <p>James Kurose, Keith Ross • Kệ MẠNG-05</p>
+              </div>
+            </div>
+            <div class="trending-right">
+              <span class="trending-count">98 lượt</span>
+              <button class="trending-add-btn" onclick="quickAdd('Nhập môn Mạng Máy Tính')">+</button>
+            </div>
+          </div>
+
+          <!-- Rank 4 -->
+          <div class="trending-item">
+            <div class="trending-left">
+              <span class="trending-rank">4</span>
+              <div class="trending-info">
+                <h5>Kỹ năng Viết luận & Báo cáo Khoa học</h5>
+                <p>TS. Lê Thị Mai • Kệ KN-01</p>
+              </div>
+            </div>
+            <div class="trending-right">
+              <span class="trending-count">85 lượt</span>
+              <button class="trending-add-btn" onclick="quickAdd('Kỹ năng Viết luận')">+</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div id="catalog-book-grid" class="book-cards-grid"></div>
-      <div id="catalog-pagination" class="catalog-pagination"></div>
+      <!-- Cột phải: Quy chế mượn tài liệu -->
+      <div class="rules-card">
+        <div class="rules-icon">ℹ️</div>
+        <h3 style="font-size:20px; font-weight:700; margin:0 0 10px;">Quy chế mượn tài liệu</h3>
+        <p class="rules-desc">
+          Mỗi sinh viên được mượn tối đa <strong>05 quyển sách</strong> cùng lúc với thời hạn mượn thông thường là
+          <strong>14 ngày</strong>.
+        </p>
+
+        <div class="rules-box">
+          <span>✓</span>
+          <span>Gia hạn trực tuyến trước hạn trả 2 ngày trên cổng thông tin</span>
+        </div>
+
+        <div class="rules-box">
+          <span>🕒</span>
+          <span>Thời gian mở cửa: Thứ Hai - Thứ Bảy (07:30 - 20:30)</span>
+        </div>
+
+        <button class="btn-rules"
+          onclick="alert('Chi tiết quy định: Mượn tối đa 5 cuốn / 14 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn. Phạt hỏng sách 50% giá bìa, mất sách 100% giá bìa.')">
+          <span>Đọc nội quy chi tiết</span>
+          <span>↗</span>
+        </button>
+      </div>
+
     </section>
+
   </main>
 
-  <!-- Modal Quét mã vạch / copy_code -->
-  <div id="modal-barcode" class="modal-backdrop" hidden>
-    <div class="modal-box">
-      <h3>Tra cứu nhanh theo Mã vạch / Copy Code</h3>
-      <p style="font-size:13px; color:var(--muted); margin-top:0;">Nhập mã bản sao (VD: <code>BC-9786040000019-01</code>) hoặc ISBN để tra cứu tức thì.</p>
-      <form id="barcode-lookup-form">
-        <input id="barcode-input" type="text" required placeholder="Nhập mã bản sao hoặc ISBN...">
-        <div id="barcode-result" style="font-size:13px; margin-bottom:12px;"></div>
-        <div style="display:flex; gap:8px; justify-content:flex-end;">
-          <button type="button" class="page-btn" data-close="modal-barcode">Đóng</button>
-          <button type="submit" class="btn-hero-search">Tra cứu</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- FOOTER ĐƯỢC RENDER TỰ ĐỘNG BỞI LAYOUT.JS -->
+  <footer id="app-footer"></footer>
 
-  <!-- Modal Đề xuất bổ sung sách -->
-  <div id="modal-suggest" class="modal-backdrop" hidden>
-    <div class="modal-box">
-      <h3>Đề xuất bổ sung ấn bản mới</h3>
-      <form id="suggest-book-form">
-        <input id="suggest-title" type="text" required placeholder="Tên đầu sách cần đề xuất *">
-        <input id="suggest-author" type="text" placeholder="Tác giả / Nhà xuất bản">
-        <textarea id="suggest-note" rows="3" placeholder="Lý do hoặc môn học cần sử dụng tài liệu này..."></textarea>
-        <div style="display:flex; gap:8px; justify-content:flex-end;">
-          <button type="button" class="page-btn" data-close="modal-suggest">Huỷ</button>
-          <button type="submit" class="btn-hero-search">Gửi yêu cầu →</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 4. FOOTER -->
-  <footer class="unilib-footer">
-    <div class="unilib-footer-inner">
-      <div><strong>© Hệ thống quản lý học thuật UniLib / KS25</strong> · Thư viện số quốc tế</div>
-      <div class="unilib-footer-links">
-        <a href="login.html">Tài khoản &amp; Thẻ</a>
-        <a href="loan_basket.html">Giỏ mượn sách</a>
-        <a href="readers.html">Quản lý Độc giả &amp; Thẻ</a>
-      </div>
-    </div>
-  </footer>
-
+  <!-- Scripts theo đúng thứ tự base của dự án -->
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
-  <script src="../js/pages/reader-home.js"></script>
+  <script src="../js/layout.js?v=9.8"></script>
+  <script src="../js/pages/home.js?v=9.8"></script>
 </body>
+
 </html>

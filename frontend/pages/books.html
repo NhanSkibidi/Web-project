@@ -26,6 +26,9 @@
     <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
     <header class="librarian-topbar">
         <div class="topbar-left">
+            <button id="btn-toggle-sidebar" class="mobile-menu-btn" type="button" aria-label="Mở menu điều hướng" title="Mở danh mục điều hướng">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <a href="../index.html" class="brand-badge">
                 <div class="brand-icon">
                     <span class="material-symbols-outlined">local_library</span>
@@ -37,37 +40,39 @@
             </a>
             <nav class="topbar-nav">
                 <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
-                <a href="../index.html" class="topbar-nav-link">Tra cứu sách</a>
             </nav>
         </div>
 
         <div class="topbar-right">
-            <div class="topbar-search">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="topbar-global-search" placeholder="Tra cứu tên sách, mã ISBN, tác giả...">
-            </div>
-            <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận sách">
+            <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
                 <span class="material-symbols-outlined">shopping_bag</span>
+                <span class="badge-dot"></span>
             </button>
             <div class="topbar-divider"></div>
             <div class="librarian-profile">
-                <div class="librarian-avatar">D</div>
+                <div class="librarian-avatar">Đ</div>
                 <div class="librarian-info">
-                    <span class="librarian-name">Ngô Việt Dũng</span>
-                    <span class="librarian-role">Thủ thư quản trị (B25DTCN162)</span>
+                    <span class="librarian-name">Trịnh Huy Đại</span>
+                    <span class="librarian-role">Thủ thư ca trực</span>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- LỚP PHỦ BACKDROP KHI MỞ MENU TRÊN THIẾT BỊ DI ĐỘNG -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
 
     <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG) -->
     <aside id="app-sidebar" class="sidebar-rail">
         <div class="sidebar-rail-header">
             <span>Phân hệ Thủ thư</span>
             <span class="version-pill">v1.2</span>
+            <button id="btn-close-sidebar" class="sidebar-close-btn" type="button" aria-label="Đóng menu">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
         <nav class="sidebar-rail-nav">
-            <a href="../index.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+            <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
                 <span class="material-symbols-outlined">space_dashboard</span>
                 <span class="rail-label">Tổng quan &amp; Thống kê</span>
             </a>
@@ -79,9 +84,17 @@
                 <span class="material-symbols-outlined">receipt_long</span>
                 <span class="rail-label">Quản lý Phiếu mượn</span>
             </a>
+            <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+                <span class="material-symbols-outlined">library_add</span>
+                <span class="rail-label">Mượn sách tại quầy</span>
+            </a>
             <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
                 <span class="material-symbols-outlined">assignment_return</span>
                 <span class="rail-label">Trả sách tại quầy</span>
+            </a>
+            <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="rail-label">Xử lý tiền phạt</span>
             </a>
             <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
                 <span class="material-symbols-outlined">badge</span>
@@ -118,7 +131,7 @@
                     </div>
                     <h1 class="page-title">Quản lý đầu sách</h1>
                     <p class="page-subtitle">
-                        Quản lý hệ thống danh mục, mã ISBN và phân bổ bản sao vật lý tại các giá sách theo chuẩn KS25.
+                        Hệ thống danh mục đầu sách và bản sao vật lý.
                     </p>
                 </div>
                 <div class="header-actions">
@@ -129,7 +142,7 @@
                     </button>
                     <button id="btn-open-create-book" type="button" class="btn-header-create">
                         <span class="material-symbols-outlined">add_circle</span>
-                        <span>+ Thêm đầu sách mới</span>
+                        <span>+ Thêm đầu sách</span>
                     </button>
                 </div>
             </div>
@@ -199,7 +212,7 @@
                 <div class="filter-search-wrap">
                     <span class="material-symbols-outlined">search</span>
                     <input type="text" id="filter-search-input"
-                        placeholder="Tìm theo tên sách, tác giả, mã ISBN hoặc mã đầu sách...">
+                        placeholder="Tìm theo tên sách, tác giả, ISBN...">
                 </div>
                 <div>
                     <select id="filter-category" class="filter-select">
@@ -297,8 +310,7 @@
                             <span id="modal-book-heading">Thêm mới đầu sách &amp; Thiết lập bản sao</span>
                             <span id="modal-book-badge" class="mode-badge">Chế độ: Tạo mới</span>
                         </h2>
-                        <p class="modal-subtext">Nhập siêu dữ liệu chuẩn học thuật và khởi tạo danh mục mã vạch vật lý
-                        </p>
+                        <p class="modal-subtext">Nhập thông tin sách và thiết lập bản sao ban đầu.</p>
                     </div>
                 </div>
                 <button id="closeModalBtn" type="button" class="btn-close-modal" title="Đóng cửa sổ">
@@ -512,7 +524,7 @@
         </div>
     </div>
 
-        <!-- ==========================================================================
+    <!-- ==========================================================================
        MODAL 2: QUẢN LÝ BẢN SAO & TRẠNG THÁI (STITCH HIGH-FIDELITY DESIGN)
        ========================================================================== -->
     <div id="copiesModalBackdrop" class="modal-overlay hidden">
@@ -530,7 +542,9 @@
                         </div>
                         <h1 id="copiesModalTitle" class="copies-hfd-title">Quản lý Bản sao &amp; Trạng thái</h1>
                         <p class="copies-hfd-subtitle">
-                            Đầu sách: <span id="copiesModalBookTitle" class="highlight-title">Lập trình Web Hiện đại với Python &amp; FastAPI</span> • <span id="copiesModalEdition">Tái bản lần 2 (NXB Khoa Học Kỹ Thuật)</span>
+                            Đầu sách: <span id="copiesModalBookTitle" class="highlight-title">Lập trình Web Hiện đại với
+                                Python &amp; FastAPI</span> • <span id="copiesModalEdition">Tái bản lần 2 (NXB Khoa Học
+                                Kỹ Thuật)</span>
                         </p>
                         <p id="copiesModalSubtitle" class="hidden"></p>
                     </div>
@@ -583,21 +597,28 @@
                     <div class="copies-filter-bar">
                         <div class="copies-filter-pills">
                             <span class="filter-label">Lọc:</span>
-                            <button id="filterBtnAll" class="filter-pill-btn active" type="button">Tất cả (<span id="filterCountAll">12</span>)</button>
-                            <button id="filterBtnAvailable" class="filter-pill-btn" type="button">Sẵn sàng (<span id="filterCountAvailable">8</span>)</button>
-                            <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span id="filterCountBorrowed">2</span>)</button>
-                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span id="filterCountIssues">2</span>)</button>
+                            <button id="filterBtnAll" class="filter-pill-btn active" type="button">Tất cả (<span
+                                    id="filterCountAll">12</span>)</button>
+                            <button id="filterBtnAvailable" class="filter-pill-btn" type="button">Sẵn sàng (<span
+                                    id="filterCountAvailable">8</span>)</button>
+                            <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span
+                                    id="filterCountBorrowed">2</span>)</button>
+                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span
+                                    id="filterCountIssues">2</span>)</button>
                         </div>
                         <div class="copies-actions-cluster">
                             <div class="search-input-wrap">
                                 <span class="material-symbols-outlined">search</span>
-                                <input id="copiesSearchInput" type="text" placeholder="Tìm mã bản sao, RFID, barcode..." />
+                                <input id="copiesSearchInput" type="text"
+                                    placeholder="Tìm mã bản sao, RFID, barcode..." />
                             </div>
-                            <button id="printBatchBarcodesBtn" class="btn-action-outline" type="button" title="In tem mã vạch">
+                            <button id="printBatchBarcodesBtn" class="btn-action-outline" type="button"
+                                title="In tem mã vạch">
                                 <span class="material-symbols-outlined">print</span>
                                 <span>In tem</span>
                             </button>
-                            <button id="toggleAddCopyBtn" class="btn-action-primary" type="button" title="Thêm bản sao mới">
+                            <button id="toggleAddCopyBtn" class="btn-action-primary" type="button"
+                                title="Thêm bản sao mới">
                                 <span class="material-symbols-outlined">add</span>
                                 <span>Thêm bản sao</span>
                             </button>
@@ -619,15 +640,18 @@
                             <div class="form-grid-4">
                                 <div class="form-field">
                                     <label for="newCopyQty">Số lượng (*)</label>
-                                    <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control" required />
+                                    <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control"
+                                        required />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyShelf">Vị trí kệ (*)</label>
-                                    <input type="text" id="newCopyShelf" class="form-control" placeholder="VD: Kệ A3-02-T1" required />
+                                    <input type="text" id="newCopyShelf" class="form-control"
+                                        placeholder="VD: Kệ A3-02-T1" required />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyCondition">Tình trạng thực tế</label>
-                                    <input type="text" id="newCopyCondition" class="form-control" value="Mới 100% • Đã dán bọc" />
+                                    <input type="text" id="newCopyCondition" class="form-control"
+                                        value="Mới 100% • Đã dán bọc" />
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyPolicy">Chính sách</label>
@@ -668,7 +692,8 @@
 
                         <!-- Pagination Footer -->
                         <div class="copies-pagination-bar">
-                            <span id="copiesPaginationInfo" class="pagination-info">Hiển thị 1 - 6 trên 12 bản sao</span>
+                            <span id="copiesPaginationInfo" class="pagination-info">Hiển thị 1 - 6 trên 12 bản
+                                sao</span>
                             <div id="copiesPaginationControls" class="pagination-controls">
                                 <!-- Dynamic pagination buttons -->
                             </div>
@@ -697,8 +722,10 @@
                                 </select>
                             </div>
                             <div class="status-form-col status-reason-col">
-                                <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span class="req">*</span></label>
-                                <input id="quickStatusReason" type="text" class="form-control" placeholder="Nhập lý do chi tiết..." required />
+                                <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span
+                                        class="req">*</span></label>
+                                <input id="quickStatusReason" type="text" class="form-control"
+                                    placeholder="Nhập lý do chi tiết..." required />
                             </div>
                             <div class="status-form-col status-actions-col">
                                 <div class="librarian-mini-badge">
@@ -718,7 +745,8 @@
                 <!-- TAB 2: AUDIT LOG TIMELINE (Clean, Minimalist History) -->
                 <div id="contentTab2" class="tab-content hidden">
                     <div class="audit-toolbar">
-                        <span class="audit-subtitle">Lưu vết toàn bộ hoạt động thay đổi trạng thái và vị trí bản sao.</span>
+                        <span class="audit-subtitle">Lưu vết toàn bộ hoạt động thay đổi trạng thái và vị trí bản
+                            sao.</span>
                         <span id="auditSyncBadge" class="audit-sync-badge">Đồng bộ: VERIFIED #41029</span>
                     </div>
 

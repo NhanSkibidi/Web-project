@@ -222,16 +222,31 @@ function initEventListeners() {
 
   // Nút quy định tính phạt
   const btnViewPolicy = document.getElementById("btn-view-policy");
-  if (btnViewPolicy) {
+  const policyModal = document.getElementById("policy-modal");
+  const btnClosePolicy = document.getElementById("btn-close-policy-modal");
+  const btnClosePolicyX = document.getElementById("btn-close-policy-x");
+
+  if (btnViewPolicy && policyModal) {
     btnViewPolicy.addEventListener("click", () => {
-      alert(
-        "QUY ĐỊNH TÍNH PHẠT THƯ VIỆN KS25:\n\n" +
-        "1. Quá hạn: 2.000 VNĐ / cuốn / ngày quá hạn.\n" +
-        "2. Hư hỏng nhẹ (Rách, bẩn, vẽ): 20.000đ.\n" +
-        "3. Hư hỏng nặng: 50% giá bìa niêm yết.\n" +
-        "4. Mất sách: 100% giá bìa niêm yết.\n" +
-        "5. Thẻ thư viện tự động mở khóa sau khi thanh toán hết nợ phạt."
-      );
+      policyModal.classList.remove("hidden");
+    });
+  }
+
+  const hidePolicy = () => {
+    if (policyModal) policyModal.classList.add("hidden");
+  };
+
+  if (btnClosePolicy) btnClosePolicy.addEventListener("click", hidePolicy);
+  if (btnClosePolicyX) btnClosePolicyX.addEventListener("click", hidePolicy);
+
+  if (policyModal) {
+    policyModal.addEventListener("click", (e) => {
+      if (e.target === policyModal) hidePolicy();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !policyModal.classList.contains("hidden")) {
+        hidePolicy();
+      }
     });
   }
 }
@@ -495,9 +510,32 @@ function renderTableRows() {
       const isDamaged = item.condition_type !== "NORMAL";
       const totalItemFine = item.overdue_fine + item.damage_fine;
 
+      let conditionClass = "is-normal";
+      let conditionIcon = "verified";
+      if (item.condition_type === "LIGHT_DAMAGE") {
+        conditionClass = "is-light-damage";
+        conditionIcon = "handyman";
+      } else if (item.condition_type === "HEAVY_DAMAGE") {
+        conditionClass = "is-heavy-damage";
+        conditionIcon = "broken_image";
+      } else if (item.condition_type === "LOST") {
+        conditionClass = "is-lost";
+        conditionIcon = "search_off";
+      }
+
       return `
         <tr class="${isDamaged ? "row-damaged" : ""}">
-          <!-- Cột 1: Tên & Mã & Vị trí -->
+          <!-- Cột 1: Custom Tick -->
+          <td style="width: 44px; text-align: center;">
+            <label class="custom-tick-label" style="justify-content: center; margin: 0;">
+              <input type="checkbox" class="custom-tick-input item-row-tick" checked>
+              <span class="custom-tick-box">
+                <span class="material-symbols-outlined tick-icon">check</span>
+              </span>
+            </label>
+          </td>
+
+          <!-- Cột 2: Tên & Mã & Vị trí -->
           <td style="min-width: 220px;">
             <div class="book-title-cell">${escapeHtml(item.book_title)}</div>
             <div class="book-meta-row">
@@ -509,8 +547,8 @@ function renderTableRows() {
             </div>
           </td>
 
-          <!-- Cột 2: Hạn trả & Quá hạn -->
-          <td style="min-width: 160px; text-align: center;">
+          <!-- Cột 3: Hạn trả & Quá hạn -->
+          <td style="min-width: 150px; text-align: center;">
             <div style="display: flex; flex-direction: column; align-items: center;">
               <span class="font-mono" style="font-size: 12px; color: var(--color-text-muted);">${escapeHtml(item.due_date)}</span>
               ${
@@ -529,32 +567,39 @@ function renderTableRows() {
             </div>
           </td>
 
-          <!-- Cột 3: Tình trạng vật lý -->
-          <td style="min-width: 240px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <select onchange="handleConditionChange(${index}, this.value)"
-                      class="condition-select ${isDamaged ? "damaged" : ""}">
-                <option value="NORMAL" ${item.condition_type === "NORMAL" ? "selected" : ""}>Bình thường / Nguyên vẹn</option>
-                <option value="LIGHT_DAMAGE" ${item.condition_type === "LIGHT_DAMAGE" ? "selected" : ""}>Hư hỏng nhẹ (Rách bìa) • +20.000đ</option>
-                <option value="HEAVY_DAMAGE" ${item.condition_type === "HEAVY_DAMAGE" ? "selected" : ""}>Hư hỏng nặng (50% giá bìa: ${formatVND(item.book_price * 0.5)})</option>
-                <option value="LOST" ${item.condition_type === "LOST" ? "selected" : ""}>Báo mất ấn bản (100% giá bìa: ${formatVND(item.book_price)})</option>
-              </select>
+          <!-- Cột 4: Tình trạng vật lý UI nâng cao -->
+          <td style="min-width: 260px;">
+            <div class="condition-control-wrap">
+              <div class="condition-select-shell ${conditionClass}">
+                <span class="material-symbols-outlined condition-icon">${conditionIcon}</span>
+                <select onchange="handleConditionChange(${index}, this.value)"
+                        class="condition-select-native ${isDamaged ? "damaged" : ""}">
+                  <option value="NORMAL" ${item.condition_type === "NORMAL" ? "selected" : ""}>Bình thường / Nguyên vẹn</option>
+                  <option value="LIGHT_DAMAGE" ${item.condition_type === "LIGHT_DAMAGE" ? "selected" : ""}>Hư hỏng nhẹ (Rách bìa) • +20.000đ</option>
+                  <option value="HEAVY_DAMAGE" ${item.condition_type === "HEAVY_DAMAGE" ? "selected" : ""}>Hư hỏng nặng (50% giá bìa: ${formatVND(item.book_price * 0.5)})</option>
+                  <option value="LOST" ${item.condition_type === "LOST" ? "selected" : ""}>Báo mất ấn bản (100% giá bìa: ${formatVND(item.book_price)})</option>
+                </select>
+                <span class="material-symbols-outlined condition-arrow">expand_more</span>
+              </div>
 
               ${
                 item.condition_type === "NORMAL"
-                  ? `<span style="font-size: 11px; color: var(--color-success); display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">verified</span>
-                      Sách nguyên vẹn
-                    </span>`
-                  : `<input type="text" value="${escapeHtml(item.note || "")}"
-                            onchange="state.activeItems[${index}].note = this.value"
-                            placeholder="Ghi chú hỏng hóc..."
-                            class="condition-note-input">`
+                  ? `<div class="condition-status-pill pill-normal">
+                      <span class="material-symbols-outlined">verified</span>
+                      <span>Sách đạt chuẩn lưu kho</span>
+                    </div>`
+                  : `<div class="condition-note-wrap">
+                      <span class="material-symbols-outlined note-icon">edit_note</span>
+                      <input type="text" value="${escapeHtml(item.note || "")}"
+                             onchange="state.activeItems[${index}].note = this.value"
+                             placeholder="Ghi chú vết rách, mất trang..."
+                             class="condition-note-input">
+                    </div>`
               }
             </div>
           </td>
 
-          <!-- Cột 4: Tiền phạt -->
+          <!-- Cột 5: Tiền phạt -->
           <td style="min-width: 120px; text-align: right;">
             <div style="display: flex; flex-direction: column; align-items: flex-end;">
               <span class="fine-amount-display ${totalItemFine > 0 ? "is-fine" : ""}">
@@ -566,7 +611,7 @@ function renderTableRows() {
             </div>
           </td>
 
-          <!-- Cột 5: Nút xóa -->
+          <!-- Cột 6: Nút xóa -->
           <td style="text-align: center; width: 40px;">
             <button type="button" onclick="handleRemoveItem(${index})"
                     class="btn-remove-row"
@@ -592,6 +637,17 @@ function updateSettlementCalculations() {
   document.getElementById("summary-damage-amount").textContent = formatVND(totalDamageFine);
   document.getElementById("summary-total-amount").textContent = formatNumber(totalFine);
 
+  // Đồng bộ số tiền hiển thị trên khung VietQR
+  const vietQrAmountEl = document.getElementById("vietqr-amount");
+  if (vietQrAmountEl) {
+    vietQrAmountEl.textContent = formatVND(totalFine);
+  }
+  const vietQrImg = document.getElementById("vietqr-image");
+  if (vietQrImg) {
+    const memo = encodeURIComponent("TRA SACH PM-2024-0082");
+    vietQrImg.src = `https://img.vietqr.io/image/MB-99992525KS25-compact2.png?amount=${totalFine}&addInfo=${memo}&accountName=THU%20VIEN%20UNILIB`;
+  }
+
   // Tính tiền thừa trả khách
   const change = Math.max(0, state.cashReceived - totalFine);
   const changeEl = document.getElementById("cash-change-display");
@@ -615,6 +671,39 @@ function updatePaymentMethodUI() {
   if (cashBox) {
     cashBox.style.display = state.paymentMethod === "cash" ? "block" : "none";
   }
+
+  const qrBox = document.getElementById("vietqr-box");
+  if (qrBox) {
+    qrBox.style.display = state.paymentMethod === "qr" ? "block" : "none";
+  }
+}
+
+// Hàm sao chép văn bản vào clipboard
+function copyText(text, successMsg) {
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(successMsg || "Đã sao chép vào bộ nhớ tạm!");
+    }).catch(() => {
+      fallbackCopy(text, successMsg);
+    });
+  } else {
+    fallbackCopy(text, successMsg);
+  }
+}
+
+function fallbackCopy(text, successMsg) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    showToast(successMsg || "Đã sao chép vào bộ nhớ tạm!");
+  } catch (_) {
+    showToast("Không thể tự động sao chép!", "error");
+  }
+  document.body.removeChild(ta);
 }
 
 // Xử lý xác nhận trả sách & thu tiền

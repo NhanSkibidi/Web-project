@@ -3,29 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang chủ | KS25 Base</title>
+  <title>Cổng Độc giả & Trang chủ | KS25 Library</title>
   <link rel="icon" href="assets/images/logo.svg">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-root="./">
+<body data-root="./" data-layout="reader">
   <header id="app-header"></header>
 
   <main class="container">
+    <!-- Hero / Trạng thái kết nối hệ thống -->
     <section class="card">
-      <h1>Base code Frontend (HTML · CSS · JS)</h1>
-      <p>Khung dự án cho các nhóm thực tập. Trang này kiểm tra kết nối <strong>Frontend → Backend → MySQL</strong>.</p>
+      <div class="list-header">
+        <div>
+          <h1 style="margin-bottom: 6px;">Thư viện số KS25 — Cổng Độc giả & Khung Dự án</h1>
+          <p class="muted" style="margin: 0;">
+            Hệ thống quản lý thư viện trường học (FastAPI + MySQL + Vanilla JS). Đã tích hợp sẵn JWT Auth, Axios Interceptor, Layout dùng chung và Chặn trang theo Role.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="pages/login.html#login" class="btn btn-primary">Đăng nhập / Đăng ký →</a>
+          <a href="pages/staff-dashboard.html" class="btn btn-outline">Bàn làm việc Thủ thư</a>
+        </div>
+      </div>
 
-      <p>API đang dùng: <code id="api-url"></code> <span class="muted">(sửa trong <code>js/config.js</code>)</span></p>
+      <hr style="border: none; border-top: 1px solid var(--color-border); margin: 18px 0;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          API đang dùng: <code id="api-url"></code>
+          <span class="muted">(cấu hình trong <code>js/config.js</code>)</span>
+        </div>
+        <button id="btn-recheck" class="btn btn-small">↻ Kiểm tra kết nối</button>
+      </div>
       <div id="health-status" class="status"></div>
-      <button id="btn-recheck" class="btn">Kiểm tra lại</button>
     </section>
 
+    <!-- Các trang & Layout dùng chung cho cả nhóm -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">1. Xác thực & Cấp thẻ</div>
+        <div class="stat-value" style="font-size: 20px;">Đăng nhập / Đăng ký</div>
+        <p class="stat-sub">Giao diện 2 cột chuẩn thiết kế, lưu JWT Token, tự cấp thẻ <code>LC-XXXX</code> và nút điền nhanh tài khoản Demo.</p>
+        <a href="pages/login.html" class="btn btn-primary btn-small" style="margin-top: 8px;">Mở trang Đăng nhập →</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">2. Layout Thủ thư & Admin</div>
+        <div class="stat-value" style="font-size: 20px;">Sidebar + Topbar</div>
+        <p class="stat-sub">Khung giao diện dành cho <code>ADMIN, LIBRARIAN</code> kèm ô quét nhanh mã bản sao <code>copy_code</code>.</p>
+        <a href="pages/staff-dashboard.html" class="btn btn-outline btn-small" style="margin-top: 8px;">Mở Bàn làm việc →</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">3. Chặn trang theo Role</div>
+        <div class="stat-value" style="font-size: 20px;">Role Access Guard</div>
+        <p class="stat-sub">Thử vào trang chỉ dành cho <code>ADMIN</code> để kiểm tra màn hình chặn <code>401 / 403</code> tự động.</p>
+        <a href="pages/admin-users.html" class="btn btn-small" style="margin-top: 8px;">Thử trang ADMIN Only →</a>
+      </div>
+    </div>
+
     <section class="card">
-      <h2>Bắt đầu từ đâu?</h2>
-      <ol>
-        <li>Xem trang <a href="pages/items.html">Items</a>: ví dụ thêm / sửa / xoá / tìm kiếm gọi API thật.</li>
-        <li>Đọc <code>js/api.js</code> để biết cách gọi API bằng axios.</li>
-        <li>Tạo trang mới: copy <code>pages/items.html</code> + <code>js/pages/items.js</code>, thêm link vào <code>js/layout.js</code>.</li>
+      <h2>Hướng dẫn nhanh cho các thành viên trong nhóm</h2>
+      <ol style="margin: 0; padding-left: 20px;">
+        <li>
+          <strong>Trang của Độc giả (Header ngang + Footer):</strong>
+          Để thẻ <code>&lt;body data-root="../" data-layout="reader"&gt;</code> (thêm <code>data-roles="READER"</code> nếu bắt buộc đăng nhập).
+        </li>
+        <li>
+          <strong>Trang của Thủ thư &amp; Admin (Sidebar trái + Topbar):</strong>
+          Để thẻ <code>&lt;body data-root="../" data-layout="staff" data-roles="ADMIN,LIBRARIAN" data-title="Tên trang"&gt;</code>.
+        </li>
+        <li>
+          <strong>Gọi API có sẵn Bearer Token:</strong>
+          Dùng <code>api.get(...)</code>, <code>api.post(...)</code>, <code>api.put(...)</code>, <code>api.patch(...)</code>, <code>api.delete(...)</code> trong <code>js/api.js</code> — Interceptor đã tự động đính kèm <code>Authorization: Bearer &lt;token&gt;</code>.
+        </li>
+        <li>
+          <strong>Xem ví dụ CRUD mẫu:</strong> <a href="pages/items.html">Trang Items (CRUD mẫu)</a>.
+        </li>
       </ol>
     </section>
   </main>

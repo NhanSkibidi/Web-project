@@ -1,13 +1,22 @@
+import os
+from pathlib import Path
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status, HTTPException
-from sqlalchemy import func, distinct
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy import distinct, func
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.crud.book import get_books_paginated, get_book_by_isbn, create_book, update_book, delete_book
+from app.crud.book import (
+    create_book,
+    delete_book,
+    get_book_by_isbn,
+    get_books_paginated,
+    update_book,
+    update_book_cover,
+)
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.Category import Category
-from app.schemas.book import BookPaginationResponse, BookSearchItem, BookCreate, BookUpdate
+from app.schemas.book import BookCreate, BookPaginationResponse, BookSearchItem, BookUpdate
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
@@ -88,13 +97,15 @@ def search_books(
 
     items = []
     for b in books:
-        total_copies = len(b.copies) if b.copies else 0
-        available_copies = (
-            sum(1 for c in b.copies if getattr(c, "status", None) == "AVAILABLE")
-            if b.copies
-            else 0
-        )
-        shelf_location = b.copies[0].shelf_location if b.copies else None
+        copies = b.copies or []
+        total_copies = len(copies)
+        available_copies = sum(1 for c in copies if getattr(c, "status", None) == "AVAILABLE")
+        borrowed_copies = sum(1 for c in copies if getattr(c, "status", None) == "BORROWED")
+        reserved_copies = sum(1 for c in copies if getattr(c, "status", None) == "RESERVED")
+        lost_copies = sum(1 for c in copies if getattr(c, "status", None) == "LOST")
+        damage_copies = sum(1 for c in copies if getattr(c, "status", None) == "DAMAGED")
+        disposed_copies = sum(1 for c in copies if getattr(c, "status", None) == "DISPOSED")
+        shelf_location = copies[0].shelf_location if copies else None
         authors = [ba.author for ba in b.book_authors if ba.author] if b.book_authors else []
 
         items.append(
@@ -113,6 +124,11 @@ def search_books(
                 total_copies=total_copies,
                 available_copies=available_copies,
                 shelf_location=shelf_location,
+                borrowed_copies=borrowed_copies,
+                reserved_copies=reserved_copies,
+                lost_copies=lost_copies,
+                damage_copies=damage_copies,
+                disposed_copies=disposed_copies,
             )
         )
 
@@ -154,6 +170,11 @@ def get_book_detail(
         total_copies=result["total_copies"],
         available_copies=result["available_copies"],
         shelf_location=book.copies[0].shelf_location if book.copies else None,
+        borrowed_copies=result["borrowed_copies"],
+        reserved_copies=result["reserved_copies"],
+        lost_copies=result["lost_copies"],
+        damage_copies=result["damage_copies"],
+        disposed_copies=result["disposed_copies"],
     )
 
 @router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED)
@@ -243,3 +264,59 @@ def delete_book_api(isbn: str, db: Session = Depends(get_db)):
         return {"message": "Đầu sách đã được ẩn"}
 
     return {"message": "Đầu sách đã được xóa"}
+
+@router.post("/{isbn}/cover", status_code = status.HTTP_200_OK)
+async def upload_book_cover(
+    isbn: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    book = get_book_by_isbn(db, isbn)
+
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy đầu sách"
+        )
+
+    # Đọc file và kiểm tra dung lượng
+    content = await file.read(5 * 1024 * 1024 + 1)
+
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Dung lượng ảnh không được vượt quá 5MB"
+        )
+
+    # Kiểm tra định dạng ảnh bằng chữ ký file
+    if content.startswith(b"\xff\xd8\xff"):
+        extension = ".jpg"
+    elif content.startswith(b"\x89PNG\r\n\x1a\n"):
+        extension = ".png"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chỉ chấp nhận ảnh JPG hoặc PNG"
+        )
+
+    # Tạo thư mục lưu ảnh
+    upload_dir = Path(__file__).resolve().parents[2] / "uploads" / "book_covers"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Tạo tên file theo ISBN
+    filename = f"{isbn}{extension}"
+    file_path = upload_dir / filename
+
+    # Lưu ảnh
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    # Đường dẫn lưu trong database
+    cover_image = f"/uploads/book_covers/{filename}"
+
+    update_book_cover(db, isbn, cover_image)
+
+    return {
+        "message": "Upload ảnh bìa thành công",
+        "cover_image": cover_image
+    }

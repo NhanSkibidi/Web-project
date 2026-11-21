@@ -664,13 +664,13 @@ document.addEventListener("DOMContentLoaded", () => {
             ? "司書・管理ワークスペースへ →"
             : "Vào Bàn làm việc Thủ thư →";
       } else {
-        goHomeBtn.href = "home.html";
+        goHomeBtn.href = "../index.html";
         goHomeBtn.textContent =
           currentLang === "en"
-            ? "Go to Library Home →"
+            ? "Go to Reader Portal →"
             : currentLang === "ja"
-            ? "図書館ホームへ →"
-            : "Vào Trang chủ Thư viện →";
+            ? "利用者ポータルへ →"
+            : "Vào Cổng Độc giả →";
       }
     }
 
@@ -750,11 +750,11 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStorage.removeItem("redirect_after_login");
 
       const targetUrl =
-        savedRedirect && !savedRedirect.includes("login.html") && !savedRedirect.includes("auth.html") && !savedRedirect.endsWith("index.html")
+        savedRedirect && !savedRedirect.includes("login.html") && !savedRedirect.includes("auth.html")
           ? savedRedirect
           : user.role === "ADMIN" || user.role === "LIBRARIAN"
           ? "staff-dashboard.html"
-          : "home.html";
+          : "../index.html";
 
       showAlert(
         loginAlert,
@@ -857,31 +857,37 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       const res = await api.post("/auth/register", payload);
-      if (res.user) {
-        auth.setUser(res.user);
-      }
       if (res.library_card) {
         auth.setCard(res.library_card);
       }
-
-      // Tự động đăng nhập ngay sau khi đăng ký thành công để vào thẳng Trang chủ Thư viện (home.html)
-      const loginRes = await api.post("/auth/login", { email, password });
-      auth.setToken(loginRes.access_token, true);
 
       const cardCode = res.library_card?.card_code || "LC-NEW";
       showAlert(
         registerAlert,
         currentLang === "en"
-          ? `Account created! Your library card is ${cardCode}. Redirecting to Library Home...`
+          ? `Account created! Your library card is ${cardCode} (valid for 1 year). Switching to Sign In...`
           : currentLang === "ja"
-          ? `登録完了！図書館カード番号は ${cardCode} です。図書館ホームへ移動しています...`
-          : `Đăng ký thành công! Mã thẻ thư viện của bạn là ${cardCode}. Đang vào Trang chủ Thư viện...`,
+          ? `登録が完了しました！図書館カード番号は ${cardCode}（1年間有効）です。ログイン画面へ移動します...`
+          : `Đăng ký thành công! Mã thẻ thư viện của bạn là ${cardCode} (hiệu lực 1 năm). Đang chuyển sang Đăng nhập...`,
         "success"
       );
 
       setTimeout(() => {
-        window.location.href = "home.html";
-      }, 900);
+        switchTab("login");
+        if (loginEmailInput && loginPasswordInput) {
+          loginEmailInput.value = email;
+          loginPasswordInput.value = password;
+          showAlert(
+            loginAlert,
+            currentLang === "en"
+              ? `Account ${email} (Card: ${cardCode}) is ready. Click "Sign In" to enter!`
+              : currentLang === "ja"
+              ? `アカウント ${email}（カード: ${cardCode}）の準備ができました。「ログイン」を押してください！`
+              : `Tài khoản ${email} (Mã thẻ: ${cardCode}) đã sẵn sàng. Bấm "Đăng nhập" để vào hệ thống!`,
+            "success"
+          );
+        }
+      }, 1400);
 
       registerForm.reset();
     } catch (err) {

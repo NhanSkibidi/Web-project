@@ -37,3 +37,9 @@ class Loan(Base):
     user = relationship("User", foreign_keys=[user_id], back_populates="loans")
     librarian = relationship("User", foreign_keys=[processed_by])
     loan_items = relationship("LoanItem", back_populates="loan", cascade="all, delete-orphan")
+
+    @property
+    def code(self) -> str:
+        """Mã phiếu mượn chuẩn: PM-<năm>-<số 4 chữ số> (VD: PM-2024-0001)."""
+        year = self.created_at.year if self.created_at else datetime.now().year
+        return f"PM-{year}-{self.id:04d}"

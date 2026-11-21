@@ -142,12 +142,26 @@
                         </div>
                     </div>
 
-                    <!-- Hàng 2: Bộ lọc thời gian & Nút xuất báo cáo -->
+                    <!-- Hàng 2: Bộ lọc thời gian, Chọn khoảng ngày & Nút xuất báo cáo (Task T3CFF62) -->
                     <div class="controls-row-bottom">
                         <div class="time-filter-group">
                             <button type="button" class="time-btn" data-time="today">Hôm nay</button>
-                            <button type="button" class="time-btn active" data-time="week">Tuần này</button>
-                            <button type="button" class="time-btn" data-time="month">Tháng này</button>
+                            <button type="button" class="time-btn" data-time="week">Tuần này</button>
+                            <button type="button" class="time-btn active" data-time="month">Tháng này</button>
+                            <button type="button" class="time-btn" data-time="year">Năm nay</button>
+                        </div>
+
+                        <div class="date-range-picker-group">
+                            <label class="date-input-wrap" title="Từ ngày">
+                                <span class="material-symbols-outlined">calendar_today</span>
+                                <input type="date" id="filter-start-date" aria-label="Từ ngày">
+                            </label>
+                            <span class="date-sep">→</span>
+                            <label class="date-input-wrap" title="Đến ngày">
+                                <span class="material-symbols-outlined">event</span>
+                                <input type="date" id="filter-end-date" aria-label="Đến ngày">
+                            </label>
+                            <button type="button" id="btnApplyDateRange" class="btn-apply-range">Lọc</button>
                         </div>
 
                         <div class="export-dropdown-wrap">
@@ -181,8 +195,8 @@
             <!-- ================= STATE 1: THÀNH CÔNG (DEFAULT - 100% THEO ẢNH MẪU) ================= -->
             <div id="state-success" class="dashboard-state-content">
 
-                <!-- ROW 1: 4 CORE KPI CARDS -->
-                <div class="kpi-cards-grid">
+                <!-- ROW 1: 5 CORE KPI CARDS (Bổ sung Tiền phạt đã thu - Task T3CFF62) -->
+                <div class="kpi-cards-grid kpi-grid-5">
                     <!-- Card 1: Tổng số đầu sách -->
                     <div class="kpi-card">
                         <div class="kpi-header">
@@ -198,7 +212,7 @@
                             <div id="stat-total-books" class="kpi-number">1.240</div>
                             <div class="kpi-meta trend-up">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
-                                <span id="stat-books-trend">+24 tựa sách mới tuần qua</span>
+                                <span id="stat-books-trend">+24 tựa sách mới</span>
                             </div>
                         </div>
                     </div>
@@ -207,8 +221,8 @@
                     <div class="kpi-card">
                         <div class="kpi-header">
                             <div class="kpi-title-col">
-                                <span class="kpi-label">Tổng bản sao hiện có</span>
-                                <span class="kpi-sub">Tổng số cuốn vật lý gắn mã vạch</span>
+                                <span class="kpi-label">Tổng bản sao</span>
+                                <span class="kpi-sub">Cuốn vật lý gắn mã vạch</span>
                             </div>
                             <div class="kpi-icon-wrap">
                                 <span class="material-symbols-outlined">collections_bookmark</span>
@@ -229,12 +243,12 @@
                         </div>
                     </div>
 
-                    <!-- Card 3: Phiếu mượn lưu hành -->
+                    <!-- Card 3: Lượt mượn & Sách quá hạn -->
                     <div class="kpi-card">
                         <div class="kpi-header">
                             <div class="kpi-title-col">
-                                <span class="kpi-label">Phiếu mượn lưu hành</span>
-                                <span class="kpi-sub">Đang được sinh viên/GV giữ</span>
+                                <span class="kpi-label">Lượt mượn &amp; Quá hạn</span>
+                                <span class="kpi-sub">Lượt mượn trong kỳ chọn</span>
                             </div>
                             <div class="kpi-icon-wrap">
                                 <span class="material-symbols-outlined">receipt_long</span>
@@ -245,18 +259,38 @@
                             <div class="kpi-meta">
                                 <div class="kpi-badge-alert">
                                     <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
-                                    <span id="stat-overdue-loans">18 phiếu quá hạn cần xử lý</span>
+                                    <span id="stat-overdue-loans">18 sách quá hạn</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card 4: Tổng độc giả hoạt động -->
+                    <!-- Card 4: Tiền phạt đã thu (Task T3CFF62) -->
+                    <div class="kpi-card kpi-card-fines">
+                        <div class="kpi-header">
+                            <div class="kpi-title-col">
+                                <span class="kpi-label">Tiền phạt đã thu</span>
+                                <span class="kpi-sub">Doanh thu phạt trong kỳ</span>
+                            </div>
+                            <div class="kpi-icon-wrap" style="background: #FEF3C7; color: #B45309;">
+                                <span class="material-symbols-outlined">payments</span>
+                            </div>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div id="stat-fines-collected" class="kpi-number" style="color: #B45309;">420.000 đ</div>
+                            <div class="kpi-meta" style="color: var(--color-text-secondary);">
+                                <span class="material-symbols-outlined" style="font-size: 15px; color: #15803D;">receipt</span>
+                                <span id="stat-fines-meta">14 biên lai • Nợ: 120.000 đ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: Tổng độc giả hoạt động -->
                     <div class="kpi-card">
                         <div class="kpi-header">
                             <div class="kpi-title-col">
-                                <span class="kpi-label">Tổng độc giả hoạt động</span>
-                                <span class="kpi-sub">Thẻ thư viện còn hạn sử dụng</span>
+                                <span class="kpi-label">Độc giả hoạt động</span>
+                                <span class="kpi-sub">Thẻ thư viện còn hạn</span>
                             </div>
                             <div class="kpi-icon-wrap">
                                 <span class="material-symbols-outlined">group</span>
@@ -266,9 +300,29 @@
                             <div id="stat-active-readers" class="kpi-number">2.150</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary);">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">school</span>
-                                <span id="stat-readers-breakdown">Sinh viên: 1.940 • GV: 210</span>
+                                <span id="stat-readers-breakdown">Sinh viên &amp; Giảng viên</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ROW 1.5 (NEW - TASK T3CFF62): BIỂU ĐỒ LƯỢT MƯỢN THEO NGÀY / THÁNG & TIỀN PHẠT ĐÃ THU -->
+                <div class="dashboard-card trend-chart-card">
+                    <div class="card-header-bar">
+                        <div class="card-title-group">
+                            <h2>Biểu đồ Lượt mượn, Lượt trả &amp; Tiền phạt đã thu</h2>
+                            <p id="trend-range-subtitle">Thống kê biến động mượn - trả theo thời gian thực</p>
+                        </div>
+                        <div class="trend-controls-right">
+                            <span id="trend-range-badge" class="pill-badge">30 ngày gần nhất</span>
+                            <div class="group-toggle-group">
+                                <button type="button" class="group-btn active" data-group="day">Theo ngày</button>
+                                <button type="button" class="group-btn" data-group="month">Theo tháng</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trend-chart-container">
+                        <canvas id="borrowingTrendChart"></canvas>
                     </div>
                 </div>
 
@@ -279,9 +333,9 @@
                         <div class="card-header-bar">
                             <div class="card-title-group">
                                 <h2>Tình trạng bản sao vật lý</h2>
-                                <p>Phân bổ trạng thái 5.680 cuốn sách</p>
+                                <p id="copy-sub-text">Phân bổ trạng thái 5.680 cuốn sách</p>
                             </div>
-                            <span class="pill-badge">TỔNG: 5.680</span>
+                            <span id="copy-total-badge" class="pill-badge">TỔNG: 5.680</span>
                         </div>
 
                         <!-- Chart Canvas & Center Summary -->
@@ -289,7 +343,7 @@
                             <div class="chart-center-wrapper">
                                 <canvas id="copyStatusChart" width="176" height="176"></canvas>
                                 <div class="chart-center-text">
-                                    <span class="center-percent">86.6%</span>
+                                    <span id="copy-avail-percent" class="center-percent">86.6%</span>
                                     <span class="center-label">Khả dụng</span>
                                 </div>
                             </div>
@@ -302,8 +356,8 @@
                                         <strong>Sẵn sàng phục vụ</strong>
                                     </div>
                                     <div class="font-mono">
-                                        <strong>4.920</strong>
-                                        <span style="color: var(--color-text-muted); font-size: 11px;">(86.6%)</span>
+                                        <strong id="copy-avail-val">4.920</strong>
+                                        <span id="copy-avail-pct" style="color: var(--color-text-muted); font-size: 11px;">(86.6%)</span>
                                     </div>
                                 </div>
                                 <div class="status-stat-row">
@@ -312,8 +366,8 @@
                                         <strong>Đang mượn</strong>
                                     </div>
                                     <div class="font-mono">
-                                        <strong>710</strong>
-                                        <span style="color: var(--color-text-muted); font-size: 11px;">(12.5%)</span>
+                                        <strong id="copy-borrowed-val">710</strong>
+                                        <span id="copy-borrowed-pct" style="color: var(--color-text-muted); font-size: 11px;">(12.5%)</span>
                                     </div>
                                 </div>
                                 <div class="status-stat-row">
@@ -322,8 +376,8 @@
                                         <strong>Bảo trì / Mất mát</strong>
                                     </div>
                                     <div class="font-mono">
-                                        <strong style="color: var(--color-danger);">50</strong>
-                                        <span style="color: var(--color-text-muted); font-size: 11px;">(0.9%)</span>
+                                        <strong id="copy-damaged-val" style="color: var(--color-danger);">50</strong>
+                                        <span id="copy-damaged-pct" style="color: var(--color-text-muted); font-size: 11px;">(0.9%)</span>
                                     </div>
                                 </div>
                             </div>
@@ -367,7 +421,7 @@
                                         <th style="text-align: right;">Lượt mượn tháng</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="category-table-body">
                                     <tr>
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 6px;">
@@ -441,87 +495,68 @@
 
                 <!-- ROW 3: DETAILED TABLES - TOP CẢNH BÁO SẮP HẾT & PHIẾU MƯỢN QUÁ HẠN -->
                 <div class="tables-grid">
-                    <!-- Bảng Cảnh báo: Sắp hết bản sao -->
+                    <!-- Bảng Top Sách được mượn nhiều nhất (Task T3CFF62) -->
                     <div class="dashboard-card">
                         <div class="card-header-bar">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div class="alert-icon-square">
-                                    <span class="material-symbols-outlined"
-                                        style="font-size: 20px;">priority_high</span>
+                                <div class="alert-icon-square" style="background: #DCFCE7; color: #15803D;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">emoji_events</span>
                                 </div>
                                 <div class="card-title-group">
-                                    <h2>Cảnh báo: Sắp hết bản sao</h2>
-                                    <p>Sách có nhu cầu mượn cao hoặc số lượng còn lại ≤ 3</p>
+                                    <h2>Top sách được mượn nhiều nhất</h2>
+                                    <p>Xếp hạng đầu sách có lượt mượn cao nhất trong kỳ</p>
                                 </div>
                             </div>
-                            <span class="badge-count-pill pink">Top 5 Cấp thiết</span>
+                            <span class="badge-count-pill" style="background: #DCFCE7; color: #15803D;">Top Mượn nhiều</span>
                         </div>
 
                         <div style="overflow-x: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Mã sách</th>
-                                        <th>Tựa đề sách</th>
-                                        <th style="text-align: center;">Tổng</th>
-                                        <th style="text-align: center;">Còn lại</th>
+                                        <th style="width: 48px; text-align: center;">Hạng</th>
+                                        <th>Tựa sách &amp; Thể loại</th>
+                                        <th style="text-align: center;">Lượt mượn</th>
+                                        <th style="text-align: right;">Sẵn sàng</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="top-books-tbody">
                                     <tr>
-                                        <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
-                                            IT-0021</td>
-                                        <td><strong>Cấu trúc Dữ liệu &amp; Giải thuật (Tập 1)</strong></td>
-                                        <td style="text-align: center;" class="font-mono">40</td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill red">1</span>
+                                        <td style="text-align: center;"><span class="rank-pill rank-1">#1</span></td>
+                                        <td>
+                                            <strong>Cấu trúc Dữ liệu &amp; Giải thuật</strong>
+                                            <div style="font-size: 11px; color: var(--color-text-muted);">Công nghệ thông tin</div>
                                         </td>
+                                        <td style="text-align: center;" class="font-mono"><strong>68 lượt</strong></td>
+                                        <td style="text-align: right;"><span class="badge-count-pill blue">12 / 40</span></td>
                                     </tr>
                                     <tr>
-                                        <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
-                                            CS-0104</td>
-                                        <td><strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong></td>
-                                        <td style="text-align: center;" class="font-mono">30</td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill red">1</span>
+                                        <td style="text-align: center;"><span class="rank-pill rank-2">#2</span></td>
+                                        <td>
+                                            <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong>
+                                            <div style="font-size: 11px; color: var(--color-text-muted);">Công nghệ thông tin</div>
                                         </td>
+                                        <td style="text-align: center;" class="font-mono"><strong>54 lượt</strong></td>
+                                        <td style="text-align: right;"><span class="badge-count-pill blue">8 / 30</span></td>
                                     </tr>
                                     <tr>
-                                        <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
-                                            EC-0089</td>
-                                        <td><strong>Nguyên lý Kinh tế Vĩ mô - Mankiw</strong></td>
-                                        <td style="text-align: center;" class="font-mono">50</td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill pink">2</span>
+                                        <td style="text-align: center;"><span class="rank-pill rank-3">#3</span></td>
+                                        <td>
+                                            <strong>Nguyên lý Kinh tế Vĩ mô - Mankiw</strong>
+                                            <div style="font-size: 11px; color: var(--color-text-muted);">Kinh tế &amp; Quản trị</div>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
-                                            NW-0205</td>
-                                        <td><strong>Giáo trình Mạng máy tính &amp; Truyền thông</strong></td>
-                                        <td style="text-align: center;" class="font-mono">25</td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill blue">3</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
-                                            EN-0012</td>
-                                        <td><strong>English for Computing Engineers</strong></td>
-                                        <td style="text-align: center;" class="font-mono">35</td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill blue">3</span>
-                                        </td>
+                                        <td style="text-align: center;" class="font-mono"><strong>42 lượt</strong></td>
+                                        <td style="text-align: right;"><span class="badge-count-pill blue">15 / 50</span></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="card-table-footer">
-                            <span style="color: var(--color-text-muted);">Có 12 đầu sách chạm ngưỡng cảnh báo</span>
+                            <span id="top-books-footer" style="color: var(--color-text-muted);">Thống kê theo khoảng thời gian đã chọn</span>
                             <button type="button" style="color: var(--color-brand);"
                                 onclick="window.location.href='books.html'">
-                                <span>Tạo đề xuất nhập bổ sung</span>
+                                <span>Xem toàn bộ kho sách</span>
                                 <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
                             </button>
                         </div>

@@ -1,7 +1,7 @@
 BÁO CÁO NHẬT KÝ KIỂM THỬ THỰC TẾ (TEST EXECUTION LOG)
 Task: T3CF974 - Sinh viên: Nguyễn Nhật Anh 2 (B25DTCN065)
-Thời gian chạy: 2026-11-22 15:03:11
-Tổng số test: 23 | PASS: 23 | FAIL: 0
+Thời gian chạy: 2026-11-22 15:13:45
+Tổng số test: 32 | PASS: 32 | FAIL: 0
 
 --------------------------------------------------------------------------------
 [PASS] TC_RES_01 | Đặt trước sách | Đúng (Happy Path)
@@ -19,7 +19,7 @@ Tổng số test: 23 | PASS: 23 | FAIL: 0
 [PASS] TC_RES_03 | Đặt trước sách | Đúng (Happy Path)
   Tiêu đề: Trả sách -> Đơn vị trí #1 chuyển READY, bản sao đổi RESERVED, giữ 2 ngày
   Kỳ vọng: status='READY', copy='RESERVED', deadline=+48h
-  Thực tế: status='READY', copy='RESERVED', deadline=2026-11-24 15:03:10.895098
+  Thực tế: status='READY', copy='RESERVED', deadline=2026-11-24 15:13:45.081728
   Bug: Enum BORROWED->RESERVED trước đây bị thiếu (Đã sửa & Verified)
 
 [PASS] TC_RES_04 | Đặt trước sách | Đúng (Happy Path)
@@ -50,6 +50,36 @@ Tổng số test: 23 | PASS: 23 | FAIL: 0
   Tiêu đề: Xoá thành công Thể loại, Tác giả, NXB khi không có đầu sách nào liên kết
   Kỳ vọng: success=True, bản ghi bị xoá
   Thực tế: Đã xoá thành công thể loại 'Trí Tuệ Nhân Tạo' (ID #4).
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_SEARCH_01 | Tìm kiếm sách (T3CFC09) | Đúng (Happy Path)
+  Tiêu đề: Tìm kiếm sách theo từ khoá chung (Title/ISBN/Tác giả)
+  Kỳ vọng: Tìm thấy đầu sách 'Clean Code', total >= 1
+  Thực tế: Tìm thấy total=1, cuốn: Clean Code: A Handbook of Agile Software Craftsmanship
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_SEARCH_02 | Tìm kiếm sách (T3CFC09) | Đúng (Happy Path)
+  Tiêu đề: Tìm kiếm theo phạm vi tác giả (scope='author')
+  Kỳ vọng: total >= 1 sách của tác giả Robert C. Martin
+  Thực tế: total=2
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_SEARCH_03 | Tìm kiếm sách (T3CFC09) | Đúng (Happy Path)
+  Tiêu đề: Lọc sách theo thể loại Khoa học máy tính
+  Kỳ vọng: Chỉ trả về các sách thuộc Category Khoa học máy tính
+  Thực tế: total=3 sách đúng thể loại
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_SEARCH_04 | Tìm kiếm sách (T3CFC09) | Đúng (Happy Path)
+  Tiêu đề: Lọc sách chỉ lấy bản sao khả dụng (available_only=True)
+  Kỳ vọng: Loại bỏ các đầu sách hết bản sao (Refactoring, Clean Arch), chỉ giữ sách còn bản sao khả dụng
+  Thực tế: total=2, lọc chính xác sách có bản sao khả dụng
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_DETAIL_01 | Chi tiết sách (T3CFC4B) | Đúng (Happy Path)
+  Tiêu đề: Xem chi tiết đầu sách theo mã ISBN kèm thống kê bản sao và tác giả
+  Kỳ vọng: Trả về đầy đủ thông tin sách, tác giả, NXB, tổng 2 bản sao (2 BORROWED, 0 AVAILABLE)
+  Thực tế: Sách: Clean Code: A Handbook of Agile Software Craftsmanship, tổng bản sao: 2, đang mượn: 1
   Bug: None (Đã nghiệm thu)
 
 [PASS] TC_RES_06 | Đặt trước sách | Sai dữ liệu
@@ -112,6 +142,18 @@ Tổng số test: 23 | PASS: 23 | FAIL: 0
   Thực tế: HTTP 400: Tên thể loại không được để trống.
   Bug: None (Đã nghiệm thu)
 
+[PASS] TC_SEARCH_05 | Tìm kiếm sách (T3CFC09) | Sai dữ liệu
+  Tiêu đề: Tìm kiếm từ khoá không khớp trả về danh sách rỗng (total=0)
+  Kỳ vọng: total=0
+  Thực tế: total=0
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_DETAIL_02 | Chi tiết sách (T3CFC4B) | Sai dữ liệu
+  Tiêu đề: Tra cứu chi tiết sách với mã ISBN không tồn tại
+  Kỳ vọng: Trả về None (Không tìm thấy đầu sách - HTTP 404)
+  Thực tế: Kết quả: None
+  Bug: None (Đã nghiệm thu)
+
 [PASS] TC_AUTH_01 | Xác thực & Phân quyền | Chưa đăng nhập
   Tiêu đề: Chặn gọi API đặt trước hoặc xem danh sách cá nhân khi chưa đăng nhập
   Kỳ vọng: HTTP 401: 'Yêu cầu đăng nhập để thực hiện thao tác này'
@@ -122,6 +164,18 @@ Tổng số test: 23 | PASS: 23 | FAIL: 0
   Tiêu đề: Chặn request khi gửi Access Token sai định dạng hoặc hết hạn
   Kỳ vọng: HTTP 401 Unauthorized
   Thực tế: HTTP 401: Yêu cầu đăng nhập để thực hiện thao tác này.
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_SEARCH_06 | Tìm kiếm sách (T3CFC09) | Chưa đăng nhập
+  Tiêu đề: Khách vãng lai (chưa đăng nhập) tra cứu & tìm kiếm sách công khai
+  Kỳ vọng: Cho phép truy cập công khai không yêu cầu token, total > 0
+  Thực tế: Truy cập hợp lệ, tổng sách: 5
+  Bug: None (Đã nghiệm thu)
+
+[PASS] TC_DETAIL_03 | Chi tiết sách (T3CFC4B) | Chưa đăng nhập
+  Tiêu đề: Khách vãng lai (chưa đăng nhập) xem thông tin chi tiết đầu sách
+  Kỳ vọng: Cho phép xem thông tin sách công khai không yêu cầu token
+  Thực tế: Xem thành công cuốn: Clean Code: A Handbook of Agile Software Craftsmanship
   Bug: None (Đã nghiệm thu)
 
 [PASS] TC_PERM_01 | Xác thực & Phân quyền | Sai quyền

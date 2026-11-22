@@ -112,7 +112,7 @@
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Trả sách -&gt; Đơn vị trí #1 chuyển READY, bản sao đổi RESERVED, giữ 2 ngày</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">status=&#x27;READY&#x27;, copy=&#x27;RESERVED&#x27;, deadline=+48h</Data></Cell>
-    <Cell ss:StyleID="sData"><Data ss:Type="String">status=&#x27;READY&#x27;, copy=&#x27;RESERVED&#x27;, deadline=2026-11-24 15:03:10.895098</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">status=&#x27;READY&#x27;, copy=&#x27;RESERVED&#x27;, deadline=2026-11-24 15:13:45.081728</Data></Cell>
     <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Enum BORROWED-&gt;RESERVED trước đây bị thiếu</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đã sửa &amp; Verified</Data></Cell>
@@ -168,6 +168,61 @@
     <Cell ss:StyleID="sData"><Data ss:Type="String">Xoá thành công Thể loại, Tác giả, NXB khi không có đầu sách nào liên kết</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">success=True, bản ghi bị xoá</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đã xoá thành công thể loại &#x27;Trí Tuệ Nhân Tạo&#x27; (ID #4).</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_01</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách theo từ khoá chung (Title/ISBN/Tác giả)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm thấy đầu sách &#x27;Clean Code&#x27;, total &gt;= 1</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm thấy total=1, cuốn: Clean Code: A Handbook of Agile Software Craftsmanship</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_02</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm theo phạm vi tác giả (scope=&#x27;author&#x27;)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total &gt;= 1 sách của tác giả Robert C. Martin</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total=2</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_03</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Lọc sách theo thể loại Khoa học máy tính</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chỉ trả về các sách thuộc Category Khoa học máy tính</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total=3 sách đúng thể loại</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_04</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Lọc sách chỉ lấy bản sao khả dụng (available_only=True)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Loại bỏ các đầu sách hết bản sao (Refactoring, Clean Arch), chỉ giữ sách còn bản sao khả dụng</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total=2, lọc chính xác sách có bản sao khả dụng</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_DETAIL_01</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chi tiết sách (T3CFC4B)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đúng (Happy Path)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Xem chi tiết đầu sách theo mã ISBN kèm thống kê bản sao và tác giả</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Trả về đầy đủ thông tin sách, tác giả, NXB, tổng 2 bản sao (2 BORROWED, 0 AVAILABLE)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Sách: Clean Code: A Handbook of Agile Software Craftsmanship, tổng bản sao: 2, đang mượn: 1</Data></Cell>
     <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
@@ -283,6 +338,28 @@
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
    </Row>
    <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_05</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Sai dữ liệu</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm từ khoá không khớp trả về danh sách rỗng (total=0)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total=0</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">total=0</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_DETAIL_02</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chi tiết sách (T3CFC4B)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Sai dữ liệu</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tra cứu chi tiết sách với mã ISBN không tồn tại</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Trả về None (Không tìm thấy đầu sách - HTTP 404)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Kết quả: None</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
     <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_AUTH_01</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Xác thực &amp; Phân quyền</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Chưa đăng nhập</Data></Cell>
@@ -300,6 +377,28 @@
     <Cell ss:StyleID="sData"><Data ss:Type="String">Chặn request khi gửi Access Token sai định dạng hoặc hết hạn</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">HTTP 401 Unauthorized</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">HTTP 401: Yêu cầu đăng nhập để thực hiện thao tác này.</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_SEARCH_06</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Tìm kiếm sách (T3CFC09)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chưa đăng nhập</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Khách vãng lai (chưa đăng nhập) tra cứu &amp; tìm kiếm sách công khai</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Cho phép truy cập công khai không yêu cầu token, total &gt; 0</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Truy cập hợp lệ, tổng sách: 5</Data></Cell>
+    <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="sDataCenter"><Data ss:Type="String">TC_DETAIL_03</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chi tiết sách (T3CFC4B)</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Chưa đăng nhập</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Khách vãng lai (chưa đăng nhập) xem thông tin chi tiết đầu sách</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Cho phép xem thông tin sách công khai không yêu cầu token</Data></Cell>
+    <Cell ss:StyleID="sData"><Data ss:Type="String">Xem thành công cuốn: Clean Code: A Handbook of Agile Software Craftsmanship</Data></Cell>
     <Cell ss:StyleID="sPass"><Data ss:Type="String">PASS</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">None</Data></Cell>
     <Cell ss:StyleID="sData"><Data ss:Type="String">Đã nghiệm thu</Data></Cell>

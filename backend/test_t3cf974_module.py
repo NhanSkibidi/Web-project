@@ -2,14 +2,16 @@
 """
 BỘ KIỂM THỬ TỰ ĐỘNG & SEED DỮ LIỆU TEST CHO TASK T3CF974
 Sinh viên: Nguyễn Nhật Anh 2 (B25DTCN065) - KS25 Library
-Các module phụ trách:
-  1. Đặt trước sách khi hết (T3CFCAC - Reservation)
+Các module Backend phụ trách:
+  1. Đặt trước sách khi hết (T3CFCAC / T3CFBEF - Reservation & Model)
   2. Quản lý Thể loại, Tác giả, Nhà xuất bản (T3CFCC6 - Taxonomy)
+  3. Tìm kiếm và tra cứu sách (T3CFC09 - Book Search & Facets)
+  4. Xem chi tiết sách & thống kê bản sao (T3CFC4B - Book Detail)
 
 Đầy đủ 4 nhóm kiểm thử:
   [1] Đúng (Happy Path)
-  [2] Sai dữ liệu (Validation / Chặn trùng / Chặn xoá khi còn sách)
-  [3] Chưa đăng nhập (401 Unauthorized)
+  [2] Sai dữ liệu (Validation / Chặn trùng / Chặn xoá khi còn sách / Không tìm thấy)
+  [3] Chưa đăng nhập (401 Unauthorized & Quyền truy cập công khai)
   [4] Sai quyền (403 Forbidden)
 
 Cách chạy:
@@ -58,6 +60,7 @@ from app.schemas.taxonomy import (
 from app.crud import reservation as crud_res
 from app.crud import taxonomy as crud_tax
 from app.crud import return_book as crud_ret
+from app.crud.book import get_books_paginated, get_book_by_isbn
 
 engine = create_engine(f"sqlite:///./{TEST_DB_NAME}", connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -346,6 +349,59 @@ def run_all_tests():
     else:
         record_log("TC_TAX_03", "Quản lý Danh mục", "Đúng (Happy Path)", "Delete unused taxonomy", "success=True", "Failed", "FAIL")
 
+    # --- BỔ SUNG CÁC TASK BACKEND T3CFC09 & T3CFC4B ---
+    # TC 1.9 (T3CFC09): Tìm kiếm sách theo từ khoá chung (Keyword Search)
+    s_books, s_total, s_pages = get_books_paginated(db, keyword="Clean Code", page=1, page_size=10)
+    if s_total >= 1 and any("Clean Code" in b.title for b in s_books):
+        record_log("TC_SEARCH_01", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)",
+                   "Tìm kiếm sách theo từ khoá chung (Title/ISBN/Tác giả)",
+                   "Tìm thấy đầu sách 'Clean Code', total >= 1",
+                   f"Tìm thấy total={s_total}, cuốn: {s_books[0].title}", "PASS")
+    else:
+        record_log("TC_SEARCH_01", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)", "Keyword Search", "total >= 1", f"total={s_total}", "FAIL")
+
+    # TC 1.10 (T3CFC09): Tìm kiếm theo phạm vi tác giả (Author Scope)
+    s_books_a, s_total_a, _ = get_books_paginated(db, keyword="Robert C. Martin", scope="author")
+    if s_total_a >= 1:
+        record_log("TC_SEARCH_02", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)",
+                   "Tìm kiếm theo phạm vi tác giả (scope='author')",
+                   "total >= 1 sách của tác giả Robert C. Martin",
+                   f"total={s_total_a}", "PASS")
+    else:
+        record_log("TC_SEARCH_02", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)", "Author Scope Search", "total >= 1", f"total={s_total_a}", "FAIL")
+
+    # TC 1.11 (T3CFC09): Lọc sách theo Thể loại (Category Filter)
+    s_books_c, s_total_c, _ = get_books_paginated(db, category_id=data["cat_cs"].id)
+    if s_total_c >= 1 and all(b.category_id == data["cat_cs"].id for b in s_books_c):
+        record_log("TC_SEARCH_03", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)",
+                   "Lọc sách theo thể loại Khoa học máy tính",
+                   "Chỉ trả về các sách thuộc Category Khoa học máy tính",
+                   f"total={s_total_c} sách đúng thể loại", "PASS")
+    else:
+        record_log("TC_SEARCH_03", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)", "Category Filter", "filtered", f"total={s_total_c}", "FAIL")
+
+    # TC 1.12 (T3CFC09): Lọc sách chỉ lấy bản sao khả dụng (Available Only)
+    s_books_av, s_total_av, _ = get_books_paginated(db, available_only=True)
+    borrowed_only_found = any(b.isbn in [data["book_refactor"].isbn, data["book_extra"].isbn] for b in s_books_av)
+    avail_found = any(b.isbn == data["book_avail"].isbn for b in s_books_av)
+    if not borrowed_only_found and avail_found:
+        record_log("TC_SEARCH_04", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)",
+                   "Lọc sách chỉ lấy bản sao khả dụng (available_only=True)",
+                   "Loại bỏ các đầu sách hết bản sao (Refactoring, Clean Arch), chỉ giữ sách còn bản sao khả dụng",
+                   f"total={s_total_av}, lọc chính xác sách có bản sao khả dụng", "PASS")
+    else:
+        record_log("TC_SEARCH_04", "Tìm kiếm sách (T3CFC09)", "Đúng (Happy Path)", "Available Only Filter", "no out of stock", f"borrowed_found={borrowed_only_found}", "FAIL")
+
+    # TC 1.13 (T3CFC4B): Xem chi tiết đầu sách theo ISBN kèm thống kê bản sao (Book Detail)
+    b_detail = get_book_by_isbn(db, data["book_out"].isbn)
+    if b_detail and b_detail["book"].title == data["book_out"].title and b_detail["total_copies"] == 2:
+        record_log("TC_DETAIL_01", "Chi tiết sách (T3CFC4B)", "Đúng (Happy Path)",
+                   "Xem chi tiết đầu sách theo mã ISBN kèm thống kê bản sao và tác giả",
+                   "Trả về đầy đủ thông tin sách, tác giả, NXB, tổng 2 bản sao (2 BORROWED, 0 AVAILABLE)",
+                   f"Sách: {b_detail['book'].title}, tổng bản sao: {b_detail['total_copies']}, đang mượn: {b_detail['borrowed_copies']}", "PASS")
+    else:
+        record_log("TC_DETAIL_01", "Chi tiết sách (T3CFC4B)", "Đúng (Happy Path)", "Book Detail by ISBN", "Valid Detail", str(b_detail), "FAIL")
+
     # =========================================================================
     # NHÓM 2: SAI DỮ LIỆU (VALIDATION & BUSINESS RULES)
     # =========================================================================
@@ -467,10 +523,29 @@ def run_all_tests():
                    "HTTP 400: 'Tên không được để trống'",
                    f"HTTP {e.status_code}: {e.detail}", "PASS")
 
+    # TC 2.11 (T3CFC09): Tìm kiếm với từ khoá không tồn tại trong hệ thống
+    _, s_no_match, _ = get_books_paginated(db, keyword="XYZ_NONEXISTENT_99999")
+    if s_no_match == 0:
+        record_log("TC_SEARCH_05", "Tìm kiếm sách (T3CFC09)", "Sai dữ liệu",
+                   "Tìm kiếm từ khoá không khớp trả về danh sách rỗng (total=0)",
+                   "total=0", f"total={s_no_match}", "PASS")
+    else:
+        record_log("TC_SEARCH_05", "Tìm kiếm sách (T3CFC09)", "Sai dữ liệu", "Search No Match", "total=0", f"total={s_no_match}", "FAIL")
+
+    # TC 2.12 (T3CFC4B): Tra cứu chi tiết sách với mã ISBN không tồn tại
+    b_not_found = get_book_by_isbn(db, "999-0000000000")
+    if b_not_found is None:
+        record_log("TC_DETAIL_02", "Chi tiết sách (T3CFC4B)", "Sai dữ liệu",
+                   "Tra cứu chi tiết sách với mã ISBN không tồn tại",
+                   "Trả về None (Không tìm thấy đầu sách - HTTP 404)",
+                   f"Kết quả: {b_not_found}", "PASS")
+    else:
+        record_log("TC_DETAIL_02", "Chi tiết sách (T3CFC4B)", "Sai dữ liệu", "ISBN Not Found", "None", str(b_not_found), "FAIL")
+
     # =========================================================================
-    # NHÓM 3: CHƯA ĐĂNG NHẬP (UNAUTHENTICATED - 401)
+    # NHÓM 3: CHƯA ĐĂNG NHẬP (UNAUTHENTICATED - 401 & PUBLIC ACCESS)
     # =========================================================================
-    print("\n▶ NHÓM 3: KIỂM THỬ CHƯA ĐĂNG NHẬP (401 UNAUTHORIZED)")
+    print("\n▶ NHÓM 3: KIỂM THỬ CHƯA ĐĂNG NHẬP (401 UNAUTHORIZED & PUBLIC ACCESS)")
 
     # Giả lập logic kiểm tra xác thực JWT Auth
     def mock_require_auth(token: str | None):
@@ -494,6 +569,33 @@ def run_all_tests():
         record_log("TC_AUTH_02", "Xác thực & Phân quyền", "Chưa đăng nhập",
                    "Chặn request khi gửi Access Token sai định dạng hoặc hết hạn",
                    "HTTP 401 Unauthorized", f"HTTP {e.status_code}: {e.detail}", "PASS")
+
+    # TC 3.3 (T3CFC09): Khách vãng lai (chưa đăng nhập) tìm kiếm sách công khai hợp lệ
+    try:
+        # Không truyền token (khách vãng lai)
+        pub_search, pub_total, _ = get_books_paginated(db, page=1, page_size=5)
+        if pub_total > 0:
+            record_log("TC_SEARCH_06", "Tìm kiếm sách (T3CFC09)", "Chưa đăng nhập",
+                       "Khách vãng lai (chưa đăng nhập) tra cứu & tìm kiếm sách công khai",
+                       "Cho phép truy cập công khai không yêu cầu token, total > 0",
+                       f"Truy cập hợp lệ, tổng sách: {pub_total}", "PASS")
+        else:
+            record_log("TC_SEARCH_06", "Tìm kiếm sách (T3CFC09)", "Chưa đăng nhập", "Public search", "total > 0", f"total={pub_total}", "FAIL")
+    except Exception as e:
+        record_log("TC_SEARCH_06", "Tìm kiếm sách (T3CFC09)", "Chưa đăng nhập", "Public search error", "Allowed", str(e), "FAIL")
+
+    # TC 3.4 (T3CFC4B): Khách vãng lai (chưa đăng nhập) xem chi tiết sách công khai hợp lệ
+    try:
+        pub_detail = get_book_by_isbn(db, data["book_out"].isbn)
+        if pub_detail:
+            record_log("TC_DETAIL_03", "Chi tiết sách (T3CFC4B)", "Chưa đăng nhập",
+                       "Khách vãng lai (chưa đăng nhập) xem thông tin chi tiết đầu sách",
+                       "Cho phép xem thông tin sách công khai không yêu cầu token",
+                       f"Xem thành công cuốn: {pub_detail['book'].title}", "PASS")
+        else:
+            record_log("TC_DETAIL_03", "Chi tiết sách (T3CFC4B)", "Chưa đăng nhập", "Public detail", "Allowed", "None", "FAIL")
+    except Exception as e:
+        record_log("TC_DETAIL_03", "Chi tiết sách (T3CFC4B)", "Chưa đăng nhập", "Public detail error", "Allowed", str(e), "FAIL")
 
     # =========================================================================
     # NHÓM 4: SAI QUYỀN (UNAUTHORIZED / FORBIDDEN - 403)

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo Test Case &amp; Test Log | Nguyễn Nhật Anh 2 (T3CF974)</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1B4332;
+      --primary-light: #E8F5E9;
+      --bg: #FAF8F5;
+      --surface: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --muted: #64748B;
+      --pass: #16A34A;
+      --pass-bg: #DCFCE7;
+      --fail: #DC2626;
+      --fail-bg: #FEE2E2;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 32px 24px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+    .header-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .header-title h1 {
+      margin: 0 0 6px 0;
+      font-size: 24px;
+      color: var(--primary);
+      font-weight: 800;
+    }
+    .header-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .meta-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: #F1F5F9;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .pill.pill-primary {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: #A7F3D0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 24px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .filter-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+    th {
+      background: #F8FAFC;
+      color: #475569;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11.5px;
+      letter-spacing: 0.5px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 16px 18px;
+      border-bottom: 1px solid #F1F5F9;
+      vertical-align: top;
+    }
+    tr:hover td {
+      background: #FAFAFA;
+    }
+    .badge-pass {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 11.5px;
+      background: var(--pass-bg);
+      color: var(--pass);
+      border: 1px solid #86EFAC;
+    }
+    .badge-type {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #F0F9FF;
+      color: #0369A1;
+      border: 1px solid #BAE6FD;
+    }
+    .tc-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #1E293B;
+      font-size: 12.5px;
+    }
+    .export-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-export {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: #FFFFFF;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn-export:hover {
+      background: #F8FAFC;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header-card">
+      <div class="header-title">
+        <h1>📊 Báo cáo Kiểm thử &amp; Test Log Chi tiết</h1>
+        <p>Hệ thống Thư viện số KS25 Library · Mã Task: <strong>T3CF974</strong></p>
+      </div>
+      <div class="meta-pills">
+        <span class="pill pill-primary">👤 Nguyễn Nhật Anh 2 (B25DTCN065)</span>
+        <span class="pill">Sprint 3 (18/11 - 24/11)</span>
+        <span class="pill">Điểm: 5</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num">23</div>
+        <div class="stat-label">Tổng số Test Cases</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color: var(--pass);">23 / 23</div>
+        <div class="stat-label">Tỷ lệ PASS (100%)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color: var(--muted);">0</div>
+        <div class="stat-label">Lỗi tồn đọng (FAIL)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color: #2563EB;">4 / 4</div>
+        <div class="stat-label">Nhóm kiểm thử hoàn chỉnh</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="btn-group">
+        <button type="button" class="filter-btn active" onclick="filterTable('all')">Tất cả (23)</button>
+        <button type="button" class="filter-btn" onclick="filterTable('res')">Đặt trước sách (11)</button>
+        <button type="button" class="filter-btn" onclick="filterTable('tax')">Thể loại, Tác giả, NXB (12)</button>
+        <button type="button" class="filter-btn" onclick="filterTable('happy')">Happy Path (Đúng)</button>
+        <button type="button" class="filter-btn" onclick="filterTable('negative')">Sai dữ liệu &amp; Quyền</button>
+      </div>
+      <div class="export-btns">
+        <a href="../../TEST_CASES_AND_LOG_T3CF974.xls" class="btn-export" download>
+          <span>📥 Tải file Excel (.xls)</span>
+        </a>
+        <a href="../../TEST_CASES_AND_LOG_T3CF974.csv" class="btn-export" download>
+          <span>📄 Tải CSV</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table id="testTable">
+        <thead>
+          <tr>
+            <th style="width: 100px;">Mã TC</th>
+            <th style="width: 180px;">Module</th>
+            <th style="width: 140px;">Phân loại</th>
+            <th style="width: 280px;">Kịch bản kiểm thử</th>
+            <th>Kết quả mong đợi</th>
+            <th>Kết quả thực tế</th>
+            <th style="width: 90px; text-align: center;">Trạng thái</th>
+            <th style="width: 140px;">Tình trạng Bug</th>
+          </tr>
+        </thead>
+        <tbody id="testTableBody">
+          <!-- Render từ JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="../../backend/generate_test_report.py"></script>
+  <script>
+    // Data test cases
+    const testCases = [
+      { id: "TC_RES_01", module: "Đặt trước sách", cat: "res", type: "Đúng (Happy Path)", title: "Độc giả đặt trước thành công khi đầu sách đã hết sạch bản sao khả dụng", expected: "HTTP 201 Created. Tạo đơn Reservation status=WAITING, vị trí #1.", actual: "Đơn ID #1 status=WAITING, queue_position=#1.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_02", module: "Đặt trước sách", cat: "res", type: "Đúng (Happy Path)", title: "Xếp hàng nhiều người theo thứ tự thời gian (FIFO: First In First Out)", expected: "HTTP 201 Created. Reader 2 nhận vị trí queue_position=#2.", actual: "Reader 2 nhận vị trí #2 chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_03", module: "Đặt trước sách", cat: "res", type: "Sai dữ liệu", title: "Chặn đặt trước khi đầu sách VẪN CÒN bản sao khả dụng tại thư viện", expected: "HTTP 400 Bad Request. Báo lỗi sách vẫn còn bản sao.", actual: "HTTP 400 trả về chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_04", module: "Đặt trước sách", cat: "res", type: "Sai dữ liệu", title: "Chặn độc giả đặt trước trùng lặp cùng một đầu sách", expected: "HTTP 400 Bad Request. Thông báo đã có đơn đặt trước đang hiệu lực.", actual: "Chặn trùng lặp chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_05", module: "Đặt trước sách", cat: "res", type: "Sai dữ liệu", title: "Chặn độc giả vượt quá giới hạn tối đa 3 đơn đặt trước đang hiệu lực", expected: "HTTP 400 Bad Request. Chặn đơn thứ 4.", actual: "Giữ đúng quota 3 đơn/người.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_06", module: "Đặt trước sách", cat: "res", type: "Đúng (Happy Path)", title: "Khi có bản sao được trả -> Người đầu hàng chuyển READY, bản sao sang RESERVED, giữ 2 ngày", expected: "Đơn chuyển READY, hạn pickup_deadline +2 ngày, copy đổi RESERVED.", actual: "Chuyển READY và giữ sách 2 ngày chính xác.", status: "PASS", bug: "Đã sửa: Enum transition BORROWED->RESERVED" },
+      { id: "TC_RES_07", module: "Đặt trước sách", cat: "res", type: "Đúng (Happy Path)", title: "Hết hạn lấy sách 2 ngày -> Tự động chuyển đơn sang EXPIRED, nhường lượt cho người tiếp theo", expected: "Đơn hết hạn sang EXPIRED. Người tiếp theo thành READY có 2 ngày mới.", actual: "Chuyển lượt mượt mà, đúng quy định.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_08", module: "Đặt trước sách", cat: "res", type: "Đúng (Happy Path)", title: "Độc giả chủ động huỷ đơn đặt trước", expected: "Đơn sang CANCELLED, bản sao trả về AVAILABLE nếu không còn ai chờ.", actual: "Huỷ thành công, dữ liệu cập nhật ngay.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_09", module: "Đặt trước sách", cat: "res", type: "Chưa đăng nhập", title: "Chặn người dùng chưa đăng nhập gọi API đặt trước", expected: "HTTP 401 Unauthorized.", actual: "HTTP 401 Unauthorized chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_10", module: "Đặt trước sách", cat: "res", type: "Sai quyền", title: "Độc giả không được phép duyệt nhận sách tại quầy (Fulfill)", expected: "HTTP 403 Forbidden dành riêng cho Thủ thư.", actual: "HTTP 403 Forbidden chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_RES_11", module: "Đặt trước sách", cat: "res", type: "Sai dữ liệu", title: "Gửi mã ISBN không tồn tại trong hệ thống", expected: "HTTP 404 Not Found.", actual: "HTTP 404 Not Found rõ ràng.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+
+      { id: "TC_TAX_01", module: "Quản lý Thể loại", cat: "tax", type: "Đúng (Happy Path)", title: "Thêm mới thể loại sách thành công với dữ liệu hợp lệ", expected: "HTTP 201 Created. Dữ liệu lưu CSDL, hiển thị ngay trên bảng.", actual: "Thêm mới thành công, Toast thông báo.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_02", module: "Quản lý Thể loại", cat: "tax", type: "Sai dữ liệu", title: "Chặn thêm thể loại có tên trùng lặp (không phân biệt hoa/thường)", expected: "HTTP 400 Bad Request. Báo lỗi tên đã tồn tại.", actual: "HTTP 400 chặn trùng tên chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_03", module: "Quản lý Thể loại", cat: "tax", type: "Sai dữ liệu", title: "Chặn cập nhật đổi tên thể loại trùng với tên của một thể loại khác", expected: "HTTP 400 Bad Request.", actual: "Chặn trùng lặp khi sửa chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_04", module: "Quản lý Thể loại", cat: "tax", type: "Đúng (Happy Path)", title: "Tìm kiếm thể loại theo từ khoá và phân trang", expected: "Lọc đúng từ khoá, phân trang page/page_size chuẩn xác.", actual: "Debounce 350ms, phân trang mượt.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_05", module: "Quản lý Thể loại", cat: "tax", type: "Sai dữ liệu", title: "CHẶN XOÁ THỂ LOẠI KHI CÒN ĐẦU SÁCH LIÊN KẾT (Yêu cầu cốt lõi bài toán)", expected: "Cảnh báo đỏ trên Modal, HTTP 400: Không thể xoá vì còn X đầu sách liên kết.", actual: "Chặn xoá thành công, hiển thị đúng số sách.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_06", module: "Quản lý Thể loại", cat: "tax", type: "Đúng (Happy Path)", title: "Xoá thành công thể loại khi KHÔNG CÒN đầu sách liên kết", expected: "HTTP 200 OK. Xoá thành công, bảng cập nhật lại.", actual: "Xoá thành công hoàn toàn.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_07", module: "Quản lý Tác giả", cat: "tax", type: "Đúng (Happy Path)", title: "Thêm mới tác giả và kiểm tra chặn trùng lặp", expected: "Thêm thành công lần 1 (201), chặn trùng lần 2 (400).", actual: "Xử lý chuẩn xác cả 2 trường hợp.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_08", module: "Quản lý Tác giả", cat: "tax", type: "Sai dữ liệu", title: "CHẶN XOÁ TÁC GIẢ KHI CÒN ĐẦU SÁCH LIÊN KẾT", expected: "HTTP 400 Bad Request kèm số lượng sách liên kết.", actual: "Chặn xoá thành công.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_09", module: "Quản lý Nhà xuất bản", cat: "tax", type: "Đúng (Happy Path)", title: "Thêm mới và cập nhật thông tin Nhà xuất bản", expected: "Thêm mới (201) và sửa (200) thành công.", actual: "Cập nhật dữ liệu chính xác.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_10", module: "Quản lý Nhà xuất bản", cat: "tax", type: "Sai dữ liệu", title: "CHẶN XOÁ NHÀ XUẤT BẢN KHI CÒN ĐẦU SÁCH LIÊN KẾT", expected: "HTTP 400 Bad Request: Không thể xoá khi còn sách.", actual: "Chặn xoá thành công.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_11", module: "Quản lý Danh mục", cat: "tax", type: "Chưa đăng nhập", title: "Chặn người dùng chưa đăng nhập thực hiện thao tác thêm/sửa/xoá danh mục", expected: "Yêu cầu đăng nhập hoặc HTTP 401.", actual: "Bảo đảm an toàn bảo mật.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+      { id: "TC_TAX_12", module: "Quản lý Danh mục", cat: "tax", type: "Sai dữ liệu", title: "Xử lý khi nhập tên để trống hoặc toàn dấu cách trắng", expected: "Chặn tại Form và Backend trả về HTTP 400.", actual: "Chặn thành công cả client và server.", status: "PASS", bug: "None (Đã nghiệm thu)" },
+    ];
+
+    function renderRows(items) {
+      const tbody = document.getElementById("testTableBody");
+      tbody.innerHTML = items.map(tc => `
+        <tr>
+          <td class="tc-id">${tc.id}</td>
+          <td><strong>${tc.module}</strong></td>
+          <td><span class="badge-type">${tc.type}</span></td>
+          <td><strong>${tc.title}</strong></td>
+          <td style="color: #334155;">${tc.expected}</td>
+          <td style="color: #334155;">${tc.actual}</td>
+          <td style="text-align: center;"><span class="badge-pass">${tc.status}</span></td>
+          <td style="font-size: 12.5px; color: #1E293B;">${tc.bug}</td>
+        </tr>
+      `).join("");
+    }
+
+    function filterTable(filter) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      event.target.classList.add("active");
+
+      let filtered = testCases;
+      if (filter === "res") filtered = testCases.filter(t => t.cat === "res");
+      else if (filter === "tax") filtered = testCases.filter(t => t.cat === "tax");
+      else if (filter === "happy") filtered = testCases.filter(t => t.type.includes("Đúng"));
+      else if (filter === "negative") filtered = testCases.filter(t => !t.type.includes("Đúng"));
+
+      renderRows(filtered);
+    }
+
+    // Ban đầu
+    renderRows(testCases);
+  </script>
+</body>
+
+</html>

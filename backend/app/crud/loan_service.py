@@ -640,9 +640,9 @@ def get_reader_by_card(db: Session, card_code: str) -> dict:
     }
 
 
-def get_copy_by_barcode(db: Session, barcode: str) -> dict:
+def get_copy_by_barcode(db: Session, copycode: str) -> dict:
     """Tra cứu bản sao sách theo mã vạch / copy_code."""
-    bc = barcode.strip() if barcode else ""
+    bc = copycode.strip() if copycode else ""
     if not bc:
         raise HTTPException(status_code=400, detail="Mã vạch không được để trống")
 

@@ -29,6 +29,7 @@ from app.routers import (
     return_book,
     statistics,
     taxonomy,
+    reservation,
     users,
 )
 
@@ -75,6 +76,7 @@ app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
 app.include_router(taxonomy.router, prefix="/api")
+app.include_router(reservation.router, prefix="/api")
 app.include_router(email_reminders.router, prefix="/api")
 app.include_router(statistics.router, prefix="/api")
 app.include_router(library_cards.router, prefix="/api")

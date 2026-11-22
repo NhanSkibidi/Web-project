@@ -7,7 +7,7 @@ from app.models.fine import Fine
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.library_card import LibraryCard
-from app.models.loan import Loan
+from app.models.loan import Loan, LoanStatus
 from app.models.loan_item import LoanItem
 from app.models.user import User
 from app.schemas.fine import FINE_PER_DAY, RATE_DAMAGED, RATE_LOST
@@ -282,7 +282,7 @@ def report_damage_or_lost(
         .count()
     )
     if remaining == 0:
-        loan.status = "RETURNED"
+        loan.status = LoanStatus.RETURNED
 
     db.commit()
     db.refresh(fine)

@@ -23,9 +23,12 @@ from app.routers import (
     fine,
     health,
     items,
+    library_cards,
     loans,
+    loans_item,
     return_book,
-    loans_item
+    loans_item,
+    statistics,
 )
 
 @asynccontextmanager
@@ -71,6 +74,9 @@ app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
 app.include_router(email_reminders.router, prefix="/api")
+app.include_router(statistics.router, prefix="/api")
+app.include_router(library_cards.router, prefix="/api")
+app.include_router(library_cards.readers_router, prefix="/api")
 
 # Phục vụ giao diện tĩnh Frontend qua FastAPI
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))

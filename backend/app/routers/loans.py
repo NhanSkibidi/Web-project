@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from typing import Literal
 
 from app.core.dependencies import bearer_scheme, get_current_user
 from app.crud.loan_service import (
@@ -89,7 +90,7 @@ def _resolve_user_id(
 @router.get("", response_model=list[LoanHistoryOut])
 def list_loans(
     user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
-    status: str | None = Query(None, description="Lọc theo trạng thái phiếu: PENDING, APPROVED, BORROWED, RETURNED, REJECTED, CANCELLED"),
+    status: Literal["PENDING", "APPROVED", "BORROWED", "RETURNED", "REJECTED", "CANCELLED"] | None = Query(None, description="Lọc theo trạng thái phiếu"),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
 ):

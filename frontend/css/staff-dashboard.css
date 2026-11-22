@@ -1394,3 +1394,163 @@ body.dashboard-body {
     transform: translateY(0);
   }
 }
+
+/* ==============================================================================
+   10. TASK T3CFF62: DATE RANGE PICKER, 5-KPI GRID, TREND CHART & TOP BOOKS
+   ============================================================================== */
+.date-range-picker-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.date-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.date-input-wrap .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--color-brand);
+}
+
+.date-input-wrap input[type="date"] {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.date-sep {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.btn-apply-range {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.btn-apply-range:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+@media (min-width: 1280px) {
+  .kpi-cards-grid.kpi-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.trend-chart-card {
+  margin-bottom: 24px;
+}
+
+.trend-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.group-toggle-group {
+  display: inline-flex;
+  background: var(--color-surface-subtle, #f3f1ec);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.group-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.group-btn.active {
+  background: var(--color-brand);
+  color: #fff;
+}
+
+.trend-chart-container {
+  position: relative;
+  height: 290px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.rank-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.rank-pill.rank-1 {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.rank-pill.rank-2 {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.rank-pill.rank-3 {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.borrow-progress-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.borrow-progress-bar {
+  width: 70px;
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.borrow-progress-fill {
+  height: 100%;
+  background: #1b4332;
+  border-radius: 999px;
+}

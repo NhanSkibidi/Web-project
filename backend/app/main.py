@@ -26,6 +26,8 @@ from app.routers import (
     loans,
     loans_item,
     return_book,
+    loans_item,
+    statistics,
 )
 
 @asynccontextmanager
@@ -70,6 +72,7 @@ app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
+app.include_router(statistics.router, prefix="/api")
 app.include_router(library_cards.router, prefix="/api")
 app.include_router(library_cards.readers_router, prefix="/api")
 

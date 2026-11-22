@@ -311,7 +311,7 @@ function renderReaderLayout() {
             <span class="badge-dot"></span>
           </a>
           <div class="topbar-divider"></div>
-          <a href="${root}pages/auth.html" class="librarian-profile" title="Xem tài khoản cá nhân" style="text-decoration:none; color:inherit;">
+          <a href="${root}pages/profile.html" class="librarian-profile" title="Hồ sơ cá nhân & Đổi mật khẩu" style="text-decoration:none; color:inherit;">
             <div class="librarian-avatar">${initial}</div>
             <div class="librarian-info">
               <span class="librarian-name">${getSafeText(user.full_name || user.email)}</span>
@@ -542,10 +542,10 @@ function renderStaffLayout() {
           </form>
           ${
             user
-              ? `<span class="user-chip">
+              ? `<a href="${root}pages/profile.html" class="user-chip" title="Hồ sơ cá nhân & Đổi mật khẩu" style="text-decoration:none; color:inherit;">
                   <span>${getSafeText(user.full_name || user.email)}</span>
                   <span class="user-chip-role">${getSafeText(user.role)}</span>
-                </span>`
+                </a>`
               : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
           }
         </div>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ Cá nhân &amp; Đổi mật khẩu | UniLib KS25</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../css/profile.css">
+</head>
+<body class="profile-page">
+
+  <!-- Top Header -->
+  <header class="pf-topbar">
+    <div class="pf-topbar-left">
+      <a id="pf-brand-link" href="home.html" class="pf-brand">
+        <div class="pf-brand-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="pf-brand-name">UniLib</span>
+          <span class="pf-brand-sub">Thư viện số KS25</span>
+        </div>
+      </a>
+
+      <nav class="pf-nav" id="pf-top-nav">
+        <a href="home.html">Trang chủ</a>
+        <a href="catalog.html">Tra cứu sách</a>
+        <a href="loan_slip.html">Phiếu mượn</a>
+        <a href="profile.html" class="active">Hồ sơ cá nhân</a>
+      </nav>
+    </div>
+
+    <div class="pf-topbar-right">
+      <a id="pf-back-home-btn" href="home.html" class="btn">← Quay lại</a>
+      <button id="btn-pf-logout" type="button" class="btn btn-danger-outline">Đăng xuất</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main id="profile-main" class="pf-container">
+    <div class="pf-header">
+      <div>
+        <h1 class="pf-title">Hồ sơ cá nhân &amp; Bảo mật</h1>
+        <p class="pf-subtitle">Xem thông tin tài khoản, cập nhật hồ sơ liên hệ và đổi mật khẩu đăng nhập.</p>
+      </div>
+    </div>
+
+    <div class="pf-grid">
+      <!-- LEFT COLUMN: Thông tin tài khoản + Thẻ thư viện (nếu là Độc giả) + Lối tắt -->
+      <div>
+        <section class="pf-card">
+          <div class="pf-card-body">
+            <div class="identity-top">
+              <div id="pf-avatar" class="identity-avatar">?</div>
+              <h2 id="pf-display-name" class="identity-name">Đang tải...</h2>
+              <div class="identity-badges">
+                <span id="pf-role-pill" class="role-pill">—</span>
+                <span id="pf-status-pill" class="status-pill status-active">ACTIVE</span>
+              </div>
+            </div>
+
+            <div class="meta-list">
+              <div class="meta-row">
+                <span class="meta-label">Mã tài khoản</span>
+                <span id="pf-meta-id" class="meta-value meta-mono">—</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Email</span>
+                <span id="pf-meta-email" class="meta-value">—</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Số điện thoại</span>
+                <span id="pf-meta-phone" class="meta-value meta-mono">—</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Ngày tạo</span>
+                <span id="pf-meta-created" class="meta-value">—</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Thẻ thư viện (chỉ hiển thị với tài khoản Độc giả có thẻ) -->
+        <section id="pf-card-section" class="pf-card" hidden>
+          <div class="pf-card-head">
+            <h3 class="pf-card-title">🪪 Thẻ thư viện của tôi</h3>
+            <span id="pf-card-status-pill" class="status-pill status-active">ACTIVE</span>
+          </div>
+          <div class="pf-card-body">
+            <div class="mini-id-card">
+              <div class="mini-id-top">
+                <span>THƯ VIỆN SỐ UNILIB KS25</span>
+                <span id="pf-card-type">STANDARD</span>
+              </div>
+              <div id="pf-card-code" class="mini-id-code">LC-0000</div>
+              <div class="mini-id-grid">
+                <div>
+                  <span class="mini-id-lbl">Ngày cấp</span>
+                  <span id="pf-card-issue" class="mini-id-val">--/--/----</span>
+                </div>
+                <div>
+                  <span class="mini-id-lbl">Hạn sử dụng</span>
+                  <span id="pf-card-expiry" class="mini-id-val">--/--/----</span>
+                </div>
+                <div>
+                  <span class="mini-id-lbl">Hạn mức mượn</span>
+                  <span id="pf-card-limit" class="mini-id-val">5 cuốn</span>
+                </div>
+                <div>
+                  <span class="mini-id-lbl">Trạng thái</span>
+                  <span id="pf-card-status-text" class="mini-id-val">HOẠT ĐỘNG</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Lối tắt nhanh theo vai trò -->
+        <section class="pf-card">
+          <div class="pf-card-head">
+            <h3 class="pf-card-title">🧭 Điều hướng nhanh</h3>
+          </div>
+          <div class="pf-card-body">
+            <div id="pf-shortcuts" class="shortcut-list"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN: Form Sửa hồ sơ + Form Đổi mật khẩu -->
+      <div>
+        <!-- CARD 1: CẬP NHẬT HỒ SƠ CÁ NHÂN -->
+        <section class="pf-card">
+          <div class="pf-card-head">
+            <h2 class="pf-card-title">✏️ Thông tin hồ sơ cá nhân</h2>
+          </div>
+          <div class="pf-card-body">
+            <div id="profile-alert" class="inline-alert"></div>
+
+            <form id="profile-edit-form">
+              <div class="form-field">
+                <label for="input-full-name">Họ và tên *</label>
+                <input id="input-full-name" type="text" required minlength="1" maxlength="255" placeholder="Nhập họ và tên đầy đủ...">
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label for="input-email">Địa chỉ Email *</label>
+                  <input id="input-email" type="email" required placeholder="email@library.com">
+                </div>
+
+                <div class="form-field">
+                  <label for="input-phone">Số điện thoại liên hệ</label>
+                  <input id="input-phone" type="tel" maxlength="20" placeholder="VD: 0912345678">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label for="input-role-readonly">Vai trò tài khoản</label>
+                  <input id="input-role-readonly" type="text" readonly>
+                </div>
+
+                <div class="form-field">
+                  <label for="input-status-readonly">Trạng thái tài khoản</label>
+                  <input id="input-status-readonly" type="text" readonly>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button id="btn-reset-profile" type="button" class="btn">Hoàn tác</button>
+                <button id="btn-save-profile" type="submit" class="btn btn-primary">Lưu thay đổi hồ sơ</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- CARD 2: ĐỔI MẬT KHẨU (KIỂM TRA MẬT KHẨU CŨ) -->
+        <section class="pf-card">
+          <div class="pf-card-head">
+            <h2 class="pf-card-title">🔐 Đổi mật khẩu đăng nhập</h2>
+          </div>
+          <div class="pf-card-body">
+            <div id="password-alert" class="inline-alert"></div>
+
+            <form id="change-password-form">
+              <div class="form-field">
+                <label for="input-old-password">Mật khẩu hiện tại (Mật khẩu cũ) *</label>
+                <div class="password-wrap">
+                  <input id="input-old-password" type="password" required autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại để xác minh...">
+                  <button type="button" class="pw-eye-btn" data-toggle-pw="input-old-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label for="input-new-password">Mật khẩu mới *</label>
+                  <div class="password-wrap">
+                    <input id="input-new-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự...">
+                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-new-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                  </div>
+                  <div class="pw-strength-bar"><div id="pw-strength-fill" class="pw-strength-fill"></div></div>
+                  <div id="pw-strength-text" class="form-hint">Nên kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+                </div>
+
+                <div class="form-field">
+                  <label for="input-confirm-password">Xác nhận mật khẩu mới *</label>
+                  <div class="password-wrap">
+                    <input id="input-confirm-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới...">
+                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-confirm-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button id="btn-submit-password" type="submit" class="btn btn-primary">Cập nhật mật khẩu mới</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="pf-footer">
+    <div>© 2026 UniLib / KS25 Library System · Hồ sơ cá nhân &amp; Bảo mật tài khoản</div>
+    <div>Mật khẩu được mã hoá an toàn bằng bcrypt</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/profile.js"></script>
+</body>
+</html>

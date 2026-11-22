@@ -3,102 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản trị Nhân sự & Phân quyền | KS25 Library</title>
+  <title>Quản lý Tài khoản Thủ thư (Admin) | UniLib KS25</title>
   <link rel="icon" href="../assets/images/logo.svg">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/readers.css">
 </head>
-<!--
-  data-layout="staff" -> Dùng Sidebar trái + Header quản trị
-  data-roles="ADMIN"  -> CHỈ CHO PHÉP ADMIN (Thủ thư và Độc giả vào sẽ bị chặn 403)
--->
-<body data-root="../" data-layout="staff" data-roles="ADMIN" data-title="Quản trị Nhân sự & Phân quyền (ADMIN ONLY)">
-  <header id="app-header"></header>
+<body class="readers-app">
 
-  <main class="container">
-    <section class="card">
-      <div class="list-header">
-        <div>
-          <h2>🛡️ Khu vực Quản trị Hệ thống (Chỉ dành cho ADMIN)</h2>
-          <p class="muted" style="margin-bottom: 0;">
-            Trang này được gắn thuộc tính <code>data-roles="ADMIN"</code>. Nếu đăng nhập bằng tài khoản Thủ thư (<code>LIBRARIAN</code>) hoặc Độc giả (<code>READER</code>), hệ thống sẽ tự động chặn bằng màn hình <strong>HTTP 403 Forbidden</strong>.
-          </p>
+  <!-- 1. TOP HEADER BAR -->
+  <header class="ul-topbar">
+    <div class="ul-topbar-left">
+      <button id="btn-mobile-sidebar" type="button" class="ul-icon-btn ul-mobile-toggle" title="Menu">☰</button>
+      <a href="home.html" class="ul-brand">
+        <div class="ul-brand-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
         </div>
-        <span class="badge badge-available">Quyền: ADMIN</span>
-      </div>
-    </section>
+        <div>
+          <span class="ul-brand-name">UniLib</span>
+          <span class="ul-brand-sub">Quản trị hệ thống</span>
+        </div>
+      </a>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Quản trị viên (ADMIN)</div>
-        <div class="stat-value">1</div>
-        <div class="stat-sub">Toàn quyền cấu hình hệ thống</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Thủ thư (LIBRARIAN)</div>
-        <div class="stat-value">2</div>
-        <div class="stat-sub">Quản lý sách, mượn trả & thu phạt</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Độc giả (READER)</div>
-        <div class="stat-value">20+</div>
-        <div class="stat-sub">Tra cứu & gửi yêu cầu mượn online</div>
-      </div>
+      <nav class="ul-topnav">
+        <a href="home.html">Trang chủ</a>
+        <a href="catalog.html">Tra cứu sách</a>
+        <a href="readers.html">Độc giả &amp; Thẻ</a>
+        <a href="admin-users.html" class="active">Quản lý Thủ thư</a>
+      </nav>
     </div>
 
-    <section class="card">
-      <h2>Danh sách tài khoản mẫu trong hệ thống</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Họ và tên</th>
-              <th>Vai trò (Role)</th>
-              <th>Mật khẩu mẫu</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="code-mono">admin@library.com</span></td>
-              <td><strong>Quản Trị Viên</strong></td>
-              <td><span class="badge badge-available">ADMIN</span></td>
-              <td><span class="code-mono">Admin@123</span></td>
-              <td><span class="badge badge-available">ACTIVE</span></td>
-            </tr>
-            <tr>
-              <td><span class="code-mono">thuthu1@library.com</span></td>
-              <td><strong>Thủ Thư 1</strong></td>
-              <td><span class="badge badge-borrowed">LIBRARIAN</span></td>
-              <td><span class="code-mono">Thuthu@123</span></td>
-              <td><span class="badge badge-available">ACTIVE</span></td>
-            </tr>
-            <tr>
-              <td><span class="code-mono">docgia01@library.com</span></td>
-              <td><strong>Nguyễn Văn An (Thẻ LC-0001)</strong></td>
-              <td><span class="badge badge-reserved">READER</span></td>
-              <td><span class="code-mono">Docgia@123</span></td>
-              <td><span class="badge badge-available">ACTIVE</span></td>
-            </tr>
-            <tr>
-              <td><span class="code-mono">docgia20@library.com</span></td>
-              <td><strong>Tạ Thị Yến (Tài khoản bị khóa)</strong></td>
-              <td><span class="badge badge-reserved">READER</span></td>
-              <td><span class="code-mono">Docgia@123</span></td>
-              <td><span class="badge badge-danger">LOCKED</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+    <div class="ul-topbar-right">
+      <a href="profile.html" class="ul-staff-chip" style="text-decoration:none; color:inherit;" title="Xem hồ sơ cá nhân & đổi mật khẩu">
+        <div id="top-admin-avatar" class="ul-avatar-sm">A</div>
+        <div>
+          <span id="top-admin-name" class="ul-staff-name">Quản trị viên</span>
+          <span id="top-admin-role" class="ul-staff-role">ADMIN</span>
+        </div>
+      </a>
 
-  <footer id="app-footer"></footer>
+      <button id="btn-top-logout" type="button" class="ul-icon-btn" title="Đăng xuất">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. APP SHELL -->
+  <div class="ul-shell">
+    <aside id="ul-sidebar" class="ul-sidebar">
+      <div class="ul-sidebar-inner">
+        <div class="ul-sidebar-heading">Phân hệ Quản trị</div>
+        <a href="staff-dashboard.html" class="ul-side-link">📊 Tổng quan &amp; Thống kê</a>
+        <a href="books.html" class="ul-side-link">📚 Quản lý Đầu sách &amp; Bản sao</a>
+        <a href="borrow_on_site.html" class="ul-side-link">📖 Mượn sách tại quầy</a>
+        <a href="returns.html" class="ul-side-link">↩ Trả sách tại quầy</a>
+        <a href="fines.html" class="ul-side-link">💰 Xử lý tiền phạt</a>
+        <a href="readers.html" class="ul-side-link">🪪 Độc giả &amp; Thẻ thư viện</a>
+
+        <hr class="ul-side-divider">
+
+        <a href="admin-users.html" class="ul-side-link active">🛡️ Quản lý tài khoản Thủ thư</a>
+        <a href="profile.html" class="ul-side-link">👤 Hồ sơ &amp; Đổi mật khẩu</a>
+      </div>
+
+      <div class="ul-sidebar-footer">
+        <span class="server-dot"></span>
+        <span>Quyền: ADMIN ONLY</span>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <div class="ul-workspace">
+      <main id="admin-users-main" class="ul-content">
+        <div class="page-head-row">
+          <div>
+            <h1 class="page-title">Quản lý Tài khoản Thủ thư</h1>
+            <p class="page-subtitle">Quản trị viên tạo mới, chỉnh sửa thông tin, đặt lại mật khẩu và khóa/mở khóa tài khoản Thủ thư.</p>
+          </div>
+          <div class="page-head-actions">
+            <a href="profile.html" class="btn">👤 Hồ sơ cá nhân</a>
+            <button id="btn-open-create-lib" type="button" class="btn btn-primary">👤+ Tạo tài khoản thủ thư</button>
+          </div>
+        </div>
+
+        <!-- 3 KPI Cards -->
+        <div class="kpi-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Tổng tài khoản Thủ thư</span>
+              <span class="kpi-icon kpi-icon-neutral">👥</span>
+            </div>
+            <div id="kpi-lib-total" class="kpi-value">—</div>
+            <div class="kpi-sub">Nhân sự phân hệ Thủ thư</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Đang hoạt động (ACTIVE)</span>
+              <span class="kpi-icon kpi-icon-green">✔</span>
+            </div>
+            <div id="kpi-lib-active" class="kpi-value" style="color: var(--primary);">—</div>
+            <div class="kpi-sub" style="color: var(--success);">• Có quyền đăng nhập &amp; tác nghiệp</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Đang bị khóa (LOCKED)</span>
+              <span class="kpi-icon kpi-icon-red">🔒</span>
+            </div>
+            <div id="kpi-lib-locked" class="kpi-value" style="color: var(--danger);">—</div>
+            <div class="kpi-sub" style="color: var(--danger);">⚠ Đã chặn đăng nhập &amp; vô hiệu hóa phiên</div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div class="filter-card">
+          <form id="librarians-filter-form" class="filter-row" style="grid-template-columns: 2fr 1fr auto auto;">
+            <div class="search-field-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input id="lib-search-input" type="search" placeholder="Tìm thủ thư theo họ tên, email, số điện thoại...">
+            </div>
+
+            <select id="lib-status-filter" class="filter-select">
+              <option value="">Tất cả trạng thái</option>
+              <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
+              <option value="LOCKED">Đã khóa (LOCKED)</option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+            <button id="btn-reset-lib-filter" type="button" class="ul-icon-btn" style="height:40px; width:40px;" title="Làm mới">↻</button>
+          </form>
+        </div>
+
+        <!-- Librarians Table -->
+        <section class="panel-card">
+          <div class="panel-head">
+            <h2 class="panel-title">🛡️ Danh sách tài khoản Thủ thư</h2>
+            <span id="lib-count-badge" class="panel-meta">0 tài khoản</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="readers-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Thông tin Thủ thư</th>
+                  <th>Số điện thoại</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th style="text-align:right;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="librarians-tbody">
+                <tr>
+                  <td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">
+                    Đang tải danh sách tài khoản thủ thư...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <footer class="ul-footer">
+        <div>© 2026 UniLib MVP · Phân hệ Quản trị Nhân sự Thủ thư (ADMIN)</div>
+        <div><a href="profile.html" style="color:var(--primary); text-decoration:none; font-weight:600;">Hồ sơ cá nhân &amp; Đổi mật khẩu →</a></div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 1: TẠO TÀI KHOẢN THỦ THƯ MỚI ==================== -->
+  <div id="modal-create-lib" class="modal-backdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3>👤+ Tạo tài khoản Thủ thư mới</h3>
+        <button type="button" class="modal-close" data-close="modal-create-lib">✕</button>
+      </div>
+      <form id="create-lib-form">
+        <div class="form-field">
+          <label for="create-lib-name">Họ và tên thủ thư *</label>
+          <input id="create-lib-name" type="text" required minlength="1" maxlength="255" placeholder="VD: Trần Thị Lan">
+        </div>
+        <div class="form-field">
+          <label for="create-lib-email">Địa chỉ Email đăng nhập *</label>
+          <input id="create-lib-email" type="email" required placeholder="VD: thuthu3@library.com">
+        </div>
+        <div class="form-field">
+          <label for="create-lib-phone">Số điện thoại</label>
+          <input id="create-lib-phone" type="tel" maxlength="20" placeholder="VD: 0909888777">
+        </div>
+        <div class="form-field">
+          <label for="create-lib-password">Mật khẩu khởi tạo (tối thiểu 8 ký tự) *</label>
+          <input id="create-lib-password" type="text" required minlength="8" maxlength="72" value="Thuthu@123">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button type="button" class="btn" data-close="modal-create-lib">Huỷ</button>
+          <button id="btn-submit-create-lib" type="submit" class="btn btn-primary">Tạo tài khoản Thủ thư →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: SỬA TÀI KHOẢN THỦ THƯ ==================== -->
+  <div id="modal-edit-lib" class="modal-backdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3>✏️ Chỉnh sửa tài khoản Thủ thư</h3>
+        <button type="button" class="modal-close" data-close="modal-edit-lib">✕</button>
+      </div>
+      <form id="edit-lib-form">
+        <input type="hidden" id="edit-lib-id">
+        <div class="form-field">
+          <label for="edit-lib-name">Họ và tên *</label>
+          <input id="edit-lib-name" type="text" required minlength="1" maxlength="255">
+        </div>
+        <div class="form-field">
+          <label for="edit-lib-email">Địa chỉ Email *</label>
+          <input id="edit-lib-email" type="email" required>
+        </div>
+        <div class="form-field">
+          <label for="edit-lib-phone">Số điện thoại</label>
+          <input id="edit-lib-phone" type="tel" maxlength="20" placeholder="VD: 0909888777">
+        </div>
+        <div class="form-field">
+          <label for="edit-lib-password">Đặt lại mật khẩu mới (để trống nếu giữ nguyên)</label>
+          <input id="edit-lib-password" type="password" minlength="8" maxlength="72" placeholder="Nhập tối thiểu 8 ký tự để đặt lại mật khẩu...">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button type="button" class="btn" data-close="modal-edit-lib">Huỷ</button>
+          <button id="btn-submit-edit-lib" type="submit" class="btn btn-primary">Lưu thay đổi →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: XÁC NHẬN KHOÁ / MỞ KHOÁ TÀI KHOẢN ==================== -->
+  <div id="modal-toggle-lib" class="modal-backdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3 id="toggle-lib-title">🔒 Khóa tài khoản Thủ thư</h3>
+        <button type="button" class="modal-close" data-close="modal-toggle-lib">✕</button>
+      </div>
+      <p id="toggle-lib-desc" style="font-size:14px; color:var(--text-sec); line-height:1.6; margin:0 0 18px;"></p>
+      <input type="hidden" id="toggle-lib-id">
+      <input type="hidden" id="toggle-lib-action">
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn" data-close="modal-toggle-lib">Huỷ</button>
+        <button id="btn-confirm-toggle-lib" type="button" class="btn btn-soft-danger">Xác nhận</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
-  <script src="../js/layout.js"></script>
+  <script src="../js/pages/admin-users.js"></script>
 </body>
 </html>

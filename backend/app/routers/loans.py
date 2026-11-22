@@ -1,3 +1,4 @@
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -24,6 +25,7 @@ from app.crud.loan_service import (
     validate_counter_borrow,
 )
 from app.db.session import get_db
+from app.services.email_service import send_overdue_reminder_email
 from app.schemas.loan import (
     CopyLookupResponse,
     CounterBorrowCreateRequest,
@@ -317,25 +319,61 @@ def mark_all_read(
 def remind_reader(
     loan_id: int,
     data: RemindLoanRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
-    Thủ thư gửi thông báo in-app nhắc trả sách quá hạn cho độc giả của phiếu mượn.
+    Thủ thư gửi thông báo in-app + email SMTP chạy nền nhắc trả sách quá hạn cho độc giả.
     """
-    return remind_overdue_loan(
+    result = remind_overdue_loan(
         db,
         loan_id=loan_id,
         librarian_id=data.librarian_id,
         custom_message=data.message,
     )
+    # Tích hợp gửi Email chạy nền qua FastAPI BackgroundTasks (Task T3D003D)
+    overdue_items = get_overdue_loans(db, user_id=result["user_id"]).get("items", [])
+    matched = [i for i in overdue_items if i["loan_id"] == loan_id]
+    if result.get("reader_email") and matched:
+        first = matched[0]
+        background_tasks.add_task(
+            send_overdue_reminder_email,
+            to_email=result["reader_email"],
+            reader_name=result["reader_name"],
+            loan_code=first["loan_code"],
+            book_title=first["book_title"],
+            due_date=first["due_date"],
+            days_overdue=first["days_overdue"],
+            estimated_fine=first["estimated_fine"],
+        )
+    return result
 
 
 @router.post("/remind-all-overdue")
 def remind_all(
+    background_tasks: BackgroundTasks,
     librarian_id: int | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
     """
-    Thủ thư gửi thông báo in-app nhắc nhở hàng loạt đến tất cả độc giả đang có sách quá hạn.
+    Thủ thư gửi thông báo in-app + email SMTP hàng loạt chạy nền đến tất cả độc giả quá hạn.
     """
-    return remind_all_overdue(db, librarian_id=librarian_id)
+    result = remind_all_overdue(db, librarian_id=librarian_id)
+    overdue_items = get_overdue_loans(db, limit=500).get("items", [])
+    queued_emails = 0
+    for item in overdue_items:
+        if item.get("reader_email"):
+            background_tasks.add_task(
+                send_overdue_reminder_email,
+                to_email=item["reader_email"],
+                reader_name=item["reader_name"],
+                loan_code=item["loan_code"],
+                book_title=item["book_title"],
+                due_date=item["due_date"],
+                days_overdue=item["days_overdue"],
+                estimated_fine=item["estimated_fine"],
+            )
+            queued_emails += 1
+    result["queued_emails"] = queued_emails
+    return result
+

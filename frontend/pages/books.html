@@ -787,6 +787,60 @@
         </div>
     </div>
 
+    <!-- ==========================================================================
+       MODAL 3: XÁC NHẬN XÓA / ẨN ĐẦU SÁCH (ACADEMIC MINIMALIST CONFIRMATION MODAL)
+       ========================================================================== -->
+    <div id="deleteModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+        <div class="delete-modal-box">
+            <!-- Modal Header -->
+            <div class="delete-modal-header">
+                <div class="delete-modal-icon-badge">
+                    <span class="material-symbols-outlined">delete</span>
+                </div>
+                <div class="delete-modal-header-text">
+                    <h2 id="deleteModalTitle" class="delete-modal-title">Xác nhận xóa đầu sách</h2>
+                    <p class="delete-modal-subtitle">Thao tác này sẽ ẩn đầu sách khỏi danh mục tra cứu công khai.</p>
+                </div>
+                <button id="closeDeleteModalBtn" type="button" class="btn-icon-close" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body: Card tóm tắt sách cần xóa -->
+            <div class="delete-modal-body">
+                <div class="delete-book-card">
+                    <img id="deleteModalCover" src="" alt="Bìa sách" class="delete-book-cover" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
+                    <div class="delete-book-info">
+                        <h3 id="deleteModalBookTitle" class="delete-book-heading">Tên đầu sách</h3>
+                        <div class="delete-book-meta">
+                            <span class="delete-book-badge font-mono" id="deleteModalIsbn">ISBN: ---</span>
+                            <span class="meta-dot">•</span>
+                            <span id="deleteModalCopies" class="delete-book-copies">0 bản sao</span>
+                        </div>
+                        <div id="deleteModalAuthor" class="delete-book-author">Tác giả: ---</div>
+                    </div>
+                </div>
+
+                <!-- Thông báo lưu ý nhẹ nhàng -->
+                <div class="delete-modal-warning">
+                    <span class="material-symbols-outlined delete-warning-icon">info</span>
+                    <div class="delete-warning-text">
+                        <strong>Lưu ý:</strong> Hệ thống áp dụng cơ chế <em>Soft Delete (Ẩn đầu sách)</em> để bảo toàn lịch sử mượn trả và dữ liệu thống kê của thư viện.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="delete-modal-footer">
+                <button id="cancelDeleteModalBtn" type="button" class="btn-modal-cancel">Hủy bỏ</button>
+                <button id="confirmDeleteModalBtn" type="button" class="btn-modal-delete-confirm">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>Xác nhận xóa</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-box" class="toast-box"></div>
 

@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.schemas.book_copy import BookCopiesCreate
+from app.schemas.book_copy import BookCopiesCreate, BookCopyUpdate
 from app.models.BookCopy import BookCopy
 from app.models.Book import Book
 from app.crud.copy_status_log import change_copy_status
@@ -16,7 +16,26 @@ def create_copy(book_copies: BookCopiesCreate, db: Session):
     if book is None:
         return "Book not found"
 
-    codes = [c.copy_code.strip() for c in book_copies.copies]
+    existing_count = db.query(BookCopy).filter(BookCopy.book_isbn == book.isbn).count()
+    new_copies = []
+    codes = []
+    
+    for i, copy in enumerate(book_copies.copies):
+        code = copy.copy_code.strip() if copy.copy_code else ""
+        if not code:
+            seq = existing_count + i + 1
+            code = f"BC-{book.isbn}-{seq:02d}"
+            # Đảm bảo mã sinh ra không bị trùng
+            while db.query(BookCopy).filter(BookCopy.copy_code == code).first():
+                seq += 1
+                code = f"BC-{book.isbn}-{seq:02d}"
+        codes.append(code)
+        
+        copy_dict = copy.model_dump()
+        copy_dict["copy_code"] = code
+        new_book_copy = BookCopy(book_isbn=book.isbn, **copy_dict)
+        new_copies.append(new_book_copy)
+
     if len(codes) != len(set(codes)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -29,11 +48,6 @@ def create_copy(book_copies: BookCopiesCreate, db: Session):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Mã bản sao '{existing[0]}' đã tồn tại trong hệ thống",
         )
-
-    new_copies = []
-    for copy in book_copies.copies:
-        new_book_copie = BookCopy(book_isbn=book.isbn, **copy.model_dump())
-        new_copies.append(new_book_copie)
 
     db.add_all(new_copies)
     db.commit()
@@ -106,3 +120,24 @@ def get_copy_history(db: Session, book_copy_id: int):
         CopyStatusLog.changed_at.asc(),
         CopyStatusLog.id.asc()
     ).all()
+
+
+def update_book_copy(db: Session, book_copy_id: int, data: BookCopyUpdate):
+    copy = db.query(BookCopy).filter(BookCopy.id == book_copy_id).first()
+    if not copy:
+        return None
+    if data.status is not None and data.status != copy.status:
+        change_copy_status(
+            db=db,
+            book_copy_id=book_copy_id,
+            new_status=data.status,
+            reason="Cập nhật trạng thái từ thủ thư",
+            auto_commit=False
+        )
+    if data.shelf_location is not None:
+        copy.shelf_location = data.shelf_location
+    if data.condition is not None:
+        copy.condition = data.condition
+    db.commit()
+    db.refresh(copy)
+    return copy

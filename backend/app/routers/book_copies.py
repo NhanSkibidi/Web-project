@@ -2,9 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.dependencies import require_librarian
 from app.db.session import get_db
-from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse, CopyStatusChangeRequest
+from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse, BookCopyUpdate, CopyStatusChangeRequest
 from app.schemas.copy_status_log import CopyStatusLogResponse
-from app.crud.book_copies import create_copy, get_book_copies, get_copy_by_code, dispose_copy, report_lost, report_damaged, get_copy_history
+from app.crud.book_copies import (
+    create_copy,
+    get_book_copies,
+    get_copy_by_code,
+    dispose_copy,
+    report_lost,
+    report_damaged,
+    get_copy_history,
+    update_book_copy,
+)
 
 router = APIRouter(prefix="/book_copies", tags=["BookCopies"])
 
@@ -90,3 +99,18 @@ def get_copy_history_api(
         db=db,
         book_copy_id=book_copy_id
     )
+
+
+@router.put("/{book_copy_id}", response_model=BookCopyResponse, dependencies=[Depends(require_librarian)])
+def update_book_copy_api(
+    book_copy_id: int,
+    data: BookCopyUpdate,
+    db: Session = Depends(get_db)
+):
+    updated = update_book_copy(db=db, book_copy_id=book_copy_id, data=data)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy bản sao sách"
+        )
+    return updated

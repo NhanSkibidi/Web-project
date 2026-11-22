@@ -305,34 +305,34 @@
         <div class="stats-cards-grid">
           <div class="stat-box-card">
             <div class="stat-box-top">
-              <span style="color:#F59E0B;">★</span>
-              <span><span id="statRating">4.8</span> <span style="font-size:12px; color:var(--color-muted); font-weight:500;">/5</span></span>
+              <span>📚</span>
+              <span id="statTotalCopies">0</span>
             </div>
-            <div class="stat-box-sub" id="statReviewCount">38 nhận xét học thuật</div>
+            <div class="stat-box-sub">Tổng số bản sao</div>
           </div>
 
           <div class="stat-box-card">
             <div class="stat-box-top">
-              <span>📖</span>
-              <span id="statBorrowCount">142</span>
+              <span style="color:#10B981;">✅</span>
+              <span id="statAvailCopies">0</span>
             </div>
-            <div class="stat-box-sub">Lượt mượn trong kỳ</div>
+            <div class="stat-box-sub">Khả dụng trong kho</div>
           </div>
 
           <div class="stat-box-card">
             <div class="stat-box-top">
-              <span style="color:#10B981;">🔄</span>
-              <span id="statEdition">Lần 3</span>
+              <span style="color:#3B82F6;">📖</span>
+              <span id="statBorrowedCopies">0</span>
             </div>
-            <div class="stat-box-sub" id="statEditionSub">Tái bản có chỉnh lý</div>
+            <div class="stat-box-sub">Đang được mượn</div>
           </div>
 
           <div class="stat-box-card">
             <div class="stat-box-top">
-              <span>📅</span>
-              <span style="font-size:14.5px;" id="statImportDate">15/08/2023</span>
+              <span style="color:#EF4444;">⚠️</span>
+              <span id="statDamagedLostCopies">0</span>
             </div>
-            <div class="stat-box-sub">Ngày nhập kho</div>
+            <div class="stat-box-sub">Bản sao mất / hỏng</div>
           </div>
         </div>
 
@@ -345,7 +345,12 @@
           <button type="button" class="tab-nav-btn" onclick="switchDetailTab('copies', this)">
             <span>📦</span>
             <span>Danh sách bản sao vật lý</span>
-            <span class="tab-pill-count" id="tabCopiesCount">8</span>
+            <span class="tab-pill-count" id="tabCopiesCount">0</span>
+          </button>
+          <button type="button" class="tab-nav-btn" onclick="switchDetailTab('loans', this)">
+            <span>📋</span>
+            <span>Lịch sử mượn trả</span>
+            <span class="tab-pill-count" id="tabLoansCount">0</span>
           </button>
           <button type="button" class="tab-nav-btn" onclick="switchDetailTab('reviews', this)">
             <span>💬</span>
@@ -384,6 +389,34 @@
             <p style="color:var(--color-text-sub); font-size:14px; margin-bottom:14px;">
               "Sách viết rất rõ ràng, ví dụ trực quan về Red-Black Tree và Đồ thị giúp mình qua môn Giải thuật điểm A!" – <em>Trần Hoàng Long (K24 CNTT)</em>
             </p>
+          </div>
+        </div>
+
+        <!-- TAB 3: LỊCH SỬ MƯỢN TRẢ (Task D) -->
+        <div id="tab-pane-loans" class="tab-pane-content">
+          <div class="summary-card">
+            <h4 class="summary-title">
+              <span>📋</span>
+              <span>Lịch sử mượn trả của đầu sách</span>
+            </h4>
+            <div class="copies-table-wrap" style="margin-top: 14px;">
+              <table class="copies-table">
+                <thead>
+                  <tr>
+                    <th>MÃ PHIẾU</th>
+                    <th>NGƯỜI MƯỢN</th>
+                    <th>MÃ BẢN SAO</th>
+                    <th>NGÀY MƯỢN</th>
+                    <th>HẠN TRẢ</th>
+                    <th>NGÀY TRẢ</th>
+                    <th style="text-align: right;">TRẠNG THÁI</th>
+                  </tr>
+                </thead>
+                <tbody id="loanHistoryTableBody">
+                  <tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--color-muted);">Chưa có lượt mượn nào được ghi nhận.</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 

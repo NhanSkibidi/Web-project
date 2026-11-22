@@ -70,6 +70,11 @@ const STAFF_SIDEBAR_GROUPS = [
     group: "Độc Giả & Vi Phạm",
     items: [
       {
+        href: "pages/readers.html",
+        label: "Độc giả & Thẻ thư viện",
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>`,
+      },
+      {
         href: "pages/fines.html",
         label: "Xử lý tiền phạt",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
@@ -161,7 +166,7 @@ function checkPageAccess() {
           </div>
           <div class="guard-actions">
             <a href="${root}pages/login.html#login" class="btn btn-primary">Đăng nhập ngay →</a>
-            <a href="${root}index.html" class="btn">Về Trang chủ</a>
+            <a href="${root}pages/home.html" class="btn">Về Trang chủ</a>
           </div>
         </div>
       </div>
@@ -232,7 +237,7 @@ function renderReaderLayout() {
 
   if (headerEl) {
     const isHome = currentPath.endsWith("/index.html") || currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
-    const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/books.html");
+    const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/catalog.html") || currentPath.endsWith("/books.html");
     const isLoanSlip = currentPath.endsWith("/loan_slip.html");
 
     // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
@@ -402,7 +407,7 @@ function renderReaderLayout() {
       <div class="container footer-inner">
         <div>© ${new Date().getFullYear()} <strong>KS25 Library System</strong> · Đồ án thực tập CNTT (HN-KS25-CNTT1)</div>
         <div class="footer-links">
-          <a href="${root}index.html">Cổng Độc giả</a>
+          <a href="${root}pages/home.html">Cổng Độc giả</a>
           <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
           <a href="${root}pages/auth.html">Tài khoản & Thẻ</a>
           <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>
@@ -598,6 +603,16 @@ function initLayout() {
     renderStaffLayout();
   } else {
     renderReaderLayout();
+  }
+
+  // Tự động kích hoạt chuông thông báo in-app (Task T3CFF48)
+  if (window.unilibNotifications && window.unilibNotifications.load) {
+    window.unilibNotifications.load();
+  } else if (!document.querySelector('script[src*="notifications.js"]')) {
+    const s = document.createElement("script");
+    s.src = `${document.body.dataset.root || ""}js/notifications.js`;
+    s.defer = true;
+    document.body.appendChild(s);
   }
 
   // Kiểm tra quyền truy cập trang theo data-roles

@@ -1702,6 +1702,50 @@
         // 4. Export Excel
         if (dom.btnExportExcel) dom.btnExportExcel.addEventListener("click", exportToExcel);
 
+        // 5. Mobile Sidebar Drawer Toggle
+        const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
+        const btnCloseSidebar = document.getElementById("btn-close-sidebar");
+        const appSidebar = document.getElementById("app-sidebar");
+        const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+
+        function openMobileSidebar() {
+            if (appSidebar) appSidebar.classList.add("mobile-open");
+            if (sidebarBackdrop) sidebarBackdrop.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeMobileSidebar() {
+            if (appSidebar) appSidebar.classList.remove("mobile-open");
+            if (sidebarBackdrop) sidebarBackdrop.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+
+        if (btnToggleSidebar) {
+            btnToggleSidebar.addEventListener("click", () => {
+                if (appSidebar && appSidebar.classList.contains("mobile-open")) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            });
+        }
+
+        if (btnCloseSidebar) {
+            btnCloseSidebar.addEventListener("click", closeMobileSidebar);
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+        }
+
+        document.querySelectorAll(".sidebar-rail-link").forEach(link => {
+            link.addEventListener("click", () => {
+                if (window.innerWidth <= 900) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+
         // Modal backdrops click to close
         window.addEventListener("click", (e) => {
             if (e.target === dom.bookModalBackdrop) closeBookModal();

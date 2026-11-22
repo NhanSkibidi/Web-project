@@ -13,6 +13,7 @@ from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.fine import Fine
 from app.models.reservation import Reservation
+from app.models.notification import Notification
 from app.crud.copy_status_log import change_copy_status
 
 MAX_BORROW_BOOKS = 5       
@@ -131,12 +132,6 @@ def create_online_loan(
                 detail="Không được chọn trùng đầu sách",
             )
 
-        if len(book_isbns) > MAX_BORROW_BOOKS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Một lần mượn tối đa {MAX_BORROW_BOOKS} cuốn",
-            )
-
         user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
@@ -162,7 +157,7 @@ def create_online_loan(
         selected_copies: list[BookCopy] = []
 
         for isbn in book_isbns:
-            book = db.query(Book).filter(Book.isbn == isbn).first()
+            book = db.query(Book).filter(Book.isbn == isbn, Book.is_deleted == False).first()  # noqa: E712
 
             if not book:
                 raise HTTPException(
@@ -504,6 +499,89 @@ def handover_loan(
     except Exception:
         db.rollback()
         raise
+
+
+def get_loans_history(
+    db: Session,
+    user_id: int | None = None,
+    status_filter: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    """
+    Lấy danh sách lịch sử mượn trả từ module Mượn (lọc theo user_id và status).
+    Dùng cho trang Chi tiết độc giả, bảng Độc giả & Phiếu mượn của tôi.
+    """
+    query = db.query(Loan).order_by(Loan.id.desc())
+
+    if user_id is not None:
+        query = query.filter(Loan.user_id == user_id)
+
+    if status_filter and status_filter.strip():
+        st = status_filter.strip().upper()
+        try:
+            query = query.filter(Loan.status == LoanStatus(st))
+        except ValueError:
+            return []
+
+    loans = query.limit(limit).all()
+    now = datetime.now()
+    results: list[dict] = []
+
+    for loan in loans:
+        reader = db.query(User).filter(User.id == loan.user_id).first()
+        items_out: list[dict] = []
+
+        for li in loan.loan_items:
+            book = db.query(Book).filter(Book.isbn == li.book_isbn).first()
+            copy = db.query(BookCopy).filter(BookCopy.id == li.copy_id).first() if li.copy_id else None
+
+            eff_due = li.due_date or loan.due_date
+            is_overdue = False
+            overdue_days = 0
+            estimated_fine = 0.0
+
+            if eff_due and li.return_date is None and loan.status == LoanStatus.BORROWED:
+                if now.date() > eff_due.date():
+                    is_overdue = True
+                    overdue_days = (now.date() - eff_due.date()).days
+                    estimated_fine = float(overdue_days * 2000)
+            elif eff_due and li.return_date is not None:
+                if li.return_date.date() > eff_due.date():
+                    is_overdue = True
+                    overdue_days = (li.return_date.date() - eff_due.date()).days
+                    estimated_fine = float(overdue_days * 2000)
+
+            items_out.append({
+                "id": li.id,
+                "loan_id": li.loan_id,
+                "book_isbn": li.book_isbn,
+                "book_title": book.title if book else li.book_isbn,
+                "copy_id": li.copy_id,
+                "copy_code": copy.copy_code if copy else None,
+                "due_date": eff_due,
+                "renewal_count": li.renewal_count or 0,
+                "return_date": li.return_date,
+                "is_overdue": is_overdue,
+                "overdue_days": overdue_days,
+                "estimated_fine": estimated_fine,
+            })
+
+        results.append({
+            "id": loan.id,
+            "user_id": loan.user_id,
+            "reader_name": reader.full_name if reader else None,
+            "processed_by": loan.processed_by,
+            "borrow_type": loan.borrow_type.value if hasattr(loan.borrow_type, "value") else str(loan.borrow_type),
+            "status": loan.status.value if hasattr(loan.status, "value") else str(loan.status),
+            "reject_reason": loan.reject_reason,
+            "created_at": loan.created_at,
+            "borrowed_at": loan.borrowed_at,
+            "due_date": loan.due_date,
+            "loan_items": items_out,
+        })
+
+    return results
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 6) Nghiệp vụ mượn sách trực tiếp tại quầy (Counter Borrowing)
@@ -1231,3 +1309,507 @@ def renew_loan(
             status_code=500,
             detail=f"Lỗi hệ thống khi gia hạn phiếu mượn: {str(e)}",
         )
+# ── LOGIC CHO TASK T3CFF48: DANH SÁCH QUÁ HẠN, SẮP ĐẾN HẠN & NHẮC TRẢ ────────
+
+FINE_RATE_PER_DAY = 2000.0  # Quy định KS25: 2.000 đ/cuốn/ngày
+
+
+def _format_time_ago(dt: datetime | None) -> str:
+    """Format thời gian thân thiện (VD: 10 phút trước, 2 giờ trước, Hôm qua)."""
+    if not dt:
+        return "Vừa xong"
+    diff = datetime.now() - dt
+    seconds = int(diff.total_seconds())
+    if seconds < 60:
+        return "Vừa xong"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes} phút trước"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} giờ trước"
+    days = hours // 24
+    if days == 1:
+        return "Hôm qua"
+    if days < 30:
+        return f"{days} ngày trước"
+    return dt.strftime("%d/%m/%Y")
+
+
+def get_overdue_loans(
+    db: Session,
+    user_id: int | None = None,
+    search: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> dict:
+    """
+    Lấy danh sách các cuốn sách / phiếu mượn đang quá hạn.
+    - Trạng thái phiếu: BORROWED.
+    - Cuốn sách chưa trả: return_date IS NULL.
+    - Hạn trả đã qua: due_date < now.
+    - Tính số ngày quá hạn và tiền phạt tạm tính (2.000 đ/ngày).
+    """
+    now = datetime.now()
+
+    query = (
+        db.query(LoanItem, Loan, User, Book, BookCopy, LibraryCard)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .join(User, Loan.user_id == User.id)
+        .outerjoin(Book, LoanItem.book_isbn == Book.isbn)
+        .outerjoin(BookCopy, LoanItem.copy_id == BookCopy.id)
+        .outerjoin(LibraryCard, LibraryCard.reader_id == User.id)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
+            LoanItem.due_date < now,
+        )
+    )
+
+    if user_id:
+        query = query.filter(Loan.user_id == user_id)
+
+    if search:
+        search_term = f"%{search.strip()}%"
+        query = query.filter(
+            (User.full_name.ilike(search_term))
+            | (User.email.ilike(search_term))
+            | (Book.title.ilike(search_term))
+            | (BookCopy.copy_code.ilike(search_term))
+            | (LibraryCard.card_code.ilike(search_term))
+        )
+
+    rows = query.all()
+
+    # Nhóm và tạo danh sách kết quả, loại bỏ duplicate nếu 1 user có nhiều thẻ thư viện
+    seen_item_ids = set()
+    items = []
+    total_fine = 0.0
+
+    for item, loan, user, book, copy, card in rows:
+        if item.id in seen_item_ids:
+            continue
+        seen_item_ids.add(item.id)
+
+        # Tính số ngày quá hạn
+        due_d = item.due_date.date() if item.due_date else now.date()
+        days_overdue = max(1, (now.date() - due_d).days)
+        estimated_fine = float(days_overdue * FINE_RATE_PER_DAY)
+        total_fine += estimated_fine
+
+        # Đếm số lần đã gửi nhắc nhở cho phiếu này
+        remind_count = (
+            db.query(func.count(Notification.id))
+            .filter(
+                Notification.loan_id == loan.id,
+                Notification.type == "REMINDER",
+            )
+            .scalar()
+            or 0
+        )
+
+        last_remind = (
+            db.query(Notification.created_at)
+            .filter(
+                Notification.loan_id == loan.id,
+                Notification.type == "REMINDER",
+            )
+            .order_by(Notification.created_at.desc())
+            .first()
+        )
+        last_reminded_at = last_remind[0].strftime("%d/%m/%Y %H:%M") if last_remind else None
+
+        items.append({
+            "loan_id": loan.id,
+            "loan_code": loan.code,
+            "loan_item_id": item.id,
+            "user_id": user.id,
+            "reader_name": user.full_name,
+            "reader_email": user.email,
+            "reader_phone": user.phone,
+            "card_code": card.card_code if card else f"LIB-{user.id:04d}",
+            "student_id": f"2301{user.id:04d}",
+            "faculty": "Công nghệ Thông tin",
+            "book_isbn": item.book_isbn,
+            "book_title": book.title if book else "Không xác định",
+            "copy_id": item.copy_id,
+            "copy_code": copy.copy_code if copy else None,
+            "borrowed_at": loan.borrowed_at.strftime("%d/%m/%Y %H:%M") if loan.borrowed_at else None,
+            "due_date": item.due_date.strftime("%d/%m/%Y") if item.due_date else "—",
+            "days_overdue": days_overdue,
+            "estimated_fine": estimated_fine,
+            "reminded_count": remind_count,
+            "last_reminded_at": last_reminded_at,
+        })
+
+    # Sắp xếp phiếu quá hạn lâu nhất lên đầu
+    items.sort(key=lambda x: x["days_overdue"], reverse=True)
+
+    total_count = len(items)
+    paged_items = items[skip : skip + limit]
+
+    return {
+        "total": total_count,
+        "total_fine": total_fine,
+        "items": paged_items,
+    }
+
+
+def get_due_soon_loans(
+    db: Session,
+    user_id: int | None = None,
+    days: int = 2,
+    search: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> dict:
+    """
+    Lấy danh sách các cuốn sách / phiếu mượn sắp đến hạn trong vòng `days` ngày (mặc định 2 ngày).
+    - Trạng thái phiếu: BORROWED.
+    - Chưa trả: return_date IS NULL.
+    - Hạn trả trong khoảng [bắt đầu hôm nay, cuối ngày hôm nay + days].
+    """
+    now = datetime.now()
+    today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
+    target_end = today_start + timedelta(days=days + 1)
+
+    query = (
+        db.query(LoanItem, Loan, User, Book, BookCopy, LibraryCard)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .join(User, Loan.user_id == User.id)
+        .outerjoin(Book, LoanItem.book_isbn == Book.isbn)
+        .outerjoin(BookCopy, LoanItem.copy_id == BookCopy.id)
+        .outerjoin(LibraryCard, LibraryCard.reader_id == User.id)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
+            LoanItem.due_date >= today_start,
+            LoanItem.due_date < target_end,
+        )
+    )
+
+    if user_id:
+        query = query.filter(Loan.user_id == user_id)
+
+    if search:
+        search_term = f"%{search.strip()}%"
+        query = query.filter(
+            (User.full_name.ilike(search_term))
+            | (User.email.ilike(search_term))
+            | (Book.title.ilike(search_term))
+            | (BookCopy.copy_code.ilike(search_term))
+            | (LibraryCard.card_code.ilike(search_term))
+        )
+
+    rows = query.all()
+    seen_item_ids = set()
+    items = []
+
+    for item, loan, user, book, copy, card in rows:
+        if item.id in seen_item_ids:
+            continue
+        seen_item_ids.add(item.id)
+
+        due_d = item.due_date.date() if item.due_date else now.date()
+        days_remaining = (due_d - now.date()).days
+
+        if days_remaining <= 0:
+            status_label = "Hôm nay (hết hạn)"
+        elif days_remaining == 1:
+            status_label = "Còn 1 ngày"
+        else:
+            status_label = f"Còn {days_remaining} ngày"
+
+        items.append({
+            "loan_id": loan.id,
+            "loan_code": loan.code,
+            "loan_item_id": item.id,
+            "user_id": user.id,
+            "reader_name": user.full_name,
+            "reader_email": user.email,
+            "reader_phone": user.phone,
+            "card_code": card.card_code if card else f"LIB-{user.id:04d}",
+            "student_id": f"2301{user.id:04d}",
+            "book_isbn": item.book_isbn,
+            "book_title": book.title if book else "Không xác định",
+            "copy_id": item.copy_id,
+            "copy_code": copy.copy_code if copy else None,
+            "borrowed_at": loan.borrowed_at.strftime("%d/%m/%Y %H:%M") if loan.borrowed_at else None,
+            "due_date": item.due_date.strftime("%d/%m/%Y") if item.due_date else "—",
+            "days_remaining": max(0, days_remaining),
+            "status_label": status_label,
+        })
+
+    # Sắp xếp gần hết hạn nhất lên đầu
+    items.sort(key=lambda x: x["days_remaining"])
+
+    total_count = len(items)
+    paged_items = items[skip : skip + limit]
+
+    return {
+        "total": total_count,
+        "items": paged_items,
+    }
+
+
+def sync_and_get_notifications(
+    db: Session,
+    user_id: int | None = None,
+    limit: int = 30,
+) -> dict:
+    """
+    Tự động đồng bộ các thông báo quá hạn / sắp đến hạn và trả về danh sách thông báo in-app.
+    - Quá hạn: tạo notification type='OVERDUE' (báo động đỏ).
+    - Sắp đến hạn: tạo notification type='DUE_SOON' (báo động vàng).
+    """
+    now = datetime.now()
+
+    # 1. Quét sách quá hạn để tạo thông báo nếu chưa có
+    overdue_query = (
+        db.query(LoanItem, Loan, Book)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .outerjoin(Book, LoanItem.book_isbn == Book.isbn)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
+            LoanItem.due_date < now,
+        )
+    )
+    if user_id:
+        overdue_query = overdue_query.filter(Loan.user_id == user_id)
+
+    overdue_items = overdue_query.all()
+    for item, loan, book in overdue_items:
+        # Kiểm tra xem đã có thông báo quá hạn chưa đọc cho item này chưa
+        existing = (
+            db.query(Notification)
+            .filter(
+                Notification.user_id == loan.user_id,
+                Notification.loan_item_id == item.id,
+                Notification.type == "OVERDUE",
+                Notification.is_read.is_(False),
+            )
+            .first()
+        )
+        days_overdue = max(1, (now.date() - item.due_date.date()).days) if item.due_date else 1
+        est_fine = days_overdue * FINE_RATE_PER_DAY
+        b_title = book.title if book else "Sách mượn"
+
+        if not existing:
+            new_notif = Notification(
+                user_id=loan.user_id,
+                loan_id=loan.id,
+                loan_item_id=item.id,
+                title=f"Quá hạn trả: {b_title}",
+                message=f"Phiếu #{loan.code} đã quá hạn {days_overdue} ngày. Tiền phạt tạm tính: {est_fine:,.0f} đ. Vui lòng mang sách tới quầy thư viện để hoàn trả.",
+                type="OVERDUE",
+                is_read=False,
+            )
+            db.add(new_notif)
+
+    # 2. Quét sách sắp đến hạn (trong 2 ngày)
+    today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
+    target_end = today_start + timedelta(days=3)
+    due_soon_query = (
+        db.query(LoanItem, Loan, Book)
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .outerjoin(Book, LoanItem.book_isbn == Book.isbn)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
+            LoanItem.due_date >= today_start,
+            LoanItem.due_date < target_end,
+        )
+    )
+    if user_id:
+        due_soon_query = due_soon_query.filter(Loan.user_id == user_id)
+
+    due_soon_items = due_soon_query.all()
+    for item, loan, book in due_soon_items:
+        existing = (
+            db.query(Notification)
+            .filter(
+                Notification.user_id == loan.user_id,
+                Notification.loan_item_id == item.id,
+                Notification.type == "DUE_SOON",
+                Notification.is_read.is_(False),
+            )
+            .first()
+        )
+        days_left = (item.due_date.date() - now.date()).days if item.due_date else 0
+        status_txt = "hôm nay" if days_left <= 0 else f"trong {days_left} ngày tới"
+        b_title = book.title if book else "Sách mượn"
+
+        if not existing:
+            new_notif = Notification(
+                user_id=loan.user_id,
+                loan_id=loan.id,
+                loan_item_id=item.id,
+                title=f"Sắp đến hạn trả: {b_title}",
+                message=f"Sách '{b_title}' (phiếu #{loan.code}) sẽ hết hạn {status_txt} ({item.due_date.strftime('%d/%m/%Y') if item.due_date else '—'}). Vui lòng gia hạn hoặc chuẩn bị trả sách.",
+                type="DUE_SOON",
+                is_read=False,
+            )
+            db.add(new_notif)
+
+    db.commit()
+
+    # 3. Lấy danh sách notifications
+    notif_query = db.query(Notification)
+    if user_id:
+        notif_query = notif_query.filter(Notification.user_id == user_id)
+
+    all_notifs = notif_query.order_by(Notification.created_at.desc()).limit(limit).all()
+
+    unread_count_query = db.query(func.count(Notification.id)).filter(Notification.is_read.is_(False))
+    if user_id:
+        unread_count_query = unread_count_query.filter(Notification.user_id == user_id)
+    unread_count = unread_count_query.scalar() or 0
+
+    items_result = []
+    for n in all_notifs:
+        loan_code_val = None
+        if n.loan:
+            loan_code_val = n.loan.code
+
+        items_result.append({
+            "id": n.id,
+            "user_id": n.user_id,
+            "loan_id": n.loan_id,
+            "loan_code": loan_code_val,
+            "loan_item_id": n.loan_item_id,
+            "title": n.title,
+            "message": n.message,
+            "type": n.type,
+            "is_read": n.is_read,
+            "created_at": n.created_at.strftime("%d/%m/%Y %H:%M") if n.created_at else "—",
+            "time_ago": _format_time_ago(n.created_at),
+        })
+
+    return {
+        "unread_count": unread_count,
+        "total": len(items_result),
+        "items": items_result,
+    }
+
+
+def mark_notification_read(db: Session, notification_id: int, user_id: int | None = None) -> bool:
+    """Đánh dấu một thông báo đã đọc."""
+    query = db.query(Notification).filter(Notification.id == notification_id)
+    if user_id:
+        query = query.filter(Notification.user_id == user_id)
+    notif = query.first()
+    if not notif:
+        return False
+    notif.is_read = True
+    db.commit()
+    return True
+
+
+def mark_all_notifications_read(db: Session, user_id: int | None = None) -> int:
+    """Đánh dấu tất cả thông báo đã đọc."""
+    query = db.query(Notification).filter(Notification.is_read.is_(False))
+    if user_id:
+        query = query.filter(Notification.user_id == user_id)
+    updated = query.update({Notification.is_read: True})
+    db.commit()
+    return updated
+
+
+def remind_overdue_loan(
+    db: Session,
+    loan_id: int,
+    librarian_id: int | None = None,
+    custom_message: str | None = None,
+) -> dict:
+    """
+    Thủ thư gửi thông báo nhắc nhở trả sách cho độc giả của phiếu mượn.
+    Tạo bản ghi Notification loại REMINDER.
+    """
+    loan = db.query(Loan).filter(Loan.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phiếu mượn")
+
+    user = loan.user
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy độc giả của phiếu mượn này")
+
+    lib_name = "Thủ thư"
+    if librarian_id:
+        lib = db.query(User).filter(User.id == librarian_id).first()
+        if lib:
+            lib_name = f"Thủ thư {lib.full_name}"
+
+    msg = custom_message or (
+        f"{lib_name} gửi lời nhắc: Phiếu mượn #{loan.code} của bạn có sách đã quá hạn. "
+        f"Vui lòng mang sách đến quầy thư viện trả trong thời gian sớm nhất để tránh tiền phạt phát sinh (2.000 đ/ngày)."
+    )
+
+    notif = Notification(
+        user_id=loan.user_id,
+        loan_id=loan.id,
+        title=f"Nhắc nhở trả sách quá hạn — Phiếu #{loan.code}",
+        message=msg,
+        type="REMINDER",
+        is_read=False,
+    )
+    db.add(notif)
+    db.commit()
+    db.refresh(notif)
+
+    return {
+        "loan_id": loan.id,
+        "user_id": loan.user_id,
+        "reader_name": user.full_name,
+        "reader_email": user.email,
+        "sent_count": 1,
+        "message": f"Đã gửi thông báo nhắc nhở thành công tới độc giả {user.full_name}!",
+    }
+
+
+def remind_all_overdue(db: Session, librarian_id: int | None = None) -> dict:
+    """
+    Gửi thông báo nhắc nhở hàng loạt tới tất cả độc giả đang có phiếu quá hạn.
+    """
+    now = datetime.now()
+    overdue_loans = (
+        db.query(Loan)
+        .join(LoanItem, LoanItem.loan_id == Loan.id)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.return_date.is_(None),
+            LoanItem.due_date < now,
+        )
+        .distinct()
+        .all()
+    )
+
+    sent_count = 0
+    lib_name = "Thủ thư thư viện"
+    if librarian_id:
+        lib = db.query(User).filter(User.id == librarian_id).first()
+        if lib:
+            lib_name = f"Thủ thư {lib.full_name}"
+
+    for loan in overdue_loans:
+        msg = (
+            f"{lib_name} gửi lời nhắc: Phiếu mượn #{loan.code} của bạn đang có sách quá hạn. "
+            f"Vui lòng nhanh chóng hoàn trả sách tại thư viện để tránh phát sinh thêm phí phạt 2.000 đ/ngày."
+        )
+        notif = Notification(
+            user_id=loan.user_id,
+            loan_id=loan.id,
+            title=f"Cảnh báo quá hạn trả sách — Phiếu #{loan.code}",
+            message=msg,
+            type="REMINDER",
+            is_read=False,
+        )
+        db.add(notif)
+        sent_count += 1
+
+    db.commit()
+    return {
+        "sent_count": sent_count,
+        "total_overdue_loans": len(overdue_loans),
+        "message": f"Đã gửi thông báo nhắc nhở tự động đến {sent_count} phiếu mượn quá hạn thành công!",
+    }

@@ -265,6 +265,9 @@
         // Modal 1 Form inputs
         bookTitle: document.getElementById("bookTitle"),
         bookIsbn: document.getElementById("bookIsbn"),
+        btnLookupIsbn: document.getElementById("btnLookupIsbn"),
+        isbnLoadingSpinner: document.getElementById("isbnLoadingSpinner"),
+        isbnLookupStatus: document.getElementById("isbnLookupStatus"),
         bookCategory: document.getElementById("bookCategory"),
         authorChipsContainer: document.getElementById("authorChipsContainer"),
         tagAuthorInput: document.getElementById("tagAuthorInput"),
@@ -638,6 +641,264 @@
         reader.readAsDataURL(file);
     }
 
+    function highlightField(el) {
+        if (!el) return;
+        el.classList.remove("field-autofilled");
+        void el.offsetWidth; // trigger reflow
+        el.classList.add("field-autofilled");
+    }
+
+    // ============================================================================
+    // TRA CỨU TỰ ĐỘNG THÔNG TIN SÁCH TỪ GOOGLE BOOKS API & OPEN LIBRARY
+    // ============================================================================
+    async function lookupBookByIsbn() {
+        if (!dom.bookIsbn) return;
+        const rawIsbn = dom.bookIsbn.value.trim();
+        const cleanIsbn = rawIsbn.replace(/[^0-9X]/gi, "");
+
+        if (!cleanIsbn || cleanIsbn.length < 9) {
+            showNotification("Vui lòng nhập mã ISBN hợp lệ (10 hoặc 13 chữ số) để tra cứu!", "error");
+            if (dom.bookIsbn) dom.bookIsbn.focus();
+            return;
+        }
+
+        // Bật trạng thái loading
+        if (dom.btnLookupIsbn) {
+            dom.btnLookupIsbn.disabled = true;
+            dom.btnLookupIsbn.innerHTML = `
+                <span class="material-symbols-outlined isbn-spinner">sync</span>
+                <span>Đang tìm...</span>
+            `;
+        }
+        if (dom.isbnLoadingSpinner) dom.isbnLoadingSpinner.classList.remove("hidden");
+        if (dom.isbnLookupStatus) {
+            dom.isbnLookupStatus.textContent = "Đang tra cứu...";
+            dom.isbnLookupStatus.style.color = "var(--color-brand)";
+        }
+
+        let bookData = null;
+
+        // 1. Nguồn 1: Google Books API
+        try {
+            const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(cleanIsbn)}`;
+            const resGb = await fetch(gbUrl, { headers: { "Accept": "application/json" } });
+            if (resGb.ok) {
+                const dataGb = await resGb.json();
+                if (dataGb.items && dataGb.items.length > 0) {
+                    const info = dataGb.items[0].volumeInfo || {};
+                    let pubYear = null;
+                    if (info.publishedDate) {
+                        const m = info.publishedDate.match(/\b(19\d\d|20\d\d)\b/);
+                        if (m) pubYear = parseInt(m[1], 10);
+                    }
+                    let coverUrl = "";
+                    if (info.imageLinks) {
+                        coverUrl = info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || info.imageLinks.medium || "";
+                        if (coverUrl.startsWith("http://")) {
+                            coverUrl = coverUrl.replace(/^http:\/\//i, "https://");
+                        }
+                    }
+
+                    bookData = {
+                        source: "Google Books",
+                        title: info.title || "",
+                        subtitle: info.subtitle || "",
+                        authors: Array.isArray(info.authors) ? info.authors : (info.authors ? [info.authors] : []),
+                        publisher: info.publisher || "",
+                        publishYear: pubYear,
+                        pageCount: info.pageCount || null,
+                        description: info.description || "",
+                        categories: info.categories || [],
+                        coverUrl: coverUrl
+                    };
+                }
+            }
+        } catch (err) {
+            console.warn("Google Books API query error, falling back...", err);
+        }
+
+        // 2. Nguồn 2: Open Library Data API (Nếu Google Books không có kết quả hoặc bị hạn chế)
+        if (!bookData) {
+            try {
+                const bibKey = `ISBN:${cleanIsbn}`;
+                const olUrl = `https://openlibrary.org/api/books?bibkeys=${bibKey}&format=json&jscmd=data`;
+                const resOl = await fetch(olUrl, { headers: { "Accept": "application/json" } });
+                if (resOl.ok) {
+                    const dataOl = await resOl.json();
+                    const info = dataOl[bibKey];
+                    if (info) {
+                        const authors = Array.isArray(info.authors) ? info.authors.map((a) => a.name).filter(Boolean) : [];
+                        const publishers = Array.isArray(info.publishers) ? info.publishers.map((p) => p.name).filter(Boolean) : [];
+                        let pubYear = null;
+                        if (info.publish_date) {
+                            const m = info.publish_date.match(/\b(19\d\d|20\d\d)\b/);
+                            if (m) pubYear = parseInt(m[1], 10);
+                        }
+                        const coverUrl = info.cover?.large || info.cover?.medium || info.cover?.small || `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`;
+
+                        bookData = {
+                            source: "Open Library",
+                            title: info.title || "",
+                            subtitle: info.subtitle || "",
+                            authors: authors,
+                            publisher: publishers.length > 0 ? publishers[0] : "",
+                            publishYear: pubYear,
+                            pageCount: info.number_of_pages || null,
+                            description: typeof info.notes === "string" ? info.notes : (info.subtitle || ""),
+                            categories: Array.isArray(info.subjects) ? info.subjects.map((s) => s.name) : [],
+                            coverUrl: coverUrl
+                        };
+                    }
+                }
+            } catch (err) {
+                console.warn("Open Library Data API query error...", err);
+            }
+        }
+
+        // 3. Nguồn 3: Open Library Search API (Dự phòng sâu)
+        if (!bookData) {
+            try {
+                const searchUrl = `https://openlibrary.org/search.json?isbn=${cleanIsbn}`;
+                const resSearch = await fetch(searchUrl, { headers: { "Accept": "application/json" } });
+                if (resSearch.ok) {
+                    const dataSearch = await resSearch.json();
+                    if (dataSearch.docs && dataSearch.docs.length > 0) {
+                        const doc = dataSearch.docs[0];
+                        const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`;
+                        bookData = {
+                            source: "Open Library Search",
+                            title: doc.title || "",
+                            subtitle: "",
+                            authors: Array.isArray(doc.author_name) ? doc.author_name : [],
+                            publisher: Array.isArray(doc.publisher) && doc.publisher.length > 0 ? doc.publisher[0] : "",
+                            publishYear: doc.first_publish_year || null,
+                            pageCount: doc.number_of_pages_median || null,
+                            description: "",
+                            categories: Array.isArray(doc.subject) ? doc.subject : [],
+                            coverUrl: coverUrl
+                        };
+                    }
+                }
+            } catch (err) {
+                console.warn("Open Library Search API query error...", err);
+            }
+        }
+
+        // Tắt trạng thái loading trên nút
+        if (dom.btnLookupIsbn) {
+            dom.btnLookupIsbn.disabled = false;
+            dom.btnLookupIsbn.innerHTML = `
+                <span class="material-symbols-outlined">auto_fix_high</span>
+                <span>Tra cứu</span>
+            `;
+        }
+        if (dom.isbnLoadingSpinner) dom.isbnLoadingSpinner.classList.add("hidden");
+
+        // Nếu không tìm thấy kết quả từ các nguồn
+        if (!bookData) {
+            if (dom.isbnLookupStatus) {
+                dom.isbnLookupStatus.textContent = "Không tìm thấy";
+                dom.isbnLookupStatus.style.color = "var(--color-danger)";
+            }
+            showNotification(`Không tìm thấy thông tin cho ISBN "${rawIsbn}" trên Google Books & Open Library. Bạn có thể tự nhập thủ công.`, "error");
+            return;
+        }
+
+        // TỰ ĐỘNG ĐIỀN CÁC TRƯỜNG DỮ LIỆU VÀ GẮNG HIỆU ỨNG HIGHLIGHT
+        // 1. Tên sách
+        if (bookData.title && dom.bookTitle) {
+            dom.bookTitle.value = bookData.subtitle ? `${bookData.title}: ${bookData.subtitle}` : bookData.title;
+            highlightField(dom.bookTitle);
+        }
+
+        // 2. Tác giả (Tag Chips - thủ thư vẫn xoá hoặc thêm tiếp được)
+        if (bookData.authors && bookData.authors.length > 0) {
+            state.authorTags = [...bookData.authors];
+            renderAuthorChips();
+            if (dom.authorChipsContainer) highlightField(dom.authorChipsContainer);
+        }
+
+        // 3. Nhà xuất bản
+        if (bookData.publisher && dom.bookPublisher) {
+            let matchedOption = false;
+            const normPub = bookData.publisher.toLowerCase().trim();
+            for (let i = 0; i < dom.bookPublisher.options.length; i++) {
+                const optVal = dom.bookPublisher.options[i].value.toLowerCase().trim();
+                if (optVal.includes(normPub) || normPub.includes(optVal)) {
+                    dom.bookPublisher.selectedIndex = i;
+                    matchedOption = true;
+                    break;
+                }
+            }
+            if (!matchedOption) {
+                // Thêm lựa chọn nhà xuất bản mới vào select để thủ thư dùng được luôn
+                const newOpt = document.createElement("option");
+                newOpt.value = bookData.publisher;
+                newOpt.textContent = bookData.publisher;
+                newOpt.selected = true;
+                dom.bookPublisher.appendChild(newOpt);
+            }
+            highlightField(dom.bookPublisher);
+        }
+
+        // 4. Năm xuất bản
+        if (bookData.publishYear && dom.bookYear) {
+            dom.bookYear.value = bookData.publishYear;
+            highlightField(dom.bookYear);
+        }
+
+        // 5. Số trang
+        if (bookData.pageCount && dom.bookPageCount) {
+            dom.bookPageCount.value = bookData.pageCount;
+            highlightField(dom.bookPageCount);
+        }
+
+        // 6. Tóm tắt nội dung
+        if (bookData.description && dom.bookDescription) {
+            const cleanDesc = bookData.description.replace(/<\/?[^>]+(>|$)/g, "").trim();
+            dom.bookDescription.value = cleanDesc;
+            highlightField(dom.bookDescription);
+        }
+
+        // 7. Gợi ý thể loại chuyên ngành tự động
+        if (dom.bookCategory) {
+            const textToInspect = ((bookData.categories || []).join(" ") + " " + (bookData.title || "")).toLowerCase();
+            if (textToInspect.includes("computer") || textToInspect.includes("program") || textToInspect.includes("software") || textToInspect.includes("code") || textToInspect.includes("python") || textToInspect.includes("java") || textToInspect.includes("web") || textToInspect.includes("cntt") || textToInspect.includes("thuật toán")) {
+                dom.bookCategory.value = "cntt";
+            } else if (textToInspect.includes("business") || textToInspect.includes("econom") || textToInspect.includes("manage") || textToInspect.includes("finance") || textToInspect.includes("kinh tế") || textToInspect.includes("quản trị")) {
+                dom.bookCategory.value = "kinhte";
+            } else if (textToInspect.includes("electric") || textToInspect.includes("electronic") || textToInspect.includes("telecom") || textToInspect.includes("điện tử") || textToInspect.includes("viễn thông")) {
+                dom.bookCategory.value = "dientu";
+            } else if (textToInspect.includes("math") || textToInspect.includes("physic") || textToInspect.includes("science") || textToInspect.includes("toán")) {
+                dom.bookCategory.value = "toan";
+            } else if (textToInspect.includes("english") || textToInspect.includes("language") || textToInspect.includes("ngoại ngữ")) {
+                dom.bookCategory.value = "ngoaingu";
+            }
+            highlightField(dom.bookCategory);
+        }
+
+        // 8. Ảnh bìa (hiển thị xem trước, thủ thư vẫn có thể tải ảnh khác lên nếu muốn)
+        if (bookData.coverUrl && dom.coverPreviewImg) {
+            dom.coverPreviewImg.src = bookData.coverUrl;
+            dom.coverPreviewImg.style.display = "block";
+            dom.coverPreviewImg.onerror = function () {
+                this.onerror = null;
+                this.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
+            };
+            if (dom.coverDropZone) highlightField(dom.coverDropZone);
+        }
+
+        // Cập nhật dải mã vạch dự kiến
+        updateBarcodeRange();
+
+        if (dom.isbnLookupStatus) {
+            dom.isbnLookupStatus.textContent = `✓ ${bookData.source}`;
+            dom.isbnLookupStatus.style.color = "var(--color-success)";
+        }
+
+        showNotification(`Đã tự điền từ ${bookData.source}: "${bookData.title}"! Bạn có thể chỉnh sửa trước khi lưu.`, "success");
+    }
+
     function openCreateModal() {
         state.editingIsbn = null;
         if (dom.modalBookHeading) dom.modalBookHeading.textContent = "Thêm mới đầu sách & Thiết lập bản sao";
@@ -656,11 +917,14 @@
         // Reset inputs
         if (dom.bookTitle) dom.bookTitle.value = "";
         if (dom.bookIsbn) {
-            dom.bookIsbn.value = `BK-IT-2024-${String(Math.floor(Math.random() * 900) + 100)}`;
+            dom.bookIsbn.value = "";
+            dom.bookIsbn.placeholder = "Nhập ISBN (VD: 9780132350884)...";
             dom.bookIsbn.readOnly = false;
         }
+        if (dom.btnLookupIsbn) dom.btnLookupIsbn.disabled = false;
+        if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
         if (dom.bookCategory) dom.bookCategory.value = "cntt";
-        state.authorTags = ["TS. Nguyễn Văn A", "ThS. Trần B"];
+        state.authorTags = [];
         renderAuthorChips();
 
         if (dom.bookPublisher) dom.bookPublisher.value = "NXB Đại học Quốc gia";
@@ -706,6 +970,9 @@
             dom.bookIsbn.value = book.isbn || "";
             dom.bookIsbn.readOnly = true;
         }
+        if (dom.btnLookupIsbn) dom.btnLookupIsbn.disabled = true;
+        if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
+
         if (dom.bookCategory) dom.bookCategory.value = book.category_id || "cntt";
         state.authorTags = Array.isArray(book.authors) ? [...book.authors] : [];
         renderAuthorChips();
@@ -1617,8 +1884,20 @@
         }
         if (dom.submitBookBtn) dom.submitBookBtn.addEventListener("click", saveBook);
 
-        // Barcode preview
-        if (dom.bookIsbn) dom.bookIsbn.addEventListener("input", updateBarcodeRange);
+        // ISBN Lookup & Barcode preview
+        if (dom.btnLookupIsbn) dom.btnLookupIsbn.addEventListener("click", lookupBookByIsbn);
+        if (dom.bookIsbn) {
+            dom.bookIsbn.addEventListener("input", () => {
+                updateBarcodeRange();
+                if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
+            });
+            dom.bookIsbn.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    lookupBookByIsbn();
+                }
+            });
+        }
         if (dom.copiesCount) dom.copiesCount.addEventListener("input", updateBarcodeRange);
 
         // Author tags input
@@ -1768,6 +2047,7 @@
         openCreateModal,
         openEditModal,
         closeBookModal,
+        lookupBookByIsbn,
         saveBook,
         deleteBook,
         removeAuthorTag,

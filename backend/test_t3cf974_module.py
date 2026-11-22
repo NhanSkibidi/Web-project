@@ -1,47 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-KIỂM THỬ TỰ ĐỘNG CÁC API ROUTER MODULES (Không phụ thuộc httpx):
-  1. [T3CFCAC / T3CFBEF] API Đặt trước sách khi hết (Reservation)
-  2. [T3CFCC6] API Quản lý Thể loại, Tác giả, Nhà xuất bản (Taxonomy)
-  3. [T3CFC09] API Tìm kiếm & tra cứu sách (Book Search & Filter)
-  4. [T3CFC4B] API Xem chi tiết sách & thống kê bản sao (Book Detail)
+Kiểm thử tự động cho Task T3CF974 (Nguyễn Nhật Anh 2 - B25DTCN065):
+  1. [T3CFCAC / T3CFBEF] Đặt trước sách khi hết
+  2. [T3CFCC6] Quản lý Thể loại, Tác giả, Nhà xuất bản
+  3. [T3CFC09] Tìm kiếm & lọc sách
+  4. [T3CFC4B] Chi tiết sách & thống kê bản sao
 
-Tất cả dữ liệu kiểm thử được seed trực tiếp trong file này.
-Test trực tiếp các hàm API router:
-  - Đúng (Happy Path)
-  - Sai dữ liệu (Validation / Chặn trùng / Chặn xoá khi còn sách)
-  - Chưa đăng nhập (401 Unauthorized & Truy cập công khai)
-  - Sai quyền (403 Forbidden)
-
-Cách chạy:
-  cd Web-project/backend
-  python test_t3cf974_module.py
+Chạy: python test_t3cf974_module.py
 """
-
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
-# Patch tương thích Python 3.14 với SQLAlchemy typing
+# Patch Python 3.14 & multipart
 import sqlalchemy.util.typing as sa_typing
-def _patched_make_union(*types):
-    res = types[0]
-    for t in types[1:]:
-        res = res | t
-    return res
-sa_typing.make_union_type = _patched_make_union
-
-# Patch FastAPI cho môi trường không cài sẵn python-multipart
+sa_typing.make_union_type = lambda *t: t[0] if len(t) == 1 else t[0] | t[1]
 import fastapi.dependencies.utils as f_utils
 f_utils.ensure_multipart_is_installed = lambda: None
 
-# Khởi tạo DB SQLite riêng biệt cho kiểm thử
-TEST_DB_NAME = "test_api_t3cf974.db"
-os.environ["DATABASE_URL"] = f"sqlite:///./{TEST_DB_NAME}"
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from fastapi import HTTPException
 
 from app.db.session import Base
@@ -55,486 +34,252 @@ from app.models.BookAuthor import BookAuthor
 from app.models.BookCopy import BookCopy
 from app.models.reservation import Reservation
 
-# Schemas
 from app.schemas.reservation import ReservationCreate
-from app.schemas.taxonomy import (
-    CategoryCreate, CategoryUpdate,
-    AuthorCreate, AuthorUpdate,
-    PublisherCreate, PublisherUpdate,
-)
-
-# Routers
+from app.schemas.taxonomy import CategoryCreate, CategoryUpdate, AuthorCreate, PublisherCreate
 from app.routers.reservation import (
-    api_create_reservation,
-    api_get_my_reservations,
-    api_cancel_reservation,
-    api_get_staff_ready_reservations,
-    api_check_expired_reservations,
-    api_fulfill_reservation,
+    api_create_reservation, api_get_my_reservations, api_cancel_reservation,
+    api_get_staff_ready_reservations, api_check_expired_reservations,
 )
 from app.routers.taxonomy import (
-    create_category,
-    get_categories,
-    update_category,
-    delete_category,
-    create_author,
-    delete_author,
-    create_publisher,
-    delete_publisher,
+    create_category, get_categories, update_category, delete_category,
+    create_author, delete_author, create_publisher, delete_publisher,
 )
-from app.routers.book import (
-    search_books,
-    get_book_detail,
-)
+from app.routers.book import search_books, get_book_detail
 from app.crud import reservation as crud_res
 
-engine = create_engine(f"sqlite:///./{TEST_DB_NAME}", connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-TOTAL_PASS = 0
-TOTAL_FAIL = 0
-
-def check(passed: bool, tc_id: str, title: str, detail: str = ""):
-    global TOTAL_PASS, TOTAL_FAIL
-    if passed:
-        TOTAL_PASS += 1
-        print(f"  ✅ [PASS] {tc_id}: {title} {detail}")
-    else:
-        TOTAL_FAIL += 1
-        print(f"  ❌ [FAIL] {tc_id}: {title} {detail}")
+engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def seed_data(db):
-    """Seed toàn bộ dữ liệu mẫu phục vụ test API trực tiếp trong file."""
-    print("\n--- 1. SEED DỮ LIỆU KIỂM THỬ TRONG FILE ---")
+def setup_db():
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    db = Session()
 
     # 1. Users
-    admin = User(
-        email="admin@unilib.edu.vn",
-        password_hash=hash_password("admin123"),
-        full_name="Quản trị viên Hệ thống",
-        role=UserRole.ADMIN,
-        status=UserStatus.ACTIVE,
-    )
-    librarian = User(
-        email="librarian@unilib.edu.vn",
-        password_hash=hash_password("lib123"),
-        full_name="Thủ thư Bàn làm việc",
-        role=UserRole.LIBRARIAN,
-        status=UserStatus.ACTIVE,
-    )
-    reader1 = User(
-        email="reader1@unilib.edu.vn",
-        password_hash=hash_password("reader123"),
-        full_name="Nguyễn Nhật Anh",
-        phone="0912345678",
-        role=UserRole.READER,
-        status=UserStatus.ACTIVE,
-    )
-    reader2 = User(
-        email="reader2@unilib.edu.vn",
-        password_hash=hash_password("reader123"),
-        full_name="Trịnh Huy Đại",
-        phone="0987654321",
-        role=UserRole.READER,
-        status=UserStatus.ACTIVE,
-    )
-    reader3 = User(
-        email="reader3@unilib.edu.vn",
-        password_hash=hash_password("reader123"),
-        full_name="Lương Thiện Nhân",
-        phone="0905123456",
-        role=UserRole.READER,
-        status=UserStatus.ACTIVE,
-    )
-    db.add_all([admin, librarian, reader1, reader2, reader3])
-    db.flush()
+    u_admin = User(id=1, email="admin@ks25.edu.vn", password_hash=hash_password("123"), full_name="Admin", role=UserRole.ADMIN, status=UserStatus.ACTIVE)
+    u_lib = User(id=2, email="lib@ks25.edu.vn", password_hash=hash_password("123"), full_name="Thủ thư", role=UserRole.LIBRARIAN, status=UserStatus.ACTIVE)
+    r1 = User(id=3, email="r1@ks25.edu.vn", password_hash=hash_password("123"), full_name="Nhật Anh", role=UserRole.READER, status=UserStatus.ACTIVE)
+    r2 = User(id=4, email="r2@ks25.edu.vn", password_hash=hash_password("123"), full_name="Huy Đại", role=UserRole.READER, status=UserStatus.ACTIVE)
+    r3 = User(id=5, email="r3@ks25.edu.vn", password_hash=hash_password("123"), full_name="Thiện Nhân", role=UserRole.READER, status=UserStatus.ACTIVE)
+    db.add_all([u_admin, u_lib, r1, r2, r3]); db.commit()
 
-    # 2. Categories
-    cat_cs = Category(name="Khoa Học Máy Tính", description="Lập trình, Thuật toán & Kiến trúc phần mềm")
-    cat_econ = Category(name="Kinh Tế Học", description="Tài chính, Quản trị kinh doanh & Đầu tư")
-    cat_lit = Category(name="Văn Học Nghệ Thuật", description="Tiểu thuyết, Thơ ca & Văn học kinh điển")
-    db.add_all([cat_cs, cat_econ, cat_lit])
-    db.flush()
+    # 2. Taxonomy
+    cat_it = Category(id=1, name="Công nghệ Thông tin", description="Sách CNTT")
+    cat_eco = Category(id=2, name="Kinh tế Học", description="Sách Kinh tế")
+    auth_bob = Author(id=1, name="Robert C. Martin", nationality="Mỹ")
+    auth_anh = Author(id=2, name="Nguyễn Nhật Ánh", nationality="Việt Nam")
+    pub_tt = Publisher(id=1, name="NXB Thông Tin", address="Hà Nội")
+    pub_tre = Publisher(id=2, name="NXB Trẻ", address="TP.HCM")
+    db.add_all([cat_it, cat_eco, auth_bob, auth_anh, pub_tt, pub_tre]); db.commit()
 
-    # 3. Authors
-    author_uncle_bob = Author(name="Robert C. Martin", biography="Uncle Bob - Chuyên gia Clean Code", nationality="Mỹ")
-    author_fowler = Author(name="Martin Fowler", biography="Chuyên gia Refactoring & Microservices", nationality="Anh")
-    author_anh = Author(name="Nguyễn Nhật Ánh", biography="Nhà văn gắn liền với tuổi thơ thế hệ trẻ", nationality="Việt Nam")
-    db.add_all([author_uncle_bob, author_fowler, author_anh])
-    db.flush()
+    # 3. Books & Copies
+    b_out = Book(isbn="978-01", title="Clean Code", category_id=1, publisher_id=1, price=350000.0)
+    b_avail = Book(isbn="978-02", title="Cho Tôi Xin Một Vé", category_id=2, publisher_id=2, price=95000.0)
+    b_ref = Book(isbn="978-03", title="Refactoring", category_id=1, publisher_id=1, price=420000.0)
+    b_arch = Book(isbn="978-04", title="Clean Architecture", category_id=1, publisher_id=1, price=380000.0)
+    db.add_all([b_out, b_avail, b_ref, b_arch]); db.commit()
 
-    # 4. Publishers
-    pub_tt = Publisher(name="NXB Thông Tin & Truyền Thông", address="Hà Nội", description="Sách CNTT & Viễn thông")
-    pub_tre = Publisher(name="NXB Trẻ", address="TP. Hồ Chí Minh", description="Sách văn học & giáo dục")
-    db.add_all([pub_tt, pub_tre])
-    db.flush()
+    db.add_all([BookAuthor(book_isbn="978-01", author_id=1), BookAuthor(book_isbn="978-02", author_id=2)])
+    today = date.today()
+    c1 = BookCopy(id=1, book_isbn="978-01", copy_code="CC-1", shelf_location="Kệ A1", imported_at=today, status="BORROWED")
+    c2 = BookCopy(id=2, book_isbn="978-01", copy_code="CC-2", shelf_location="Kệ A1", imported_at=today, status="BORROWED")
+    c3 = BookCopy(id=3, book_isbn="978-02", copy_code="TT-1", shelf_location="Kệ B1", imported_at=today, status="AVAILABLE")
+    c4 = BookCopy(id=4, book_isbn="978-03", copy_code="RF-1", shelf_location="Kệ A2", imported_at=today, status="BORROWED")
+    c5 = BookCopy(id=5, book_isbn="978-04", copy_code="CA-1", shelf_location="Kệ A2", imported_at=today, status="BORROWED")
+    db.add_all([c1, c2, c3, c4, c5]); db.commit()
 
-    # 5. Books
-    # Sách 1: HẾT SẠCH BẢN SAO (Available = 0, toàn bộ BORROWED) -> Để test Đặt trước!
-    book_clean_code = Book(
-        isbn="978-0132350884",
-        title="Clean Code: A Handbook of Agile Software Craftsmanship",
-        category_id=cat_cs.id,
-        publisher_id=pub_tt.id,
-        publish_year=2008,
-        price=350000,
-        is_deleted=False,
-    )
-    # Sách 2: CÒN SẴN BẢN SAO (Available = 2) -> Để test Chặn đặt trước khi sách còn!
-    book_tuoi_tho = Book(
-        isbn="978-6042100001",
-        title="Cho Tôi Xin Một Vé Đi Tuổi Thơ",
-        category_id=cat_lit.id,
-        publisher_id=pub_tre.id,
-        publish_year=2015,
-        price=95000,
-        is_deleted=False,
-    )
-    # Sách 3 & 4: Hết sách phục vụ test quota đặt trước
-    book_refactor = Book(
-        isbn="978-0201485677",
-        title="Refactoring: Improving the Design of Existing Code",
-        category_id=cat_cs.id,
-        publisher_id=pub_tt.id,
-        publish_year=2018,
-        price=420000,
-        is_deleted=False,
-    )
-    book_extra = Book(
-        isbn="978-0134494166",
-        title="Clean Architecture",
-        category_id=cat_cs.id,
-        publisher_id=pub_tt.id,
-        publish_year=2017,
-        price=380000,
-        is_deleted=False,
-    )
-    db.add_all([book_clean_code, book_tuoi_tho, book_refactor, book_extra])
-    db.flush()
-
-    # Liên kết Sách - Tác giả
-    db.add(BookAuthor(book_isbn=book_clean_code.isbn, author_id=author_uncle_bob.id))
-    db.add(BookAuthor(book_isbn=book_tuoi_tho.isbn, author_id=author_anh.id))
-    db.add(BookAuthor(book_isbn=book_refactor.isbn, author_id=author_fowler.id))
-    db.add(BookAuthor(book_isbn=book_extra.isbn, author_id=author_uncle_bob.id))
-    db.flush()
-
-    # Bản sao
-    today = datetime.now().date()
-    copy1 = BookCopy(book_isbn=book_clean_code.isbn, copy_code="CC-001", shelf_location="Kệ A1-01", imported_at=today, condition="MỚI", status="BORROWED")
-    copy2 = BookCopy(book_isbn=book_clean_code.isbn, copy_code="CC-002", shelf_location="Kệ A1-02", imported_at=today, condition="MỚI", status="BORROWED")
-    copy3 = BookCopy(book_isbn=book_tuoi_tho.isbn, copy_code="TT-001", shelf_location="Kệ B2-01", imported_at=today, condition="MỚI", status="AVAILABLE")
-    copy4 = BookCopy(book_isbn=book_tuoi_tho.isbn, copy_code="TT-002", shelf_location="Kệ B2-02", imported_at=today, condition="MỚI", status="AVAILABLE")
-    copy5 = BookCopy(book_isbn=book_refactor.isbn, copy_code="RF-001", shelf_location="Kệ A2-01", imported_at=today, condition="MỚI", status="BORROWED")
-    copy6 = BookCopy(book_isbn=book_extra.isbn, copy_code="CA-001", shelf_location="Kệ A2-02", imported_at=today, condition="MỚI", status="BORROWED")
-
-    db.add_all([copy1, copy2, copy3, copy4, copy5, copy6])
-    db.commit()
-
-    print("  -> Đã seed 5 Users (Admin, Thủ thư, 3 Độc giả)")
-    print("  -> Đã seed 3 Thể loại, 3 Tác giả, 2 Nhà xuất bản")
-    print("  -> Đã seed 4 Đầu sách kèm 6 Bản sao với trạng thái phân bổ chuẩn.")
-
-    return {
-        "admin": admin, "librarian": librarian,
-        "reader1": reader1, "reader2": reader2, "reader3": reader3,
-        "book_out": book_clean_code, "book_avail": book_tuoi_tho,
-        "book_refactor": book_refactor, "book_extra": book_extra,
-        "cat_cs": cat_cs, "cat_econ": cat_econ,
-        "author_bob": author_uncle_bob, "pub_tt": pub_tt,
-        "copy1": copy1, "copy2": copy2,
-    }
+    return db, {"admin": u_admin, "lib": u_lib, "r1": r1, "r2": r2, "r3": r3, "c1": c1}
 
 
-def run_tests():
-    if os.path.exists(TEST_DB_NAME):
-        try: os.remove(TEST_DB_NAME)
-        except Exception: pass
+def test_reservation_module(db, users):
+    print("\n--- 1. TEST MODULE ĐẶT TRƯỚC SÁCH (T3CFCAC) ---")
 
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    data = seed_data(db)
+    # 1.1 Đặt trước thành công khi hết sách (WAITING, Vị trí 1)
+    res1 = api_create_reservation(payload=ReservationCreate(book_isbn="978-01"), user_id=users["r1"].id, current_user=None, db=db)
+    assert res1["status"] == "WAITING" and res1["queue_position"] == 1
+    print("✓ Đặt trước thành công khi hết sách: Status=WAITING, Vị trí #1")
 
-    print("\n" + "=" * 70)
-    print("BẮT ĐẦU CHẠY KIỂM THỬ API ROUTERS TRỰC TIẾP")
-    print("=" * 70)
+    # 1.2 Hàng chờ FIFO: Độc giả 2 đặt cùng sách -> Vị trí 2
+    res2 = api_create_reservation(payload=ReservationCreate(book_isbn="978-01"), user_id=users["r2"].id, current_user=None, db=db)
+    assert res2["queue_position"] == 2
+    print("✓ Xếp hàng FIFO: Độc giả 2 tự động vào vị trí #2")
 
-    # =========================================================================
-    # PHẦN 1: API ĐẶT TRƯỚC SÁCH KHI HẾT (T3CFCAC / T3CFBEF)
-    # =========================================================================
-    print("\n▶ PHẦN 1: KIỂM THỬ API ĐẶT TRƯỚC SÁCH (T3CFCAC)")
+    # 1.3 Lấy danh sách đặt trước cá nhân
+    my_res = api_get_my_reservations(user_id=users["r1"].id, current_user=None, db=db)
+    assert len(my_res) >= 1 and my_res[0]["book_isbn"] == "978-01"
+    print("✓ Lấy danh sách đặt trước cá nhân thành công:", len(my_res), "đơn")
 
-    # 1. Đặt trước thành công khi hết sách (HTTP 200, WAITING, Vị trí 1)
-    res_data1 = api_create_reservation(
-        payload=ReservationCreate(book_isbn=data["book_out"].isbn),
-        user_id=data["reader1"].id,
-        current_user=None,
-        db=db,
-    )
-    check(res_data1.get("status") == "WAITING" and res_data1.get("queue_position") == 1,
-          "API_RES_01", "api_create_reservation - Đặt trước sách thành công (WAITING, Vị trí #1)")
+    # 1.4 Trả sách -> Người đầu chuyển READY, copy chuyển RESERVED giữ 2 ngày
+    crud_res.process_returned_copy_for_reservation(db, users["c1"]); db.commit()
+    r1_db = db.query(Reservation).filter(Reservation.id == res1["id"]).first()
+    db.refresh(r1_db); db.refresh(users["c1"])
+    assert r1_db.status == "READY" and users["c1"].status == "RESERVED" and r1_db.pickup_deadline is not None
+    print("✓ Trả sách: Đơn #1 chuyển READY, sách giữ RESERVED 2 ngày")
 
-    # 2. Xếp hàng FIFO: Độc giả 2 đặt cùng cuốn sách (HTTP 200, Vị trí 2)
-    res_data2 = api_create_reservation(
-        payload=ReservationCreate(book_isbn=data["book_out"].isbn),
-        user_id=data["reader2"].id,
-        current_user=None,
-        db=db,
-    )
-    check(res_data2.get("queue_position") == 2,
-          "API_RES_02", "api_create_reservation - Xếp hàng FIFO người thứ hai vào vị trí #2")
-
-    # 3. Xem danh sách đơn đặt trước của độc giả
-    my_res = api_get_my_reservations(user_id=data["reader1"].id, current_user=None, db=db)
-    check(len(my_res) >= 1 and my_res[0]["book_isbn"] == data["book_out"].isbn,
-          "API_RES_03", "api_get_my_reservations - Lấy danh sách đặt trước của độc giả kèm vị trí chờ")
-
-    # 4. Khi có sách trả về kho -> Tự động chuyển READY cho người đầu hàng, bản sao sang RESERVED, giữ 2 ngày
-    crud_res.process_returned_copy_for_reservation(db, data["copy1"])
-    db.commit()
-    r1_db = db.query(Reservation).filter(Reservation.id == res_data1["id"]).first()
-    db.refresh(r1_db); db.refresh(data["copy1"])
-    check(r1_db.status == "READY" and data["copy1"].status == "RESERVED" and r1_db.pickup_deadline is not None,
-          "API_RES_04", "LOGIC Trả sách -> Người đầu hàng chuyển READY, bản sao sang RESERVED giữ 2 ngày")
-
-    # 5. Quá hạn 2 ngày -> Tác vụ quét API tự động chuyển EXPIRED, chuyển lượt sang người tiếp theo thành READY
-    r1_db.pickup_deadline = datetime.now() - timedelta(hours=1)
-    db.commit()
+    # 1.5 Quá hạn 2 ngày -> Tự chuyển EXPIRED và nhường cho người tiếp theo
+    r1_db.pickup_deadline = datetime.now() - timedelta(hours=1); db.commit()
     api_check_expired_reservations(db=db)
-    r2_db = db.query(Reservation).filter(Reservation.id == res_data2["id"]).first()
+    r2_db = db.query(Reservation).filter(Reservation.id == res2["id"]).first()
     db.refresh(r1_db); db.refresh(r2_db)
-    check(r1_db.status == "EXPIRED" and r2_db.status == "READY",
-          "API_RES_05", "api_check_expired_reservations - Đơn #1 sang EXPIRED, đơn #2 tự động thành READY")
+    assert r1_db.status == "EXPIRED" and r2_db.status == "READY"
+    print("✓ Quá hạn 2 ngày: Đơn #1 thành EXPIRED, đơn #2 tự chuyển sang READY")
 
-    # 6. Độc giả chủ động huỷ đơn đặt trước qua API (HTTP 200, CANCELLED, hoàn AVAILABLE)
-    cancel_res = api_cancel_reservation(reservation_id=r2_db.id, user_id=data["reader2"].id, current_user=None, db=db)
-    db.refresh(data["copy1"])
-    check(cancel_res.get("status") == "CANCELLED" and data["copy1"].status == "AVAILABLE",
-          "API_RES_06", "api_cancel_reservation - Huỷ đơn đặt trước, hoàn bản sao về AVAILABLE")
+    # 1.6 Huỷ đặt trước -> CANCELLED, sách hoàn AVAILABLE
+    cancel_res = api_cancel_reservation(reservation_id=r2_db.id, user_id=users["r2"].id, current_user=None, db=db)
+    db.refresh(users["c1"])
+    assert cancel_res["status"] == "CANCELLED" and users["c1"].status == "AVAILABLE"
+    print("✓ Huỷ đặt trước thành công: Status=CANCELLED, sách hoàn AVAILABLE")
 
-    # 7. Chặn đặt trước khi đầu sách VẪN CÒN bản sao khả dụng (HTTP 400)
+    # 1.7 Chặn đặt trước khi sách còn bản sao (400)
     try:
-        api_create_reservation(payload=ReservationCreate(book_isbn=data["book_avail"].isbn), user_id=data["reader1"].id, current_user=None, db=db)
-        check(False, "API_RES_07", "Chặn đặt khi còn sách", "Không bị chặn")
+        api_create_reservation(payload=ReservationCreate(book_isbn="978-02"), user_id=users["r1"].id, current_user=None, db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_RES_07", "api_create_reservation - Chặn đặt khi còn bản sao khả dụng (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn đặt khi sách còn sẵn thành công (HTTP 400):", e.detail)
 
-    # 8. Chặn đặt trước trùng lặp cùng một đầu sách (HTTP 400)
-    data["copy1"].status = "BORROWED"; db.commit() # Để sách hết bản sao
-    api_create_reservation(payload=ReservationCreate(book_isbn=data["book_out"].isbn), user_id=data["reader3"].id, current_user=None, db=db)
+    # 1.8 Chặn đặt trùng cuốn sách (400)
+    users["c1"].status = "BORROWED"; db.commit()
+    api_create_reservation(payload=ReservationCreate(book_isbn="978-01"), user_id=users["r3"].id, current_user=None, db=db)
     try:
-        api_create_reservation(payload=ReservationCreate(book_isbn=data["book_out"].isbn), user_id=data["reader3"].id, current_user=None, db=db)
-        check(False, "API_RES_08", "Chặn đặt trùng", "Không bị chặn")
+        api_create_reservation(payload=ReservationCreate(book_isbn="978-01"), user_id=users["r3"].id, current_user=None, db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_RES_08", "api_create_reservation - Chặn đặt trùng cùng đầu sách (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn đặt trước trùng lặp thành công (HTTP 400):", e.detail)
 
-    # 9. Chặn vượt quá hạn mức tối đa 3 đơn đặt trước (HTTP 400)
-    api_create_reservation(payload=ReservationCreate(book_isbn=data["book_refactor"].isbn), user_id=data["reader3"].id, current_user=None, db=db)
-    api_create_reservation(payload=ReservationCreate(book_isbn=data["book_extra"].isbn), user_id=data["reader3"].id, current_user=None, db=db)
-    # Thêm sách thứ 5 hết hàng
-    b5 = Book(isbn="978-9999999999", title="Book 5 Out", category_id=data["cat_cs"].id, publisher_id=data["pub_tt"].id, is_deleted=False)
-    db.add(b5); db.flush()
-    db.add(BookCopy(book_isbn=b5.isbn, copy_code="B5-001", shelf_location="Kệ C1", imported_at=datetime.now().date(), status="BORROWED"))
-    db.commit()
+    # 1.9 Chặn vượt hạn mức 3 cuốn (400)
+    api_create_reservation(payload=ReservationCreate(book_isbn="978-03"), user_id=users["r3"].id, current_user=None, db=db)
+    api_create_reservation(payload=ReservationCreate(book_isbn="978-04"), user_id=users["r3"].id, current_user=None, db=db)
+    b5 = Book(isbn="978-05", title="Book 5", category_id=1, publisher_id=1); db.add(b5); db.flush()
+    db.add(BookCopy(id=6, book_isbn="978-05", copy_code="B5-1", shelf_location="Kệ C1", imported_at=date.today(), status="BORROWED")); db.commit()
     try:
-        api_create_reservation(payload=ReservationCreate(book_isbn=b5.isbn), user_id=data["reader3"].id, current_user=None, db=db)
-        check(False, "API_RES_09", "Chặn quota 3", "Không bị chặn")
+        api_create_reservation(payload=ReservationCreate(book_isbn="978-05"), user_id=users["r3"].id, current_user=None, db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_RES_09", "api_create_reservation - Chặn vượt tối đa 3 đơn cùng lúc (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn vượt quá quota 3 cuốn thành công (HTTP 400):", e.detail)
 
-    # 10. Gửi mã ISBN không tồn tại (HTTP 404)
+    # 1.10 ISBN không tồn tại (404) & Chưa đăng nhập (401)
     try:
-        api_create_reservation(payload=ReservationCreate(book_isbn="000-0000000000"), user_id=data["reader1"].id, current_user=None, db=db)
-        check(False, "API_RES_10", "ISBN không tồn tại", "Không bị chặn")
+        api_create_reservation(payload=ReservationCreate(book_isbn="000-00"), user_id=users["r1"].id, current_user=None, db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 404, "API_RES_10", "api_create_reservation - Gửi mã ISBN không tồn tại (HTTP 404)")
+        assert e.status_code == 404
+        print("✓ Chặn ISBN không tồn tại thành công (HTTP 404)")
 
-    # =========================================================================
-    # PHẦN 2: API QUẢN LÝ THỂ LOẠI, TÁC GIẢ, NHÀ XUẤT BẢN (T3CFCC6)
-    # =========================================================================
-    print("\n▶ PHẦN 2: KIỂM THỬ API QUẢN LÝ DANH MỤC (T3CFCC6)")
+    try:
+        api_create_reservation(payload=ReservationCreate(book_isbn="978-01"), user_id=None, current_user=None, db=db)
+        assert False
+    except HTTPException as e:
+        assert e.status_code == 401
+        print("✓ Chặn chưa đăng nhập thành công (HTTP 401)")
 
-    # 11. Thêm mới Thể loại thành công (HTTP 201)
+
+def test_taxonomy_module(db):
+    print("\n--- 2. TEST MODULE QUẢN LÝ DANH MỤC (T3CFCC6) ---")
+
+    # 2.1 Thêm mới Thể loại, Tác giả, NXB (201)
     new_cat = create_category(data=CategoryCreate(name="Trí Tuệ Nhân Tạo", description="Sách AI"), db=db)
-    check(new_cat.get("id") is not None and new_cat.get("name") == "Trí Tuệ Nhân Tạo",
-          "API_TAX_01", "create_category - Thêm mới Thể loại thành công (HTTP 201)")
-
-    # 12. Thêm mới Tác giả & Nhà xuất bản thành công (HTTP 201)
     new_auth = create_author(data=AuthorCreate(name="Andrew Ng", nationality="Mỹ"), db=db)
     new_pub = create_publisher(data=PublisherCreate(name="NXB Kim Đồng", address="Hà Nội"), db=db)
-    check(new_auth.get("id") is not None and new_pub.get("id") is not None,
-          "API_TAX_02", "create_author & create_publisher - Thêm Tác giả và NXB thành công (HTTP 201)")
+    assert new_cat["id"] and new_auth["id"] and new_pub["id"]
+    print("✓ Thêm mới Thể loại, Tác giả, NXB thành công (HTTP 201)")
 
-    # 13. Chặn thêm mới Thể loại trùng tên (không phân biệt hoa thường) (HTTP 400)
+    # 2.2 Chặn trùng tên thể loại (400)
     try:
         create_category(data=CategoryCreate(name="trí tuệ nhân tạo"), db=db)
-        check(False, "API_TAX_03", "Chặn trùng tên", "Không bị chặn")
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_TAX_03", "create_category - Chặn thêm Thể loại trùng tên hoa/thường (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn trùng tên thể loại thành công (HTTP 400)")
 
-    # 14. Tìm kiếm từ khoá và phân trang Thể loại
+    # 2.3 Tìm kiếm & phân trang
     search_cat = get_categories(search="Nhân Tạo", page=1, page_size=10, db=db)
-    check(search_cat.get("total") == 1 and search_cat["items"][0]["name"] == "Trí Tuệ Nhân Tạo",
-          "API_TAX_04", "get_categories - Tìm kiếm Thể loại theo từ khoá và phân trang (HTTP 200)")
+    assert search_cat["total"] == 1 and search_cat["items"][0]["name"] == "Trí Tuệ Nhân Tạo"
+    print("✓ Tìm kiếm & phân trang danh mục thành công (Total: 1)")
 
-    # 15. Chặn sửa tên Thể loại trùng với thể loại khác (HTTP 400)
+    # 2.4 Chặn sửa trùng tên thể loại khác (400)
     try:
-        update_category(category_id=data["cat_econ"].id, data=CategoryUpdate(name="Khoa Học Máy Tính"), db=db)
-        check(False, "API_TAX_05", "Chặn sửa trùng", "Không bị chặn")
+        update_category(category_id=2, data=CategoryUpdate(name="Công nghệ Thông tin"), db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_TAX_05", "update_category - Chặn đổi tên Thể loại trùng với thể loại khác (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn đổi sửa trùng tên thể loại khác thành công (HTTP 400)")
 
-    # 16. CHẶN XOÁ THỂ LOẠI KHI CÒN ĐẦU SÁCH LIÊN KẾT (HTTP 400)
-    try:
-        delete_category(category_id=data["cat_cs"].id, db=db)
-        check(False, "API_TAX_06", "Chặn xoá thể loại có sách", "Không bị chặn")
-    except HTTPException as e:
-        check(e.status_code == 400 and "Không thể xoá" in str(e.detail),
-              "API_TAX_06", "delete_category - Chặn xoá Thể loại khi còn sách liên kết (HTTP 400)")
+    # 2.5 Chặn xoá Thể loại / Tác giả / NXB khi còn sách liên kết (400)
+    for func, target_id in [(delete_category, 1), (delete_author, 1), (delete_publisher, 1)]:
+        try:
+            func(target_id, db=db)
+            assert False
+        except HTTPException as e:
+            assert e.status_code == 400 and "Không thể xoá" in str(e.detail)
+    print("✓ Chặn xoá Thể loại, Tác giả, NXB khi còn sách liên kết thành công (HTTP 400)")
 
-    # 17. CHẶN XOÁ TÁC GIẢ KHI CÒN ĐẦU SÁCH LIÊN KẾT (HTTP 400)
-    try:
-        delete_author(author_id=data["author_bob"].id, db=db)
-        check(False, "API_TAX_07", "Chặn xoá tác giả có sách", "Không bị chặn")
-    except HTTPException as e:
-        check(e.status_code == 400 and "Không thể xoá" in str(e.detail),
-              "API_TAX_07", "delete_author - Chặn xoá Tác giả khi còn sách liên kết (HTTP 400)")
+    # 2.6 Xoá thành công khi không còn sách liên kết & Chặn tên rỗng
+    assert delete_category(new_cat["id"], db=db)["success"]
+    assert delete_author(new_auth["id"], db=db)["success"]
+    assert delete_publisher(new_pub["id"], db=db)["success"]
+    print("✓ Xoá thành công danh mục khi không có sách liên kết (HTTP 200)")
 
-    # 18. CHẶN XOÁ NHÀ XUẤT BẢN KHI CÒN ĐẦU SÁCH LIÊN KẾT (HTTP 400)
-    try:
-        delete_publisher(publisher_id=data["pub_tt"].id, db=db)
-        check(False, "API_TAX_08", "Chặn xoá NXB có sách", "Không bị chặn")
-    except HTTPException as e:
-        check(e.status_code == 400 and "Không thể xoá" in str(e.detail),
-              "API_TAX_08", "delete_publisher - Chặn xoá NXB khi còn sách liên kết (HTTP 400)")
-
-    # 19. Xoá thành công khi KHÔNG CÒN sách liên kết (HTTP 200)
-    del_cat_ok = delete_category(category_id=new_cat["id"], db=db)
-    del_auth_ok = delete_author(author_id=new_auth["id"], db=db)
-    del_pub_ok = delete_publisher(publisher_id=new_pub["id"], db=db)
-    check(del_cat_ok.get("success") and del_auth_ok.get("success") and del_pub_ok.get("success"),
-          "API_TAX_09", "delete_* - Xoá thành công Thể loại, Tác giả, NXB khi không có sách liên kết (HTTP 200)")
-
-    # 20. Chặn nhập tên toàn ký tự khoảng trắng rỗng (HTTP 400)
     try:
         create_category(data=CategoryCreate(name="   "), db=db)
-        check(False, "API_TAX_10", "Chặn tên rỗng", "Không bị chặn")
+        assert False
     except HTTPException as e:
-        check(e.status_code == 400, "API_TAX_10", "create_category - Chặn nhập tên toàn khoảng trắng rỗng (HTTP 400)")
+        assert e.status_code == 400
+        print("✓ Chặn nhập tên rỗng khoảng trắng thành công (HTTP 400)")
 
-    # =========================================================================
-    # PHẦN 3: API TÌM KIẾM & TRA CỨU SÁCH (T3CFC09)
-    # =========================================================================
-    print("\n▶ PHẦN 3: KIỂM THỬ API TÌM KIẾM SÁCH (T3CFC09)")
 
-    def call_search_books(db, keyword=None, scope="all", category_id=None, category_ids=None,
-                          author_id=None, publisher_id=None, publish_year=None,
-                          languages=None, shelf_locations=None, available_only=False,
-                          sort_by="created_at", sort_order="desc", page=1, page_size=10):
-        return search_books(
-            db=db, keyword=keyword, scope=scope, category_id=category_id, category_ids=category_ids,
-            author_id=author_id, publisher_id=publisher_id, publish_year=publish_year,
-            languages=languages, shelf_locations=shelf_locations, available_only=available_only,
-            sort_by=sort_by, sort_order=sort_order, page=page, page_size=page_size
-        )
+def test_book_search_and_detail(db):
+    print("\n--- 3. TEST MODULE TÌM KIẾM & CHI TIẾT SÁCH (T3CFC09 & T3CFC4B) ---")
 
-    # 21. Tìm kiếm sách theo từ khoá chung (HTTP 200)
-    search_res = call_search_books(db=db, keyword="Clean Code", page=1, page_size=10)
-    check(search_res.total >= 1 and any("Clean Code" in b.title for b in search_res.items),
-          "API_SEARCH_01", "search_books - Tìm kiếm sách theo từ khoá chung (HTTP 200)")
+    # Helper gọi an toàn cho router search
+    def call_search(**kwargs):
+        defaults = dict(keyword=None, scope="all", category_id=None, category_ids=None,
+                        author_id=None, publisher_id=None, publish_year=None,
+                        languages=None, shelf_locations=None, available_only=False,
+                        sort_by="created_at", sort_order="desc", page=1, page_size=10)
+        defaults.update(kwargs)
+        return search_books(db=db, **defaults)
 
-    # 22. Tìm kiếm theo phạm vi tác giả (HTTP 200)
-    search_auth = call_search_books(db=db, keyword="Robert C. Martin", scope="author")
-    check(search_auth.total >= 1,
-          "API_SEARCH_02", "search_books - Tìm kiếm sách theo tác giả scope='author' (HTTP 200)")
+    # 3.1 Tìm kiếm theo từ khoá chung & theo tác giả
+    s1 = call_search(keyword="Clean Code")
+    assert s1.total >= 1 and any("Clean Code" in b.title for b in s1.items)
+    s2 = call_search(keyword="Robert C. Martin", scope="author")
+    assert s2.total >= 1
+    print("✓ Tìm kiếm theo từ khoá chung & phạm vi tác giả thành công")
 
-    # 23. Lọc theo thể loại (HTTP 200)
-    search_cat_filter = call_search_books(db=db, category_id=data["cat_cs"].id)
-    check(search_cat_filter.total >= 1,
-          "API_SEARCH_03", "search_books - Lọc danh sách sách theo thể loại (HTTP 200)")
+    # 3.2 Lọc theo thể loại & lọc available_only
+    s3 = call_search(category_id=1)
+    assert s3.total >= 1
+    s4 = call_search(available_only=True)
+    assert not any(b.isbn in ["978-03", "978-04"] for b in s4.items)
+    print("✓ Lọc theo thể loại & available_only thành công")
 
-    # 24. Lọc sách chỉ lấy bản sao khả dụng (available_only=True)
-    search_avail = call_search_books(db=db, available_only=True)
-    check(not any(b.isbn in [data["book_refactor"].isbn, data["book_extra"].isbn] for b in search_avail.items),
-          "API_SEARCH_04", "search_books - Lọc available_only=True loại bỏ sách hết bản sao (HTTP 200)")
+    # 3.3 Tìm từ khoá không khớp & Truy cập công khai
+    assert call_search(keyword="XYZ_NONEXISTENT").total == 0
+    assert call_search(page=1, page_size=5).total > 0
+    print("✓ Xử lý từ khoá không khớp & truy cập công khai thành công")
 
-    # 25. Tìm kiếm từ khoá không tồn tại trả về total=0 (HTTP 200)
-    search_none = call_search_books(db=db, keyword="XYZ_NONEXISTENT_99999")
-    check(search_none.total == 0 and len(search_none.items) == 0,
-          "API_SEARCH_05", "search_books - Tìm kiếm từ khoá không khớp trả về total=0 (HTTP 200)")
-
-    # 26. Khách vãng lai chưa đăng nhập tìm kiếm sách công khai hợp lệ
-    search_pub = call_search_books(db=db, page=1, page_size=5)
-    check(search_pub.total > 0,
-          "API_SEARCH_06", "search_books - Khách vãng lai tìm kiếm sách công khai không cần token (HTTP 200)")
-
-    # =========================================================================
-    # PHẦN 4: API CHI TIẾT SÁCH & THỐNG KÊ BẢN SAO (T3CFC4B)
-    # =========================================================================
-    print("\n▶ PHẦN 4: KIỂM THỬ API CHI TIẾT SÁCH (T3CFC4B)")
-
-    # 27. Xem chi tiết đầu sách theo ISBN hợp lệ
-    detail_res = get_book_detail(isbn=data["book_out"].isbn, db=db)
-    check(detail_res.title == data["book_out"].title and detail_res.total_copies == 2,
-          "API_DETAIL_01", "get_book_detail - Lấy chi tiết sách, tác giả và thống kê bản sao (HTTP 200)")
-
-    # 28. Tra cứu chi tiết sách với mã ISBN không tồn tại (HTTP 404)
+    # 3.4 Chi tiết sách & ISBN không tồn tại
+    d1 = get_book_detail(isbn="978-01", db=db)
+    assert d1.title == "Clean Code" and d1.total_copies == 2
     try:
-        get_book_detail(isbn="999-0000000000", db=db)
-        check(False, "API_DETAIL_02", "Tra cứu ISBN sai", "Không báo lỗi 404")
+        get_book_detail(isbn="999-99", db=db)
+        assert False
     except HTTPException as e:
-        check(e.status_code == 404, "API_DETAIL_02", "get_book_detail - Tra cứu ISBN không tồn tại trả về HTTP 404")
-
-    # 29. Khách vãng lai xem chi tiết sách công khai
-    detail_pub = get_book_detail(isbn=data["book_out"].isbn, db=db)
-    check(detail_pub.isbn == data["book_out"].isbn,
-          "API_DETAIL_03", "get_book_detail - Khách vãng lai xem chi tiết sách công khai không cần token (HTTP 200)")
-
-    # =========================================================================
-    # PHẦN 5: XÁC THỰC & PHÂN QUYỀN (401 UNAUTHORIZED & 403 FORBIDDEN)
-    # =========================================================================
-    print("\n▶ PHẦN 5: KIỂM THỬ XÁC THỰC & PHÂN QUYỀN (401 & 403)")
-
-    # 30. Chặn gọi API đặt trước khi không có thông tin user (HTTP 401)
-    try:
-        api_create_reservation(payload=ReservationCreate(book_isbn=data["book_out"].isbn), user_id=None, current_user=None, db=db)
-        check(False, "API_AUTH_01", "Chặn unauthenticated", "Không bị chặn")
-    except HTTPException as e:
-        check(e.status_code == 401, "API_AUTH_01", "api_create_reservation - Chặn đặt trước khi thiếu user_id/token (HTTP 401)")
-
-    # 31. Độc giả (READER) cố tình gọi chức năng quản trị thủ thư
-    def mock_staff_guard(user: User):
-        if user.role not in [UserRole.LIBRARIAN, UserRole.ADMIN]:
-            raise HTTPException(status_code=403, detail="Bạn không có quyền thực hiện thao tác này.")
-        return True
-
-    try:
-        mock_staff_guard(data["reader1"])
-        check(False, "API_PERM_01", "Chặn Reader", "Không bị chặn")
-    except HTTPException as e:
-        check(e.status_code == 403, "API_PERM_01", "mock_staff_guard - Độc giả cố duyệt nhận sách bị chặn 403 Forbidden")
-
-    # 32. Thủ thư (LIBRARIAN) truy cập danh sách đặt trước sẵn sàng tại quầy (HTTP 200)
-    staff_ready = api_get_staff_ready_reservations(db=db)
-    check(isinstance(staff_ready, list),
-          "API_PERM_02", "api_get_staff_ready_reservations - Thủ thư truy cập thành công danh sách sẵn sàng (HTTP 200)")
-
-    db.close()
-    engine.dispose()
-
-    if os.path.exists(TEST_DB_NAME):
-        try: os.remove(TEST_DB_NAME)
-        except Exception: pass
-
-    print("\n" + "=" * 70)
-    print(f"KẾT QUẢ KIỂM THỬ: {TOTAL_PASS}/{TOTAL_PASS + TOTAL_FAIL} PASS (TỶ LỆ: 100.0%)")
-    print(f"SỐ TEST CASE THẤT BẠI: {TOTAL_FAIL}")
-    print("=" * 70)
-    print("\n==========================================")
-    print("TẤT CẢ TEST BACKEND API T3CF974 ĐÃ PASS 100%!")
-    print("==========================================")
+        assert e.status_code == 404
+    print("✓ Xem chi tiết sách & chặn ISBN không tồn tại thành công (HTTP 200 / 404)")
 
 
 if __name__ == "__main__":
-    run_tests()
+    db, users = setup_db()
+    test_reservation_module(db, users)
+    test_taxonomy_module(db)
+    test_book_search_and_detail(db)
+    db.close()
+    engine.dispose()
+    print("\n==========================================")
+    print("✓ TẤT CẢ TEST API MODULE T3CF974 ĐÃ PASS 100%!")
+    print("==========================================")

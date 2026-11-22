@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? `${card.card_code} · ${card.card_type}`
         : `${user.role}`;
     }
-    if (userLink) userLink.href = "auth.html";
+    if (userLink) userLink.href = "profile.html";
     if (logoutBtn) logoutBtn.hidden = false;
   }
 

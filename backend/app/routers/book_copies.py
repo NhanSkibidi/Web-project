@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse, CopyStatusChangeRequest
 from app.schemas.copy_status_log import CopyStatusLogResponse
@@ -8,7 +9,7 @@ from app.crud.book_copies import create_copy, get_book_copies, get_copy_by_code,
 router = APIRouter(prefix="/book_copies", tags=["BookCopies"])
 
 
-@router.post("", response_model=list[BookCopyResponse], status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=list[BookCopyResponse], status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])
 def create_book_copies(book_copies: BookCopiesCreate, db: Session = Depends(get_db)):
     new_copies = create_copy(book_copies=book_copies, db=db)
     if new_copies == "Book not found":
@@ -30,7 +31,7 @@ def get_book_copy_by_code(copy_code: str, db: Session = Depends(get_db)):
 
     return book_copy
 
-@router.get("", response_model=list[BookCopyResponse], status_code = status.HTTP_200_OK)
+@router.get("", response_model=list[BookCopyResponse], status_code = status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def get_book_copies_api(
     book_isbn: str | None = None,
     status: str | None = None,
@@ -44,7 +45,7 @@ def get_book_copies_api(
         shelf_location=shelf_location
     )
 
-@router.patch("/{book_copy_id}/report-lost", response_model=BookCopyResponse, status_code = status.HTTP_200_OK)
+@router.patch("/{book_copy_id}/report-lost", response_model=BookCopyResponse, status_code = status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def report_lost_api(
     book_copy_id: int, 
     data: CopyStatusChangeRequest, 
@@ -56,7 +57,7 @@ def report_lost_api(
         reason=data.reason
         )
 
-@router.patch("/{book_copy_id}/report-damaged", response_model=BookCopyResponse, status_code = status.HTTP_200_OK)
+@router.patch("/{book_copy_id}/report-damaged", response_model=BookCopyResponse, status_code = status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def report_damaged_api(
     book_copy_id: int,
     data: CopyStatusChangeRequest,
@@ -68,7 +69,7 @@ def report_damaged_api(
         reason=data.reason
     )
 
-@router.patch("/{book_copy_id}/dispose", response_model=BookCopyResponse, status_code = status.HTTP_200_OK)
+@router.patch("/{book_copy_id}/dispose", response_model=BookCopyResponse, status_code = status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def dispose_copy_api(
     book_copy_id: int,
     data: CopyStatusChangeRequest,
@@ -80,7 +81,7 @@ def dispose_copy_api(
         reason=data.reason
     )
 
-@router.get("/{book_copy_id}/history", response_model=list[CopyStatusLogResponse], status_code = status.HTTP_200_OK)
+@router.get("/{book_copy_id}/history", response_model=list[CopyStatusLogResponse], status_code = status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def get_copy_history_api(
     book_copy_id: int,
     db: Session = Depends(get_db)

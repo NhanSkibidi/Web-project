@@ -61,7 +61,7 @@ from app.crud.loan_service import (
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
-readers_router = APIRouter(prefix="/readers", tags=["Readers"])
+# readers_router = APIRouter(prefix="/readers", tags=["Readers"])
 copies_router = APIRouter(prefix="/copies", tags=["Copies"])
 notifications_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
@@ -85,7 +85,7 @@ def _resolve_user_id(
 
 
 # ── API LỊCH SỬ MƯỢN TRẢ (DÙNG CHO TRANG CHI TIẾT ĐỘC GIẢ) ────
-
+"Lọc lịch sửa mượn sách"
 @router.get("", response_model=list[LoanHistoryOut])
 def list_loans(
     user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
@@ -96,7 +96,7 @@ def list_loans(
     """Lấy danh sách & lịch sử mượn trả sách từ module Mượn."""
     return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
 
-
+"Lọc "
 @router.get("/user/{user_id}", response_model=list[LoanHistoryOut])
 def list_loans_by_user(
     user_id: int,
@@ -107,24 +107,24 @@ def list_loans_by_user(
     """Lấy toàn bộ lịch sử mượn trả của một độc giả cụ thể (dùng cho trang Chi tiết độc giả)."""
     return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
 
-@readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
-def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
-    """Tra cứu độc giả theo mã thẻ thư viện (nhập hoặc quét mã)."""
-    return get_reader_by_card(db, card_code)
+# @readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
+# def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
+#     """Tra cứu độc giả theo mã thẻ thư viện (nhập hoặc quét mã)."""
+#     return get_reader_by_card(db, card_code)
 
 
 @router.get("/readers/by-card/{card_code}", response_model=ReaderLookupResponse)
 def lookup_reader_by_card_alias(card_code: str, db: Session = Depends(get_db)):
     return get_reader_by_card(db, card_code)
 
-@copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
-def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
-    return get_copy_by_barcode(db, barcode)
+# @copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
+# def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
+#     return get_copy_by_barcode(db, barcode)
 
 
-@router.get("/copies/by-barcode/{barcode}", response_model=CopyLookupResponse)
-def lookup_copy_by_barcode_alias(barcode: str, db: Session = Depends(get_db)):
-    return get_copy_by_barcode(db, barcode)
+@router.get("/copies/by-barcode/{copycode}", response_model=CopyLookupResponse)
+def lookup_copy_by_barcode_alias(copycode: str, db: Session = Depends(get_db)):
+    return get_copy_by_barcode(db=db, copycode=copycode)
 
 @router.post("/counter/validate", response_model=CounterBorrowValidateResponse)
 def validate_counter(

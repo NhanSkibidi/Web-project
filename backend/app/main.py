@@ -65,7 +65,7 @@ app.include_router(auth.router, prefix="/api")
 # Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
 app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
-app.include_router(loans.readers_router, prefix="/api")
+# app.include_router(loans.readers_router, prefix="/api")
 app.include_router(loans.copies_router, prefix="/api")
 app.include_router(loans.notifications_router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")

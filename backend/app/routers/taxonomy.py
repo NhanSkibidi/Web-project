@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.crud import taxonomy as crud_tax
 from app.schemas.taxonomy import (
@@ -61,19 +62,19 @@ def get_category_by_id(category_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])
 def create_category(data: CategoryCreate, db: Session = Depends(get_db)):
     """Thêm thể loại mới (tên không được trùng)."""
     return crud_tax.create_category(db, data)
 
 
-@router.put("/categories/{category_id}", response_model=CategoryResponse)
+@router.put("/categories/{category_id}", response_model=CategoryResponse, dependencies=[Depends(require_librarian)])
 def update_category(category_id: int, data: CategoryUpdate, db: Session = Depends(get_db)):
     """Cập nhật thể loại (tên không được trùng với thể loại khác)."""
     return crud_tax.update_category(db, category_id, data)
 
 
-@router.delete("/categories/{category_id}")
+@router.delete("/categories/{category_id}", dependencies=[Depends(require_librarian)])
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     """Xoá thể loại (chặn xoá nếu vẫn còn đầu sách liên kết và báo lỗi rõ ràng)."""
     return crud_tax.delete_category(db, category_id)

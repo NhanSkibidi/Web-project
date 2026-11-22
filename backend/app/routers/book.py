@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import distinct, func
 from sqlalchemy.orm import Session
+from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.crud.book import (
     create_book,
@@ -177,7 +178,7 @@ def get_book_detail(
         disposed_copies=result["disposed_copies"],
     )
 
-@router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=BookSearchItem, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])
 def create_book_api(
     book_data: BookCreate,
     db: Session = Depends(get_db)
@@ -213,7 +214,7 @@ def create_book_api(
             detail=str(e)
         )
 
-@router.put("/{isbn}", response_model=BookSearchItem, status_code = status.HTTP_200_OK)
+@router.put("/{isbn}", response_model=BookSearchItem, status_code=status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def update_book_api(
     isbn: str,
     book_data: BookUpdate,
@@ -251,7 +252,7 @@ def update_book_api(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e))
 
-@router.delete("/{isbn}", status_code=status.HTTP_200_OK)
+@router.delete("/{isbn}", status_code=status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 def delete_book_api(isbn: str, db: Session = Depends(get_db)):
     result = delete_book(db, isbn)
 
@@ -265,7 +266,7 @@ def delete_book_api(isbn: str, db: Session = Depends(get_db)):
 
     return {"message": "Đầu sách đã được xóa"}
 
-@router.post("/{isbn}/cover", status_code = status.HTTP_200_OK)
+@router.post("/{isbn}/cover", status_code=status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
 async def upload_book_cover(
     isbn: str,
     file: UploadFile = File(...),

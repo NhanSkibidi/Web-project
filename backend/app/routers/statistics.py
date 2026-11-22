@@ -12,6 +12,7 @@ from app.crud.statistics import (
     get_top_borrowed_books,
     resolve_date_range,
 )
+from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.schemas.statistics import (
     BorrowingTrendPoint,
@@ -21,7 +22,11 @@ from app.schemas.statistics import (
     TopBorrowedBookItem,
 )
 
-router = APIRouter(prefix="/statistics", tags=["Statistics"])
+router = APIRouter(
+    prefix="/statistics",
+    tags=["Statistics"],
+    dependencies=[Depends(require_librarian)],
+)
 
 
 @router.get("/dashboard", response_model=DashboardStatisticsResponse)

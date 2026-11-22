@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Kiểm thử tự động cho Task T3CF974 (Nguyễn Nhật Anh 2 - B25DTCN065):
-  1. [T3CFCAC / T3CFBEF] Đặt trước sách khi hết
-  2. [T3CFCC6] Quản lý Thể loại, Tác giả, Nhà xuất bản
-  3. [T3CFC09] Tìm kiếm & lọc sách
-  4. [T3CFC4B] Chi tiết sách & thống kê bản sao
+Kiểm thử tự động toàn diện cho Module Đặt trước và Danh mục sách:
+  1. Đặt trước sách khi hết (Reservation)
+  2. Quản lý Thể loại, Tác giả, Nhà xuất bản (Taxonomy)
+  3. Tìm kiếm & lọc sách (Book Search)
+  4. Chi tiết sách & thống kê bản sao (Book Detail)
 
-Chạy: python test_t3cf974_module.py
+Chạy: python test_reservation_module.py
 """
 import os
 import sys
@@ -281,5 +281,5 @@ if __name__ == "__main__":
     db.close()
     engine.dispose()
     print("\n==========================================")
-    print("✓ TẤT CẢ TEST API MODULE T3CF974 ĐÃ PASS 100%!")
+    print("✓ TẤT CẢ TEST API MODULE ĐÃ PASS 100%!")
     print("==========================================")

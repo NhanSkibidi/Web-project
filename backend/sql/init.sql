@@ -198,6 +198,42 @@ CREATE TABLE IF NOT EXISTS fines (
   CONSTRAINT fk_fines_collector FOREIGN KEY (collected_by) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 15. Bảng card_action_logs (Lịch sử gia hạn, khoá/mở khoá, tự động hết hạn thẻ)
+CREATE TABLE IF NOT EXISTS card_action_logs (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  card_id         INT NOT NULL,
+  reader_id       INT NOT NULL,
+  action          VARCHAR(30) NOT NULL,
+  old_status      VARCHAR(20) NULL,
+  new_status      VARCHAR(20) NOT NULL,
+  reason          TEXT NULL,
+  old_expiry_date DATE NULL,
+  new_expiry_date DATE NULL,
+  performed_by    INT NULL,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_cal_card (card_id),
+  INDEX idx_cal_reader (reader_id),
+  CONSTRAINT fk_cal_card FOREIGN KEY (card_id) REFERENCES library_cards (id),
+  CONSTRAINT fk_cal_reader FOREIGN KEY (reader_id) REFERENCES users (id),
+  CONSTRAINT fk_cal_performer FOREIGN KEY (performed_by) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 16. Bảng notifications (Thông báo nhắc hạn & quá hạn in-app)
+CREATE TABLE IF NOT EXISTS notifications (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT NOT NULL,
+  loan_id      INT NULL,
+  loan_item_id INT NULL,
+  title        VARCHAR(255) NOT NULL,
+  message      TEXT NOT NULL,
+  type         VARCHAR(30) NOT NULL DEFAULT 'SYSTEM',
+  is_read      BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_notif_user (user_id),
+  CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users (id),
+  CONSTRAINT fk_notif_loan FOREIGN KEY (loan_id) REFERENCES loans (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==============================================================================

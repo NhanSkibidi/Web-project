@@ -115,17 +115,21 @@ def check_card_can_borrow(db: Session, user_id: int) -> LibraryCard:
             detail="Thẻ thư viện đã bị khóa, vui lòng liên hệ thủ thư",
         )
 
+    today = date.today()
+    if card.expiry_date is None or card.expiry_date < today:
+        if card.status != CardStatus.EXPIRED:
+            card.status = CardStatus.EXPIRED
+            db.commit()
+            db.refresh(card)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Thẻ thư viện đã hết hạn sử dụng",
+        )
+
     if card.status != CardStatus.ACTIVE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Thẻ thư viện không ở trạng thái hoạt động (Trạng thái: {card.status})",
-        )
-
-    today = date.today()
-    if card.expiry_date is None or card.expiry_date < today:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Thẻ thư viện đã hết hạn sử dụng",
         )
 
     return card

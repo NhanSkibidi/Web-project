@@ -26,7 +26,8 @@
     <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
     <header class="librarian-topbar">
         <div class="topbar-left">
-            <button id="btn-toggle-sidebar" class="mobile-menu-btn" type="button" aria-label="Mở menu điều hướng" title="Mở danh mục điều hướng">
+            <button id="btn-toggle-sidebar" class="mobile-menu-btn" type="button" aria-label="Mở menu điều hướng"
+                title="Mở danh mục điều hướng">
                 <span class="material-symbols-outlined">menu</span>
             </button>
             <a href="../index.html" class="brand-badge">
@@ -80,7 +81,7 @@
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
             </a>
-            <a href="../index.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+            <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
                 <span class="material-symbols-outlined">receipt_long</span>
                 <span class="rail-label">Quản lý Phiếu mượn</span>
             </a>
@@ -211,8 +212,7 @@
             <section class="filter-toolbar">
                 <div class="filter-search-wrap">
                     <span class="material-symbols-outlined">search</span>
-                    <input type="text" id="filter-search-input"
-                        placeholder="Tìm theo tên sách, tác giả, ISBN...">
+                    <input type="text" id="filter-search-input" placeholder="Tìm theo tên sách, tác giả, ISBN...">
                 </div>
                 <div>
                     <select id="filter-category" class="filter-select">
@@ -336,16 +336,31 @@
                                 placeholder="Nhập tên chính xác của sách, giáo trình học phần..." required>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 12px;">
                             <div class="form-group">
-                                <label for="bookIsbn">Mã phân loại / ISBN <span
-                                        style="color: var(--color-danger);">*</span></label>
-                                <div style="position: relative; display: flex; align-items: center;">
-                                    <span class="material-symbols-outlined"
-                                        style="position: absolute; left: 10px; font-size: 16px; color: var(--color-text-secondary);">barcode</span>
-                                    <input type="text" id="bookIsbn" class="form-input font-mono"
-                                        style="padding-left: 32px;" placeholder="VD: BK-IT-2024-002" required>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <label for="bookIsbn" style="margin-bottom: 0;">Mã phân loại / ISBN <span
+                                            style="color: var(--color-danger);">*</span></label>
+                                    <span id="isbnLookupStatus"
+                                        style="font-size: 11px; color: var(--color-brand); font-weight: 600;"></span>
                                 </div>
+                                <div class="isbn-input-group">
+                                    <div class="isbn-input-inner">
+                                        <span class="material-symbols-outlined isbn-input-icon">barcode</span>
+                                        <input type="text" id="bookIsbn" class="form-input font-mono isbn-input-field"
+                                            placeholder="Nhập ISBN (VD: 9780132350884)..." required>
+                                    </div>
+                                    <button type="button" id="btnLookupIsbn" class="btn-lookup-isbn"
+                                        title="Tra cứu tự động từ Google Books &amp; Open Library">
+                                        <span class="material-symbols-outlined">auto_fix_high</span>
+                                        <span>Tra cứu</span>
+                                    </button>
+                                </div>
+                                <small class="isbn-hint">
+                                    Nhập ISBN rồi bấm <strong>Tra cứu</strong> (hoặc ấn Enter) để tự điền tên, tác giả,
+                                    NXB, ảnh bìa.
+                                </small>
                             </div>
                             <div class="form-group">
                                 <label for="bookCategory">Chuyên ngành / Thể loại</label>

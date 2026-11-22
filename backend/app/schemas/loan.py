@@ -53,9 +53,6 @@ class LoanResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# ── SCHEMAS CHO MƯỢN SÁCH TẠI QUẦY (COUNTER BORROWING) ─────────
-
 class CounterBorrowValidateRequest(BaseModel):
     """Yêu cầu kiểm tra điều kiện mượn tại quầy."""
     card_code: str
@@ -69,6 +66,7 @@ class ConditionItem(BaseModel):
     passed: bool
     mandatory: bool = True
     message: str
+
 
 
 class CounterBorrowValidateResponse(BaseModel):
@@ -185,6 +183,20 @@ class RenewalResponse(BaseModel):
     message: str
 
 
+class LoanRenewalResponse(BaseModel):
+    """Kết quả gia hạn toàn bộ phiếu mượn."""
+    loan_id: int
+    loan_code: str
+    renewed_count: int
+    max_renewals: int
+    old_due_date: str
+    new_due_date: str
+    renewed_by: str
+    message: str
+    items: list[RenewalResponse] = []
+
+
+
 # ── SCHEMAS CHO TASK T3CFF48: DANH SÁCH QUÁ HẠN & NHẮC TRẢ SÁCH ───────
 
 class OverdueLoanItem(BaseModel):
@@ -289,3 +301,34 @@ class RemindLoanResponse(BaseModel):
     message: str
 
 
+# ── SCHEMAS CHO LỊCH SỬ MƯỢN TRẢ ĐỘC GIẢ (T3CFA8B) ─────────────
+
+class LoanHistoryItemOut(BaseModel):
+    """Chi tiết 1 cuốn sách trong lịch sử mượn trả (từ module Mượn)."""
+    id: int
+    loan_id: int
+    book_isbn: str
+    book_title: str
+    copy_id: int | None = None
+    copy_code: str | None = None
+    due_date: datetime | None = None
+    renewal_count: int = 0
+    return_date: datetime | None = None
+    is_overdue: bool = False
+    overdue_days: int = 0
+    estimated_fine: float = 0.0
+
+
+class LoanHistoryOut(BaseModel):
+    """Chi tiết phiếu mượn kèm lịch sử mượn trả cho trang chi tiết độc giả."""
+    id: int
+    user_id: int
+    reader_name: str | None = None
+    processed_by: int | None = None
+    borrow_type: str
+    status: str
+    reject_reason: str | None = None
+    created_at: datetime
+    borrowed_at: datetime | None = None
+    due_date: datetime | None = None
+    loan_items: list[LoanHistoryItemOut] = []

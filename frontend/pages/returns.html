@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,17 @@
   <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
 
   <!-- Stylesheet riêng của trang, tách biệt hoàn toàn theo yêu cầu -->
   <link rel="stylesheet" href="../css/returns.css">
 </head>
+
 <body data-root="../" class="returns-body">
 
   <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
@@ -65,30 +71,30 @@
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
-      <a href="../index.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
-        <span class="material-symbols-outlined">receipt_long</span>
-        <span class="rail-label">Quản lý Phiếu mượn</span>
-      </a>
-      <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
-        <span class="material-symbols-outlined">library_add</span>
-        <span class="rail-label">Mượn sách tại quầy</span>
-      </a>
-      <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
-        <span class="material-symbols-outlined">assignment_return</span>
-        <span class="rail-label">Trả sách tại quầy</span>
-      </a>
-      <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
-        <span class="material-symbols-outlined">payments</span>
-        <span class="rail-label">Xử lý tiền phạt</span>
-      </a>
-      <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
-        <span class="material-symbols-outlined">badge</span>
-        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
-      </a>
-      <a href="../index.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
-        <span class="material-symbols-outlined">settings</span>
-        <span class="rail-label">Cài đặt hệ thống</span>
-      </a>
+        <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span class="rail-label">Quản lý Phiếu mượn</span>
+        </a>
+        <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+          <span class="material-symbols-outlined">library_add</span>
+          <span class="rail-label">Mượn sách tại quầy</span>
+        </a>
+        <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
+          <span class="material-symbols-outlined">assignment_return</span>
+          <span class="rail-label">Trả sách tại quầy</span>
+        </a>
+        <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+          <span class="material-symbols-outlined">payments</span>
+          <span class="rail-label">Xử lý tiền phạt</span>
+        </a>
+        <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+          <span class="material-symbols-outlined">badge</span>
+          <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+        </a>
+        <a href="../index.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
+          <span class="material-symbols-outlined">settings</span>
+          <span class="rail-label">Cài đặt hệ thống</span>
+        </a>
     </nav>
     <div class="sidebar-rail-footer">
       <div style="display: flex; align-items: center;">
@@ -116,7 +122,8 @@
           </div>
           <h1 class="page-title">Trả sách tại quầy &amp; Thu phí phạt</h1>
           <p class="page-subtitle">
-            Quét mã vạch ấn bản, kiểm tra tình trạng vật lý, tự động tính toán số ngày quá hạn và phát hành biên lai hoàn trả.
+            Quét mã vạch ấn bản, kiểm tra tình trạng vật lý, tự động tính toán số ngày quá hạn và phát hành biên lai
+            hoàn trả.
           </p>
         </div>
         <div class="header-actions">
@@ -157,7 +164,7 @@
               <div class="scan-input-wrap">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <input id="barcode-scanner" type="text" autofocus autocomplete="off"
-                       placeholder="Quét mã vạch (Barcode) hoặc nhập mã bản sao..." value="UL-IT-2023-001">
+                  placeholder="Quét mã vạch (Barcode) hoặc nhập mã bản sao..." value="UL-IT-2023-001">
               </div>
               <button id="btn-scan" type="submit" class="btn-brand-primary">
                 <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
@@ -187,7 +194,8 @@
                       Thẻ hợp lệ
                     </span>
                   </h3>
-                  <div id="reader-email" style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">docgia01@library.com · Khoa CNTT</div>
+                  <div id="reader-email" style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+                    docgia01@library.com · Khoa CNTT</div>
                 </div>
               </div>
 
@@ -206,8 +214,10 @@
 
             <div class="reader-footer-strip">
               <div style="display: flex; gap: 16px;">
-                <span>Ngày mượn: <strong id="borrow-date-display" style="color: var(--color-text-primary);">25/09/2024</strong></span>
-                <span>Tổng mượn đợt này: <strong id="borrow-count-display" style="color: var(--color-text-primary);">02 ấn bản</strong></span>
+                <span>Ngày mượn: <strong id="borrow-date-display"
+                    style="color: var(--color-text-primary);">25/09/2024</strong></span>
+                <span>Tổng mượn đợt này: <strong id="borrow-count-display" style="color: var(--color-text-primary);">02
+                    ấn bản</strong></span>
               </div>
               <span>Thủ thư duyệt: <strong style="color: var(--color-text-primary);">Trần Hoàng Phúc</strong></span>
             </div>
@@ -220,7 +230,8 @@
                 <span class="material-symbols-outlined">checklist</span>
                 <span>Danh sách ấn phẩm đang xử lý trả (<span id="items-count-badge">02</span>)</span>
               </div>
-              <span style="font-size: 12px; color: var(--color-text-muted);">Tình trạng thực tế • Biểu phí kiểm kê</span>
+              <span style="font-size: 12px; color: var(--color-text-muted);">Tình trạng thực tế • Biểu phí kiểm
+                kê</span>
             </div>
 
             <div class="table-wrap">
@@ -228,7 +239,8 @@
                 <thead>
                   <tr>
                     <th style="width: 44px; text-align: center;">
-                      <label class="custom-tick-label" style="justify-content: center; margin: 0;" title="Chọn tất cả ấn bản">
+                      <label class="custom-tick-label" style="justify-content: center; margin: 0;"
+                        title="Chọn tất cả ấn bản">
                         <input id="check-all-items" type="checkbox" checked class="custom-tick-input">
                         <span class="custom-tick-box">
                           <span class="material-symbols-outlined tick-icon">check</span>
@@ -253,7 +265,8 @@
                 <span class="material-symbols-outlined" style="font-size: 18px;">add_circle_outline</span>
                 <span>+ Thêm ấn phẩm khác của độc giả <span id="add-extra-reader-name">Nguyễn Văn An</span></span>
               </button>
-              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Đã quét 2/2 cuốn theo phiếu gốc</span>
+              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Đã quét 2/2 cuốn
+                theo phiếu gốc</span>
             </div>
           </section>
 
@@ -264,7 +277,8 @@
               <div>
                 <strong style="color: var(--color-text-primary);">Quy chuẩn thủ thư tiếp nhận</strong>
                 <p style="margin: 4px 0 0; color: var(--color-text-muted);">
-                  Kiểm tra dấu mộc thư viện trang lót, mã RFID/Barcode sau gáy sách trước khi bấm xác nhận. Ấn phẩm sau khi hoàn tất sẽ tự động chuyển trạng thái về <strong>“Trong kho - Đang phân loại về kệ”</strong>.
+                  Kiểm tra dấu mộc thư viện trang lót, mã RFID/Barcode sau gáy sách trước khi bấm xác nhận. Ấn phẩm sau
+                  khi hoàn tất sẽ tự động chuyển trạng thái về <strong>“Trong kho - Đang phân loại về kệ”</strong>.
                 </p>
               </div>
             </div>
@@ -336,7 +350,8 @@
                 </label>
                 <label class="payment-method-label">
                   <input type="radio" name="payment-method" value="account" style="display: none;">
-                  <span class="material-symbols-outlined" style="font-size: 20px; margin-bottom: 2px;">account_balance_wallet</span>
+                  <span class="material-symbols-outlined"
+                    style="font-size: 20px; margin-bottom: 2px;">account_balance_wallet</span>
                   <span>Ví thư viện</span>
                 </label>
               </div>
@@ -349,7 +364,9 @@
                 </div>
                 <div class="cash-calc-row border-top">
                   <span>Tiền thừa trả khách:</span>
-                  <strong id="cash-change-display" style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">42.000 đ</strong>
+                  <strong id="cash-change-display"
+                    style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">42.000
+                    đ</strong>
                 </div>
               </div>
 
@@ -373,10 +390,9 @@
                     <div class="qr-corner qr-bottom-left"></div>
                     <div class="qr-corner qr-bottom-right"></div>
                     <img id="vietqr-image"
-                         src="https://img.vietqr.io/image/MB-99992525KS25-compact2.png?amount=58000&addInfo=TRA%20SACH%20PM-2024-0082&accountName=THU%20VIEN%20UNILIB"
-                         alt="Mã QR thanh toán VietQR"
-                         class="vietqr-image"
-                         onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=247-MB-99992525KS25-58000';">
+                      src="https://img.vietqr.io/image/MB-99992525KS25-compact2.png?amount=58000&addInfo=TRA%20SACH%20PM-2024-0082&accountName=THU%20VIEN%20UNILIB"
+                      alt="Mã QR thanh toán VietQR" class="vietqr-image"
+                      onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=247-MB-99992525KS25-58000';">
                   </div>
                   <div class="vietqr-scan-guide">
                     <span class="material-symbols-outlined">qr_code_scanner</span>
@@ -393,7 +409,9 @@
                     <span class="label">Số tài khoản:</span>
                     <div class="val-copy-group">
                       <strong class="font-mono text-brand" id="vietqr-acc-num">9999 2525 KS25</strong>
-                      <button type="button" class="btn-copy-chip" onclick="copyText('99992525KS25', 'Đã chép số tài khoản MB Bank!')" title="Sao chép số tài khoản">
+                      <button type="button" class="btn-copy-chip"
+                        onclick="copyText('99992525KS25', 'Đã chép số tài khoản MB Bank!')"
+                        title="Sao chép số tài khoản">
                         <span class="material-symbols-outlined">content_copy</span>
                       </button>
                     </div>
@@ -410,7 +428,9 @@
                     <span class="label">Nội dung CK:</span>
                     <div class="val-copy-group">
                       <span class="font-mono font-semibold" id="vietqr-memo">TRA SACH PM-2024-0082</span>
-                      <button type="button" class="btn-copy-chip" onclick="copyText(document.getElementById('vietqr-memo').textContent, 'Đã chép nội dung chuyển khoản!')" title="Sao chép nội dung">
+                      <button type="button" class="btn-copy-chip"
+                        onclick="copyText(document.getElementById('vietqr-memo').textContent, 'Đã chép nội dung chuyển khoản!')"
+                        title="Sao chép nội dung">
                         <span class="material-symbols-outlined">content_copy</span>
                       </button>
                     </div>
@@ -447,7 +467,8 @@
                 <span class="material-symbols-outlined">task_alt</span>
                 <span>XÁC NHẬN TRẢ SÁCH &amp; THU TIỀN</span>
               </button>
-              <button id="btn-cancel-return" type="button" class="btn-cancel-action" title="Hủy bỏ lượt tiếp nhận đang xử lý">
+              <button id="btn-cancel-return" type="button" class="btn-cancel-action"
+                title="Hủy bỏ lượt tiếp nhận đang xử lý">
                 <span class="material-symbols-outlined">restart_alt</span>
                 <span>Hủy bỏ lượt tiếp nhận này</span>
               </button>
@@ -660,4 +681,5 @@
   <script src="../js/utils.js"></script>
   <script src="../js/pages/returns.js"></script>
 </body>
+
 </html>

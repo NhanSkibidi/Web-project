@@ -24,54 +24,122 @@
 <body data-root="../" class="loan-mgmt-body">
 
   <!-- =========================================================================
-       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER)
+       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ THEO LOAN_BASKET
        ========================================================================= -->
-  <header class="librarian-topbar">
+  <header class="librarian-topbar site-header">
     <div class="topbar-left">
-      <a href="../index.html" class="brand-badge" title="Về trang chủ UniLib">
+      <!-- Logo -->
+      <a href="../index.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
         <div class="brand-icon">
-          <img src="../assets/images/logo.svg" alt="UniLib Logo" class="brand-logo-img"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <span class="material-symbols-outlined" style="display:none;">local_library</span>
+          <span class="material-symbols-outlined">local_library</span>
         </div>
         <div class="brand-text">
-          <span class="brand-name">KS25 Library</span>
-          <span class="brand-sub">Hệ thống Thư viện số</span>
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
         </div>
       </a>
-      <nav class="topbar-nav">
-        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
-        <a href="books.html" class="topbar-nav-link">Tra cứu sách</a>
-        <a href="loan_slip.html" class="topbar-nav-link">Phiếu mượn của tôi</a>
-        <a href="staff-dashboard.html" class="topbar-nav-link active">Quản trị thư viện</a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <!-- Navigation Menu -->
+      <nav class="topbar-nav" id="navMenu">
+        <a href="../index.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
+        <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
+        <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans">Phiếu mượn của tôi</a>
+        <a href="staff-dashboard.html" class="topbar-nav-link active" data-page="admin">Quản trị thư viện</a>
       </nav>
     </div>
 
+    <!-- Header Right Area -->
     <div class="topbar-right">
-      <div class="topbar-search">
-        <span class="material-symbols-outlined">search</span>
-        <input type="text" id="topbar-global-search" placeholder="Tra cứu tên sách, mã ISBN...">
-      </div>
-      <button type="button" class="topbar-icon-btn" title="Giỏ yêu cầu mượn" id="btn-topbar-basket">
-        <span class="material-symbols-outlined">shopping_bag</span>
-        <span class="topbar-icon-badge">3</span>
-      </button>
-      <div class="topbar-divider"></div>
-      <div class="librarian-profile">
-        <img src="../assets/images/Profile.png" alt="Avatar thủ thư" class="librarian-avatar-img"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="librarian-avatar" style="display:none;">A</div>
-        <div class="librarian-info">
-          <span class="librarian-name">Nguyễn Văn A</span>
-          <span class="librarian-role">Thủ thư ca sáng</span>
+      <!-- Chuông thông báo in-app (Task T3CFF48) -->
+      <div class="notif-dropdown-container" id="notifDropdownContainer">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-badge" id="notifBadge">2</span>
+        </button>
+        <!-- BẢNG NOTIFICATION IN-APP -->
+        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+          <div class="notif-header">
+            <div class="notif-title-group">
+              <span class="notif-title">Thông báo mượn trả</span>
+              <span class="notif-badge-pill">2 mới</span>
+            </div>
+            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
+          </div>
+          <div class="notif-list">
+            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
+              <div class="notif-icon-box overdue">
+                <span class="material-symbols-outlined">error</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
+                <span class="notif-time">10 phút trước • Quá hạn</span>
+              </div>
+            </a>
+            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
+            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
+              <div class="notif-icon-box due-soon">
+                <span class="material-symbols-outlined">alarm</span>
+              </div>
+              <div class="notif-content">
+                <div class="notif-item-title">
+                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
+                  <span class="notif-dot"></span>
+                </div>
+                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
+                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
+              </div>
+            </a>
+          </div>
+          <div class="notif-footer">
+            <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+          </div>
         </div>
       </div>
-      <button type="button" class="topbar-icon-btn" title="Tài khoản cá nhân" id="btn-topbar-account">
-        <span class="material-symbols-outlined">account_circle</span>
-      </button>
-      <button type="button" class="topbar-icon-btn" title="Đăng xuất" id="btn-topbar-logout">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
+
+      <!-- Giỏ mượn sách -->
+      <a href="loan_basket.html" class="topbar-icon-btn" data-page="cart" title="Giỏ mượn sách" id="btn-topbar-basket">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <span class="cart-badge-count" id="cartBadge" aria-live="polite">3</span>
+      </a>
+
+      <div class="topbar-divider"></div>
+
+      <!-- User Account Dropdown -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+          <div class="librarian-avatar">A</div>
+          <div class="librarian-info">
+            <span class="librarian-name">Nguyễn Văn An</span>
+            <span class="librarian-role">Sinh viên</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="auth.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <a href="loan_slip.html" class="dropdown-item">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <span>Lịch sử phiếu mượn</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 

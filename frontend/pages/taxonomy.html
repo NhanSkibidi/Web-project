@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Thể loại, Tác giả & Nhà xuất bản | UniLib KS25</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css?v=10.1">
+  <link rel="stylesheet" href="../css/taxonomy.css?v=1.0">
+</head>
+
+<body data-root="../" data-layout="staff" data-roles="ADMIN,LIBRARIAN" data-title="Quản lý Thể loại, Tác giả & NXB">
+
+  <!-- VÙNG NỘI DUNG CHÍNH (Được layout.js bọc trong staff-main) -->
+  <main class="taxonomy-main-wrapper">
+
+    <!-- 1. HEADER TRANG & BREADCRUMB -->
+    <div class="page-top-bar">
+      <div>
+        <div class="page-breadcrumb">
+          <span>Kho Sách</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">Danh mục &amp; Phân loại</span>
+        </div>
+        <h1 class="page-heading">Quản lý Thể loại, Tác giả &amp; Nhà xuất bản</h1>
+        <p class="page-subheading">Quản lý danh mục nền tảng cho kho ấn bản: chuẩn hoá tên, liên kết đầu sách và bảo toàn dữ liệu.</p>
+      </div>
+      <div class="page-actions-top">
+        <button type="button" class="btn btn-primary" id="btnOpenCreateModal" onclick="openCreateModal()">
+          <span class="btn-icon">➕</span>
+          <span id="btnCreateText">Thêm thể loại mới</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. THẺ THỐNG KÊ NHANH -->
+    <div class="stats-cards-grid">
+      <div class="stat-card">
+        <div class="stat-icon-box icon-category">🏷️</div>
+        <div class="stat-info">
+          <span class="stat-label">Tổng thể loại</span>
+          <span class="stat-number" id="statCategoriesCount">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box icon-author">✍️</div>
+        <div class="stat-info">
+          <span class="stat-label">Tổng tác giả</span>
+          <span class="stat-number" id="statAuthorsCount">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box icon-publisher">🏢</div>
+        <div class="stat-info">
+          <span class="stat-label">Tổng nhà xuất bản</span>
+          <span class="stat-number" id="statPublishersCount">-</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box icon-books">📚</div>
+        <div class="stat-info">
+          <span class="stat-label">Tổng đầu sách</span>
+          <span class="stat-number" id="statBooksCount">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. BẢNG ĐIỀU KHIỂN & 3 TABS -->
+    <div class="taxonomy-card">
+
+      <!-- THANH CHUYỂN TAB -->
+      <div class="tabs-header-bar">
+        <div class="tabs-nav" role="tablist">
+          <button type="button" class="tab-button active" id="tabBtnCategory" role="tab" aria-selected="true" onclick="switchTaxonomyTab('category')">
+            <span class="tab-icon">🏷️</span>
+            <span class="tab-title">Thể loại sách</span>
+            <span class="tab-badge" id="badgeCategoriesCount">0</span>
+          </button>
+          <button type="button" class="tab-button" id="tabBtnAuthor" role="tab" aria-selected="false" onclick="switchTaxonomyTab('author')">
+            <span class="tab-icon">✍️</span>
+            <span class="tab-title">Tác giả</span>
+            <span class="tab-badge" id="badgeAuthorsCount">0</span>
+          </button>
+          <button type="button" class="tab-button" id="tabBtnPublisher" role="tab" aria-selected="false" onclick="switchTaxonomyTab('publisher')">
+            <span class="tab-icon">🏢</span>
+            <span class="tab-title">Nhà xuất bản</span>
+            <span class="tab-badge" id="badgePublishersCount">0</span>
+          </button>
+        </div>
+
+        <!-- BỘ LỌC TÌM KIẾM TRONG TAB -->
+        <div class="tab-search-box">
+          <span class="search-input-icon">🔍</span>
+          <input type="text" id="taxonomySearchInput" class="taxonomy-search-input" placeholder="Tìm kiếm theo tên hoặc thông tin..." autocomplete="off">
+          <button type="button" class="btn-clear-search" id="btnClearSearch" title="Xoá tìm kiếm" onclick="clearSearch()" style="display: none;">✕</button>
+        </div>
+      </div>
+
+      <!-- KHU VỰC BẢNG DỮ LIỆU -->
+      <div class="table-responsive-box">
+        <table class="data-table" id="taxonomyTable">
+          <thead id="taxonomyTableHead">
+            <!-- Render động thead theo tab hiện tại -->
+          </thead>
+          <tbody id="taxonomyTableBody">
+            <!-- Render động tbody -->
+            <tr>
+              <td colspan="6" class="text-center py-8">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Đang tải danh mục...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- KHUNG THÔNG BÁO RỖNG KHI KHÔNG CÓ KẾT QUẢ -->
+      <div class="empty-data-box" id="emptyDataBox" style="display: none;">
+        <div class="empty-icon-circle">📂</div>
+        <h3 class="empty-heading" id="emptyHeading">Không tìm thấy dữ liệu</h3>
+        <p class="empty-desc" id="emptyDesc">Chưa có bản ghi nào trong danh mục này hoặc không khớp với từ khoá tìm kiếm.</p>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearSearch()">Xem tất cả</button>
+      </div>
+
+      <!-- PHÂN TRANG -->
+      <div class="pagination-footer" id="paginationFooter">
+        <div class="pagination-info" id="paginationInfo">
+          Hiển thị <strong>0</strong> đến <strong>0</strong> trong tổng số <strong>0</strong> bản ghi
+        </div>
+        <div class="pagination-controls">
+          <button type="button" class="btn-page" id="btnPrevPage" onclick="changePage(-1)" disabled>
+            ← Trang trước
+          </button>
+          <div class="page-numbers-group" id="pageNumbersGroup">
+            <!-- Số trang -->
+          </div>
+          <button type="button" class="btn-page" id="btnNextPage" onclick="changePage(1)" disabled>
+            Trang sau →
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 1: FORM THÊM MỚI / CHỈNH SỬA                           -->
+  <!-- ============================================================== -->
+  <div class="modal-backdrop" id="formModalBackdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-header-icon" id="modalHeaderIcon">➕</div>
+          <div>
+            <h3 class="modal-title" id="formModalTitle">Thêm mới thể loại</h3>
+            <p class="modal-subtitle" id="formModalSubtitle">Điền các thông tin cơ bản bên dưới (Tên không được trùng lặp).</p>
+          </div>
+          <button type="button" class="modal-close-btn" onclick="closeFormModal()">✕</button>
+        </div>
+
+        <form id="taxonomyForm" onsubmit="handleFormSubmit(event)">
+          <input type="hidden" id="formItemId" value="">
+
+          <div class="modal-body" id="formModalBody">
+            <!-- Trường 1: Tên (áp dụng chung cho cả 3 tab) -->
+            <div class="form-group">
+              <label for="inputName" class="form-label" id="labelName">
+                Tên thể loại <span class="text-danger">*</span>
+              </label>
+              <input type="text" id="inputName" class="form-control" placeholder="Nhập tên..." required maxlength="255">
+              <small class="form-hint" id="hintName">Tên là duy nhất trong toàn hệ thống, không được trùng lặp.</small>
+            </div>
+
+            <!-- Trường phụ 1: Chỉ cho Author (Quốc tịch) hoặc Publisher (Địa chỉ) -->
+            <div class="form-group" id="groupExtraField1" style="display: none;">
+              <label for="inputExtra1" class="form-label" id="labelExtra1">Quốc tịch / Địa chỉ</label>
+              <input type="text" id="inputExtra1" class="form-control" placeholder="..." maxlength="255">
+            </div>
+
+            <!-- Trường phụ 2: Mô tả / Tiểu sử (Textarea) -->
+            <div class="form-group">
+              <label for="inputDescription" class="form-label" id="labelDescription">Mô tả / Ghi chú</label>
+              <textarea id="inputDescription" class="form-control" rows="3" placeholder="Nhập tóm tắt mô tả bổ sung (tuỳ chọn)..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeFormModal()">Huỷ bỏ</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitForm">
+              <span id="btnSubmitText">Lưu dữ liệu</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 2: HỘP THOẠI XÁC NHẬN XOÁ (VỚI CẢNH BÁO SÁCH LIÊN KẾT) -->
+  <!-- ============================================================== -->
+  <div class="modal-backdrop" id="deleteModalBackdrop" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-header-icon icon-danger">⚠️</div>
+          <div>
+            <h3 class="modal-title">Xác nhận xoá bản ghi</h3>
+            <p class="modal-subtitle">Thao tác này sẽ xoá vĩnh viễn mục đã chọn khỏi hệ thống.</p>
+          </div>
+          <button type="button" class="modal-close-btn" onclick="closeDeleteModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="delete-confirm-text">
+            Bạn có chắc chắn muốn xoá <strong id="deleteTargetTypeName">thể loại</strong>:
+            <br>
+            <span class="delete-item-name" id="deleteTargetItemName">Tên mục</span>?
+          </p>
+
+          <!-- CẢNH BÁO ĐỎ NẾU CÒN ĐẦU SÁCH LIÊN KẾT -->
+          <div class="delete-warning-box" id="deleteWarningLinkedBooks" style="display: none;">
+            <div class="warning-title">⛔ Không thể xoá!</div>
+            <div class="warning-desc" id="deleteWarningText">
+              Mục này hiện đang có <strong>X</strong> đầu sách liên kết. Quy định hệ thống không cho phép xoá để bảo đảm dữ liệu sách.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Đóng</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDeleteAction()">
+            Xoá vĩnh viễn
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KHUNG TOAST THÔNG BÁO -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="../js/pages/taxonomy.js?v=1.0"></script>
+</body>
+
+</html>

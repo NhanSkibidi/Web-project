@@ -19,6 +19,7 @@ from app.routers import (
     auth,
     book,
     book_copies,
+    email_reminders,
     fine,
     health,
     items,
@@ -26,6 +27,8 @@ from app.routers import (
     loans,
     loans_item,
     return_book,
+    statistics,
+    taxonomy,
     users,
 )
 
@@ -71,6 +74,9 @@ app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
+app.include_router(taxonomy.router, prefix="/api")
+app.include_router(email_reminders.router, prefix="/api")
+app.include_router(statistics.router, prefix="/api")
 app.include_router(library_cards.router, prefix="/api")
 app.include_router(library_cards.readers_router, prefix="/api")
 app.include_router(users.router, prefix="/api")

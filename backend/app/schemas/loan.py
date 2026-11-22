@@ -53,9 +53,6 @@ class LoanResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# ── SCHEMAS CHO MƯỢN SÁCH TẠI QUẦY (COUNTER BORROWING) ─────────
-
 class CounterBorrowValidateRequest(BaseModel):
     """Yêu cầu kiểm tra điều kiện mượn tại quầy."""
     card_code: str
@@ -69,6 +66,7 @@ class ConditionItem(BaseModel):
     passed: bool
     mandatory: bool = True
     message: str
+
 
 
 class CounterBorrowValidateResponse(BaseModel):
@@ -183,4 +181,19 @@ class RenewalResponse(BaseModel):
     new_due_date: str
     renewed_by: str
     message: str
+
+
+class LoanRenewalResponse(BaseModel):
+    """Kết quả gia hạn toàn bộ phiếu mượn."""
+    loan_id: int
+    loan_code: str
+    renewed_count: int
+    max_renewals: int
+    old_due_date: str
+    new_due_date: str
+    renewed_by: str
+    message: str
+    items: list[RenewalResponse] = []
+
+
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +10,16 @@
   <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="../css/borrow_on_site.css">
 </head>
+
 <body data-root="../" class="borrow-body">
 
   <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ -->
@@ -64,7 +70,7 @@
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
-      <a href="../index.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+      <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
         <span class="material-symbols-outlined">receipt_long</span>
         <span class="rail-label">Quản lý Phiếu mượn</span>
       </a>
@@ -113,14 +119,16 @@
       <div class="page-header-row">
         <div>
           <h1 class="page-title font-headline">Mượn Sách Tại Quầy</h1>
-          <p class="page-subtitle">Nhập/quét mã thẻ độc giả, quét mã vạch từng cuốn, kiểm tra tự động 7 điều kiện và lập phiếu mượn tức thì.</p>
+          <p class="page-subtitle">Nhập/quét mã thẻ độc giả, quét mã vạch từng cuốn, kiểm tra tự động 7 điều kiện và lập
+            phiếu mượn tức thì.</p>
         </div>
         <div class="header-action-group">
           <a href="returns.html" class="btn-outline-action" title="Chuyển sang màn hình trả sách">
             <span class="material-symbols-outlined">assignment_return</span>
             <span>Trả sách tại quầy</span>
           </a>
-          <button id="btn-reset-counter" type="button" class="btn-refresh-action" title="Làm mới để tiếp nhận giao dịch mới">
+          <button id="btn-reset-counter" type="button" class="btn-refresh-action"
+            title="Làm mới để tiếp nhận giao dịch mới">
             <span class="material-symbols-outlined">refresh</span>
             <span>Tiếp nhận mới</span>
           </button>
@@ -150,14 +158,8 @@
             <form id="reader-search-form" class="scanner-input-group" onsubmit="return false;">
               <div class="scanner-input-wrap">
                 <span class="material-symbols-outlined scanner-icon">badge</span>
-                <input
-                  id="input-card-code"
-                  type="text"
-                  class="font-mono scanner-input"
-                  placeholder="Quét hoặc nhập mã thẻ (VD: LC-0001)..."
-                  autocomplete="off"
-                  autofocus
-                >
+                <input id="input-card-code" type="text" class="font-mono scanner-input"
+                  placeholder="Quét hoặc nhập mã thẻ (VD: LC-0001)..." autocomplete="off" autofocus>
                 <button id="btn-lookup-card" type="button" class="scanner-action-btn">
                   <span class="material-symbols-outlined">search</span>
                   <span>Tra cứu</span>
@@ -174,7 +176,8 @@
             <div id="reader-empty-placeholder" class="empty-hint-box">
               <span class="material-symbols-outlined empty-hint-icon">credit_card</span>
               <p class="empty-hint-title">Chưa có thông tin độc giả</p>
-              <p class="empty-hint-text">Vui lòng quét thẻ thư viện hoặc nhập mã thẻ để hệ thống kiểm tra hạn thẻ và lịch sử mượn trả.</p>
+              <p class="empty-hint-text">Vui lòng quét thẻ thư viện hoặc nhập mã thẻ để hệ thống kiểm tra hạn thẻ và
+                lịch sử mượn trả.</p>
             </div>
           </section>
 
@@ -195,13 +198,8 @@
             <form id="barcode-scan-form" class="scanner-input-group" onsubmit="return false;">
               <div class="scanner-input-wrap">
                 <span class="material-symbols-outlined scanner-icon">barcode_scanner</span>
-                <input
-                  id="input-barcode"
-                  type="text"
-                  class="font-mono scanner-input"
-                  placeholder="Quét mã vạch bản sao (VD: BC-9786040000019-01)..."
-                  autocomplete="off"
-                >
+                <input id="input-barcode" type="text" class="font-mono scanner-input"
+                  placeholder="Quét mã vạch bản sao (VD: BC-9786040000019-01)..." autocomplete="off">
                 <button id="btn-add-barcode" type="button" class="scanner-action-btn">
                   <span class="material-symbols-outlined">add_circle</span>
                   <span>Thêm sách</span>
@@ -209,7 +207,8 @@
               </div>
               <div class="scanner-tip-text">
                 <span class="material-symbols-outlined" style="font-size: 14px;">lightbulb</span>
-                <span>Gợi ý: Nhấn <strong>Enter</strong> sau mỗi mã quét để tự động thêm sách và tiếp tục quét mã tiếp theo.</span>
+                <span>Gợi ý: Nhấn <strong>Enter</strong> sau mỗi mã quét để tự động thêm sách và tiếp tục quét mã tiếp
+                  theo.</span>
               </div>
             </form>
 
@@ -222,7 +221,8 @@
             <div id="copies-empty-placeholder" class="empty-hint-box">
               <span class="material-symbols-outlined empty-hint-icon">auto_stories</span>
               <p class="empty-hint-title">Chưa có ấn phẩm nào được quét</p>
-              <p class="empty-hint-text">Đưa máy quét vào mã vạch trên gáy/bìa sách hoặc nhập mã bản sao để đưa vào danh mục mượn.</p>
+              <p class="empty-hint-text">Đưa máy quét vào mã vạch trên gáy/bìa sách hoặc nhập mã bản sao để đưa vào danh
+                mục mượn.</p>
             </div>
           </section>
 
@@ -348,7 +348,8 @@
               </div>
               <div class="summary-spec-row">
                 <span class="summary-spec-label">Tổng số sách mượn:</span>
-                <span id="summary-total-books" class="summary-spec-value font-mono" style="font-weight: 700; font-size: 16px;">0 cuốn</span>
+                <span id="summary-total-books" class="summary-spec-value font-mono"
+                  style="font-weight: 700; font-size: 16px;">0 cuốn</span>
               </div>
               <div class="summary-spec-row">
                 <span class="summary-spec-label">Thủ thư phụ trách:</span>
@@ -358,21 +359,12 @@
 
             <!-- Nút bấm hành động chính -->
             <div class="action-btn-group">
-              <button
-                id="btn-submit-loan"
-                type="button"
-                class="btn-primary-loan"
-                disabled
-              >
+              <button id="btn-submit-loan" type="button" class="btn-primary-loan" disabled>
                 <span class="material-symbols-outlined">assignment_turned_in</span>
                 <span id="btn-submit-text">Xác nhận &amp; Cấp phiếu mượn</span>
               </button>
 
-              <button
-                id="btn-cancel-loan"
-                type="button"
-                class="btn-cancel-loan"
-              >
+              <button id="btn-cancel-loan" type="button" class="btn-cancel-loan">
                 <span>Hủy bỏ &amp; Nhập lại</span>
               </button>
             </div>
@@ -380,7 +372,8 @@
             <!-- Ghi chú bảo mật quy trình -->
             <div class="security-note">
               <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-brand);">shield</span>
-              <span>Giao dịch chạy trong 1 transaction an toàn (all-or-nothing). Trạng thái bản sao sẽ tự động chuyển sang <strong>BORROWED</strong>.</span>
+              <span>Giao dịch chạy trong 1 transaction an toàn (all-or-nothing). Trạng thái bản sao sẽ tự động chuyển
+                sang <strong>BORROWED</strong>.</span>
             </div>
           </section>
 
@@ -540,4 +533,5 @@
   <script src="../js/utils.js"></script>
   <script src="../js/pages/borrow_on_site.js"></script>
 </body>
+
 </html>

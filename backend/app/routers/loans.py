@@ -15,6 +15,7 @@ from app.schemas.loan import (
     CopyLookupResponse,
     RenewalRequest,
     RenewalResponse,
+    LoanRenewalResponse,
 )
 from app.crud.loan_service import (
     create_online_loan,
@@ -27,14 +28,12 @@ from app.crud.loan_service import (
     validate_counter_borrow,
     create_counter_loan,
     renew_loan_item,
+    renew_loan,
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
 readers_router = APIRouter(prefix="/readers", tags=["Readers"])
 copies_router = APIRouter(prefix="/copies", tags=["Copies"])
-
-
-# ── API TRA CỨU ĐỘC GIẢ (READERS) ──────────────────────────────
 
 @readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
 def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
@@ -44,36 +43,22 @@ def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
 
 @router.get("/readers/by-card/{card_code}", response_model=ReaderLookupResponse)
 def lookup_reader_by_card_alias(card_code: str, db: Session = Depends(get_db)):
-    """Alias cho tra cứu độc giả."""
     return get_reader_by_card(db, card_code)
-
-
-# ── API TRA CỨU BẢN SAO SÁCH (COPIES) ──────────────────────────
 
 @copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
 def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
-    """Tra cứu bản sao sách theo mã vạch / copy_code."""
     return get_copy_by_barcode(db, barcode)
 
 
 @router.get("/copies/by-barcode/{barcode}", response_model=CopyLookupResponse)
 def lookup_copy_by_barcode_alias(barcode: str, db: Session = Depends(get_db)):
-    """Alias cho tra cứu bản sao sách."""
     return get_copy_by_barcode(db, barcode)
-
-
-# ── API MƯỢN SÁCH TẠI QUẦY (COUNTER BORROWING) ─────────────────
 
 @router.post("/counter/validate", response_model=CounterBorrowValidateResponse)
 def validate_counter(
     data: CounterBorrowValidateRequest,
     db: Session = Depends(get_db),
 ):
-    """
-    Kiểm tra 7 điều kiện mượn sách tại quầy (realtime checklist):
-    - CARD_VALID, READER_ALLOWED, LIMIT_NOT_EXCEEDED (<=3),
-    - BOOK_EXISTS, COPY_AVAILABLE, NO_RESTRICTION, HAS_BOOKS.
-    """
     return validate_counter_borrow(db, data.card_code, data.barcodes)
 
 
@@ -82,23 +67,12 @@ def create_counter(
     data: CounterBorrowCreateRequest,
     db: Session = Depends(get_db),
 ):
-    """
-    Tạo phiếu mượn sách trực tiếp tại quầy trong 1 transaction an toàn:
-    - Trạng thái phiếu: BORROWED ngay lập tức (không qua PENDING).
-    - Hạn trả: +14 ngày.
-    - Cập nhật bản sao sang BORROWED và tăng số sách độc giả đang giữ.
-    - Chống mượn trùng đồng thời (409 COPY_NOT_AVAILABLE).
-    - Trả về payload đầy đủ để in biên lai mượn sách.
-    """
     return create_counter_loan(
         db,
         card_code=data.card_code,
         barcodes=data.barcodes,
         librarian_id=data.librarian_id,
     )
-
-
-# ── API QUY TRÌNH MƯỢN ONLINE HIỆN CÓ ──────────────────────────
 
 @router.post("/online", response_model=LoanResponse, status_code=201)
 def create_loan(
@@ -147,27 +121,30 @@ def handover(
     copies_data = [item.model_dump() for item in data.copies]
     return handover_loan(db, loan_id, librarian_id, copies_data)
 
-
-# ── API GIA HẠN SÁCH (RENEWAL) ──────────────────────────────────
-
 @router.patch("/items/{loan_item_id}/renew", response_model=RenewalResponse)
 def renew_item(
     loan_item_id: int,
     data: RenewalRequest,
     db: Session = Depends(get_db),
 ):
-    """
-    Gia hạn 1 cuốn sách đang mượn thêm 7 ngày.
-    Điều kiện:
-    - Cuốn sách chưa quá hạn (due_date >= hôm nay).
-    - Chưa gia hạn quá 1 lần (renewal_count < MAX_RENEWALS).
-    - Đầu sách không có ai đặt trước (reservations WAITING/READY).
-    - Phiếu mượn ở trạng thái BORROWED và cuốn sách chưa trả.
-    Hỗ trợ cả độc giả tự gia hạn (truyền user_id) và thủ thư gia hạn hộ (truyền librarian_id).
-    """
     return renew_loan_item(
         db,
         loan_item_id=loan_item_id,
         user_id=data.user_id,
         librarian_id=data.librarian_id,
     )
+
+
+@router.patch("/{loan_id}/renew", response_model=LoanRenewalResponse)
+def renew_entire_loan(
+    loan_id: int,
+    data: RenewalRequest,
+    db: Session = Depends(get_db),
+):
+    return renew_loan(
+        db,
+        loan_id=loan_id,
+        user_id=data.user_id,
+        librarian_id=data.librarian_id,
+    )
+

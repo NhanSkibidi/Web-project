@@ -428,33 +428,44 @@ def run_tests():
     # =========================================================================
     print("\n▶ PHẦN 3: KIỂM THỬ API TÌM KIẾM SÁCH (T3CFC09)")
 
+    def call_search_books(db, keyword=None, scope="all", category_id=None, category_ids=None,
+                          author_id=None, publisher_id=None, publish_year=None,
+                          languages=None, shelf_locations=None, available_only=False,
+                          sort_by="created_at", sort_order="desc", page=1, page_size=10):
+        return search_books(
+            db=db, keyword=keyword, scope=scope, category_id=category_id, category_ids=category_ids,
+            author_id=author_id, publisher_id=publisher_id, publish_year=publish_year,
+            languages=languages, shelf_locations=shelf_locations, available_only=available_only,
+            sort_by=sort_by, sort_order=sort_order, page=page, page_size=page_size
+        )
+
     # 21. Tìm kiếm sách theo từ khoá chung (HTTP 200)
-    search_res = search_books(db=db, keyword="Clean Code", page=1, page_size=10)
+    search_res = call_search_books(db=db, keyword="Clean Code", page=1, page_size=10)
     check(search_res.total >= 1 and any("Clean Code" in b.title for b in search_res.items),
           "API_SEARCH_01", "search_books - Tìm kiếm sách theo từ khoá chung (HTTP 200)")
 
     # 22. Tìm kiếm theo phạm vi tác giả (HTTP 200)
-    search_auth = search_books(db=db, keyword="Robert C. Martin", scope="author")
+    search_auth = call_search_books(db=db, keyword="Robert C. Martin", scope="author")
     check(search_auth.total >= 1,
           "API_SEARCH_02", "search_books - Tìm kiếm sách theo tác giả scope='author' (HTTP 200)")
 
     # 23. Lọc theo thể loại (HTTP 200)
-    search_cat_filter = search_books(db=db, category_id=data["cat_cs"].id)
+    search_cat_filter = call_search_books(db=db, category_id=data["cat_cs"].id)
     check(search_cat_filter.total >= 1,
           "API_SEARCH_03", "search_books - Lọc danh sách sách theo thể loại (HTTP 200)")
 
     # 24. Lọc sách chỉ lấy bản sao khả dụng (available_only=True)
-    search_avail = search_books(db=db, available_only=True)
+    search_avail = call_search_books(db=db, available_only=True)
     check(not any(b.isbn in [data["book_refactor"].isbn, data["book_extra"].isbn] for b in search_avail.items),
           "API_SEARCH_04", "search_books - Lọc available_only=True loại bỏ sách hết bản sao (HTTP 200)")
 
     # 25. Tìm kiếm từ khoá không tồn tại trả về total=0 (HTTP 200)
-    search_none = search_books(db=db, keyword="XYZ_NONEXISTENT_99999")
+    search_none = call_search_books(db=db, keyword="XYZ_NONEXISTENT_99999")
     check(search_none.total == 0 and len(search_none.items) == 0,
           "API_SEARCH_05", "search_books - Tìm kiếm từ khoá không khớp trả về total=0 (HTTP 200)")
 
     # 26. Khách vãng lai chưa đăng nhập tìm kiếm sách công khai hợp lệ
-    search_pub = search_books(db=db, page=1, page_size=5)
+    search_pub = call_search_books(db=db, page=1, page_size=5)
     check(search_pub.total > 0,
           "API_SEARCH_06", "search_books - Khách vãng lai tìm kiếm sách công khai không cần token (HTTP 200)")
 

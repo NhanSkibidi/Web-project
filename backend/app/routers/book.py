@@ -73,38 +73,26 @@ def search_books(
     """
     API tìm kiếm và tra cứu sách. Không yêu cầu đăng nhập.
     """
-    parsed_cat_ids = [int(x) for x in category_ids.split(",") if x.strip().isdigit()] if isinstance(category_ids, str) else None
-    parsed_langs = [x.strip() for x in languages.split(",") if x.strip()] if isinstance(languages, str) else None
-    parsed_shelves = [x.strip() for x in shelf_locations.split(",") if x.strip()] if isinstance(shelf_locations, str) else None
-
-    actual_kw = keyword if isinstance(keyword, str) else None
-    actual_sc = scope if isinstance(scope, str) else "all"
-    actual_cat_id = category_id if isinstance(category_id, int) else None
-    actual_auth_id = author_id if isinstance(author_id, int) else None
-    actual_pub_id = publisher_id if isinstance(publisher_id, int) else None
-    actual_year = publish_year if isinstance(publish_year, int) else None
-    actual_avail = bool(available_only) if isinstance(available_only, bool) else False
-    actual_sort = sort_by if isinstance(sort_by, str) else "created_at"
-    actual_order = sort_order if isinstance(sort_order, str) else "desc"
-    actual_p = page if isinstance(page, int) else 1
-    actual_ps = page_size if isinstance(page_size, int) else 12
+    parsed_cat_ids = [int(x) for x in category_ids.split(",") if x.strip().isdigit()] if category_ids else None
+    parsed_langs = [x.strip() for x in languages.split(",") if x.strip()] if languages else None
+    parsed_shelves = [x.strip() for x in shelf_locations.split(",") if x.strip()] if shelf_locations else None
 
     books, total, total_pages = get_books_paginated(
         db=db,
-        keyword=actual_kw,
-        scope=actual_sc,
-        category_id=actual_cat_id,
+        keyword=keyword,
+        scope=scope,
+        category_id=category_id,
         category_ids=parsed_cat_ids,
-        author_id=actual_auth_id,
-        publisher_id=actual_pub_id,
-        publish_year=actual_year,
+        author_id=author_id,
+        publisher_id=publisher_id,
+        publish_year=publish_year,
         languages=parsed_langs,
         shelf_locations=parsed_shelves,
-        available_only=actual_avail,
-        sort_by=actual_sort,
-        sort_order=actual_order,
-        page=actual_p,
-        page_size=actual_ps,
+        available_only=available_only,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
     )
 
     items = []
@@ -147,8 +135,8 @@ def search_books(
     return BookPaginationResponse(
         items=items,
         total=total,
-        page=actual_p,
-        page_size=actual_ps,
+        page=page,
+        page_size=page_size,
         total_pages=total_pages,
     )
 

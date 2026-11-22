@@ -41,7 +41,7 @@ def change_copy_status(
     if new_status not in VALID_TRANSITIONS.get(current_status, []):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Không thể chuyển bản sao từ '{current_status}' sang '{new_status_upper}'",
+            detail=f"Không thể chuyển bản sao từ '{current_status}' sang '{new_status}'",
         )
     if new_status in ["LOST", "DAMAGED", "DISPOSED"]:
         if not reason or not reason.strip():

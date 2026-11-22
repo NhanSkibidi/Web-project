@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Độc giả &amp; Lịch sử mượn trả | UniLib KS25</title>
+  <link rel="icon" href="../assets/images/logo.svg">
+  <link rel="stylesheet" href="../css/readers.css">
+</head>
+<body class="readers-app">
+
+  <!-- Top Header -->
+  <header class="ul-topbar">
+    <div class="ul-topbar-left">
+      <button id="btn-mobile-sidebar" type="button" class="ul-icon-btn ul-mobile-toggle">☰</button>
+      <a href="home.html" class="ul-brand">
+        <div class="ul-brand-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="ul-brand-name">UniLib</span>
+          <span class="ul-brand-sub">Thư viện số</span>
+        </div>
+      </a>
+
+      <nav class="ul-topnav">
+        <a href="home.html">Trang chủ</a>
+        <a href="catalog.html">Tra cứu sách</a>
+        <a href="loan_slip.html">Phiếu mượn của tôi</a>
+        <a href="readers.html" class="active">Quản trị thư viện</a>
+      </nav>
+    </div>
+
+    <div class="ul-topbar-right">
+      <div class="ul-staff-chip">
+        <div id="top-staff-avatar" class="ul-avatar-sm">T</div>
+        <div>
+          <span id="top-staff-name" class="ul-staff-name">Thủ thư</span>
+          <span id="top-staff-role" class="ul-staff-role">Thủ thư trực quầy</span>
+        </div>
+      </div>
+      <button id="btn-top-logout" type="button" class="ul-icon-btn" title="Đăng xuất">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="ul-shell">
+    <!-- Left Sidebar -->
+    <aside id="ul-sidebar" class="ul-sidebar">
+      <div class="ul-sidebar-inner">
+        <div class="ul-sidebar-heading">Phân hệ Thủ thư</div>
+        <a href="staff-dashboard.html" class="ul-side-link">📊 Tổng quan &amp; Thống kê</a>
+        <a href="books.html" class="ul-side-link">📚 Quản lý Đầu sách &amp; Bản sao</a>
+        <a href="staff-dashboard.html#loans" class="ul-side-link">📋 Quản lý Phiếu mượn</a>
+        <a href="returns.html" class="ul-side-link">↩ Trả sách tại quầy</a>
+        <a href="readers.html" class="ul-side-link active">🪪 Độc giả &amp; Thẻ thư viện</a>
+        <hr class="ul-side-divider">
+        <a href="admin-users.html" class="ul-side-link">⚙ Cài đặt hệ thống</a>
+      </div>
+      <div class="ul-sidebar-footer">
+        <span class="server-dot"></span>
+        <span>Máy chủ: K1-Online</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="ul-workspace">
+      <main id="detail-main-content" class="ul-content">
+        <!-- Breadcrumb & Back -->
+        <div class="page-head-row">
+          <div>
+            <a href="readers.html" style="font-size:13px; font-weight:600; color:var(--primary); text-decoration:none; display:inline-block; margin-bottom:6px;">
+              ← Quay lại Danh sách Độc giả
+            </a>
+            <h1 id="detail-reader-heading" class="page-title">Hồ sơ chi tiết Độc giả</h1>
+            <p id="detail-reader-sub" class="page-subtitle">Đang tải dữ liệu độc giả và lịch sử mượn trả từ module Mượn...</p>
+          </div>
+          <div class="page-head-actions">
+            <button id="btn-detail-print" type="button" class="btn">🖨️ In thẻ thư viện</button>
+            <button id="btn-detail-extend" type="button" class="btn btn-soft-blue">🔄 Gia hạn thẻ</button>
+            <button id="btn-detail-lock" type="button" class="btn btn-soft-danger">🔒 Khóa thẻ</button>
+          </div>
+        </div>
+
+        <!-- 2-Column Detail Grid -->
+        <div class="readers-split">
+          <!-- Left Column: Hồ sơ + Lịch sử mượn trả (Module Mượn) + Lịch sử thẻ -->
+          <div>
+            <!-- Hồ sơ cá nhân & Tiền phạt -->
+            <section class="panel-card">
+              <div class="panel-head">
+                <h2 class="panel-title">👤 Thông tin hồ sơ độc giả</h2>
+                <span id="detail-account-pill" class="status-pill status-active">ACTIVE</span>
+              </div>
+              <div class="panel-body">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; font-size:13.5px;">
+                  <div><div style="font-size:11.5px; color:var(--muted);">Họ và tên</div><strong id="info-fullname">—</strong></div>
+                  <div><div style="font-size:11.5px; color:var(--muted);">Email trường cấp</div><strong id="info-email">—</strong></div>
+                  <div><div style="font-size:11.5px; color:var(--muted);">Số điện thoại</div><strong id="info-phone" style="font-family:var(--font-mono);">—</strong></div>
+                  <div><div style="font-size:11.5px; color:var(--muted);">Đang mượn / Quá hạn</div><strong id="info-borrow-stat">—</strong></div>
+                  <div><div style="font-size:11.5px; color:var(--muted);">Tiền phạt chưa nộp</div><strong id="info-fine-stat">—</strong></div>
+                  <div><div style="font-size:11.5px; color:var(--muted);">Lý do khóa/mở gần nhất</div><span id="info-lock-reason">—</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Lịch sử mượn trả đầy đủ (Lấy trực tiếp từ Module Mượn: GET /api/loans?user_id=...) -->
+            <section class="panel-card">
+              <div class="panel-head" style="flex-wrap:wrap;">
+                <h2 class="panel-title">📚 Lịch sử mượn trả (Module Mượn)</h2>
+                <div class="detail-tabs" id="loan-status-tabs">
+                  <button type="button" class="detail-tab-btn active" data-loan-status="">Tất cả</button>
+                  <button type="button" class="detail-tab-btn" data-loan-status="BORROWED">Đang mượn</button>
+                  <button type="button" class="detail-tab-btn" data-loan-status="PENDING">Chờ duyệt</button>
+                  <button type="button" class="detail-tab-btn" data-loan-status="RETURNED">Đã trả</button>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table class="readers-table">
+                  <thead>
+                    <tr>
+                      <th>Mã phiếu</th>
+                      <th>Đầu sách &amp; Bản sao</th>
+                      <th>Ngày mượn</th>
+                      <th>Hạn trả / Ngày trả</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody id="detail-loans-tbody">
+                    <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--muted);">Đang tải lịch sử mượn trả...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- Lịch sử thao tác trên thẻ (Gia hạn / Khoá / Mở / Tự động EXPIRED) -->
+            <section class="panel-card">
+              <div class="panel-head">
+                <h2 class="panel-title">📜 Lịch sử Gia hạn &amp; Khóa/Mở thẻ</h2>
+              </div>
+              <div class="table-scroll">
+                <table class="readers-table">
+                  <thead>
+                    <tr>
+                      <th>Hành động</th>
+                      <th>Chuyển trạng thái</th>
+                      <th>Lý do / Ghi chú</th>
+                      <th>Người thực hiện</th>
+                      <th>Thời gian</th>
+                    </tr>
+                  </thead>
+                  <tbody id="detail-card-logs-tbody">
+                    <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">Đang tải lịch sử thẻ...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right Column: Phôi Thẻ Thư Viện (Hỗ trợ window.print) -->
+          <div>
+            <section class="panel-card" style="position:sticky; top:84px;">
+              <div class="panel-head">
+                <h2 class="panel-title">🪪 Phôi Thẻ Thư Viện</h2>
+                <span id="detail-ready-badge" class="card-ready-pill">Sẵn sàng in</span>
+              </div>
+              <div class="panel-body">
+                <div id="printable-library-card" class="library-id-card">
+                  <div class="id-card-top">
+                    <div class="id-card-org">
+                      <div class="id-card-u">U</div>
+                      <div>
+                        <span class="id-card-org-sub">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ</span>
+                        <span class="id-card-org-main">THƯ VIỆN SỐ UNILIB</span>
+                      </div>
+                    </div>
+                    <div class="id-card-rfid">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="id-card-mid">
+                    <div id="card-preview-avatar" class="id-card-photo">A</div>
+                    <div class="id-card-fields">
+                      <span class="id-field-lbl">Họ và tên</span>
+                      <div id="card-preview-name" class="id-field-name">—</div>
+                      <div class="id-field-grid">
+                        <div>
+                          <span class="id-field-lbl">Mã thẻ</span>
+                          <div id="card-preview-code" class="id-field-val">—</div>
+                        </div>
+                        <div>
+                          <span class="id-field-lbl">Hạng thẻ</span>
+                          <div id="card-preview-type" class="id-field-val">—</div>
+                        </div>
+                      </div>
+                      <div>
+                        <span class="id-field-lbl">Hạn sử dụng</span>
+                        <div id="card-preview-expiry" class="id-field-val">--/--/----</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="id-card-bottom">
+                    <div>
+                      <div id="card-preview-barcode" class="id-barcode-box"></div>
+                      <div id="card-preview-barcode-text" class="id-barcode-text">LIB-LC-0000</div>
+                    </div>
+                    <div class="id-status-right">
+                      <span class="id-field-lbl">Trạng thái</span>
+                      <div id="card-preview-status" class="id-status-text id-status-active">—</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-action-bar">
+                  <button id="btn-card-print" type="button" class="btn btn-sm">🖨️ In thẻ</button>
+                  <button id="btn-card-extend" type="button" class="btn btn-soft-blue btn-sm">🔄 Gia hạn</button>
+                  <button id="btn-card-lock" type="button" class="btn btn-soft-danger btn-sm">🔒 Khóa thẻ</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <footer class="ul-footer">
+        <div>© 2026 UniLib MVP · Nhóm CNTT KS25. Bảo lưu mọi quyền.</div>
+        <div><a href="readers.html" style="color:var(--primary); text-decoration:none; font-weight:600;">← Danh sách độc giả</a></div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal Gia hạn -->
+  <div id="modal-extend" class="modal-backdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3>🔄 Gia hạn thẻ thư viện</h3>
+        <button type="button" class="modal-close" data-close="modal-extend">✕</button>
+      </div>
+      <form id="extend-card-form">
+        <div class="form-field">
+          <label for="extend-months">Thời gian gia hạn thêm *</label>
+          <select id="extend-months">
+            <option value="6">Gia hạn thêm 6 tháng</option>
+            <option value="12" selected>Gia hạn thêm 12 tháng (1 năm)</option>
+            <option value="24">Gia hạn thêm 24 tháng (2 năm)</option>
+            <option value="custom">Chọn ngày hết hạn cụ thể...</option>
+          </select>
+        </div>
+        <div class="form-field" id="extend-custom-wrap" hidden>
+          <label for="extend-new-date">Ngày hết hạn mới *</label>
+          <input id="extend-new-date" type="date">
+        </div>
+        <div class="form-field">
+          <label for="extend-card-type">Hạng thẻ (Tùy chọn)</label>
+          <select id="extend-card-type">
+            <option value="">Giữ nguyên hạng thẻ hiện tại</option>
+            <option value="STANDARD">STANDARD (5 cuốn)</option>
+            <option value="STUDENT">STUDENT (3 cuốn)</option>
+            <option value="VIP">VIP (10 cuốn)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="extend-reason">Ghi chú gia hạn</label>
+          <input id="extend-reason" type="text" value="Gia hạn thẻ thư viện định kỳ">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button type="button" class="btn" data-close="modal-extend">Huỷ</button>
+          <button id="btn-submit-extend" type="submit" class="btn btn-primary">Xác nhận gia hạn →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Khóa / Mở khóa -->
+  <div id="modal-lock" class="modal-backdrop" hidden>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h3 id="lock-modal-title">🔒 Khóa thẻ thư viện</h3>
+        <button type="button" class="modal-close" data-close="modal-lock">✕</button>
+      </div>
+      <form id="lock-card-form">
+        <input type="hidden" id="lock-action-type">
+        <div class="form-field">
+          <label for="lock-reason-input">Lý do thực hiện (Bắt buộc) *</label>
+          <textarea id="lock-reason-input" rows="3" required minlength="3" placeholder="Nhập rõ lý do khóa hoặc mở khóa thẻ..."></textarea>
+          <div id="lock-quick-chips" class="quick-chips"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button type="button" class="btn" data-close="modal-lock">Huỷ</button>
+          <button id="btn-submit-lock" type="submit" class="btn btn-primary">Xác nhận</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/reader-detail.js"></script>
+</body>
+</html>

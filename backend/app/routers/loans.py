@@ -1,50 +1,96 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import bearer_scheme, get_current_user
+from app.crud.loan_service import (
+    approve_loan,
+    cancel_online_loan,
+    create_counter_loan,
+    create_online_loan,
+    get_copy_by_barcode,
+    get_due_soon_loans,
+    get_loans_history,
+    get_overdue_loans,
+    get_reader_by_card,
+    handover_loan,
+    mark_all_notifications_read,
+    mark_notification_read,
+    reject_loan,
+    remind_all_overdue,
+    remind_overdue_loan,
+    renew_loan_item,
+    sync_and_get_notifications,
+    validate_counter_borrow,
+)
 from app.db.session import get_db
 from app.schemas.loan import (
-    LoanCreate,
-    LoanResponse,
-    LoanReject,
-    LoanHandover,
-    CounterBorrowValidateRequest,
-    CounterBorrowValidateResponse,
+    CopyLookupResponse,
     CounterBorrowCreateRequest,
     CounterBorrowReceiptResponse,
-    ReaderLookupResponse,
-    CopyLookupResponse,
-    RenewalRequest,
-    RenewalResponse,
-    OverdueListResponse,
+    CounterBorrowValidateRequest,
+    CounterBorrowValidateResponse,
     DueSoonListResponse,
     InAppNotificationListResponse,
+    LoanCreate,
+    LoanHandover,
+    LoanHistoryOut,
+    LoanReject,
+    LoanResponse,
+    OverdueListResponse,
+    ReaderLookupResponse,
     RemindLoanRequest,
     RemindLoanResponse,
-)
-from app.crud.loan_service import (
-    create_online_loan,
-    cancel_online_loan,
-    approve_loan,
-    reject_loan,
-    handover_loan,
-    get_reader_by_card,
-    get_copy_by_barcode,
-    validate_counter_borrow,
-    create_counter_loan,
-    renew_loan_item,
-    get_overdue_loans,
-    get_due_soon_loans,
-    sync_and_get_notifications,
-    mark_notification_read,
-    mark_all_notifications_read,
-    remind_overdue_loan,
-    remind_all_overdue,
+    RenewalRequest,
+    RenewalResponse,
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
 readers_router = APIRouter(prefix="/readers", tags=["Readers"])
 copies_router = APIRouter(prefix="/copies", tags=["Copies"])
 notifications_router = APIRouter(prefix="/notifications", tags=["Notifications"])
+
+
+def _resolve_user_id(
+    explicit_id: int | None,
+    credentials: HTTPAuthorizationCredentials | None,
+    db: Session,
+) -> int:
+    """Ưu tiên lấy ID từ query param explicit_id nếu có, hoặc tự giải mã từ JWT Bearer Token."""
+    if explicit_id is not None:
+        return explicit_id
+    if credentials is not None:
+        user = get_current_user(credentials=credentials, db=db)
+        return user.id
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Vui lòng đăng nhập (Bearer Token) hoặc cung cấp user_id/librarian_id",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+# ── API LỊCH SỬ MƯỢN TRẢ (DÙNG CHO TRANG CHI TIẾT ĐỘC GIẢ) ────
+
+@router.get("", response_model=list[LoanHistoryOut])
+def list_loans(
+    user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
+    status: str | None = Query(None, description="Lọc theo trạng thái phiếu: PENDING, APPROVED, BORROWED, RETURNED, REJECTED, CANCELLED"),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Lấy danh sách & lịch sử mượn trả sách từ module Mượn."""
+    return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
+
+
+@router.get("/user/{user_id}", response_model=list[LoanHistoryOut])
+def list_loans_by_user(
+    user_id: int,
+    status: str | None = Query(None, description="Lọc theo trạng thái phiếu"),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Lấy toàn bộ lịch sử mượn trả của một độc giả cụ thể (dùng cho trang Chi tiết độc giả)."""
+    return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
 
 
 # ── API TRA CỨU ĐỘC GIẢ (READERS) ──────────────────────────────
@@ -116,49 +162,59 @@ def create_counter(
 @router.post("/online", response_model=LoanResponse, status_code=201)
 def create_loan(
     data: LoanCreate,
-    user_id: int,
+    user_id: int | None = Query(None, description="ID độc giả (tự lấy từ JWT nếu không truyền)"),
     db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ):
-    return create_online_loan(db, user_id, data.book_isbns)
+    resolved_user_id = _resolve_user_id(user_id, credentials, db)
+    return create_online_loan(db, resolved_user_id, data.book_isbns)
 
 
 @router.patch("/{loan_id}/cancel", response_model=LoanResponse)
 def cancel_loan(
     loan_id: int,
-    user_id: int,
+    user_id: int | None = Query(None, description="ID độc giả (tự lấy từ JWT nếu không truyền)"),
     db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ):
-    return cancel_online_loan(db, loan_id, user_id)
+    resolved_user_id = _resolve_user_id(user_id, credentials, db)
+    return cancel_online_loan(db, loan_id, resolved_user_id)
 
 
 @router.patch("/{loan_id}/approve", response_model=LoanResponse)
 def approve(
     loan_id: int,
-    librarian_id: int,
+    librarian_id: int | None = Query(None, description="ID thủ thư (tự lấy từ JWT nếu không truyền)"),
     db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ):
-    return approve_loan(db, loan_id, librarian_id)
+    resolved_lib_id = _resolve_user_id(librarian_id, credentials, db)
+    return approve_loan(db, loan_id, resolved_lib_id)
 
 
 @router.patch("/{loan_id}/reject", response_model=LoanResponse)
 def reject(
     loan_id: int,
-    librarian_id: int,
     data: LoanReject,
+    librarian_id: int | None = Query(None, description="ID thủ thư (tự lấy từ JWT nếu không truyền)"),
     db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ):
-    return reject_loan(db, loan_id, librarian_id, data.reject_reason)
+    resolved_lib_id = _resolve_user_id(librarian_id, credentials, db)
+    return reject_loan(db, loan_id, resolved_lib_id, data.reject_reason)
 
 
 @router.post("/{loan_id}/handover", response_model=LoanResponse)
 def handover(
     loan_id: int,
-    librarian_id: int,
     data: LoanHandover,
+    librarian_id: int | None = Query(None, description="ID thủ thư (tự lấy từ JWT nếu không truyền)"),
     db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ):
+    resolved_lib_id = _resolve_user_id(librarian_id, credentials, db)
     copies_data = [item.model_dump() for item in data.copies]
-    return handover_loan(db, loan_id, librarian_id, copies_data)
+    return handover_loan(db, loan_id, resolved_lib_id, copies_data)
 
 
 # ── API GIA HẠN SÁCH (RENEWAL) ──────────────────────────────────
@@ -283,4 +339,3 @@ def remind_all(
     Thủ thư gửi thông báo in-app nhắc nhở hàng loạt đến tất cả độc giả đang có sách quá hạn.
     """
     return remind_all_overdue(db, librarian_id=librarian_id)
-

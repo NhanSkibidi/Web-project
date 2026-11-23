@@ -29,9 +29,8 @@ def get_optional_user(
         return None
     token = authorization.split(" ")[1]
     try:
-        from app.utils.auth import decode_token
-        payload = decode_token(token)
-        user_id = payload.get("sub") or payload.get("user_id")
+        from app.core.security import decode_access_token
+        user_id = decode_access_token(token)
         if user_id:
             return db.query(User).filter(User.id == int(user_id)).first()
     except Exception:

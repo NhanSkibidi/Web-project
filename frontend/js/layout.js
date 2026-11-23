@@ -17,7 +17,7 @@
 
 // Danh sách menu cho Cổng Độc giả (Header ngang)
 const READER_MENU = [
-  { href: "index.html", label: "Trang chủ & Tra cứu" },
+  { href: "pages/home.html", label: "Trang chủ & Tra cứu" },
   { href: "pages/items.html", label: "Items (CRUD mẫu)" },
   { href: "pages/auth.html", label: "Tài khoản & Thẻ" },
 ];
@@ -340,7 +340,7 @@ function renderReaderLayout() {
     headerEl.className = "librarian-topbar reader-topbar";
     headerEl.innerHTML = `
       <div class="topbar-left">
-        <a href="${root}index.html" class="brand-badge" title="UniLib - Thư viện số KS25">
+        <a href="${root}pages/home.html" class="brand-badge" title="UniLib - Thư viện số KS25">
           <div class="brand-icon">
             <span class="material-symbols-outlined">local_library</span>
           </div>
@@ -350,7 +350,7 @@ function renderReaderLayout() {
           </div>
         </a>
         <nav class="topbar-nav">
-          <a href="${root}index.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
+          <a href="${root}pages/home.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
           <a href="${root}pages/search.html" class="topbar-nav-link ${isSearch ? "active" : ""}">Tra cứu sách</a>
           <a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
           ${staffShortcutHtml}
@@ -518,7 +518,7 @@ function renderStaffLayout() {
           </div>
         </div>
         <div class="sidebar-actions">
-          <a href="${root}index.html" class="sidebar-btn" title="Mở giao diện Cổng Độc giả">Cổng Độc giả</a>
+          <a href="${root}pages/home.html" class="sidebar-btn" title="Mở giao diện Cổng Độc giả">Cổng Độc giả</a>
           <button type="button" id="staff-logout-btn" class="sidebar-btn sidebar-btn-danger">Đăng xuất</button>
         </div>
       </div>

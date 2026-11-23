@@ -35,6 +35,55 @@ function renderAuthGuard(reasonTitle, reasonDesc, ctaLabel, ctaHref) {
   `;
 }
 
+// ==============================================================================
+// HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (showConfirm - ĐỒNG BỘ LOAN_MANAGEMENT)
+// ==============================================================================
+let activeConfirmCallback = null;
+
+function showConfirm(options) {
+  // options = { title, message, type: "green"|"red"|"blue", confirmText, cancelText, onConfirm }
+  const modal = document.getElementById("confirm-modal");
+  const titleEl = document.getElementById("confirm-title");
+  const msgEl = document.getElementById("confirm-message");
+  const iconBox = document.getElementById("confirm-icon-box");
+  const iconEl = document.getElementById("confirm-icon");
+  const btnProceed = document.getElementById("btn-confirm-proceed");
+  const btnCancel = document.getElementById("btn-confirm-cancel");
+
+  if (!modal) return;
+
+  if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+  if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+  // Màu sắc icon & nút xác nhận
+  if (iconBox) iconBox.className = "confirm-icon-circle";
+  if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+  if (options.type === "red") {
+    if (iconBox) iconBox.classList.add("icon-red");
+    if (btnProceed) btnProceed.classList.add("btn-danger");
+    if (iconEl) iconEl.textContent = "warning";
+  } else if (options.type === "green") {
+    if (iconBox) iconBox.classList.add("icon-green");
+    if (iconEl) iconEl.textContent = "check_circle";
+  } else {
+    if (iconBox) iconBox.classList.add("icon-blue");
+    if (iconEl) iconEl.textContent = "help_outline";
+  }
+
+  if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+  if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+  activeConfirmCallback = options.onConfirm || null;
+  modal.classList.add("active");
+}
+
+function closeConfirmModal() {
+  const modal = document.getElementById("confirm-modal");
+  if (modal) modal.classList.remove("active");
+  activeConfirmCallback = null;
+}
+
 // Khởi chạy khi tài liệu nạp xong
 document.addEventListener("DOMContentLoaded", () => {
   const token = typeof auth !== "undefined" ? auth.getToken() : null;
@@ -61,17 +110,121 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Hiển thị thông tin thủ thư đang đăng nhập trên Topbar
-  const avatarEl = document.getElementById("staff-avatar");
-  const nameEl = document.getElementById("staff-name");
-  const roleEl = document.getElementById("staff-role");
-  if (avatarEl) avatarEl.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
-  if (nameEl) nameEl.textContent = staffUser.full_name || staffUser.email;
-  if (roleEl) roleEl.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
+  // Hiển thị thông tin thủ thư đang đăng nhập trên Topbar (đồng bộ loan_management)
+  const displayName = staffUser.full_name || staffUser.email || "Thủ thư";
+  const initialChar = displayName.charAt(0).toUpperCase();
+  const displayRole = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
 
-  document.getElementById("btn-logout")?.addEventListener("click", () => {
-    auth.clearSession();
-    window.location.href = "login.html#login";
+  const userAvatarEl = document.getElementById("userAvatar");
+  const userNameEl = document.getElementById("userName");
+  const userRoleEl = document.getElementById("userRole");
+
+  if (userAvatarEl) userAvatarEl.textContent = initialChar;
+  if (userNameEl) userNameEl.textContent = displayName;
+  if (userRoleEl) userRoleEl.textContent = displayRole;
+
+  // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const navMenu = document.getElementById("navMenu");
+  if (mobileMenuToggle && navMenu) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle("show");
+    });
+  }
+
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
+  const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+
+  if (userProfileBtn && userDropdownMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("show");
+      const isShown = userDropdownMenu.classList.contains("show");
+      userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+    });
+  }
+
+  function triggerLogoutConfirm(e) {
+    if (e) e.stopPropagation();
+    if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+    if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    showConfirm({
+      title: "Xác nhận đăng xuất?",
+      message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+      type: "red",
+      confirmText: "Đăng xuất",
+      cancelText: "Hủy",
+      onConfirm: () => {
+        if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+          auth.clearSession();
+        } else {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_info");
+          localStorage.removeItem("library_card");
+          sessionStorage.removeItem("access_token");
+          sessionStorage.removeItem("user_info");
+        }
+        showToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "info");
+        setTimeout(() => {
+          window.location.href = "login.html#login";
+        }, 500);
+      }
+    });
+  }
+
+  if (logoutMenuBtn) logoutMenuBtn.addEventListener("click", triggerLogoutConfirm);
+
+  // Đóng dropdown và mobile menu khi click ngoài màn hình
+  document.addEventListener("click", () => {
+    if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    }
+    if (navMenu && navMenu.classList.contains("show")) {
+      navMenu.classList.remove("show");
+    }
+  });
+
+  // Sự kiện trong Hộp thoại xác nhận chung (Confirm modal)
+  const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+  const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+  const confirmModal = document.getElementById("confirm-modal");
+
+  if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+
+  if (btnConfirmProceed) {
+    btnConfirmProceed.addEventListener("click", () => {
+      const callback = activeConfirmCallback;
+      closeConfirmModal();
+      if (typeof callback === "function") {
+        callback();
+      }
+    });
+  }
+
+  if (confirmModal) {
+    confirmModal.addEventListener("click", (e) => {
+      if (e.target === confirmModal) closeConfirmModal();
+    });
+  }
+
+  // Phím Escape để đóng modal hoặc dropdown
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (confirmModal && confirmModal.classList.contains("active")) {
+        closeConfirmModal();
+      }
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
+      if (navMenu && navMenu.classList.contains("show")) {
+        navMenu.classList.remove("show");
+      }
+    }
   });
 
   const txBadge = document.getElementById("tx-code");
@@ -103,15 +256,6 @@ function initEventListeners() {
       if (code) handleScanCode(code);
     });
   }
-
-  // Nút chip mã test nhanh
-  document.querySelectorAll(".chip-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const code = btn.dataset.code;
-      document.getElementById("barcode-scanner").value = code;
-      handleScanCode(code);
-    });
-  });
 
   // Nút thêm ấn phẩm khác của độc giả
   const btnAddExtra = document.getElementById("btn-add-extra");

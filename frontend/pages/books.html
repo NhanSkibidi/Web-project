@@ -45,11 +45,6 @@
         </div>
 
         <div class="topbar-right">
-            <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
-                <span class="material-symbols-outlined">shopping_bag</span>
-                <span class="badge-dot"></span>
-            </button>
-            <div class="topbar-divider"></div>
             <div class="librarian-profile">
                 <div class="librarian-avatar">Đ</div>
                 <div class="librarian-info">
@@ -231,10 +226,6 @@
                 <div class="filter-actions">
                     <button id="btn-reset-filter" type="button" class="btn-filter-reset" title="Xóa bộ lọc">
                         <span class="material-symbols-outlined">refresh</span>
-                    </button>
-                    <button id="btn-apply-filter" type="button" class="btn-filter-apply">
-                        <span class="material-symbols-outlined">tune</span>
-                        <span>Áp dụng lọc</span>
                     </button>
                 </div>
             </section>
@@ -790,7 +781,8 @@
     <!-- ==========================================================================
        MODAL 3: XÁC NHẬN XÓA / ẨN ĐẦU SÁCH (ACADEMIC MINIMALIST CONFIRMATION MODAL)
        ========================================================================== -->
-    <div id="deleteModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div id="deleteModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="deleteModalTitle">
         <div class="delete-modal-box">
             <!-- Modal Header -->
             <div class="delete-modal-header">
@@ -809,7 +801,8 @@
             <!-- Modal Body: Card tóm tắt sách cần xóa -->
             <div class="delete-modal-body">
                 <div class="delete-book-card">
-                    <img id="deleteModalCover" src="" alt="Bìa sách" class="delete-book-cover" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
+                    <img id="deleteModalCover" src="" alt="Bìa sách" class="delete-book-cover"
+                        onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
                     <div class="delete-book-info">
                         <h3 id="deleteModalBookTitle" class="delete-book-heading">Tên đầu sách</h3>
                         <div class="delete-book-meta">
@@ -825,7 +818,8 @@
                 <div class="delete-modal-warning">
                     <span class="material-symbols-outlined delete-warning-icon">info</span>
                     <div class="delete-warning-text">
-                        <strong>Lưu ý:</strong> Hệ thống áp dụng cơ chế <em>Soft Delete (Ẩn đầu sách)</em> để bảo toàn lịch sử mượn trả và dữ liệu thống kê của thư viện.
+                        <strong>Lưu ý:</strong> Hệ thống áp dụng cơ chế <em>Soft Delete (Ẩn đầu sách)</em> để bảo toàn
+                        lịch sử mượn trả và dữ liệu thống kê của thư viện.
                     </div>
                 </div>
             </div>
@@ -837,6 +831,194 @@
                     <span class="material-symbols-outlined">delete</span>
                     <span>Xác nhận xóa</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       MODAL 4: CHI TIẾT ĐẦU SÁCH & QUẢN TRỊ BẢN SAO (HIGH-FIDELITY MODAL)
+       ========================================================================== -->
+    <div id="detailModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="detailHeaderTitle">
+        <div class="book-detail-modal-box">
+            <!-- Modal Header -->
+            <div class="book-detail-header">
+                <div class="book-detail-header-left">
+                    <div class="book-detail-icon-box">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                    </div>
+                    <div>
+                        <div class="book-detail-meta-row">
+                            <span id="detailCategoryBadge" class="book-detail-category-badge">CNTT &amp; Phần mềm</span>
+                            <span id="detailDdc" class="book-detail-ddc font-mono">DDC: 005.133</span>
+                            <span class="book-detail-dot">•</span>
+                            <span id="detailIsbn" class="book-detail-isbn font-mono">ISBN: 978-604-0-12834-5</span>
+                        </div>
+                        <h2 id="detailHeaderTitle" class="book-detail-header-title">Chi tiết Đầu sách &amp; Quản trị Bản
+                            sao</h2>
+                    </div>
+                </div>
+                <button type="button" id="closeDetailModalBtn" class="btn-icon-close" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Scrollable Body (2 columns) -->
+            <div class="book-detail-body">
+                <div class="book-detail-grid">
+                    <!-- Cột trái (Thông tin vị trí & Tình trạng bản sao) -->
+                    <div class="book-detail-col-left">
+                        <!-- Card 1: Bìa & Vị trí kho -->
+                        <div class="book-detail-side-card">
+                            <div class="book-detail-cover-wrap">
+                                <img id="detailCoverImg"
+                                    src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80"
+                                    alt="Bìa sách" class="book-detail-cover-img"
+                                    onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'">
+                            </div>
+                            <div class="book-detail-code-badge font-mono" id="detailBookCode">Mã: BK-IT-2024-001</div>
+                            <div class="book-detail-shelf-info">
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Vị trí lưu kho:</span>
+                                    <span class="shelf-info-val" id="detailShelfLocation">Tầng 1 - Kệ A3</span>
+                                </div>
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Ngăn phân bổ:</span>
+                                    <span class="shelf-info-val" id="detailShelfSection">Ngăn 02 (Kho CNTT)</span>
+                                </div>
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Ngày nhập mục lục:</span>
+                                    <span class="shelf-info-val font-mono" id="detailCreatedAt">15/01/2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Thống kê tình trạng bản sao -->
+                        <div class="book-detail-side-card">
+                            <h4 class="book-detail-card-title">
+                                <span class="material-symbols-outlined">pie_chart</span>
+                                <span id="detailCopiesTotalLabel">Tình trạng 12 bản sao</span>
+                            </h4>
+                            <div class="book-detail-stat-list">
+                                <div class="detail-stat-item stat-avail">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-avail"></span>
+                                        Khả dụng tại kệ
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesAvail">8 bản</strong>
+                                </div>
+                                <div class="detail-stat-item stat-borrowed">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-borrowed"></span>
+                                        Đang được mượn
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesBorrowed">3 bản</strong>
+                                </div>
+                                <div class="detail-stat-item stat-reserved">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-reserved"></span>
+                                        Đã đặt trước (Hold)
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesReserved">1 bản</strong>
+                                </div>
+                            </div>
+                            <div class="book-detail-stat-action">
+                                <button type="button" id="btnDetailPrintSpine" class="btn-detail-spine">
+                                    <span class="material-symbols-outlined">print</span>
+                                    <span>In nhãn gáy sách (Spine Label)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải (Thông tin chi tiết & Danh mục bản sao mẫu) -->
+                    <div class="book-detail-col-right">
+                        <!-- Tiêu đề đầu sách -->
+                        <div>
+                            <h1 id="detailBookTitle" class="book-detail-main-title">Lập trình Web Hiện đại với Python
+                                &amp; FastAPI</h1>
+                        </div>
+
+                        <!-- 4 ô thông số thư mục -->
+                        <div class="book-detail-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-item-label">Tác giả</span>
+                                <strong class="meta-item-value" id="detailAuthor">TS. Lê Hoàng Nam</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Nhà xuất bản</span>
+                                <strong class="meta-item-value" id="detailPublisher">NXB ĐHQG (2024)</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Số trang &amp; Khổ</span>
+                                <strong class="meta-item-value" id="detailPages">420 trang (16x24cm)</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Ngôn ngữ</span>
+                                <strong class="meta-item-value" id="detailLanguage">Tiếng Việt</strong>
+                            </div>
+                        </div>
+
+                        <!-- Tóm tắt nội dung -->
+                        <div class="book-detail-summary-section">
+                            <h4 class="book-detail-section-title">
+                                <span class="material-symbols-outlined">description</span>
+                                <span>Tóm tắt nội dung</span>
+                            </h4>
+                            <p id="detailSummary" class="book-detail-summary-text">
+                                Tài liệu cung cấp nền tảng vững chắc về kiến trúc Backend bất đồng bộ (Asynchronous)
+                                trên nền tảng Python 3.11+, tối ưu hoá hiệu năng RESTful API với FastAPI, Pydantic V2,
+                                ORM SQLAlchemy và bảo mật OAuth2/JWT.
+                            </p>
+                        </div>
+
+                        <!-- Bảng bản sao vật lý mẫu -->
+                        <div class="book-detail-copies-section">
+                            <div class="book-detail-copies-header">
+                                <h4 class="book-detail-section-title">
+                                    <span class="material-symbols-outlined">qr_code_2</span>
+                                    <span id="detailCopiesTableTitle">Bản sao vật lý mẫu (5/12 bản)</span>
+                                </h4>
+                                <span id="detailBarcodePrefix" class="book-detail-prefix-tag font-mono">Prefix:
+                                    BK-IT-2024</span>
+                            </div>
+                            <div class="book-detail-table-wrap">
+                                <table class="book-detail-mini-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã vạch Barcode</th>
+                                            <th>Vị trí kệ</th>
+                                            <th>Tình trạng</th>
+                                            <th>Trạng thái</th>
+                                            <th style="text-align: right;">Ngày nhập</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detailCopiesTableBody">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="book-detail-footer">
+                <div id="detailFooterInfo" class="book-detail-footer-info">
+                    <span>Đơn giá: <strong id="detailPrice">145.000 đ</strong></span>
+                </div>
+                <div class="book-detail-footer-actions">
+                    <button type="button" id="closeDetailModalFooterBtn" class="btn-action-outline">Đóng</button>
+                    <button type="button" id="detailManageCopiesBtn" class="btn-action-outline-brand">
+                        <span class="material-symbols-outlined">qr_code_2</span>
+                        <span id="detailManageCopiesBtnText">Quản lý bản sao</span>
+                    </button>
+                    <button type="button" id="detailEditBookBtn" class="btn-action-primary">
+                        <span class="material-symbols-outlined">edit_square</span>
+                        <span>Sửa thông tin đầu sách</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

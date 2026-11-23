@@ -36,6 +36,11 @@
         // Modal 3: Xóa / ẩn sách
         deletingIsbn: null,
 
+        // Modal 4: Chi tiết đầu sách
+        activeDetailIsbn: null,
+        activeDetailBook: null,
+        activeDetailCopies: [],
+
         // Danh mục taxonomy
         categoriesList: [],
         publishersList: [],
@@ -54,10 +59,8 @@
 
         // Filter & Search
         filterSearchInput: document.getElementById("filter-search-input"),
-        topbarSearchInput: document.getElementById("topbar-global-search"),
         filterCategory: document.getElementById("filter-category"),
         filterStatus: document.getElementById("filter-status"),
-        btnApplyFilter: document.getElementById("btn-apply-filter"),
         btnResetFilter: document.getElementById("btn-reset-filter"),
 
         // Main Table & Pagination
@@ -130,6 +133,39 @@
         confirmDeleteModalBtn: document.getElementById("confirmDeleteModalBtn"),
         cancelDeleteModalBtn: document.getElementById("cancelDeleteModalBtn"),
         closeDeleteModalBtn: document.getElementById("closeDeleteModalBtn"),
+
+        // Modal 4: Chi tiết đầu sách & Quản trị bản sao
+        detailModalBackdrop: document.getElementById("detailModalBackdrop") || document.getElementById("modal-book-details"),
+        detailCategoryBadge: document.getElementById("detailCategoryBadge"),
+        detailDdc: document.getElementById("detailDdc"),
+        detailIsbn: document.getElementById("detailIsbn"),
+        detailHeaderTitle: document.getElementById("detailHeaderTitle"),
+        closeDetailModalBtn: document.getElementById("closeDetailModalBtn"),
+        detailCoverImg: document.getElementById("detailCoverImg"),
+        detailBookCode: document.getElementById("detailBookCode"),
+        detailShelfLocation: document.getElementById("detailShelfLocation"),
+        detailShelfSection: document.getElementById("detailShelfSection"),
+        detailCreatedAt: document.getElementById("detailCreatedAt"),
+        detailCopiesTotalLabel: document.getElementById("detailCopiesTotalLabel"),
+        detailCopiesAvail: document.getElementById("detailCopiesAvail"),
+        detailCopiesBorrowed: document.getElementById("detailCopiesBorrowed"),
+        detailCopiesReserved: document.getElementById("detailCopiesReserved"),
+        btnDetailPrintSpine: document.getElementById("btnDetailPrintSpine"),
+        detailBookTitle: document.getElementById("detailBookTitle"),
+        detailAuthor: document.getElementById("detailAuthor"),
+        detailPublisher: document.getElementById("detailPublisher"),
+        detailPages: document.getElementById("detailPages"),
+        detailLanguage: document.getElementById("detailLanguage"),
+        detailSummary: document.getElementById("detailSummary"),
+        detailCopiesTableTitle: document.getElementById("detailCopiesTableTitle"),
+        detailBarcodePrefix: document.getElementById("detailBarcodePrefix"),
+        detailCopiesTableBody: document.getElementById("detailCopiesTableBody"),
+        detailFooterInfo: document.getElementById("detailFooterInfo"),
+        detailPrice: document.getElementById("detailPrice"),
+        closeDetailModalFooterBtn: document.getElementById("closeDetailModalFooterBtn"),
+        detailManageCopiesBtn: document.getElementById("detailManageCopiesBtn"),
+        detailManageCopiesBtnText: document.getElementById("detailManageCopiesBtnText"),
+        detailEditBookBtn: document.getElementById("detailEditBookBtn"),
 
         // Modal 2 Tabs
         btnTab1: document.getElementById("btnTab1"),
@@ -319,9 +355,28 @@
             }
 
             const res = await api.get("/books/search", params);
-            state.books = res && Array.isArray(res.items) ? res.items : [];
-            state.totalRecords = res && typeof res.total === "number" ? res.total : state.books.length;
-            state.totalPages = res && typeof res.total_pages === "number" ? res.total_pages : 1;
+            let books = res && Array.isArray(res.items) ? res.items : [];
+            let total = res && typeof res.total === "number" ? res.total : books.length;
+            let totalPages = res && typeof res.total_pages === "number" ? res.total_pages : 1;
+
+            // Xử lý bộ lọc trạng thái phụ trên client nếu chọn khác AVAILABLE
+            if (state.selectedStatus === "borrowed") {
+                books = books.filter(b => (b.borrowed_copies || 0) > 0);
+                total = books.length;
+                totalPages = Math.ceil(total / state.pageSize) || 1;
+            } else if (state.selectedStatus === "reserved") {
+                books = books.filter(b => (b.reserved_copies || 0) > 0);
+                total = books.length;
+                totalPages = Math.ceil(total / state.pageSize) || 1;
+            } else if (state.selectedStatus === "lost") {
+                books = books.filter(b => ((b.lost_copies || 0) + (b.damage_copies || 0) + (b.disposed_copies || 0)) > 0);
+                total = books.length;
+                totalPages = Math.ceil(total / state.pageSize) || 1;
+            }
+
+            state.books = books;
+            state.totalRecords = total;
+            state.totalPages = totalPages;
 
             renderTable();
             renderPagination(state.totalPages);
@@ -406,7 +461,7 @@
                         <img src="${coverSrc}" alt="${escapeHtml(book.title)}" class="book-cover-img" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
                     </td>
                     <td>
-                        <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" class="book-title-text" title="Xem chi tiết đầu sách">
+                        <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" onclick="window.booksApp.openBookDetailModal('${book.isbn}'); return false;" class="book-title-text" title="Xem chi tiết đầu sách">
                             ${escapeHtml(book.title)}
                         </a>
                         <span class="book-page-text">${book.page_count || 400} trang • Vị trí: ${escapeHtml(book.shelf_location || "Kệ A1")}</span>
@@ -426,9 +481,9 @@
                     </td>
                     <td style="text-align: right;">
                         <div class="table-actions" style="justify-content: flex-end;">
-                            <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" class="btn-table-action" title="Xem trang chi tiết">
+                            <button type="button" class="btn-table-action" onclick="window.booksApp.openBookDetailModal('${book.isbn}')" title="Xem chi tiết đầu sách">
                                 <span class="material-symbols-outlined">visibility</span>
-                            </a>
+                            </button>
                             <button type="button" class="btn-table-action" onclick="window.booksApp.openEditModal('${book.isbn}')" title="Chỉnh sửa thông tin">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
@@ -1065,6 +1120,188 @@
     }
 
     // ============================================================================
+    // 10.5. MODAL 4: CHI TIẾT ĐẦU SÁCH & QUẢN TRỊ BẢN SAO (HIGH-FIDELITY MODAL)
+    // ============================================================================
+    function populateBookDetailModal(book, copies = []) {
+        if (!book) return;
+        const isbn = book.isbn || "";
+        const title = book.title || "";
+        const catName = (book.category && (book.category.name || book.category)) || "Chuyên ngành";
+        const ddc = book.classification_number || book.ddc || "005.133";
+        const pubName = (book.publisher && (book.publisher.name || book.publisher)) || "NXB Giáo Dục";
+        const pubYear = book.publish_year ? ` (${book.publish_year})` : "";
+        const shelf = book.shelf_location || "Tầng 1 - Kệ A3";
+        const section = book.shelf_section || `Ngăn 02 (Kho ${catName})`;
+        const pages = book.page_count ? `${book.page_count} trang` : "Chưa rõ";
+        const language = book.language || "Tiếng Việt";
+        const summary = book.description || book.summary || "Tài liệu cung cấp nền tảng kiến thức chuyên ngành theo chuẩn đào tạo, phục vụ nghiên cứu và học tập cho sinh viên và giảng viên.";
+        const coverSrc = formatCoverUrl(book.cover_image);
+
+        let authorsStr = "Chưa cập nhật";
+        if (Array.isArray(book.authors) && book.authors.length > 0) {
+            authorsStr = book.authors.map(a => (typeof a === "object" ? a.name : a)).join(", ");
+        } else if (book.author_name) {
+            authorsStr = book.author_name;
+        } else if (book.authors) {
+            authorsStr = String(book.authors);
+        }
+
+        let createdDate = "15/01/2024";
+        if (book.created_at) {
+            try {
+                createdDate = new Date(book.created_at).toLocaleDateString("vi-VN");
+            } catch (e) {}
+        }
+
+        // Header
+        if (dom.detailCategoryBadge) dom.detailCategoryBadge.textContent = catName;
+        if (dom.detailDdc) dom.detailDdc.textContent = `DDC: ${ddc}`;
+        if (dom.detailIsbn) dom.detailIsbn.textContent = `ISBN: ${isbn}`;
+        if (dom.detailHeaderTitle) dom.detailHeaderTitle.textContent = "Chi tiết Đầu sách & Quản trị Bản sao";
+
+        // Left Col
+        if (dom.detailCoverImg) {
+            dom.detailCoverImg.src = coverSrc;
+            dom.detailCoverImg.alt = title;
+        }
+        if (dom.detailBookCode) dom.detailBookCode.textContent = `Mã: ${isbn}`;
+        if (dom.detailShelfLocation) dom.detailShelfLocation.textContent = shelf;
+        if (dom.detailShelfSection) dom.detailShelfSection.textContent = section;
+        if (dom.detailCreatedAt) dom.detailCreatedAt.textContent = createdDate;
+
+        // Copies Stats
+        const totalCopies = copies.length > 0 ? copies.length : (book.total_copies || 0);
+        const availCopies = copies.length > 0 
+            ? copies.filter(c => c.status === "AVAILABLE").length 
+            : (book.available_copies !== undefined ? book.available_copies : totalCopies);
+        const borrowedCopies = copies.length > 0 
+            ? copies.filter(c => c.status === "BORROWED").length 
+            : Math.max(0, totalCopies - availCopies);
+        const reservedCopies = copies.length > 0 
+            ? copies.filter(c => c.status === "RESERVED" || c.status === "HOLD").length 
+            : 0;
+
+        if (dom.detailCopiesTotalLabel) dom.detailCopiesTotalLabel.textContent = `Tình trạng ${totalCopies} bản sao`;
+        if (dom.detailCopiesAvail) dom.detailCopiesAvail.textContent = `${availCopies} bản`;
+        if (dom.detailCopiesBorrowed) dom.detailCopiesBorrowed.textContent = `${borrowedCopies} bản`;
+        if (dom.detailCopiesReserved) dom.detailCopiesReserved.textContent = `${reservedCopies} bản`;
+
+        // Right Col
+        if (dom.detailBookTitle) dom.detailBookTitle.textContent = title;
+        if (dom.detailAuthor) dom.detailAuthor.textContent = authorsStr;
+        if (dom.detailPublisher) dom.detailPublisher.textContent = `${pubName}${pubYear}`;
+        if (dom.detailPages) dom.detailPages.textContent = pages;
+        if (dom.detailLanguage) dom.detailLanguage.textContent = language;
+        if (dom.detailSummary) dom.detailSummary.textContent = summary;
+
+        // Mini Copies Table
+        const sampleLimit = 5;
+        const sampleCount = Math.min(copies.length, sampleLimit);
+        if (dom.detailCopiesTableTitle) {
+            dom.detailCopiesTableTitle.textContent = copies.length > 0 
+                ? `Bản sao vật lý mẫu (${sampleCount}/${totalCopies} bản)` 
+                : `Bản sao vật lý (${totalCopies} bản)`;
+        }
+        if (dom.detailBarcodePrefix) dom.detailBarcodePrefix.textContent = `Prefix: ${isbn}`;
+
+        if (dom.detailCopiesTableBody) {
+            if (!copies || copies.length === 0) {
+                dom.detailCopiesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 24px; color: var(--color-muted);">
+                            Chưa có dữ liệu bản sao chi tiết hoặc đang tải...
+                        </td>
+                    </tr>
+                `;
+            } else {
+                let html = "";
+                copies.slice(0, sampleLimit).forEach(copy => {
+                    let badgeClass = "avail";
+                    let statusText = "AVAILABLE";
+                    if (copy.status === "BORROWED") {
+                        badgeClass = "borrowed";
+                        statusText = "BORROWED";
+                    } else if (copy.status === "RESERVED" || copy.status === "HOLD") {
+                        badgeClass = "reserved";
+                        statusText = "RESERVED";
+                    } else if (copy.status === "DAMAGED" || copy.status === "LOST" || copy.status === "DISPOSED") {
+                        badgeClass = "damaged";
+                        statusText = copy.status;
+                    }
+
+                    let copyDate = createdDate;
+                    if (copy.created_at) {
+                        try {
+                            copyDate = new Date(copy.created_at).toLocaleDateString("vi-VN");
+                        } catch (e) {}
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">${escapeHtml(copy.copy_code || copy.barcode || 'BS-' + copy.id)}</td>
+                            <td><span class="detail-shelf-badge">${escapeHtml(copy.shelf_location || shelf)}</span></td>
+                            <td><span style="color: var(--color-green); font-weight: 500;">${escapeHtml(copy.condition || 'Tốt')}</span></td>
+                            <td>
+                                <span class="copy-status-badge ${badgeClass}">
+                                    <span class="stat-dot dot-${badgeClass}"></span> ${statusText}
+                                </span>
+                            </td>
+                            <td style="text-align: right;" class="font-mono text-muted">${copyDate}</td>
+                        </tr>
+                    `;
+                });
+                dom.detailCopiesTableBody.innerHTML = html;
+            }
+        }
+
+        // Footer
+        if (dom.detailPrice) {
+            dom.detailPrice.textContent = book.price ? `${Number(book.price).toLocaleString("vi-VN")} đ` : "Theo quy chuẩn thư viện";
+        }
+        if (dom.detailManageCopiesBtnText) {
+            dom.detailManageCopiesBtnText.textContent = `Quản lý ${totalCopies} bản sao`;
+        }
+    }
+
+    async function openBookDetailModal(isbn) {
+        try {
+            state.activeDetailIsbn = isbn;
+
+            // Optimistic render from in-memory cache
+            const cachedBook = state.books.find(b => b.isbn === isbn);
+            if (cachedBook) {
+                populateBookDetailModal(cachedBook, []);
+                if (dom.detailModalBackdrop) dom.detailModalBackdrop.classList.remove("hidden");
+            }
+
+            // Fetch fresh details & copies from API
+            const [book, copies] = await Promise.all([
+                api.get(`/books/${encodeURIComponent(isbn)}`),
+                api.get("/book_copies", { book_isbn: isbn }).catch(() => [])
+            ]);
+
+            state.activeDetailBook = book || cachedBook;
+            state.activeDetailCopies = Array.isArray(copies) ? copies : [];
+
+            populateBookDetailModal(state.activeDetailBook, state.activeDetailCopies);
+
+            if (dom.detailModalBackdrop) dom.detailModalBackdrop.classList.remove("hidden");
+        } catch (err) {
+            console.error("Lỗi khi mở modal xem chi tiết sách:", err);
+            showNotification(err.message || "Không thể tải chi tiết đầu sách.", "error");
+        }
+    }
+
+    function closeBookDetailModal() {
+        if (dom.detailModalBackdrop) {
+            dom.detailModalBackdrop.classList.add("hidden");
+        }
+        state.activeDetailIsbn = null;
+        state.activeDetailBook = null;
+        state.activeDetailCopies = [];
+    }
+
+    // ============================================================================
     // 11. MODAL 2: QUẢN LÝ BẢN SAO & TRẠNG THÁI (Task B & C)
     // ============================================================================
     async function openCopiesModal(isbn) {
@@ -1628,11 +1865,21 @@
     // 16. THIẾT LẬP CÁC SỰ KIỆN GIAO DIỆN (EVENT LISTENERS)
     // ============================================================================
     function initEventListeners() {
-        // Tìm kiếm & Lọc
+        // Tìm kiếm & Lọc theo API backend /books/search
+        let searchDebounceTimer = null;
         if (dom.filterSearchInput) {
+            dom.filterSearchInput.addEventListener("input", (e) => {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    state.searchTerm = e.target.value.trim();
+                    state.currentPage = 1;
+                    loadBooks();
+                }, 350);
+            });
             dom.filterSearchInput.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
+                    clearTimeout(searchDebounceTimer);
                     state.searchTerm = dom.filterSearchInput.value.trim();
                     state.currentPage = 1;
                     loadBooks();
@@ -1640,23 +1887,17 @@
             });
         }
 
-        if (dom.topbarSearchInput) {
-            dom.topbarSearchInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    state.searchTerm = dom.topbarSearchInput.value.trim();
-                    if (dom.filterSearchInput) dom.filterSearchInput.value = state.searchTerm;
-                    state.currentPage = 1;
-                    loadBooks();
-                }
+        if (dom.filterCategory) {
+            dom.filterCategory.addEventListener("change", (e) => {
+                state.selectedCategory = e.target.value;
+                state.currentPage = 1;
+                loadBooks();
             });
         }
 
-        if (dom.btnApplyFilter) {
-            dom.btnApplyFilter.addEventListener("click", () => {
-                state.searchTerm = dom.filterSearchInput ? dom.filterSearchInput.value.trim() : "";
-                state.selectedCategory = dom.filterCategory ? dom.filterCategory.value : "";
-                state.selectedStatus = dom.filterStatus ? dom.filterStatus.value : "";
+        if (dom.filterStatus) {
+            dom.filterStatus.addEventListener("change", (e) => {
+                state.selectedStatus = e.target.value;
                 state.currentPage = 1;
                 loadBooks();
             });
@@ -1665,7 +1906,6 @@
         if (dom.btnResetFilter) {
             dom.btnResetFilter.addEventListener("click", () => {
                 if (dom.filterSearchInput) dom.filterSearchInput.value = "";
-                if (dom.topbarSearchInput) dom.topbarSearchInput.value = "";
                 if (dom.filterCategory) dom.filterCategory.value = "";
                 if (dom.filterStatus) dom.filterStatus.value = "";
                 state.searchTerm = "";
@@ -1823,11 +2063,38 @@
         if (dom.closeDeleteModalBtn) dom.closeDeleteModalBtn.addEventListener("click", closeDeleteModal);
         if (dom.confirmDeleteModalBtn) dom.confirmDeleteModalBtn.addEventListener("click", handleConfirmDelete);
 
+        // Modal 4: Book Details Modal buttons
+        if (dom.closeDetailModalBtn) dom.closeDetailModalBtn.addEventListener("click", closeBookDetailModal);
+        if (dom.closeDetailModalFooterBtn) dom.closeDetailModalFooterBtn.addEventListener("click", closeBookDetailModal);
+
+        if (dom.detailManageCopiesBtn) {
+            dom.detailManageCopiesBtn.addEventListener("click", () => {
+                const isbn = state.activeDetailIsbn;
+                closeBookDetailModal();
+                if (isbn) openCopiesModal(isbn);
+            });
+        }
+
+        if (dom.detailEditBookBtn) {
+            dom.detailEditBookBtn.addEventListener("click", () => {
+                const isbn = state.activeDetailIsbn;
+                closeBookDetailModal();
+                if (isbn) openEditModal(isbn);
+            });
+        }
+
+        if (dom.btnDetailPrintSpine) {
+            dom.btnDetailPrintSpine.addEventListener("click", () => {
+                showNotification("Đang gửi lệnh in tem nhãn gáy sách (Spine Label)...", "info");
+            });
+        }
+
         // Click ngoài backdrop để đóng modal
         window.addEventListener("click", (e) => {
             if (e.target === dom.bookModalBackdrop) closeBookModal();
             if (e.target === dom.copiesModalBackdrop) closeCopiesModal();
             if (e.target === dom.deleteModalBackdrop) closeDeleteModal();
+            if (e.target === dom.detailModalBackdrop) closeBookDetailModal();
         });
 
         // Đóng bằng phím Escape
@@ -1836,6 +2103,7 @@
                 closeBookModal();
                 closeCopiesModal();
                 closeDeleteModal();
+                closeBookDetailModal();
             }
         });
     }
@@ -1846,6 +2114,20 @@
     async function init() {
         initEventListeners();
         await loadTaxonomy();
+
+        // Nhận từ khoá hoặc thể loại từ URL query params nếu có (VD: books.html?q=Python hoặc ?category_id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryTerm = urlParams.get("keyword") || urlParams.get("q") || urlParams.get("search");
+        if (queryTerm) {
+            state.searchTerm = queryTerm.trim();
+            if (dom.filterSearchInput) dom.filterSearchInput.value = state.searchTerm;
+        }
+        const queryCat = urlParams.get("category_id") || urlParams.get("cat");
+        if (queryCat) {
+            state.selectedCategory = queryCat;
+            if (dom.filterCategory) dom.filterCategory.value = queryCat;
+        }
+
         await loadBooks();
     }
 
@@ -1875,7 +2157,9 @@
         exportCopiesCsv: exportCopiesCsv,
         viewPdfDoc: viewPdfDoc,
         exportToExcel: exportToExcel,
-        removeAuthorTag: removeAuthorTag
+        removeAuthorTag: removeAuthorTag,
+        openBookDetailModal: openBookDetailModal,
+        closeBookDetailModal: closeBookDetailModal
     };
 
     if (document.readyState === "loading") {

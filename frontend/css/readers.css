@@ -513,7 +513,8 @@ body.readers-app {
 /* ==========================================================================
    3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH (MAIN WORKSPACE)
    ========================================================================== */
-.readers-workspace-wrapper {
+.readers-workspace-wrapper,
+.main-workspace-wrapper {
   margin-top: 64px;
   margin-left: 72px;
   min-height: calc(100vh - 64px);
@@ -523,7 +524,8 @@ body.readers-app {
   background-color: transparent;
 }
 
-.readers-main-container {
+.readers-main-container,
+.page-container {
   flex: 1;
   max-width: 1440px;
   width: 100%;
@@ -533,10 +535,12 @@ body.readers-app {
 }
 
 @media (max-width: 900px) {
-  .readers-workspace-wrapper {
+  .readers-workspace-wrapper,
+  .main-workspace-wrapper {
     margin-left: 0;
   }
-  .readers-main-container {
+  .readers-main-container,
+  .page-container {
     padding: 16px;
   }
 }
@@ -753,6 +757,49 @@ body.readers-app {
   font-size: 13.5px;
   color: var(--text);
   cursor: pointer;
+}
+
+/* Nút làm mới / tải lại tìm kiếm với hiệu ứng xoay tròn */
+.btn-refresh-spin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-btn, 8px);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+}
+
+.btn-refresh-spin:hover {
+  background: var(--color-brand-subtle);
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.15);
+}
+
+.btn-refresh-spin:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.btn-refresh-spin .material-symbols-outlined {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.btn-refresh-spin.is-spinning .material-symbols-outlined {
+  animation: reloadSpin 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes reloadSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ---------- 6. TWO-COLUMN SPLIT (TABLE LEFT + CARD PREVIEW & LOANS RIGHT) ---------- */

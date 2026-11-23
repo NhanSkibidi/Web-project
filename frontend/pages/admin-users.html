@@ -1,184 +1,243 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản lý Tài khoản Thủ thư (Admin) | UniLib KS25</title>
   <link rel="icon" href="../assets/images/logo.svg">
+
+  <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md: Newsreader, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+
+  <!-- Stylesheet riêng của trang, đồng bộ hệ màu và layout với toàn bộ dự án -->
   <link rel="stylesheet" href="../css/readers.css">
 </head>
-<body class="readers-app">
 
-  <!-- 1. TOP HEADER BAR -->
-  <header class="ul-topbar">
-    <div class="ul-topbar-left">
-      <button id="btn-mobile-sidebar" type="button" class="ul-icon-btn ul-mobile-toggle" title="Menu">☰</button>
-      <a href="home.html" class="ul-brand">
-        <div class="ul-brand-icon">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
+<body data-root="../" class="readers-body readers-app">
+
+  <!-- =========================================================================
+       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ THEO LOAN_MANAGEMENT
+       ========================================================================= -->
+  <header class="librarian-topbar site-header">
+    <div class="topbar-left">
+      <!-- Logo -->
+      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
         </div>
-        <div>
-          <span class="ul-brand-name">UniLib</span>
-          <span class="ul-brand-sub">Quản trị hệ thống</span>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
         </div>
       </a>
 
-      <nav class="ul-topnav">
-        <a href="home.html">Trang chủ</a>
-        <a href="catalog.html">Tra cứu sách</a>
-        <a href="readers.html">Độc giả &amp; Thẻ</a>
-        <a href="admin-users.html" class="active">Quản lý Thủ thư</a>
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <!-- Navigation Menu -->
+      <nav class="topbar-nav" id="navMenu">
+        <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
       </nav>
     </div>
 
-    <div class="ul-topbar-right">
-      <a href="profile.html" class="ul-staff-chip" style="text-decoration:none; color:inherit;" title="Xem hồ sơ cá nhân & đổi mật khẩu">
-        <div id="top-admin-avatar" class="ul-avatar-sm">A</div>
-        <div>
-          <span id="top-admin-name" class="ul-staff-name">Quản trị viên</span>
-          <span id="top-admin-role" class="ul-staff-role">ADMIN</span>
+    <!-- Header Right Area -->
+    <div class="topbar-right">
+      <!-- User Account Dropdown -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar">A</div>
+          <div class="librarian-info">
+            <span class="librarian-name" id="userName">Admin</span>
+            <span class="librarian-role" id="userRole">Quản trị viên</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="profile.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
         </div>
-      </a>
-
-      <button id="btn-top-logout" type="button" class="ul-icon-btn" title="Đăng xuất">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      </button>
+      </div>
     </div>
   </header>
 
-  <!-- 2. APP SHELL -->
-  <div class="ul-shell">
-    <aside id="ul-sidebar" class="ul-sidebar">
-      <div class="ul-sidebar-inner">
-        <div class="ul-sidebar-heading">Phân hệ Quản trị</div>
-        <a href="staff-dashboard.html" class="ul-side-link">📊 Tổng quan &amp; Thống kê</a>
-        <a href="books.html" class="ul-side-link">📚 Quản lý Đầu sách &amp; Bản sao</a>
-        <a href="borrow_on_site.html" class="ul-side-link">📖 Mượn sách tại quầy</a>
-        <a href="returns.html" class="ul-side-link">↩ Trả sách tại quầy</a>
-        <a href="fines.html" class="ul-side-link">💰 Xử lý tiền phạt</a>
-        <a href="readers.html" class="ul-side-link">🪪 Độc giả &amp; Thẻ thư viện</a>
-
-        <hr class="ul-side-divider">
-
-        <a href="admin-users.html" class="ul-side-link active">🛡️ Quản lý tài khoản Thủ thư</a>
-        <a href="profile.html" class="ul-side-link">👤 Hồ sơ &amp; Đổi mật khẩu</a>
-      </div>
-
-      <div class="ul-sidebar-footer">
-        <span class="server-dot"></span>
-        <span>Quyền: ADMIN ONLY</span>
-      </div>
-    </aside>
-
-    <!-- Main Workspace -->
-    <div class="ul-workspace">
-      <main id="admin-users-main" class="ul-content">
-        <div class="page-head-row">
-          <div>
-            <h1 class="page-title">Quản lý Tài khoản Thủ thư</h1>
-            <p class="page-subtitle">Quản trị viên tạo mới, chỉnh sửa thông tin, đặt lại mật khẩu và khóa/mở khóa tài khoản Thủ thư.</p>
-          </div>
-          <div class="page-head-actions">
-            <a href="profile.html" class="btn">👤 Hồ sơ cá nhân</a>
-            <button id="btn-open-create-lib" type="button" class="btn btn-primary">👤+ Tạo tài khoản thủ thư</button>
-          </div>
-        </div>
-
-        <!-- 3 KPI Cards -->
-        <div class="kpi-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-label">Tổng tài khoản Thủ thư</span>
-              <span class="kpi-icon kpi-icon-neutral">👥</span>
-            </div>
-            <div id="kpi-lib-total" class="kpi-value">—</div>
-            <div class="kpi-sub">Nhân sự phân hệ Thủ thư</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-label">Đang hoạt động (ACTIVE)</span>
-              <span class="kpi-icon kpi-icon-green">✔</span>
-            </div>
-            <div id="kpi-lib-active" class="kpi-value" style="color: var(--primary);">—</div>
-            <div class="kpi-sub" style="color: var(--success);">• Có quyền đăng nhập &amp; tác nghiệp</div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-label">Đang bị khóa (LOCKED)</span>
-              <span class="kpi-icon kpi-icon-red">🔒</span>
-            </div>
-            <div id="kpi-lib-locked" class="kpi-value" style="color: var(--danger);">—</div>
-            <div class="kpi-sub" style="color: var(--danger);">⚠ Đã chặn đăng nhập &amp; vô hiệu hóa phiên</div>
-          </div>
-        </div>
-
-        <!-- Search & Filter Bar -->
-        <div class="filter-card">
-          <form id="librarians-filter-form" class="filter-row" style="grid-template-columns: 2fr 1fr auto auto;">
-            <div class="search-field-wrap">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input id="lib-search-input" type="search" placeholder="Tìm thủ thư theo họ tên, email, số điện thoại...">
-            </div>
-
-            <select id="lib-status-filter" class="filter-select">
-              <option value="">Tất cả trạng thái</option>
-              <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
-              <option value="LOCKED">Đã khóa (LOCKED)</option>
-            </select>
-
-            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-            <button id="btn-reset-lib-filter" type="button" class="ul-icon-btn" style="height:40px; width:40px;" title="Làm mới">↻</button>
-          </form>
-        </div>
-
-        <!-- Librarians Table -->
-        <section class="panel-card">
-          <div class="panel-head">
-            <h2 class="panel-title">🛡️ Danh sách tài khoản Thủ thư</h2>
-            <span id="lib-count-badge" class="panel-meta">0 tài khoản</span>
-          </div>
-
-          <div class="table-scroll">
-            <table class="readers-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Thông tin Thủ thư</th>
-                  <th>Số điện thoại</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày tạo</th>
-                  <th style="text-align:right;">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="librarians-tbody">
-                <tr>
-                  <td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">
-                    Đang tải danh sách tài khoản thủ thư...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-
-      <footer class="ul-footer">
-        <div>© 2026 UniLib MVP · Phân hệ Quản trị Nhân sự Thủ thư (ADMIN)</div>
-        <div><a href="profile.html" style="color:var(--primary); text-decoration:none; font-weight:600;">Hồ sơ cá nhân &amp; Đổi mật khẩu →</a></div>
-      </footer>
+  <!-- =========================================================================
+       2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL (SIDEBAR THU GỌN / MỞ RỘNG)
+       ========================================================================= -->
+  <aside id="app-sidebar" class="sidebar-rail">
+    <div class="sidebar-rail-header">
+      <span>PHÂN HỆ THỦ THƯ</span>
     </div>
+    <nav class="sidebar-rail-nav">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
+        <span class="material-symbols-outlined">space_dashboard</span>
+        <span class="rail-label">Tổng quan &amp; Thống kê</span>
+      </a>
+      <a href="books.html" class="sidebar-rail-link" data-tooltip="Quản lý Đầu sách &amp; Bản sao">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
+      </a>
+      <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+        <span class="material-symbols-outlined">category</span>
+        <span class="rail-label">Thể loại, Tác giả, NXB</span>
+      </a>
+      <a href="loan_management.html" class="sidebar-rail-link" data-tooltip="Duyệt mượn trực tuyến">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="rail-label">Quản lý phiếu mượn</span>
+      </a>
+      <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
+        <span class="material-symbols-outlined">library_add</span>
+        <span class="rail-label">Mượn sách tại quầy</span>
+      </a>
+      <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
+      </a>
+      <a href="readers.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link active" title="Nhân sự &amp; Phân quyền"
+        data-tooltip="Nhân sự &amp; Phân quyền">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="rail-label">Nhân sự &amp; Phân quyền</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- =========================================================================
+       3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH (MAIN WORKSPACE)
+       ========================================================================= -->
+  <div class="readers-workspace-wrapper main-workspace-wrapper">
+    <main id="admin-users-main" class="readers-main-container page-container">
+      <div class="page-head-row">
+        <div>
+          <h1 class="page-title">Quản lý Tài khoản Thủ thư</h1>
+        </div>
+        <div class="page-head-actions">
+          <button id="btn-open-create-lib" type="button" class="btn btn-primary">👤+ Tạo tài khoản thủ thư</button>
+        </div>
+      </div>
+
+      <!-- 3 KPI Cards -->
+      <div class="kpi-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Tổng tài khoản Thủ thư</span>
+            <span class="kpi-icon kpi-icon-neutral">👥</span>
+          </div>
+          <div id="kpi-lib-total" class="kpi-value">—</div>
+          <div class="kpi-sub">Nhân sự phân hệ Thủ thư</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Đang hoạt động (ACTIVE)</span>
+            <span class="kpi-icon kpi-icon-green">✔</span>
+          </div>
+          <div id="kpi-lib-active" class="kpi-value" style="color: var(--primary);">—</div>
+          <div class="kpi-sub" style="color: var(--success);">• Có quyền đăng nhập &amp; tác nghiệp</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Đang bị khóa (LOCKED)</span>
+            <span class="kpi-icon kpi-icon-red">🔒</span>
+          </div>
+          <div id="kpi-lib-locked" class="kpi-value" style="color: var(--danger);">—</div>
+          <div class="kpi-sub" style="color: var(--danger);">⚠ Đã chặn đăng nhập &amp; vô hiệu hóa phiên</div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="filter-card">
+        <form id="librarians-filter-form" class="filter-row" style="grid-template-columns: 1fr 240px auto;">
+          <div class="search-field-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input id="lib-search-input" type="search" placeholder="Tìm thủ thư theo họ tên, email, số điện thoại...">
+          </div>
+
+          <select id="lib-status-filter" class="filter-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="ACTIVE">Đang hoạt động (ACTIVE)</option>
+            <option value="LOCKED">Đã khóa (LOCKED)</option>
+          </select>
+
+          <button id="btn-reset-lib-filter" type="button" class="btn-refresh-spin"
+            title="Tải lại dữ liệu &amp; Đặt lại tìm kiếm" aria-label="Tải lại tìm kiếm">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Librarians Table -->
+      <section class="panel-card">
+        <div class="panel-head">
+          <h2 class="panel-title">🛡️ Danh sách tài khoản Thủ thư</h2>
+          <span id="lib-count-badge" class="panel-meta">0 tài khoản</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="readers-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Thông tin Thủ thư</th>
+                <th>Số điện thoại</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th style="text-align:right;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="librarians-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center; padding:32px; color:var(--muted);">
+                  Đang tải danh sách tài khoản thủ thư...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER TRANG WEB (ĐỒNG BỘ LOAN_MANAGEMENT) -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        © 2025 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền.
+      </div>
+      <div class="footer-right">
+        <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Quy định mượn trả</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
+      </div>
+    </footer>
   </div>
 
   <!-- ==================== MODAL 1: TẠO TÀI KHOẢN THỦ THƯ MỚI ==================== -->
@@ -236,7 +295,8 @@
         </div>
         <div class="form-field">
           <label for="edit-lib-password">Đặt lại mật khẩu mới (để trống nếu giữ nguyên)</label>
-          <input id="edit-lib-password" type="password" minlength="8" maxlength="72" placeholder="Nhập tối thiểu 8 ký tự để đặt lại mật khẩu...">
+          <input id="edit-lib-password" type="password" minlength="8" maxlength="72"
+            placeholder="Nhập tối thiểu 8 ký tự để đặt lại mật khẩu...">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
           <button type="button" class="btn" data-close="modal-edit-lib">Huỷ</button>
@@ -263,10 +323,33 @@
     </div>
   </div>
 
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KHU VỰC THÔNG BÁO TOAST NỔI (TOAST CONTAINER) -->
+  <div id="toast-container" class="toast-stack-container" aria-live="polite"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/pages/admin-users.js"></script>
 </body>
+
 </html>

@@ -1,11 +1,14 @@
 from datetime import date, datetime
+import re
 from fastapi import HTTPException, status
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.fine import Fine
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
+from app.models.CopyStatusLog import CopyStatusLog
 from app.models.library_card import LibraryCard
 from app.models.loan import Loan, LoanStatus
 from app.models.loan_item import LoanItem
@@ -97,6 +100,7 @@ def fine_to_detail_dict(fine: Fine) -> dict:
         "user_phone": user.phone if user else "",
         "card_code": card_code or "Chưa cấp",
         "loan_id": fine.loan_id,
+        "loan_code": fine.loan.code if fine.loan else f"PM-{fine.loan_id:04d}",
         "book_copy_id": fine.book_copy_id,
         "copy_code": book_copy.copy_code if book_copy else "N/A",
         "book_title": book.title if book else (book_copy.book_isbn if book_copy else "Không xác định"),
@@ -177,7 +181,8 @@ def create_overdue_fine_if_applicable(
         return None
 
     now = return_time or datetime.now()
-    overdue_days, amount = calculate_overdue_days_and_amount(loan_item.due_date, now)
+    eff_due = loan_item.due_date or loan.due_date
+    overdue_days, amount = calculate_overdue_days_and_amount(eff_due, now)
 
     if overdue_days > 0 and amount > 0:
         fine = Fine(
@@ -236,7 +241,13 @@ def report_damage_or_lost(
 
     loan_item = (
         db.query(LoanItem)
-        .filter(LoanItem.copy_id == copy.id, LoanItem.return_date.is_(None))
+        .join(Loan, LoanItem.loan_id == Loan.id)
+        .filter(
+            Loan.status == LoanStatus.BORROWED,
+            LoanItem.copy_id == copy.id,
+            LoanItem.return_date.is_(None),
+        )
+        .order_by(LoanItem.id.desc())
         .first()
     )
 
@@ -257,42 +268,70 @@ def report_damage_or_lost(
     book_price = float(book.price) if (book and book.price is not None) else 0.0
     fine_amount = round(book_price * rate, 2)
     now = datetime.now()
+    old_status = copy.status
 
-    copy.status = new_copy_status
-    loan_item.return_date = now
+    try:
+        copy.status = new_copy_status
+        if new_copy_status == "DAMAGED":
+            copy.condition = "HỎNG"
+        loan_item.return_date = now
 
-    fine = Fine(
-        user_id=loan.user_id,
-        loan_id=loan.id,
-        book_copy_id=copy.id,
-        fine_type=fine_type,
-        amount=fine_amount,
-        status="UNPAID",
-        waive_reason=f"Ghi chú: {note}" if note else None,
-    )
-    db.add(fine)
-
-    remaining = (
-        db.query(LoanItem)
-        .filter(
-            LoanItem.loan_id == loan.id,
-            LoanItem.id != loan_item.id,
-            LoanItem.return_date.is_(None),
+        reason_text = note.strip() if (note and note.strip()) else f"Báo {fine_type.lower()} khi trả sách"
+        db.add(
+            CopyStatusLog(
+                book_copy_id=copy.id,
+                old_status=old_status,
+                new_status=new_copy_status,
+                reason=reason_text,
+            )
         )
-        .count()
-    )
-    if remaining == 0:
-        loan.status = LoanStatus.RETURNED
 
-    db.commit()
-    db.refresh(fine)
-    db.refresh(copy)
+        fine = Fine(
+            user_id=loan.user_id,
+            loan_id=loan.id,
+            book_copy_id=copy.id,
+            fine_type=fine_type,
+            amount=fine_amount,
+            status="UNPAID",
+            waive_reason=f"Ghi chú: {note}" if note else None,
+        )
+        db.add(fine)
 
+        overdue_fine = create_overdue_fine_if_applicable(db, loan, loan_item, now)
+
+        remaining = (
+            db.query(LoanItem)
+            .filter(
+                LoanItem.loan_id == loan.id,
+                LoanItem.id != loan_item.id,
+                LoanItem.return_date.is_(None),
+            )
+            .count()
+        )
+        if remaining == 0:
+            loan.status = LoanStatus.RETURNED
+
+        db.commit()
+        db.refresh(fine)
+        db.refresh(copy)
+        if overdue_fine:
+            db.refresh(overdue_fine)
+    except SQLAlchemyError as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi cơ sở dữ liệu khi ghi nhận sự cố sách: {str(error)}",
+        )
+
+    overdue_amt = float(overdue_fine.amount) if overdue_fine else 0.0
     return {
         "message": f"Đã ghi nhận sách {fine_type.lower()} và tạo khoản phạt thành công",
         "fine_id": fine.id,
         "fine_type": fine_type,
         "amount": fine.amount,
+        "overdue_fine_id": overdue_fine.id if overdue_fine else None,
+        "overdue_fine_amount": overdue_amt,
+        "total_fine_amount": round(float(fine.amount or 0.0) + overdue_amt, 2),
         "book_title": book.title if book else copy.book_isbn,
         "copy_code": copy.copy_code,
         "copy_status": copy.status,
@@ -426,19 +465,26 @@ def list_fines_detailed(
         query = query.filter(Fine.fine_type.ilike(f"%{fine_type.strip()}%"))
 
     if isinstance(search, str) and search.strip():
-        term = f"%{search.strip()}%"
-        # Tìm theo: ID phạt, tên độc giả, email, sđt, mã thẻ, mã bản sao, tựa sách
-        query = query.filter(
-            or_(
-                User.full_name.ilike(term),
-                User.email.ilike(term),
-                User.phone.ilike(term),
-                LibraryCard.card_code.ilike(term),
-                BookCopy.copy_code.ilike(term),
-                Book.title.ilike(term),
-                Book.isbn.ilike(term),
-            )
-        )
+        raw_term = search.strip()
+        term = f"%{raw_term}%"
+        search_conditions = [
+            User.full_name.ilike(term),
+            User.email.ilike(term),
+            User.phone.ilike(term),
+            LibraryCard.card_code.ilike(term),
+            BookCopy.copy_code.ilike(term),
+            Book.title.ilike(term),
+            Book.isbn.ilike(term),
+        ]
+        m_pm = re.fullmatch(r"#?pm-\d{4}-(\d+)", raw_term, re.IGNORECASE)
+        if m_pm:
+            search_conditions.append(Fine.loan_id == int(m_pm.group(1)))
+        m_fn = re.fullmatch(r"#?fn-(\d+)", raw_term, re.IGNORECASE)
+        if m_fn:
+            search_conditions.append(Fine.id == int(m_fn.group(1)))
+
+        # Tìm theo: ID phạt, mã phiếu mượn, tên độc giả, email, sđt, mã thẻ, mã bản sao, tựa sách
+        query = query.filter(or_(*search_conditions))
 
     fines = query.distinct().order_by(Fine.id.desc()).offset(skip).limit(limit).all()
     return [fine_to_detail_dict(f) for f in fines]

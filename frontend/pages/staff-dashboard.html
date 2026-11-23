@@ -23,10 +23,10 @@
 
 <body data-root="../" class="dashboard-body">
 
-    <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN (Chuẩn đồng bộ books.html) -->
+    <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
     <header class="librarian-topbar">
         <div class="topbar-left">
-            <a href="../index.html" class="brand-badge">
+            <a href="home.html" class="brand-badge">
                 <div class="brand-icon">
                     <span class="material-symbols-outlined">local_library</span>
                 </div>
@@ -36,19 +36,53 @@
                 </div>
             </a>
             <nav class="topbar-nav">
-                <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+                <a href="home.html" class="topbar-nav-link">Trang chủ</a>
+                <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
             </nav>
         </div>
 
         <div class="topbar-right">
-            <div class="topbar-divider"></div>
-            <div class="librarian-profile">
-                <div class="librarian-avatar">D</div>
-                <div class="librarian-info">
-                    <span class="librarian-name">Ngô Việt Dũng</span>
-                    <span class="librarian-role">Thủ thư quản trị (B25DTCN162)</span>
+            <div class="topbar-search">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="topbar-global-search" placeholder="Tra cứu tên sách, mã ISBN, tác giả...">
+            </div>
+
+            <!-- Chuông thông báo in-app (Task T3CFF48) -->
+            <div class="notif-dropdown-container" id="notifDropdownContainer">
+                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo mượn trả">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+                </button>
+                <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+                    <div class="notif-header">
+                        <div class="notif-title-group">
+                            <span class="notif-title">Thông báo mượn trả</span>
+                            <span class="notif-badge-pill">0 mới</span>
+                        </div>
+                        <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
+                    </div>
+                    <div class="notif-list">
+                        <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 13px;">
+                            Đang tải thông báo...
+                        </div>
+                    </div>
+                    <div class="notif-footer">
+                        <a href="loan_management.html" class="notif-view-all">Quản lý tất cả phiếu mượn →</a>
+                    </div>
                 </div>
             </div>
+
+            <div class="topbar-divider"></div>
+            <div class="librarian-profile">
+                <div class="librarian-avatar" id="staff-avatar">?</div>
+                <div class="librarian-info">
+                    <span class="librarian-name" id="staff-name">Thủ thư</span>
+                    <span class="librarian-role" id="staff-role">Chưa xác thực</span>
+                </div>
+            </div>
+            <button type="button" id="btn-logout" class="topbar-icon-btn" title="Đăng xuất">
+                <span class="material-symbols-outlined">logout</span>
+            </button>
         </div>
     </header>
 
@@ -67,7 +101,11 @@
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
             </a>
-            <a href="loan_slip.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+            <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+                <span class="material-symbols-outlined">category</span>
+                <span class="rail-label">Thể loại, Tác giả, NXB</span>
+            </a>
+            <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
                 <span class="material-symbols-outlined">receipt_long</span>
                 <span class="rail-label">Quản lý Phiếu mượn</span>
             </a>
@@ -83,13 +121,13 @@
                 <span class="material-symbols-outlined">payments</span>
                 <span class="rail-label">Xử lý tiền phạt</span>
             </a>
-            <a href="admin-users.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+            <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
                 <span class="material-symbols-outlined">badge</span>
                 <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
             </a>
-            <a href="../index.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="rail-label">Cài đặt hệ thống</span>
+            <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="rail-label">Nhân sự &amp; Phân quyền</span>
             </a>
         </nav>
         <div class="sidebar-rail-footer">
@@ -200,10 +238,10 @@
                             </div>
                         </div>
                         <div class="kpi-value-row">
-                            <div id="stat-total-books" class="kpi-number">1.240</div>
+                            <div id="stat-total-books" class="kpi-number">--</div>
                             <div class="kpi-meta trend-up">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
-                                <span id="stat-books-trend">+24 tựa sách mới</span>
+                                <span id="stat-books-trend">Đang tải...</span>
                             </div>
                         </div>
                     </div>
@@ -220,16 +258,14 @@
                             </div>
                         </div>
                         <div class="kpi-value-row">
-                            <div id="stat-total-copies" class="kpi-number">5.680</div>
+                            <div id="stat-total-copies" class="kpi-number">--</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary); flex-wrap: wrap;">
                                 <span style="color: var(--color-success); font-weight: 600;"
-                                    id="stat-avail-copies">4.920 rảnh</span>
+                                    id="stat-avail-copies">-- rảnh</span>
                                 <span>•</span>
-                                <span style="color: var(--color-brand); font-weight: 600;" id="stat-borrowed-copies">710
-                                    mượn</span>
+                                <span style="color: var(--color-brand); font-weight: 600;" id="stat-borrowed-copies">-- mượn</span>
                                 <span>•</span>
-                                <span style="color: var(--color-danger); font-weight: 600;" id="stat-damaged-copies">50
-                                    mất/hỏng</span>
+                                <span style="color: var(--color-danger); font-weight: 600;" id="stat-damaged-copies">-- mất/hỏng</span>
                             </div>
                         </div>
                     </div>
@@ -246,11 +282,11 @@
                             </div>
                         </div>
                         <div class="kpi-value-row">
-                            <div id="stat-active-loans" class="kpi-number">342</div>
+                            <div id="stat-active-loans" class="kpi-number">--</div>
                             <div class="kpi-meta">
                                 <div class="kpi-badge-alert">
                                     <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
-                                    <span id="stat-overdue-loans">18 sách quá hạn</span>
+                                    <span id="stat-overdue-loans">-- sách quá hạn</span>
                                 </div>
                             </div>
                         </div>
@@ -268,11 +304,10 @@
                             </div>
                         </div>
                         <div class="kpi-value-row">
-                            <div id="stat-fines-collected" class="kpi-number" style="color: #B45309;">420.000 đ</div>
+                            <div id="stat-fines-collected" class="kpi-number" style="color: #B45309;">-- đ</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary);">
-                                <span class="material-symbols-outlined"
-                                    style="font-size: 15px; color: #15803D;">receipt</span>
-                                <span id="stat-fines-meta">14 biên lai • Nợ: 120.000 đ</span>
+                                <span class="material-symbols-outlined" style="font-size: 15px; color: #15803D;">receipt</span>
+                                <span id="stat-fines-meta">Đang tải...</span>
                             </div>
                         </div>
                     </div>
@@ -289,10 +324,10 @@
                             </div>
                         </div>
                         <div class="kpi-value-row">
-                            <div id="stat-active-readers" class="kpi-number">2.150</div>
+                            <div id="stat-active-readers" class="kpi-number">--</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary);">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">school</span>
-                                <span id="stat-readers-breakdown">Sinh viên &amp; Giảng viên</span>
+                                <span id="stat-readers-breakdown">Đang tải...</span>
                             </div>
                         </div>
                     </div>
@@ -600,46 +635,26 @@
                                 </thead>
                                 <tbody id="overdue-table-body">
                                     <tr>
-                                        <td class="font-mono" style="font-weight: 700; color: var(--color-brand);">
-                                            23010412</td>
-                                        <td><strong>Trần Minh Khoa</strong></td>
-                                        <td>
-                                            <div style="font-weight: 600; color: var(--color-text-primary);">Lập trình
-                                                Hướng đối tượng</div>
-                                            <div style="font-size: 11px; color: var(--color-text-muted);">#PM-2024-0001
-                                            </div>
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <span class="badge-count-pill red">18 ngày trễ</span>
-                                            <div
-                                                style="font-size: 11px; color: #dc2626; font-weight: 600; margin-top: 2px;">
-                                                Phạt: 36.000 đ</div>
-                                        </td>
-                                        <td style="text-align: right;">
-                                            <button type="button" class="btn-action-remind" data-loan="1"
-                                                data-name="Trần Minh Khoa"
-                                                style="border:none;background:#fee2e2;color:#dc2626;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px;"
-                                                title="Gửi nhắc nhở in-app">
-                                                Nhắc nhở
-                                            </button>
-                                            <a href="fines.html?loan_code=PM-2024-0001"
-                                                style="display:inline-block;border:none;background:#e2e8f0;color:#334155;padding:4px 8px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600;">
-                                                Thu phạt
-                                            </a>
+                                        <td colspan="5" style="text-align: center; padding: 24px; color: var(--color-text-muted);">
+                                            Đang tải danh sách phiếu quá hạn từ máy chủ...
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="card-table-footer">
-                            <span id="overdue-footer-summary" style="color: var(--color-text-muted);">Tổng cộng: 1 phiếu
-                                đang quá hạn</span>
-                            <button type="button" id="btnRemindOverdue"
-                                style="color: var(--color-danger); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; font-weight: 600;">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span>
-                                <span>Gửi thông báo nhắc nhở hàng loạt</span>
-                            </button>
+                        <div class="card-table-footer" style="flex-wrap: wrap; gap: 10px;">
+                            <span id="overdue-footer-summary" style="color: var(--color-text-muted);">Đang đồng bộ danh sách...</span>
+                            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                                <button type="button" id="btnEmailDueSoon" style="color: #B45309; cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 5px; font-weight: 600;" title="Gửi email nhắc sắp đến hạn trả trong 2 ngày tới">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">mark_email_unread</span>
+                                    <span>Email nhắc sắp đến hạn</span>
+                                </button>
+                                <button type="button" id="btnRemindOverdue" style="color: var(--color-danger); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; font-weight: 600;" title="Gửi thông báo in-app &amp; email nhắc quá hạn hàng loạt">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span>
+                                    <span>Gửi thông báo nhắc nhở hàng loạt</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

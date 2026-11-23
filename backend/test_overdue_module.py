@@ -31,6 +31,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
+from app.core.security import create_access_token
 from app.db.session import Base, get_db
 from app.models.user import User, UserRole, UserStatus
 from app.models.library_card import LibraryCard, CardStatus, CardType
@@ -300,54 +301,74 @@ def test_remind_loan():
 
 
 def test_api_endpoints():
-    print("[TEST 6] Testing FastAPI REST Endpoints...")
+    print("[TEST 6] Testing FastAPI REST Endpoints & RBAC...")
+    lib_headers = {"Authorization": f"Bearer {create_access_token(1)}"}
+    reader1_headers = {"Authorization": f"Bearer {create_access_token(2)}"}
 
-    # 1. GET /api/loans/overdue
-    res = client.get("/api/loans/overdue")
+    # 0. Kiểm tra Auth / RBAC (401 chưa đăng nhập, 403 độc giả gọi API thủ thư/xem trộm user khác)
+    assert client.get("/api/loans/overdue").status_code == 401
+    assert client.get("/api/loans/notifications/my").status_code == 401
+    assert client.get("/api/loans/overdue", headers=reader1_headers).status_code == 403
+    assert client.get("/api/loans/due-soon", headers=reader1_headers).status_code == 403
+    assert client.post("/api/loans/1/remind", json={"message": "test"}, headers=reader1_headers).status_code == 403
+    assert client.post("/api/loans/remind-all-overdue", headers=reader1_headers).status_code == 403
+    assert client.get("/api/loans/notifications/my?user_id=3", headers=reader1_headers).status_code == 403
+    print(" -> RBAC checks (401/403): PASSED")
+
+    # 1. GET /api/loans/overdue (Thủ thư)
+    res = client.get("/api/loans/overdue", headers=lib_headers)
     assert res.status_code == 200, res.text
     data = res.json()
     assert data["total"] >= 1
     assert data["items"][0]["days_overdue"] == 10
     print(" -> GET /api/loans/overdue: 200 OK")
 
-    # 2. GET /api/loans/due-soon
-    res = client.get("/api/loans/due-soon?days=2")
+    # 2. GET /api/loans/due-soon (Thủ thư)
+    res = client.get("/api/loans/due-soon?days=2", headers=lib_headers)
     assert res.status_code == 200, res.text
     data = res.json()
     assert data["total"] >= 1
     assert data["items"][0]["days_remaining"] == 1
     print(" -> GET /api/loans/due-soon: 200 OK")
 
-    # 3. GET /api/loans/notifications/my
-    res = client.get("/api/loans/notifications/my?user_id=2")
+    # 3. GET /api/loans/notifications/my (Độc giả xem đúng thông báo của mình)
+    res = client.get("/api/loans/notifications/my", headers=reader1_headers)
     assert res.status_code == 200, res.text
     data = res.json()
     assert "unread_count" in data
     assert len(data["items"]) >= 1
+    assert all(item["user_id"] == 2 for item in data["items"])
     print(" -> GET /api/loans/notifications/my: 200 OK")
 
-    # 4. POST /api/loans/{id}/remind
-    res = client.post("/api/loans/1/remind", json={"librarian_id": 1, "message": "Nhắc trả sách quá hạn"})
+    # 4. POST /api/loans/{id}/remind (Thủ thư)
+    res = client.post(
+        "/api/loans/1/remind",
+        json={"message": "Nhắc trả sách quá hạn"},
+        headers=lib_headers,
+    )
     assert res.status_code == 200, res.text
     data = res.json()
     assert data["sent_count"] == 1
     print(" -> POST /api/loans/1/remind: 200 OK")
 
-    # 5. POST /api/loans/notifications/mark-all-read
-    res = client.post("/api/loans/notifications/mark-all-read?user_id=2")
+    # 5. POST /api/loans/notifications/mark-all-read (Độc giả)
+    res = client.post("/api/loans/notifications/mark-all-read", headers=reader1_headers)
     assert res.status_code == 200, res.text
     assert res.json()["success"] is True
     print(" -> POST /api/loans/notifications/mark-all-read: 200 OK")
 
 
 if __name__ == "__main__":
-    setup_database()
-    test_overdue_crud()
-    test_due_soon_crud()
-    test_notification_sync_and_get()
-    test_mark_notification_read()
-    test_remind_loan()
-    test_api_endpoints()
-    print("\n=======================================================")
-    print(" ALL 6 TEST SUITES PASSED 100% FOR TASK T3CFF48!")
-    print("=======================================================")
+    try:
+        setup_database()
+        test_overdue_crud()
+        test_due_soon_crud()
+        test_notification_sync_and_get()
+        test_mark_notification_read()
+        test_remind_loan()
+        test_api_endpoints()
+        print("\n=======================================================")
+        print(" ALL 6 TEST SUITES PASSED 100% FOR TASK T3CFF48!")
+        print("=======================================================")
+    finally:
+        app.dependency_overrides.clear()

@@ -13,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import create_access_token
 from app.db.session import Base, get_db
 from app.main import app
 from app.models.Book import Book
@@ -52,7 +53,8 @@ def setup_database():
 
     u1 = User(id=1, email="sv1@ks25.edu.vn", password_hash="x", full_name="Nguyễn Văn An", role=UserRole.READER, status=UserStatus.ACTIVE)
     u2 = User(id=2, email="sv2@ks25.edu.vn", password_hash="x", full_name="Trần Thị Bình", role=UserRole.READER, status=UserStatus.ACTIVE)
-    db.add_all([u1, u2])
+    u_lib = User(id=10, email="lib@ks25.edu.vn", password_hash="x", full_name="Thủ thư Trực quầy", role=UserRole.LIBRARIAN, status=UserStatus.ACTIVE)
+    db.add_all([u1, u2, u_lib])
     db.commit()
 
     c1 = LibraryCard(card_code="LC-001", reader_id=1, card_type=CardType.STUDENT, issue_date=date.today() - timedelta(days=30), expiry_date=date.today() + timedelta(days=300), status=CardStatus.ACTIVE)
@@ -104,9 +106,27 @@ def setup_database():
     db.close()
 
 
+LIB_HEADERS = {}
+READER_HEADERS = {}
+
+
+def init_auth_headers():
+    global LIB_HEADERS, READER_HEADERS
+    LIB_HEADERS = {"Authorization": f"Bearer {create_access_token(10)}"}
+    READER_HEADERS = {"Authorization": f"Bearer {create_access_token(1)}"}
+
+
+def test_rbac_enforcement():
+    print("[TEST 0] RBAC: Chưa đăng nhập -> 401; READER -> 403 ...")
+    assert client.get("/api/statistics/dashboard?period=month").status_code == 401
+    assert client.get("/api/statistics/dashboard?period=month", headers=READER_HEADERS).status_code == 403
+    assert client.get("/api/statistics/borrowing-trend?period=week", headers=READER_HEADERS).status_code == 403
+    print(" -> PASSED (401/403 enforced)!")
+
+
 def test_dashboard_endpoint():
     print("[TEST 1] GET /api/statistics/dashboard?period=month&group_by=day ...")
-    res = client.get("/api/statistics/dashboard?period=month&group_by=day")
+    res = client.get("/api/statistics/dashboard?period=month&group_by=day", headers=LIB_HEADERS)
     assert res.status_code == 200, res.text
     data = res.json()
 
@@ -144,7 +164,10 @@ def test_group_by_month_and_custom_range():
     print("[TEST 2] GET /api/statistics/dashboard (custom start_date/end_date & group_by=month) ...")
     start = (date.today() - timedelta(days=60)).isoformat()
     end = date.today().isoformat()
-    res = client.get(f"/api/statistics/dashboard?start_date={start}&end_date={end}&group_by=month")
+    res = client.get(
+        f"/api/statistics/dashboard?start_date={start}&end_date={end}&group_by=month",
+        headers=LIB_HEADERS,
+    )
     assert res.status_code == 200, res.text
     data = res.json()
     assert data["group_by"] == "month"
@@ -155,28 +178,36 @@ def test_group_by_month_and_custom_range():
 
 def test_invalid_date_range():
     print("[TEST 3] GET /api/statistics/dashboard với start_date > end_date -> 400 ...")
-    res = client.get("/api/statistics/dashboard?start_date=2026-12-31&end_date=2026-01-01")
+    res = client.get(
+        "/api/statistics/dashboard?start_date=2026-12-31&end_date=2026-01-01",
+        headers=LIB_HEADERS,
+    )
     assert res.status_code == 400
     print(" -> PASSED!")
 
 
 def test_granular_endpoints():
     print("[TEST 4] Testing /borrowing-trend, /top-books, /popular-categories, /fines-summary ...")
-    assert client.get("/api/statistics/borrowing-trend?period=week").status_code == 200
-    assert client.get("/api/statistics/top-books?period=month&limit=5").status_code == 200
-    assert client.get("/api/statistics/popular-categories?period=month").status_code == 200
-    r_fine = client.get("/api/statistics/fines-summary?period=month")
+    assert client.get("/api/statistics/borrowing-trend?period=week", headers=LIB_HEADERS).status_code == 200
+    assert client.get("/api/statistics/top-books?period=month&limit=5", headers=LIB_HEADERS).status_code == 200
+    assert client.get("/api/statistics/popular-categories?period=month", headers=LIB_HEADERS).status_code == 200
+    r_fine = client.get("/api/statistics/fines-summary?period=month", headers=LIB_HEADERS)
     assert r_fine.status_code == 200
     assert r_fine.json()["collected_amount"] == 50000.0
     print(" -> PASSED!")
 
 
 if __name__ == "__main__":
-    setup_database()
-    test_dashboard_endpoint()
-    test_group_by_month_and_custom_range()
-    test_invalid_date_range()
-    test_granular_endpoints()
-    print("\n========================================================")
-    print(" ALL 4 TEST SUITES PASSED 100% FOR TASK T3CFF62!")
-    print("========================================================")
+    try:
+        setup_database()
+        init_auth_headers()
+        test_rbac_enforcement()
+        test_dashboard_endpoint()
+        test_group_by_month_and_custom_range()
+        test_invalid_date_range()
+        test_granular_endpoints()
+        print("\n========================================================")
+        print(" ALL 5 TEST SUITES PASSED 100% FOR TASK T3CFF62!")
+        print("========================================================")
+    finally:
+        app.dependency_overrides.clear()

@@ -14,7 +14,7 @@
   <!-- Header đồng bộ theo chuẩn returns & Task T3CFF48 -->
   <header class="librarian-topbar">
     <div class="topbar-left">
-      <a class="brand-badge" href="../index.html" aria-label="UniLib - Trang chủ" title="UniLib - Về trang chủ">
+      <a class="brand-badge" href="home.html" aria-label="UniLib - Trang chủ" title="UniLib - Về trang chủ">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -24,10 +24,10 @@
         </div>
       </a>
       <nav class="topbar-nav" aria-label="Điều hướng chính">
-        <a class="topbar-nav-link" href="../index.html">Trang chủ</a>
-        <a class="topbar-nav-link" href="search.html">Tra cứu sách</a>
+        <a class="topbar-nav-link" href="home.html">Trang chủ</a>
+        <a class="topbar-nav-link" href="catalog.html">Tra cứu sách</a>
         <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page">Phiếu mượn của tôi</a>
-        <a class="topbar-nav-link" href="staff-dashboard.html">Quản trị thư viện</a>
+        <a class="topbar-nav-link" href="fines.html">Tiền phạt</a>
       </nav>
     </div>
     <div class="topbar-right">
@@ -35,46 +35,21 @@
       <div class="notif-dropdown-container" id="notifDropdownContainer">
         <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
-          <span class="notif-badge" id="notifBadge">2</span>
+          <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
         </button>
         <!-- BẢNG NOTIFICATION IN-APP -->
         <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
           <div class="notif-header">
             <div class="notif-title-group">
               <span class="notif-title">Thông báo mượn trả</span>
-              <span class="notif-badge-pill">2 mới</span>
+              <span class="notif-badge-pill">0 mới</span>
             </div>
             <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
           </div>
           <div class="notif-list">
-            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
-              <div class="notif-icon-box overdue">
-                <span class="material-symbols-outlined">error</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
-                <span class="notif-time">10 phút trước • Quá hạn</span>
-              </div>
-            </a>
-            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
-              <div class="notif-icon-box due-soon">
-                <span class="material-symbols-outlined">alarm</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
-                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
-              </div>
-            </a>
+            <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 13px;">
+              Đang tải thông báo...
+            </div>
           </div>
           <div class="notif-footer">
             <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
@@ -144,6 +119,9 @@
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
   <script src="../js/notifications.js" defer></script>
   <script src="../js/pages/loan_slip.js"></script>
 </body>

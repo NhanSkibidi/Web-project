@@ -11,6 +11,9 @@
 
   // 1. CẤU HÌNH API GỐC
   const API_BASE = (function () {
+    if (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) {
+      return CONFIG.API_BASE_URL;
+    }
     if (window.API_BASE_URL) return window.API_BASE_URL;
     const origin = window.location.origin;
     if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
@@ -19,107 +22,31 @@
     return "/api";
   })();
 
-  // 2. DỮ LIỆU DỰ PHÒNG CHUẨN (MOCK DATA KHI CHƯA BẬT SERVER BACKEND)
-  const FALLBACK_FINES = [
-    {
-      id: 1,
-      user_id: 101,
-      user_name: "Nguyễn Văn An",
-      user_email: "an.nguyen@student.ptit.edu.vn",
-      user_phone: "0901234567",
-      card_code: "LC-2026-0042",
-      loan_id: 12,
-      book_copy_id: 201,
-      copy_code: "CP-IT-001",
-      book_title: "Lập trình Web Hiện đại với Python & FastAPI",
-      book_isbn: "BK-IT-2024-001",
-      fine_type: "QUÁ HẠN",
-      amount: 14000,
-      status: "UNPAID",
-      collected_by: null,
-      collector_name: null,
-      collected_at: null,
-      waive_reason: null,
-      created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    },
-    {
-      id: 2,
-      user_id: 102,
-      user_name: "Trần Thị Bích Ngọc",
-      user_email: "ngoc.tran@student.ptit.edu.vn",
-      user_phone: "0912345678",
-      card_code: "LC-2026-0089",
-      loan_id: 14,
-      book_copy_id: 205,
-      copy_code: "CP-MS-004",
-      book_title: "Kiến trúc Hệ thống & Thiết kế Microservices",
-      book_isbn: "BK-IT-2023-089",
-      fine_type: "HỎNG",
-      amount: 60000,
-      status: "UNPAID",
-      collected_by: null,
-      collector_name: null,
-      collected_at: null,
-      waive_reason: "Ghi chú: Rách trang 45-50",
-      created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-    },
-    {
-      id: 3,
-      user_id: 103,
-      user_name: "Lê Hoàng Long",
-      user_email: "long.le@student.ptit.edu.vn",
-      user_phone: "0988776655",
-      card_code: "LC-2026-0112",
-      loan_id: 9,
-      book_copy_id: 210,
-      copy_code: "CP-BA-012",
-      book_title: "Kinh tế số & Công nghệ Tài chính (Fintech)",
-      book_isbn: "BK-BA-2024-015",
-      fine_type: "QUÁ HẠN",
-      amount: 8000,
-      status: "PAID",
-      collected_by: 2,
-      collector_name: "Trịnh Huy Đại",
-      collected_at: new Date().toISOString(),
-      waive_reason: "PT: TIỀN MẶT | Thu tại quầy K1",
-      created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-    {
-      id: 4,
-      user_id: 104,
-      user_name: "Phạm Minh Đức",
-      user_email: "duc.pm@student.ptit.edu.vn",
-      user_phone: "0977112233",
-      card_code: "LC-2026-0201",
-      loan_id: 18,
-      book_copy_id: 215,
-      copy_code: "CP-CC-002",
-      book_title: "Clean Code - Nghệ thuật viết mã sạch",
-      book_isbn: "BK-IT-2022-044",
-      fine_type: "QUÁ HẠN",
-      amount: 10000,
-      status: "WAIVED",
-      collected_by: 1,
-      collector_name: "Quản trị viên Hệ thống",
-      collected_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-      waive_reason: "Độc giả có giấy xác nhận điều trị nội trú tại bệnh viện",
-      created_at: new Date(Date.now() - 4 * 86400000).toISOString(),
-    },
-  ];
-
   let currentFinesList = [];
-  let isUsingFallback = false;
+  let currentUserRole = null;
+
+  function safeHtml(val) {
+    if (typeof escapeHtml === "function") return escapeHtml(val);
+    const d = document.createElement("div");
+    d.textContent = val ?? "";
+    return d.innerHTML;
+  }
 
   // 3. TIỆN ÍCH AUTH & TOKEN
   function getAuthHeader() {
     const token =
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("access_token");
+      typeof auth !== "undefined" && typeof auth.getToken === "function"
+        ? auth.getToken()
+        : localStorage.getItem("access_token") ||
+          localStorage.getItem("token") ||
+          sessionStorage.getItem("access_token");
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
   function getCurrentUser() {
+    if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+      return auth.getUser();
+    }
     try {
       const raw =
         localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
@@ -220,7 +147,7 @@
     const icon = type === "success" ? "check_circle" : "error";
     toast.innerHTML = `
       <span class="material-symbols-outlined">${icon}</span>
-      <span>${message}</span>
+      <span>${safeHtml(message)}</span>
     `;
     container.appendChild(toast);
 
@@ -232,7 +159,7 @@
     }, 3500);
   }
 
-  // 6. GỌI API BACKEND VỚI CƠ CHẾ DỰ PHÒNG THÔNG MINH
+  // 6. GỌI API BACKEND CHUẨN (CÓ TOKEN VÀ BÁO LỖI THẬT)
   async function fetchAPI(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
     const headers = {
@@ -241,130 +168,23 @@
       ...(options.headers || {}),
     };
 
-    try {
-      const res = await fetch(url, { ...options, headers });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || `Lỗi HTTP ${res.status}: ${res.statusText}`
-        );
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      let msg = `Lỗi HTTP ${res.status}: ${res.statusText}`;
+      if (typeof errorData.detail === "string") {
+        msg = errorData.detail;
+      } else if (Array.isArray(errorData.detail)) {
+        msg = errorData.detail.map((e) => `${e.loc?.[e.loc.length - 1] || "field"}: ${e.msg}`).join("; ");
       }
-      isUsingFallback = false;
-      return await res.json();
-    } catch (err) {
-      // Nếu không kết nối được server (Server offline / CORS)
-      if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-        console.warn(`[Fines] Backend offline tại ${url}, chuyển sang chế độ Client-side fallback.`);
-        isUsingFallback = true;
-        return handleFallback(endpoint, options);
+      if (res.status === 401 && typeof auth !== "undefined") {
+        auth.clearSession();
       }
+      const err = new Error(msg);
+      err.status = res.status;
       throw err;
     }
-  }
-
-  // Xử lý Offline Mock khi Backend chưa bật
-  function handleFallback(endpoint, options) {
-    if (endpoint.startsWith("/fines/statistics")) {
-      const unpaid = currentFinesList.filter((f) => f.status === "UNPAID");
-      const paid = currentFinesList.filter((f) => f.status === "PAID");
-      const waived = currentFinesList.filter((f) => f.status === "WAIVED");
-      return {
-        total_fines_count: currentFinesList.length,
-        total_unpaid_amount: unpaid.reduce((sum, f) => sum + f.amount, 0),
-        unpaid_count: unpaid.length,
-        paid_count: paid.length,
-        total_paid_today: paid.reduce((sum, f) => sum + f.amount, 0),
-        waived_count: waived.length,
-      };
-    }
-
-    if (endpoint.startsWith("/fines?")) {
-      const urlObj = new URL(`http://dummy${endpoint}`);
-      const status = urlObj.searchParams.get("status");
-      const fine_type = urlObj.searchParams.get("fine_type");
-      const search = (urlObj.searchParams.get("search") || "").toLowerCase();
-
-      return currentFinesList.filter((f) => {
-        if (status && status !== "ALL" && f.status !== status) return false;
-        if (
-          fine_type &&
-          fine_type !== "ALL" &&
-          !f.fine_type.toUpperCase().includes(fine_type.toUpperCase())
-        )
-          return false;
-        if (search) {
-          const matchStr = `${f.user_name} ${f.card_code} ${f.book_title} ${f.copy_code} ${f.book_isbn}`.toLowerCase();
-          if (!matchStr.includes(search)) return false;
-        }
-        return true;
-      });
-    }
-
-    if (endpoint.includes("/pay")) {
-      const id = parseInt(endpoint.split("/")[2]);
-      const body = JSON.parse(options.body || "{}");
-      const item = currentFinesList.find((f) => f.id === id);
-      if (item) {
-        item.status = "PAID";
-        item.collected_at = new Date().toISOString();
-        item.collector_name = "Trịnh Huy Đại";
-        item.waive_reason = `PT: ${body.payment_method || "TIỀN MẶT"} | ${body.note || "Thu tại quầy"}`;
-        return item;
-      }
-    }
-
-    if (endpoint.includes("/waive")) {
-      const id = parseInt(endpoint.split("/")[2]);
-      const body = JSON.parse(options.body || "{}");
-      const item = currentFinesList.find((f) => f.id === id);
-      if (item) {
-        item.status = "WAIVED";
-        item.collected_at = new Date().toISOString();
-        item.collector_name = "Quản trị viên Hệ thống";
-        item.waive_reason = body.waive_reason || "Miễn giảm theo quy định";
-        return item;
-      }
-    }
-
-    if (endpoint.includes("/receipt")) {
-      const id = parseInt(endpoint.split("/")[2]);
-      const item = currentFinesList.find((f) => f.id === id) || currentFinesList[0];
-      return {
-        receipt_no: `REC-${String(item.id).padStart(6, "0")}`,
-        fine_id: item.id,
-        created_at: item.created_at,
-        collected_at: item.collected_at || new Date().toISOString(),
-        reader_name: item.user_name,
-        reader_card_code: item.card_code,
-        reader_phone: item.user_phone,
-        reader_email: item.user_email,
-        book_title: item.book_title,
-        copy_code: item.copy_code,
-        book_isbn: item.book_isbn,
-        fine_type: item.fine_type,
-        amount: item.amount,
-        amount_in_words: numberToWords(item.amount),
-        payment_method: (item.waive_reason && item.waive_reason.includes("CHUYỂN KHOẢN")) ? "Chuyển khoản QR" : "Tiền mặt tại quầy",
-        status: item.status,
-        collector_name: item.collector_name || "Trịnh Huy Đại",
-        collector_role: "Thủ thư ca trực",
-        waive_reason: item.waive_reason,
-        note: item.waive_reason,
-      };
-    }
-
-    if (endpoint.includes("/my-fines")) {
-      return {
-        user_id: 101,
-        user_name: "Nguyễn Văn An",
-        card_code: "LC-2026-0042",
-        total_unpaid_amount: 14000,
-        unpaid_count: 1,
-        fines: currentFinesList.filter((f) => f.user_id === 101 || f.card_code === "LC-2026-0042"),
-      };
-    }
-
-    return currentFinesList;
+    return await res.json();
   }
 
   // 7. TẢI VÀ HIỂN THỊ THỐNG KÊ KPI
@@ -448,17 +268,20 @@
             statusHtml = `<span class="status-badge unpaid"><span class="dot unpaid"></span> Chưa thu</span>`;
           }
 
-          // Nút thao tác
+          // Nút thao tác (Ẩn nút Miễn phạt nếu không phải ADMIN)
           let actionsHtml = "";
           if (s === "UNPAID") {
+            const waiveBtn = currentUserRole === "ADMIN"
+              ? `<button type="button" class="btn-action waive" title="Admin miễn phạt" data-action="waive" data-id="${f.id}">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">verified_user</span>
+                </button>`
+              : "";
             actionsHtml = `
               <div class="action-buttons">
                 <button type="button" class="btn-action pay" title="Thu tiền phạt" data-action="pay" data-id="${f.id}">
                   <span class="material-symbols-outlined" style="font-size: 18px;">payments</span>
                 </button>
-                <button type="button" class="btn-action waive" title="Admin miễn phạt" data-action="waive" data-id="${f.id}">
-                  <span class="material-symbols-outlined" style="font-size: 18px;">verified_user</span>
-                </button>
+                ${waiveBtn}
               </div>
             `;
           } else {
@@ -473,23 +296,26 @@
 
           return `
             <tr data-fine-id="${f.id}">
-              <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">#FN-${String(f.id).padStart(4, "0")}</td>
+              <td class="font-mono" style="font-weight: 600; color: var(--color-brand);">
+                <div>#FN-${String(f.id).padStart(4, "0")}</div>
+                <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 400;">#${safeHtml(f.loan_code || ("PM-" + f.loan_id))}</div>
+              </td>
               <td>
-                <div style="font-weight: 600; color: var(--color-text-primary);">${f.user_name || "Độc giả"}</div>
+                <div style="font-weight: 600; color: var(--color-text-primary);">${safeHtml(f.user_name || "Độc giả")}</div>
                 <div style="font-size: 11.5px; color: var(--color-text-muted);">
-                  Thẻ: <strong class="font-mono">${f.card_code || "Chưa cấp"}</strong>
+                  Thẻ: <strong class="font-mono">${safeHtml(f.card_code || "Chưa cấp")}</strong>
                 </div>
               </td>
               <td>
                 <div style="font-weight: 600; color: var(--color-text-primary); max-width: 280px; white-space: normal;">
-                  ${f.book_title || "Ấn bản thư viện"}
+                  ${safeHtml(f.book_title || "Ấn bản thư viện")}
                 </div>
                 <div style="font-size: 11.5px; color: var(--color-text-muted);">
-                  Mã bản sao: <strong class="font-mono">${f.copy_code || "N/A"}</strong>
+                  Mã bản sao: <strong class="font-mono">${safeHtml(f.copy_code || "N/A")}</strong>
                 </div>
               </td>
               <td>
-                <span class="fine-badge ${typeClass}">${f.fine_type || "Vi phạm"}</span>
+                <span class="fine-badge ${typeClass}">${safeHtml(f.fine_type || "Vi phạm")}</span>
               </td>
               <td class="text-right">
                 <strong class="font-mono" style="font-size: 14px; color: ${s === 'UNPAID' ? 'var(--color-danger)' : 'var(--color-text-primary)'};">
@@ -512,7 +338,7 @@
         <tr>
           <td colspan="8" class="empty-state" style="color: var(--color-danger);">
             <span class="material-symbols-outlined" style="font-size: 40px;">error</span>
-            <p>Không thể kết nối đến máy chủ: ${err.message}</p>
+            <p>Không thể tải dữ liệu từ máy chủ: ${safeHtml(err.message)}</p>
           </td>
         </tr>
       `;
@@ -532,6 +358,18 @@
     document.getElementById("pay-summary-type").textContent = fine.fine_type;
     document.getElementById("pay-summary-amount").textContent = formatVND(fine.amount);
     document.getElementById("qr-transfer-content").textContent = `NOP PHAT FN${fine.id}`;
+
+    // Reset form & phương thức thanh toán về mặc định (Tiền mặt)
+    const payNoteEl = document.getElementById("pay-note");
+    if (payNoteEl) payNoteEl.value = "";
+    const cashRadio = document.querySelector('input[name="pay-method"][value="TIỀN MẶT"]');
+    if (cashRadio) {
+      cashRadio.checked = true;
+      document.querySelectorAll(".method-option").forEach((opt) => opt.classList.remove("active"));
+      cashRadio.closest(".method-option")?.classList.add("active");
+    }
+    const qrBox = document.getElementById("qr-transfer-box");
+    if (qrBox) qrBox.style.display = "none";
 
     document.getElementById("modal-pay").style.display = "flex";
   }
@@ -645,6 +483,8 @@
       if (receipt.status === "PAID") {
         statusEl.textContent = "ĐÃ THANH TOÁN";
         statusEl.className = "receipt-status-pill";
+        statusEl.style.background = "";
+        statusEl.style.color = "";
       } else if (receipt.status === "WAIVED") {
         statusEl.textContent = "ĐÃ MIỄN PHẠT";
         statusEl.className = "receipt-status-pill";
@@ -667,7 +507,7 @@
       }
 
       document.getElementById("receipt-sig-reader").textContent = receipt.reader_name;
-      document.getElementById("receipt-sig-collector").textContent = receipt.collector_name || "Trịnh Huy Đại";
+      document.getElementById("receipt-sig-collector").textContent = receipt.collector_name || "Thủ thư tiếp nhận";
 
       document.getElementById("modal-receipt").style.display = "flex";
     } catch (err) {
@@ -675,15 +515,130 @@
     }
   }
 
-  // 12. CỔNG ĐỘC GIẢ: TRA CỨU KHOẢN PHẠT
+  // 12. CỔNG ĐỘC GIẢ: HIỂN THỊ KHOẢN PHẠT CÁ NHÂN TỪ /api/fines/my-fines
+  function renderReaderFinesResult(data, fines) {
+    const alertBox = document.getElementById("reader-alert-box");
+    const resultWrapper = document.getElementById("reader-result-wrapper");
+    const tbody = document.getElementById("reader-table-body");
+    resultWrapper.style.display = "block";
+
+    if (!fines || fines.length === 0) {
+      alertBox.style.display = "none";
+      document.getElementById("reader-result-name").textContent = data
+        ? `Khoản phạt của: ${data.user_name} (${data.card_code || "Chưa cấp"})`
+        : "Danh sách khoản phạt";
+      document.getElementById("reader-record-count").textContent = "0 khoản";
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty-state">
+            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--color-success);">check_circle</span>
+            <p style="margin: 8px 0 0; font-weight: 600; color: var(--color-success);">
+              Tuyệt vời! Bạn không có khoản phạt vi phạm nào được ghi nhận.
+            </p>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const unpaidFines = fines.filter((f) => (f.status || "").toUpperCase() === "UNPAID");
+    const totalUnpaid = data && typeof data.total_unpaid_amount === "number"
+      ? data.total_unpaid_amount
+      : unpaidFines.reduce((sum, f) => sum + f.amount, 0);
+    const unpaidCount = data && typeof data.unpaid_count === "number" ? data.unpaid_count : unpaidFines.length;
+
+    if (unpaidCount > 0) {
+      alertBox.style.display = "flex";
+      document.getElementById("reader-alert-title").textContent = `Bạn có ${unpaidCount} khoản phạt chưa thanh toán`;
+      document.getElementById("reader-alert-amount").textContent = formatVND(totalUnpaid);
+    } else {
+      alertBox.style.display = "none";
+    }
+
+    const readerName = data ? data.user_name : fines[0].user_name;
+    const readerCard = data ? data.card_code : fines[0].card_code;
+    document.getElementById("reader-result-name").textContent = `Khoản phạt của: ${readerName} (${readerCard || "Chưa cấp"})`;
+    document.getElementById("reader-record-count").textContent = `${fines.length} khoản`;
+
+    tbody.innerHTML = fines
+      .map((f) => {
+        const s = (f.status || "").toUpperCase();
+        let statusBadge = "";
+        if (s === "PAID") statusBadge = `<span class="status-badge paid">Đã nộp</span>`;
+        else if (s === "WAIVED") statusBadge = `<span class="status-badge waived">Đã miễn</span>`;
+        else statusBadge = `<span class="status-badge unpaid">Chưa nộp</span>`;
+
+        const ft = (f.fine_type || "").toUpperCase();
+        let typeClass = "overdue";
+        if (ft.includes("HỎNG") || ft === "DAMAGED") typeClass = "damaged";
+        else if (ft.includes("MẤT") || ft === "LOST") typeClass = "lost";
+
+        return `
+          <tr>
+            <td class="font-mono">#FN-${String(f.id).padStart(4, "0")}</td>
+            <td>
+              <div style="font-weight: 600;">${safeHtml(f.book_title)}</div>
+              <div style="font-size: 11.5px; color: #666;">Bản sao: ${safeHtml(f.copy_code)}</div>
+            </td>
+            <td><span class="fine-badge ${typeClass}">${safeHtml(f.fine_type)}</span></td>
+            <td class="text-right font-mono" style="font-weight: 700; color: ${s === 'UNPAID' ? 'var(--color-danger)' : 'inherit'};">
+              ${formatVND(f.amount)}
+            </td>
+            <td>${formatDate(f.created_at)}</td>
+            <td>${statusBadge}</td>
+            <td class="text-center">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.viewFineReceipt(${f.id})">
+                <span class="material-symbols-outlined" style="font-size: 16px;">receipt</span>
+                <span>Xem</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
+  async function loadMyFinesForReader() {
+    const resultWrapper = document.getElementById("reader-result-wrapper");
+    const tbody = document.getElementById("reader-table-body");
+    resultWrapper.style.display = "block";
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty-state">
+          <div class="loading-spinner"></div>
+          <p>Đang tải danh sách khoản phạt của bạn...</p>
+        </td>
+      </tr>
+    `;
+
+    try {
+      const data = await fetchAPI("/fines/my-fines");
+      currentFinesList = data.fines || [];
+      renderReaderFinesResult(data, currentFinesList);
+    } catch (err) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty-state" style="color: var(--color-danger);">
+            Lỗi tải khoản phạt: ${safeHtml(err.message)}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  // Thủ thư/Admin tra cứu nhanh cho 1 độc giả theo mã thẻ / User ID / từ khóa
   async function handleReaderCheck() {
+    if (currentUserRole === "READER") {
+      await loadMyFinesForReader();
+      return;
+    }
+
     const input = document.getElementById("reader-card-input").value.trim();
     if (!input) {
       showToast("Vui lòng nhập mã thẻ hoặc mã ID bạn đọc", "error");
       return;
     }
 
-    const alertBox = document.getElementById("reader-alert-box");
     const resultWrapper = document.getElementById("reader-result-wrapper");
     const tbody = document.getElementById("reader-table-body");
 
@@ -698,73 +653,18 @@
     resultWrapper.style.display = "block";
 
     try {
-      // Tìm theo endpoint search hoặc my-fines
-      const fines = await fetchAPI(`/fines?search=${encodeURIComponent(input)}`);
-      if (!fines || fines.length === 0) {
-        alertBox.style.display = "none";
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="empty-state">
-              <span class="material-symbols-outlined" style="font-size: 40px; color: var(--color-success);">check_circle</span>
-              <p style="margin: 8px 0 0; font-weight: 600; color: var(--color-success);">
-                Tuyệt vời! Không có khoản phạt nào ghi nhận cho độc giả này.
-              </p>
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      const unpaidFines = fines.filter((f) => f.status === "UNPAID");
-      const totalUnpaid = unpaidFines.reduce((sum, f) => sum + f.amount, 0);
-
-      if (unpaidFines.length > 0) {
-        alertBox.style.display = "flex";
-        document.getElementById("reader-alert-title").textContent = `Bạn có ${unpaidFines.length} khoản phạt chưa thanh toán`;
-        document.getElementById("reader-alert-amount").textContent = formatVND(totalUnpaid);
+      if (/^\d+$/.test(input)) {
+        const data = await fetchAPI(`/fines/my-fines?user_id=${encodeURIComponent(input)}`);
+        renderReaderFinesResult(data, data.fines || []);
       } else {
-        alertBox.style.display = "none";
+        const fines = await fetchAPI(`/fines?search=${encodeURIComponent(input)}`);
+        renderReaderFinesResult(null, fines || []);
       }
-
-      document.getElementById("reader-result-name").textContent = `Khoản phạt của: ${fines[0].user_name} (${fines[0].card_code})`;
-      document.getElementById("reader-record-count").textContent = `${fines.length} khoản`;
-
-      tbody.innerHTML = fines
-        .map((f) => {
-          const s = (f.status || "").toUpperCase();
-          let statusBadge = "";
-          if (s === "PAID") statusBadge = `<span class="status-badge paid">Đã nộp</span>`;
-          else if (s === "WAIVED") statusBadge = `<span class="status-badge waived">Đã miễn</span>`;
-          else statusBadge = `<span class="status-badge unpaid">Chưa nộp</span>`;
-
-          return `
-            <tr>
-              <td class="font-mono">#FN-${String(f.id).padStart(4, "0")}</td>
-              <td>
-                <div style="font-weight: 600;">${f.book_title}</div>
-                <div style="font-size: 11.5px; color: #666;">Bản sao: ${f.copy_code}</div>
-              </td>
-              <td><span class="fine-badge overdue">${f.fine_type}</span></td>
-              <td class="text-right font-mono" style="font-weight: 700; color: ${s === 'UNPAID' ? 'var(--color-danger)' : 'inherit'};">
-                ${formatVND(f.amount)}
-              </td>
-              <td>${formatDate(f.created_at)}</td>
-              <td>${statusBadge}</td>
-              <td class="text-center">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="window.viewFineReceipt(${f.id})">
-                  <span class="material-symbols-outlined" style="font-size: 16px;">receipt</span>
-                  <span>Xem</span>
-                </button>
-              </td>
-            </tr>
-          `;
-        })
-        .join("");
     } catch (err) {
       tbody.innerHTML = `
         <tr>
           <td colspan="7" class="empty-state" style="color: var(--color-danger);">
-            Lỗi tra cứu: ${err.message}
+            Lỗi tra cứu: ${safeHtml(err.message)}
           </td>
         </tr>
       `;
@@ -924,31 +824,112 @@
       if (e.key === "Enter") handleReaderCheck();
     });
 
-    // Tìm kiếm nhanh trên topbar
-    document.getElementById("topbar-quick-search")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("filter-keyword").value = e.target.value;
-        loadFinesTable();
-      }
-    });
-
     // Expose hàm xem biên lai ra window cho nút trong bảng Reader
     window.viewFineReceipt = openReceiptModal;
   }
 
-  // 16. KHỞI CHẠY TRANG
-  window.addEventListener("DOMContentLoaded", () => {
-    // Khởi tạo danh sách mẫu nếu server chưa có
-    currentFinesList = [...FALLBACK_FINES];
+  // 16. KHỞI CHẠY TRANG & PHÂN QUYỀN THEO VAI TRÒ
+  function renderLoginRequiredGuard() {
+    const container = document.querySelector(".fines-main-container");
+    if (!container) return;
+    container.innerHTML = `
+      <div class="card-panel" style="max-width: 540px; margin: 56px auto; padding: 32px; text-align: center;">
+        <div style="width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center;">
+          <span class="material-symbols-outlined" style="font-size: 28px;">lock</span>
+        </div>
+        <h2 class="font-headline" style="margin: 0 0 8px; color: var(--color-brand);">Yêu cầu đăng nhập</h2>
+        <p style="margin: 0 0 22px; color: var(--color-text-secondary); font-size: 14px;">
+          Vui lòng đăng nhập để xem khoản phạt cá nhân (Độc giả) hoặc xử lý thu phạt / miễn phạt (Thủ thư, Admin).
+        </p>
+        <div style="display: flex; justify-content: center; gap: 12px;">
+          <a href="login.html#login" class="btn btn-primary" style="text-decoration: none;">Đăng nhập ngay →</a>
+          <a href="home.html" class="btn btn-secondary" style="text-decoration: none;">Về Trang chủ</a>
+        </div>
+      </div>
+    `;
+  }
 
-    // Cập nhật tên người dùng hiển thị
+  window.addEventListener("DOMContentLoaded", () => {
+    const token =
+      typeof auth !== "undefined" && typeof auth.getToken === "function"
+        ? auth.getToken()
+        : localStorage.getItem("access_token") || localStorage.getItem("token");
     const user = getCurrentUser();
-    if (user && user.full_name) {
-      document.getElementById("user-display-name").textContent = user.full_name;
-      document.getElementById("user-display-role").textContent = `${user.role || 'Thủ thư'} (B25DTCN151)`;
+
+    if (!token || !user) {
+      try { sessionStorage.setItem("redirect_after_login", window.location.href); } catch (_) {}
+      const sidebar = document.getElementById("app-sidebar");
+      if (sidebar) sidebar.style.display = "none";
+      const wrap = document.querySelector(".fines-workspace-wrapper");
+      if (wrap) wrap.style.marginLeft = "0";
+      renderLoginRequiredGuard();
+      return;
     }
 
+    currentUserRole = (user.role || "READER").toUpperCase();
+    const roleLabels = { ADMIN: "Quản trị viên", LIBRARIAN: "Thủ thư trực quầy", READER: "Độc giả" };
+
+    const avatarEl = document.getElementById("user-avatar");
+    if (avatarEl) avatarEl.textContent = (user.full_name || user.email || "U").charAt(0).toUpperCase();
+    const nameEl = document.getElementById("user-display-name");
+    if (nameEl) nameEl.textContent = user.full_name || user.email;
+    const roleEl = document.getElementById("user-display-role");
+    if (roleEl) roleEl.textContent = roleLabels[currentUserRole] || currentUserRole;
+
+    document.getElementById("btn-logout")?.addEventListener("click", () => {
+      if (typeof auth !== "undefined") auth.clearSession();
+      window.location.href = "login.html#login";
+    });
+
     initEvents();
+
+    // Nếu là Độc giả -> chỉ hiện cổng Xem phạt cá nhân (/api/fines/my-fines)
+    if (currentUserRole === "READER") {
+      const sidebar = document.getElementById("app-sidebar");
+      if (sidebar) sidebar.style.display = "none";
+      const wrap = document.querySelector(".fines-workspace-wrapper");
+      if (wrap) wrap.style.marginLeft = "0";
+
+      const staffTab = document.getElementById("tab-staff-view");
+      const readerTab = document.getElementById("tab-reader-view");
+      const staffView = document.getElementById("staff-view");
+      const readerView = document.getElementById("reader-view");
+      const readerSearchCard = document.querySelector(".reader-search-card");
+
+      if (staffTab) staffTab.style.display = "none";
+      if (staffView) staffView.style.display = "none";
+      if (readerSearchCard) readerSearchCard.style.display = "none";
+      if (readerTab) readerTab.classList.add("active");
+      if (readerView) readerView.style.display = "block";
+
+      const bc = document.querySelector(".breadcrumb-nav .highlight");
+      if (bc) bc.textContent = "Khoản phạt cá nhân";
+      const titleEl = document.querySelector(".page-title");
+      if (titleEl) titleEl.textContent = "Khoản phạt cá nhân của tôi";
+      const subEl = document.querySelector(".page-subtitle");
+      if (subEl) subEl.textContent = "Theo dõi các khoản phạt vi phạm, trạng thái thanh toán và xem biên lai điện tử.";
+
+      loadMyFinesForReader();
+      return;
+    }
+
+    // Dành cho Thủ thư / Admin: đọc query params nếu điều hướng từ Dashboard (?loan_code=...&reader=...)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const kwParam = urlParams.get("loan_code") || urlParams.get("reader") || urlParams.get("search") || "";
+      if (kwParam) {
+        const kwInput = document.getElementById("filter-keyword");
+        const clearBtn = document.getElementById("btn-clear-search");
+        const statusSel = document.getElementById("filter-status");
+        if (kwInput) kwInput.value = kwParam;
+        if (clearBtn) clearBtn.style.display = "flex";
+        if (statusSel) statusSel.value = "ALL";
+      }
+      if (urlParams.get("tab") === "reader") {
+        document.getElementById("tab-reader-view")?.click();
+      }
+    } catch (_) {}
+
     loadStatistics();
     loadFinesTable();
   });

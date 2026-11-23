@@ -1042,11 +1042,6 @@ body.returns-body {
   background: #F0FDF4;
 }
 
-.condition-select-shell.is-light-damage {
-  border-color: #FDE68A;
-  background: #FFFBEB;
-}
-
 .condition-select-shell.is-heavy-damage {
   border-color: #FECDD3;
   background: #FFF1F2;
@@ -1065,9 +1060,6 @@ body.returns-body {
 
 .condition-select-shell.is-normal .condition-icon {
   color: var(--color-success);
-}
-.condition-select-shell.is-light-damage .condition-icon {
-  color: var(--color-amber);
 }
 .condition-select-shell.is-heavy-damage .condition-icon,
 .condition-select-shell.is-lost .condition-icon {
@@ -1820,44 +1812,6 @@ body.returns-body {
 .btn-cancel-action:active {
   transform: translateY(0) scale(0.98);
   box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);
-}
-
-/* Biểu phí phạt tham chiếu */
-.policy-card {
-  padding: 16px 20px;
-}
-
-.policy-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-
-.policy-list li {
-  margin-bottom: 4px;
-}
-
-.policy-list strong {
-  color: var(--color-text-primary);
-}
-
-/* Dev Pill */
-.dev-pill {
-  padding: 12px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.badge-post {
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--color-brand-light);
-  color: var(--color-brand);
-  font-weight: 700;
-  font-size: 10px;
 }
 
 /* ==========================================================================

@@ -133,12 +133,6 @@ body.loan-mgmt-body {
   overflow: hidden;
 }
 
-.brand-logo-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
 .brand-text {
   display: flex;
   flex-direction: column;
@@ -210,40 +204,6 @@ body.loan-mgmt-body {
   gap: 14px;
 }
 
-.topbar-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 6px 12px;
-  border-radius: 10px;
-  width: 220px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.topbar-search:focus-within {
-  border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
-}
-
-.topbar-search .material-symbols-outlined {
-  font-size: 18px;
-  color: var(--color-text-muted);
-}
-
-.topbar-search input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 12px;
-  width: 100%;
-  color: var(--color-text-primary);
-  font-family: inherit;
-}
-
-
 .librarian-profile {
   display: flex;
   align-items: center;
@@ -257,14 +217,6 @@ body.loan-mgmt-body {
 .librarian-profile:hover {
   transform: translateY(-1px);
   background: rgba(27, 67, 50, 0.05);
-}
-
-.librarian-avatar-img {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid var(--color-brand);
 }
 
 .librarian-avatar {
@@ -1398,41 +1350,6 @@ body.loan-mgmt-body {
   border-color: #E5E7EB;
 }
 
-.badge-renewal-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #BFDBFE;
-  margin-top: 4px;
-}
-
-.badge-renewal-item.renewed {
-  background: #F3F4F6;
-  color: #4B5563;
-  border-color: #D1D5DB;
-}
-
-.badge-reservation-warn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #FFFBEB;
-  color: #B45309;
-  border: 1px solid #FDE68A;
-  margin-top: 4px;
-}
-
-
 .btn-icon-delete {
   display: inline-flex;
   align-items: center;
@@ -2454,9 +2371,6 @@ body.loan-mgmt-body {
     margin-left: 0;
   }
   .sidebar-rail {
-    display: none;
-  }
-  .topbar-search {
     display: none;
   }
   .pagination-footer {

@@ -48,6 +48,10 @@
   --shadow-card: 0 1px 3px rgba(27, 67, 50, 0.05);
   --shadow-elevated: 0 10px 25px rgba(27, 67, 50, 0.12);
   --shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.15);
+
+  --sidebar-w-collapsed: 72px;
+  --sidebar-w-expanded: 256px;
+  --topbar-height: 64px;
 }
 
 * {
@@ -383,24 +387,24 @@ body.fines-body {
    ========================================================================== */
 .sidebar-rail {
   position: fixed;
-  top: 64px;
+  top: var(--topbar-height, 64px);
   left: 0;
   bottom: 0;
-  width: 68px;
+  width: var(--sidebar-w-collapsed, 72px);
   background: #F5F3EF;
   border-right: 1px solid var(--color-border);
   z-index: 40;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 8px;
+  padding: 16px 0;
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
   overflow: hidden;
   white-space: nowrap;
 }
 
 .sidebar-rail:hover {
-  width: 250px;
+  width: var(--sidebar-w-expanded, 256px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
@@ -492,21 +496,33 @@ body.fines-body {
    3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH (WORKSPACE)
    ========================================================================== */
 .fines-workspace-wrapper {
-  margin-top: 64px;
-  margin-left: 68px;
-  min-height: calc(100vh - 64px);
+  margin-top: var(--topbar-height, 64px);
+  margin-left: var(--sidebar-w-collapsed, 72px);
+  min-height: calc(100vh - var(--topbar-height, 64px));
   display: flex;
   flex-direction: column;
   transition: margin-left 0.25s ease;
 }
 
 .fines-main-container {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
   width: 100%;
-  padding: 28px 36px 60px;
+  padding: 24px 32px 40px 32px;
   box-sizing: border-box;
   flex: 1;
+}
+
+@media (max-width: 900px) {
+  .sidebar-rail {
+    display: none;
+  }
+  .fines-workspace-wrapper {
+    margin-left: 0;
+  }
+  .fines-main-container {
+    padding: 16px;
+  }
 }
 
 /* Header trang */

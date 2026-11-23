@@ -421,7 +421,7 @@ body.returns-body {
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s, transform 0.15s;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s;
   box-sizing: border-box;
   cursor: pointer;
 }
@@ -446,8 +446,10 @@ body.returns-body {
 }
 
 .sidebar-rail-link:hover {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  transform: translateX(3px);
+  background: var(--color-brand-subtle);
+  color: var(--color-brand);
+  text-decoration: none;
 }
 
 .sidebar-rail-link.active {
@@ -455,6 +457,16 @@ body.returns-body {
   color: #ffffff;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(27, 67, 50, 0.22);
+}
+
+.sidebar-rail-link.active:hover {
+  background: var(--color-brand);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.sidebar-rail-link.active .material-symbols-outlined {
+  color: #ffffff;
 }
 
 .sidebar-rail-link .material-symbols-outlined {

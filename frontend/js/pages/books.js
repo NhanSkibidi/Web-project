@@ -1469,6 +1469,8 @@
                 statusPill = `<span class="badge-status-hfd avail"><span class="dot"></span> Khả dụng</span>`;
             } else if (copy.status === "BORROWED") {
                 statusPill = `<span class="badge-status-hfd borrowed"><span class="dot"></span> Đang mượn</span>`;
+            } else if (copy.status === "RESERVED") {
+                statusPill = `<span class="badge-status-hfd reserved"><span class="dot"></span> Đã đặt trước</span>`;
             } else if (copy.status === "DAMAGED") {
                 statusPill = `<span class="badge-status-hfd damaged"><span class="dot"></span> Hư hỏng</span>`;
             } else if (copy.status === "LOST") {
@@ -1609,8 +1611,48 @@
         if (dom.quickStatusCopyCode) dom.quickStatusCopyCode.textContent = copy.copy_code;
         if (dom.quickStatusTicket) dom.quickStatusTicket.textContent = `Phiếu: #COPY-ID-${copy.id}`;
 
+        const validTransitions = {
+            AVAILABLE: ["BORROWED", "RESERVED", "LOST", "DAMAGED", "DISPOSED"],
+            BORROWED:  ["AVAILABLE", "LOST", "DAMAGED"],
+            RESERVED:  ["AVAILABLE", "BORROWED", "LOST", "DAMAGED"],
+            LOST:      ["AVAILABLE", "DISPOSED"],
+            DAMAGED:   ["AVAILABLE", "DISPOSED"],
+            DISPOSED:  []
+        };
+
+        const allowed = validTransitions[copy.status] || [];
+
         if (dom.quickStatusSelect) {
-            dom.quickStatusSelect.value = copy.status === "BORROWED" ? "DAMAGED" : copy.status;
+            Array.from(dom.quickStatusSelect.options).forEach((opt) => {
+                const baseText = opt.textContent.replace(" (Hiện tại)", "").replace(" (Không cho phép)", "");
+                if (opt.value === copy.status) {
+                    opt.disabled = true;
+                    opt.textContent = `${baseText} (Hiện tại)`;
+                } else if (allowed.includes(opt.value)) {
+                    opt.disabled = false;
+                    opt.textContent = baseText;
+                } else {
+                    opt.disabled = true;
+                    opt.textContent = `${baseText} (Không cho phép)`;
+                }
+            });
+
+            // Chọn giá trị hợp lệ đầu tiên
+            if (allowed.length > 0) {
+                dom.quickStatusSelect.value = allowed[0];
+            } else {
+                dom.quickStatusSelect.value = copy.status;
+            }
+        }
+
+        if (dom.saveQuickStatusBtn) {
+            if (copy.status === "DISPOSED" || allowed.length === 0) {
+                dom.saveQuickStatusBtn.disabled = true;
+                dom.saveQuickStatusBtn.title = "Bản sao đã thanh lý không thể đổi trạng thái";
+            } else {
+                dom.saveQuickStatusBtn.disabled = false;
+                dom.saveQuickStatusBtn.title = "";
+            }
         }
 
         if (dom.quickStatusReason) {
@@ -1637,7 +1679,12 @@
         const newStatus = dom.quickStatusSelect ? dom.quickStatusSelect.value : "AVAILABLE";
         const reason = (dom.quickStatusReason ? dom.quickStatusReason.value.trim() : "");
 
-        if (["DAMAGED", "LOST", "LIQUIDATION", "DISPOSED"].includes(newStatus) && !reason) {
+        if (newStatus === copy.status) {
+            showNotification("Vui lòng chọn trạng thái mới khác trạng thái hiện tại!", "error");
+            return;
+        }
+
+        if (["DAMAGED", "LOST", "DISPOSED"].includes(newStatus) && !reason) {
             showNotification("Vui lòng nhập lý do và ghi chú nghiệp vụ để lưu vào lịch sử!", "error");
             if (dom.quickStatusReason) dom.quickStatusReason.focus();
             return;
@@ -1648,16 +1695,12 @@
                 await api.patch(`/book_copies/${copy.id}/report-damaged`, { reason: reason || "Báo hỏng sách" });
             } else if (newStatus === "LOST") {
                 await api.patch(`/book_copies/${copy.id}/report-lost`, { reason: reason || "Báo mất sách" });
-            } else if (newStatus === "LIQUIDATION" || newStatus === "DISPOSED") {
+            } else if (newStatus === "DISPOSED") {
                 await api.patch(`/book_copies/${copy.id}/dispose`, { reason: reason || "Thanh lý sách" });
-            } else if (newStatus === "AVAILABLE") {
-                await api.put(`/book_copies/${copy.id}`, {
-                    status: "AVAILABLE",
-                    condition: "MỚI"
-                });
             } else {
                 await api.put(`/book_copies/${copy.id}`, {
-                    condition: mapConditionToBackend(reason)
+                    status: newStatus,
+                    ...(newStatus === "AVAILABLE" ? { condition: "MỚI" } : {})
                 });
             }
 

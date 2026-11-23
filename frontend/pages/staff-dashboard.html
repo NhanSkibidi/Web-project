@@ -37,19 +37,15 @@
             </a>
             <nav class="topbar-nav">
                 <a href="home.html" class="topbar-nav-link">Trang chủ</a>
-                <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
             </nav>
         </div>
 
         <div class="topbar-right">
-            <div class="topbar-search">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="topbar-global-search" placeholder="Tra cứu tên sách, mã ISBN, tác giả...">
-            </div>
 
             <!-- Chuông thông báo in-app (Task T3CFF48) -->
             <div class="notif-dropdown-container" id="notifDropdownContainer">
-                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo mượn trả">
+                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
+                    aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo mượn trả">
                     <span class="material-symbols-outlined">notifications</span>
                     <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
                 </button>
@@ -107,7 +103,7 @@
             </a>
             <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
                 <span class="material-symbols-outlined">receipt_long</span>
-                <span class="rail-label">Quản lý Phiếu mượn</span>
+                <span class="rail-label">Quản lý phiếu mượn</span>
             </a>
             <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
                 <span class="material-symbols-outlined">library_add</span>
@@ -123,23 +119,13 @@
             </a>
             <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
                 <span class="material-symbols-outlined">badge</span>
-                <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+                <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
             </a>
             <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
                 <span class="material-symbols-outlined">admin_panel_settings</span>
                 <span class="rail-label">Nhân sự &amp; Phân quyền</span>
             </a>
         </nav>
-        <div class="sidebar-rail-footer">
-            <div style="display: flex; align-items: center;">
-                <span class="status-dot-pulse"></span>
-                <div class="sidebar-status-details">
-                    <strong>Máy chủ K1</strong>
-                    <small>Online</small>
-                </div>
-            </div>
-            <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
-        </div>
     </aside>
 
     <!-- 3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH -->
@@ -260,12 +246,14 @@
                         <div class="kpi-value-row">
                             <div id="stat-total-copies" class="kpi-number">--</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary); flex-wrap: wrap;">
-                                <span style="color: var(--color-success); font-weight: 600;"
-                                    id="stat-avail-copies">-- rảnh</span>
+                                <span style="color: var(--color-success); font-weight: 600;" id="stat-avail-copies">--
+                                    rảnh</span>
                                 <span>•</span>
-                                <span style="color: var(--color-brand); font-weight: 600;" id="stat-borrowed-copies">-- mượn</span>
+                                <span style="color: var(--color-brand); font-weight: 600;" id="stat-borrowed-copies">--
+                                    mượn</span>
                                 <span>•</span>
-                                <span style="color: var(--color-danger); font-weight: 600;" id="stat-damaged-copies">-- mất/hỏng</span>
+                                <span style="color: var(--color-danger); font-weight: 600;" id="stat-damaged-copies">--
+                                    mất/hỏng</span>
                             </div>
                         </div>
                     </div>
@@ -306,7 +294,8 @@
                         <div class="kpi-value-row">
                             <div id="stat-fines-collected" class="kpi-number" style="color: #B45309;">-- đ</div>
                             <div class="kpi-meta" style="color: var(--color-text-secondary);">
-                                <span class="material-symbols-outlined" style="font-size: 15px; color: #15803D;">receipt</span>
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 15px; color: #15803D;">receipt</span>
                                 <span id="stat-fines-meta">Đang tải...</span>
                             </div>
                         </div>
@@ -635,7 +624,8 @@
                                 </thead>
                                 <tbody id="overdue-table-body">
                                     <tr>
-                                        <td colspan="5" style="text-align: center; padding: 24px; color: var(--color-text-muted);">
+                                        <td colspan="5"
+                                            style="text-align: center; padding: 24px; color: var(--color-text-muted);">
                                             Đang tải danh sách phiếu quá hạn từ máy chủ...
                                         </td>
                                     </tr>
@@ -644,14 +634,21 @@
                         </div>
 
                         <div class="card-table-footer" style="flex-wrap: wrap; gap: 10px;">
-                            <span id="overdue-footer-summary" style="color: var(--color-text-muted);">Đang đồng bộ danh sách...</span>
+                            <span id="overdue-footer-summary" style="color: var(--color-text-muted);">Đang đồng bộ danh
+                                sách...</span>
                             <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                                <button type="button" id="btnEmailDueSoon" style="color: #B45309; cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 5px; font-weight: 600;" title="Gửi email nhắc sắp đến hạn trả trong 2 ngày tới">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">mark_email_unread</span>
+                                <button type="button" id="btnEmailDueSoon"
+                                    style="color: #B45309; cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 5px; font-weight: 600;"
+                                    title="Gửi email nhắc sắp đến hạn trả trong 2 ngày tới">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 16px;">mark_email_unread</span>
                                     <span>Email nhắc sắp đến hạn</span>
                                 </button>
-                                <button type="button" id="btnRemindOverdue" style="color: var(--color-danger); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; font-weight: 600;" title="Gửi thông báo in-app &amp; email nhắc quá hạn hàng loạt">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span>
+                                <button type="button" id="btnRemindOverdue"
+                                    style="color: var(--color-danger); cursor: pointer; border: none; background: none; display: flex; align-items: center; gap: 6px; font-weight: 600;"
+                                    title="Gửi thông báo in-app &amp; email nhắc quá hạn hàng loạt">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 16px;">outgoing_mail</span>
                                     <span>Gửi thông báo nhắc nhở hàng loạt</span>
                                 </button>
                             </div>

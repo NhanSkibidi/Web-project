@@ -64,17 +64,17 @@
         btnResetFilter: document.getElementById("btn-reset-filter"),
 
         // Main Table & Pagination
-        booksTableBody: document.getElementById("books-table-body") || document.getElementById("booksTableBody"),
+        booksTableBody: document.getElementById("books-table-body"),
         pageStart: document.getElementById("page-start"),
         pageEnd: document.getElementById("page-end"),
         totalRecords: document.getElementById("total-records"),
-        paginationInfo: document.getElementById("pagination-info") || document.getElementById("paginationInfo"),
-        paginationControls: document.getElementById("pagination-controls") || document.getElementById("paginationControls"),
+        paginationInfo: document.getElementById("pagination-info"),
+        paginationControls: document.getElementById("pagination-controls"),
 
         // Modal 1: Create / Edit Book
         bookModalBackdrop: document.getElementById("bookModalBackdrop"),
         bookForm: document.getElementById("bookForm"),
-        btnOpenCreateBook: document.getElementById("btn-open-create-book") || document.getElementById("btnOpenCreateBook"),
+        btnOpenCreateBook: document.getElementById("btn-open-create-book"),
         closeModalBtn: document.getElementById("closeModalBtn"),
         cancelModalBtn: document.getElementById("cancelModalBtn"),
         draftModalBtn: document.getElementById("draftModalBtn"),
@@ -86,22 +86,21 @@
         bookTitle: document.getElementById("bookTitle"),
         bookIsbn: document.getElementById("bookIsbn"),
         btnLookupIsbn: document.getElementById("btnLookupIsbn"),
-        isbnLoadingSpinner: document.getElementById("isbnLoadingSpinner"),
         isbnLookupStatus: document.getElementById("isbnLookupStatus"),
         bookCategory: document.getElementById("bookCategory"),
         authorChipsContainer: document.getElementById("authorChipsContainer"),
         tagAuthorInput: document.getElementById("tagAuthorInput"),
         bookPublisher: document.getElementById("bookPublisher"),
         bookYear: document.getElementById("bookYear"),
-        bookPageCount: document.getElementById("bookPages") || document.getElementById("bookPageCount"),
+        bookPageCount: document.getElementById("bookPages"),
         bookShelf: document.getElementById("bookShelf"),
-        bookDescription: document.getElementById("bookSummary") || document.getElementById("bookDescription"),
-        bookAllowHome: document.getElementById("allowBorrowHome") || document.getElementById("bookAllowHome"),
+        bookDescription: document.getElementById("bookSummary"),
+        bookAllowHome: document.getElementById("allowBorrowHome"),
         coverFileInput: document.getElementById("coverFileInput"),
         coverDropZone: document.getElementById("coverDropZone"),
         coverPreviewImg: document.getElementById("coverPreviewImg"),
         copiesCount: document.getElementById("copiesCount"),
-        barcodeRange: document.getElementById("barcodeRange") || document.getElementById("barcodeRangeText"),
+        barcodeRange: document.getElementById("barcodeRange"),
 
         // Modal 2: Copies Management Modal
         copiesModalBackdrop: document.getElementById("copiesModalBackdrop"),
@@ -135,7 +134,7 @@
         closeDeleteModalBtn: document.getElementById("closeDeleteModalBtn"),
 
         // Modal 4: Chi tiết đầu sách & Quản trị bản sao
-        detailModalBackdrop: document.getElementById("detailModalBackdrop") || document.getElementById("modal-book-details"),
+        detailModalBackdrop: document.getElementById("detailModalBackdrop"),
         detailCategoryBadge: document.getElementById("detailCategoryBadge"),
         detailDdc: document.getElementById("detailDdc"),
         detailIsbn: document.getElementById("detailIsbn"),
@@ -258,7 +257,7 @@
 
         const box = dom.toastBox || document.body;
         const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
+        toast.className = `toast toast-${type} toast-item ${type === "error" ? "error" : ""}`;
 
         let icon = "info";
         if (type === "success") icon = "check_circle";
@@ -514,7 +513,7 @@
 
         let html = "";
         html += `
-            <button type="button" class="btn-pagination" ${state.currentPage === 1 ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage - 1})">
+            <button type="button" class="pagination-btn" ${state.currentPage === 1 ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage - 1})">
                 <span class="material-symbols-outlined">chevron_left</span>
             </button>
         `;
@@ -522,7 +521,7 @@
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= state.currentPage - 1 && i <= state.currentPage + 1)) {
                 html += `
-                    <button type="button" class="btn-pagination ${i === state.currentPage ? "active" : ""}" onclick="window.booksApp.setPage(${i})">
+                    <button type="button" class="pagination-btn ${i === state.currentPage ? "active" : ""}" onclick="window.booksApp.setPage(${i})">
                         ${i}
                     </button>
                 `;
@@ -532,7 +531,7 @@
         }
 
         html += `
-            <button type="button" class="btn-pagination" ${state.currentPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage + 1})">
+            <button type="button" class="pagination-btn" ${state.currentPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage + 1})">
                 <span class="material-symbols-outlined">chevron_right</span>
             </button>
         `;
@@ -580,7 +579,7 @@
         let html = "";
         state.authorTags.forEach((name, idx) => {
             html += `
-                <span class="chip-item">
+                <span class="author-chip">
                     <span>${escapeHtml(name)}</span>
                     <button type="button" class="chip-remove" onclick="window.booksApp.removeAuthorTag(${idx})">&times;</button>
                 </span>
@@ -676,7 +675,6 @@
                 <span>Đang tìm...</span>
             `;
         }
-        if (dom.isbnLoadingSpinner) dom.isbnLoadingSpinner.classList.remove("hidden");
         if (dom.isbnLookupStatus) {
             dom.isbnLookupStatus.textContent = "Đang tra cứu...";
             dom.isbnLookupStatus.style.color = "var(--color-brand)";
@@ -760,7 +758,6 @@
                 <span>Tra cứu ISBN</span>
             `;
         }
-        if (dom.isbnLoadingSpinner) dom.isbnLoadingSpinner.classList.add("hidden");
 
         if (!bookData || !bookData.title) {
             if (dom.isbnLookupStatus) {
@@ -1521,21 +1518,21 @@
 
         let html = "";
         html += `
-            <button type="button" class="btn-mini-page" ${state.copiesPage === 1 ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage - 1})">
+            <button type="button" class="page-btn" ${state.copiesPage === 1 ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage - 1})">
                 &lsaquo;
             </button>
         `;
 
         for (let i = 1; i <= totalPages; i++) {
             html += `
-                <button type="button" class="btn-mini-page ${i === state.copiesPage ? "active" : ""}" onclick="window.booksApp.setCopiesPage(${i})">
+                <button type="button" class="page-btn ${i === state.copiesPage ? "active" : ""}" onclick="window.booksApp.setCopiesPage(${i})">
                     ${i}
                 </button>
             `;
         }
 
         html += `
-            <button type="button" class="btn-mini-page ${state.copiesPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage + 1})">
+            <button type="button" class="page-btn ${state.copiesPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage + 1})">
                 &rsaquo;
             </button>
         `;
@@ -1752,18 +1749,26 @@
             let html = "";
             allLogs.forEach(log => {
                 const timeStr = new Date(log.changed_at).toLocaleString("vi-VN");
+                const isDanger = log.new_status === "DAMAGED" || log.new_status === "LOST";
+                const isSuccess = log.new_status === "AVAILABLE";
+                const nodeClass = isDanger ? "node-danger" : (isSuccess ? "node-success" : "node-primary");
+                const iconName = isSuccess ? "check_circle" : (isDanger ? "warning" : "sync");
+
                 html += `
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-header">
-                                <span class="timeline-title">Chuyển trạng thái: <strong>${escapeHtml(log.old_status)} → ${escapeHtml(log.new_status)}</strong></span>
-                                <span class="timeline-time">${timeStr}</span>
-                            </div>
-                            <div class="timeline-desc">
-                                Bản sao ID: #${log.book_copy_id} • Lý do: ${escapeHtml(log.reason || "Không ghi chú")}
-                            </div>
+                    <div class="audit-event-card">
+                        <div class="audit-node-icon ${nodeClass}">
+                            <span class="material-symbols-outlined">${iconName}</span>
                         </div>
+                        <div class="audit-event-header">
+                            <span class="audit-copy-tag ${isDanger ? "tag-danger" : ""}">Bản sao ID: #${log.book_copy_id}</span>
+                            <span class="audit-time">${timeStr}</span>
+                        </div>
+                        <div class="audit-transition">
+                            <span>${escapeHtml(log.old_status)}</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                            <strong>${escapeHtml(log.new_status)}</strong>
+                        </div>
+                        <div class="audit-desc">${escapeHtml(log.reason || "Không ghi chú")}</div>
                     </div>
                 `;
             });

@@ -1511,31 +1511,6 @@ table.readers-table tbody tr.is-selected {
 .toast-success { background: var(--primary); }
 .toast-error { background: var(--danger); }
 
-/* Detail Page Tabs */
-.detail-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.detail-tab-btn {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-sec);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.detail-tab-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #FFFFFF;
-}
-
 /* ---------- 10. @MEDIA PRINT — IN RIÊNG PHÔI THẺ THƯ VIỆN BẰNG WINDOW.PRINT() ---------- */
 @media print {
   @page {

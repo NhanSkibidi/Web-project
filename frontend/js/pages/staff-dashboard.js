@@ -935,17 +935,6 @@
         }
       });
     }
-
-    // 6. Tìm kiếm nhanh trên topbar
-    const topbarSearch = document.getElementById("topbar-global-search");
-    if (topbarSearch) {
-      topbarSearch.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && topbarSearch.value.trim()) {
-          const kw = encodeURIComponent(topbarSearch.value.trim());
-          window.location.href = `books.html?q=${kw}`;
-        }
-      });
-    }
   }
 
   // Export ra window để các thẻ onclick gọi được nếu cần

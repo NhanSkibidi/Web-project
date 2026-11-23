@@ -55,7 +55,7 @@ const STAFF_SIDEBAR_GROUPS = [
     group: "Kho Sách & Bản Sao",
     items: [
       {
-        href: "pages/staff-dashboard.html#books",
+        href: "pages/books.html",
         label: "Danh mục đầu sách",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
       },
@@ -458,8 +458,8 @@ function renderStaffLayout() {
         const badgeHtml = item.badge
           ? `<span class="sidebar-badge">${getSafeText(item.badge)}</span>`
           : isRestricted
-          ? `<span class="sidebar-badge">🔒</span>`
-          : "";
+            ? `<span class="sidebar-badge">🔒</span>`
+            : "";
 
         return `
           <a href="${root}${item.href}" class="sidebar-link ${isActive ? "active" : ""}">
@@ -540,14 +540,13 @@ function renderStaffLayout() {
             <span>🔍</span>
             <input id="topbar-copy-code-input" type="text" placeholder="Tra nhanh copy_code (VD: BC-...)" autocomplete="off">
           </form>
-          ${
-            user
-              ? `<a href="${root}pages/profile.html" class="user-chip" title="Hồ sơ cá nhân & Đổi mật khẩu" style="text-decoration:none; color:inherit;">
+          ${user
+      ? `<a href="${root}pages/profile.html" class="user-chip" title="Hồ sơ cá nhân & Đổi mật khẩu" style="text-decoration:none; color:inherit;">
                   <span>${getSafeText(user.full_name || user.email)}</span>
                   <span class="user-chip-role">${getSafeText(user.role)}</span>
                 </a>`
-              : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
-          }
+      : `<a href="${root}pages/login.html" class="btn btn-primary btn-small">Đăng nhập</a>`
+    }
         </div>
       </header>
 

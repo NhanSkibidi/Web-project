@@ -383,17 +383,11 @@ function goToCarouselPage(pageNum) {
 function toggleAllBooksView() {
   isAllBooksView = !isAllBooksView;
   const topBtn = document.getElementById("btn-view-all-books");
-  const bottomText = document.getElementById("toggle-view-text");
-  const bottomIcon = document.getElementById("toggle-view-icon");
 
   if (isAllBooksView) {
     if (topBtn) topBtn.textContent = "Thu gọn (4 cuốn/trang)";
-    if (bottomText) bottomText.textContent = "Thu gọn về dạng 4 trang";
-    if (bottomIcon) bottomIcon.textContent = "📑";
   } else {
     if (topBtn) topBtn.textContent = "Xem tất cả (16 cuốn)";
-    if (bottomText) bottomText.textContent = "Xem toàn bộ 16 tài liệu";
-    if (bottomIcon) bottomIcon.textContent = "📖";
   }
 
   renderCurrentView();
@@ -555,6 +549,10 @@ function borrowBook(bookTitle) {
   alert(`✓ Đã thêm cuốn "${bookTitle}" vào danh sách mượn!`);
 }
 
+function quickAdd(bookTitle) {
+  borrowBook(bookTitle);
+}
+
 function getBookDetailKey(bookTitle) {
   const title = (bookTitle || "").toLowerCase();
   if (title.includes("clean code") || title.includes("mã sạch")) return "cleancode";
@@ -576,4 +574,245 @@ function escapeQuotes(str) {
   return str.replace(/'/g, "\\'");
 }
 
+// ==============================================================================
+// ĐỒNG BỘ THANH ĐIỀU HƯỚNG TOPBAR, USER ACCOUNT & MODAL ĐĂNG XUẤT (THEO BOOKS.HTML)
+// ==============================================================================
+let activeConfirmCallback = null;
+
+function showConfirm(options) {
+  const modal = document.getElementById("confirm-modal");
+  const titleEl = document.getElementById("confirm-title");
+  const msgEl = document.getElementById("confirm-message");
+  const iconBox = document.getElementById("confirm-icon-box");
+  const iconEl = document.getElementById("confirm-icon");
+  const btnProceed = document.getElementById("btn-confirm-proceed");
+  const btnCancel = document.getElementById("btn-confirm-cancel");
+
+  if (!modal) return;
+
+  if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+  if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+  if (iconBox) iconBox.className = "confirm-icon-circle";
+  if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+  if (options.type === "red") {
+    if (iconBox) iconBox.classList.add("icon-red");
+    if (btnProceed) btnProceed.classList.add("btn-danger");
+    if (iconEl) iconEl.textContent = "warning";
+  } else if (options.type === "green") {
+    if (iconBox) iconBox.classList.add("icon-green");
+    if (btnProceed) btnProceed.classList.add("btn-success");
+    if (iconEl) iconEl.textContent = "check_circle";
+  } else {
+    if (iconBox) iconBox.classList.add("icon-blue");
+    if (iconEl) iconEl.textContent = "help_outline";
+  }
+
+  if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+  if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+  activeConfirmCallback = options.onConfirm || null;
+  modal.classList.add("active");
+  modal.style.display = "flex";
+}
+
+function closeConfirmModal() {
+  const modal = document.getElementById("confirm-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
+  activeConfirmCallback = null;
+}
+
+function initTopBar() {
+  // 1. Đồng bộ thông tin người dùng lên Topbar
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const avatarEl = document.getElementById("userAvatar");
+  const nameEl = document.getElementById("userName");
+  const roleEl = document.getElementById("userRole");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
+
+  let user = null;
+  if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+    user = auth.getUser();
+  } else {
+    try {
+      const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+      if (raw) user = JSON.parse(raw);
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  if (user) {
+    const fullName = user.full_name || user.name || user.email || "Độc giả";
+    const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
+    const roleText = user.role === "ADMIN" ? "Quản trị viên" : user.role === "LIBRARIAN" ? "Thủ thư" : "Sinh viên / Độc giả";
+
+    if (avatarEl) avatarEl.textContent = initial;
+    if (nameEl) nameEl.textContent = fullName;
+    if (roleEl) roleEl.textContent = roleText;
+
+    if (userDropdownMenu) {
+      const adminLink = (user.role === "ADMIN" || user.role === "LIBRARIAN")
+        ? `<a href="staff-dashboard.html" class="dropdown-item">
+             <span class="material-symbols-outlined">space_dashboard</span>
+             <span>Bàn làm việc quản trị</span>
+           </a>`
+        : "";
+
+      userDropdownMenu.innerHTML = `
+        <a href="auth.html" class="dropdown-item">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span>Thông tin cá nhân</span>
+        </a>
+        <a href="loan_slip.html" class="dropdown-item">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Phiếu mượn của tôi</span>
+        </a>
+        ${adminLink}
+        <div class="dropdown-divider"></div>
+        <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Đăng xuất</span>
+        </button>
+      `;
+    }
+  } else {
+    if (avatarEl) avatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
+    if (nameEl) nameEl.textContent = "Tài khoản";
+    if (roleEl) roleEl.textContent = "Chưa đăng nhập";
+
+    if (userDropdownMenu) {
+      userDropdownMenu.innerHTML = `
+        <a href="login.html#login" class="dropdown-item">
+          <span class="material-symbols-outlined">login</span>
+          <span>Đăng nhập</span>
+        </a>
+        <a href="login.html#register" class="dropdown-item">
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Đăng ký thẻ mới</span>
+        </a>
+      `;
+    }
+  }
+
+  // 2. Toggle Mobile menu
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const navMenu = document.getElementById("navMenu");
+  if (mobileMenuToggle && navMenu) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle("show");
+    });
+  }
+
+  // 3. Toggle User Dropdown
+  if (userProfileBtn && userDropdownMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("show");
+      const isShown = userDropdownMenu.classList.contains("show");
+      userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+    });
+  }
+
+  // 4. Click mục "Thông báo" trên thanh điều hướng ngang
+  const navNotifBtn = document.getElementById("navNotifBtn");
+  if (navNotifBtn) {
+    navNotifBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const bell = document.getElementById("notifBellBtn");
+      if (bell) {
+        bell.click();
+      } else {
+        window.location.href = "loan_slip.html";
+      }
+    });
+  }
+
+  // 5. Đóng menu khi click ngoài màn hình
+  document.addEventListener("click", () => {
+    if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    }
+    if (navMenu && navMenu.classList.contains("show")) {
+      navMenu.classList.remove("show");
+    }
+  });
+
+  // 6. Sự kiện đăng xuất với confirm modal
+  document.addEventListener("click", (e) => {
+    const logoutBtn = e.target.closest("#logoutMenuBtn");
+    if (logoutBtn) {
+      e.preventDefault();
+      if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+      showConfirm({
+        title: "Xác nhận đăng xuất?",
+        message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+        type: "red",
+        confirmText: "Đăng xuất",
+        cancelText: "Hủy",
+        onConfirm: () => {
+          if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+            auth.clearSession();
+          } else {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user_info");
+            localStorage.removeItem("library_card");
+            sessionStorage.removeItem("access_token");
+            sessionStorage.removeItem("user_info");
+          }
+          window.location.href = "login.html#login";
+        },
+      });
+    }
+  });
+
+  // 7. Các nút trong Modal xác nhận
+  const btnCancelConfirm = document.getElementById("btn-confirm-cancel");
+  const btnProceedConfirm = document.getElementById("btn-confirm-proceed");
+  const confirmModal = document.getElementById("confirm-modal");
+
+  if (btnCancelConfirm) {
+    btnCancelConfirm.addEventListener("click", closeConfirmModal);
+  }
+  if (btnProceedConfirm) {
+    btnProceedConfirm.addEventListener("click", () => {
+      if (typeof activeConfirmCallback === "function") {
+        activeConfirmCallback();
+      }
+      closeConfirmModal();
+    });
+  }
+  if (confirmModal) {
+    confirmModal.addEventListener("click", (e) => {
+      if (e.target === confirmModal) {
+        closeConfirmModal();
+      }
+    });
+  }
+}
+
+// Khởi chạy
 renderCurrentView();
+initTopBar();
+
+// Đảm bảo các hàm gọi từ thuộc tính onclick trên HTML luôn sẵn sàng
+window.handleSearch = handleSearch;
+window.toggleCategories = toggleCategories;
+window.handleCategoryFilter = handleCategoryFilter;
+window.clearSearchFilter = clearSearchFilter;
+window.borrowBook = borrowBook;
+window.quickAdd = quickAdd;
+window.prevCarousel = prevCarousel;
+window.nextCarousel = nextCarousel;
+window.goToCarouselPage = goToCarouselPage;
+window.toggleAllBooksView = toggleAllBooksView;
+window.viewBookDetail = viewBookDetail;
+window.showConfirm = showConfirm;
+window.closeConfirmModal = closeConfirmModal;

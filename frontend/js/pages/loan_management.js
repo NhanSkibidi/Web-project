@@ -602,6 +602,7 @@ var loanData = [
 // 2. BIẾN TRẠNG THÁI TOÀN CỤC CỦA BẢNG VÀ BỘ LỌC
 // ------------------------------------------------------------------------------
 var currentTab = "pending";        // Mặc định chọn tab "Chờ duyệt" như giao diện ảnh
+var currentStatusFilter = "all";   // Bộ lọc trạng thái đồng bộ phong cách Reader
 var currentSearchKeyword = "";     // Từ khóa tìm kiếm
 var currentTimeFilter = "all";     // Lọc theo thời gian
 var currentDeptFilter = "all";     // Lọc theo khoa / viện
@@ -782,13 +783,24 @@ function updateCountsAndStats() {
 // ------------------------------------------------------------------------------
 function getFilteredLoans() {
   return loanData.filter(function (loan) {
-    // 1. Lọc theo Tab
-    if (currentTab === "pending" && loan.trangThai !== "Chờ duyệt") return false;
-    if (currentTab === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
-    if (currentTab === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
-    if (currentTab === "borrowed" && loan.trangThai !== "Đang mượn") return false;
-    if (currentTab === "overdue" && loan.trangThai !== "Quá hạn") return false;
-    if (currentTab === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    // 1. Lọc theo Trạng thái (đồng bộ phong cách Reader)
+    if (currentStatusFilter !== "all") {
+      if (currentStatusFilter === "pending" && loan.trangThai !== "Chờ duyệt") return false;
+      if (currentStatusFilter === "approved" && loan.trangThai !== "Đang chuẩn bị" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentStatusFilter === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
+      if (currentStatusFilter === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentStatusFilter === "borrowed" && loan.trangThai !== "Đang mượn") return false;
+      if (currentStatusFilter === "overdue" && loan.trangThai !== "Quá hạn") return false;
+      if (currentStatusFilter === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    } else if (currentTab !== "all") {
+      if (currentTab === "pending" && loan.trangThai !== "Chờ duyệt") return false;
+      if (currentTab === "approved" && loan.trangThai !== "Đang chuẩn bị" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentTab === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
+      if (currentTab === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentTab === "borrowed" && loan.trangThai !== "Đang mượn") return false;
+      if (currentTab === "overdue" && loan.trangThai !== "Quá hạn") return false;
+      if (currentTab === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    }
 
     // 2. Lọc theo từ khóa (Mã phiếu, Họ tên độc giả, MSSV)
     if (currentSearchKeyword.trim() !== "") {
@@ -1394,13 +1406,21 @@ function openRejectModal(loanId) {
   var errorMsg = document.getElementById("reject-error-msg");
   var counterEl = document.getElementById("reject-char-counter");
 
+  var selectReason = document.getElementById("reject-reason-select");
+
   if (codeEl) codeEl.textContent = "Phiếu mượn #" + loan.maPhieu + " - Độc giả: " + loan.docGia.ten;
+  if (selectReason) {
+    selectReason.selectedIndex = 0;
+  }
   if (textarea) {
-    textarea.value = "";
+    textarea.value = selectReason ? selectReason.value : "";
     textarea.classList.remove("has-error");
   }
   if (errorMsg) errorMsg.style.display = "none";
-  if (counterEl) counterEl.textContent = "0 / 200";
+  if (counterEl) {
+    var initLen = textarea ? textarea.value.length : 0;
+    counterEl.textContent = initLen + " / 200";
+  }
 
   if (modal) modal.classList.add("active");
 }
@@ -1490,17 +1510,40 @@ document.addEventListener("DOMContentLoaded", function () {
   updateCountsAndStats();
   renderLoanTable();
 
-  // 3. Sự kiện chuyển Tab
+  // 3. Sự kiện chuyển Tab & Bộ lọc Trạng thái (đồng bộ 2 chiều phong cách Reader)
   var tabButtons = document.querySelectorAll("#filter-tabs .tab-btn");
+  var statusSelect = document.getElementById("filter-status");
+
   tabButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       tabButtons.forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
       currentTab = btn.getAttribute("data-tab");
+      currentStatusFilter = currentTab;
+      if (statusSelect) {
+        statusSelect.value = currentTab;
+      }
       currentPage = 1;
       renderLoanTable();
     });
   });
+
+  if (statusSelect) {
+    statusSelect.addEventListener("change", function () {
+      currentStatusFilter = statusSelect.value;
+      if (currentStatusFilter !== "all") {
+        currentTab = currentStatusFilter;
+        tabButtons.forEach(function (b) {
+          b.classList.remove("active");
+          if (b.getAttribute("data-tab") === currentStatusFilter) {
+            b.classList.add("active");
+          }
+        });
+      }
+      currentPage = 1;
+      renderLoanTable();
+    });
+  }
 
   // 4. Sự kiện Tìm kiếm ngay khi gõ
   var searchInput = document.getElementById("filter-keyword");
@@ -1516,8 +1559,10 @@ document.addEventListener("DOMContentLoaded", function () {
   var btnApply = document.getElementById("btn-apply-filter");
   if (btnApply) {
     btnApply.addEventListener("click", function () {
+      var statusSelect = document.getElementById("filter-status");
       var timeSelect = document.getElementById("filter-time");
       var deptSelect = document.getElementById("filter-department");
+      if (statusSelect) currentStatusFilter = statusSelect.value;
       if (timeSelect) currentTimeFilter = timeSelect.value;
       if (deptSelect) currentDeptFilter = deptSelect.value;
       if (searchInput) currentSearchKeyword = searchInput.value;
@@ -1532,18 +1577,21 @@ document.addEventListener("DOMContentLoaded", function () {
   if (btnReset) {
     btnReset.addEventListener("click", function () {
       if (searchInput) searchInput.value = "";
+      var statusSelect = document.getElementById("filter-status");
       var timeSelect = document.getElementById("filter-time");
       var deptSelect = document.getElementById("filter-department");
+      if (statusSelect) statusSelect.value = "all";
       if (timeSelect) timeSelect.value = "all";
       if (deptSelect) deptSelect.value = "all";
 
       currentSearchKeyword = "";
+      currentStatusFilter = "all";
       currentTimeFilter = "all";
       currentDeptFilter = "all";
       currentPage = 1;
 
       renderLoanTable();
-      showToast("info", "Đã đặt lại bộ lọc", "Đã xóa toàn bộ điều kiện tìm kiếm và bộ lọc thời gian.");
+      showToast("info", "Đã đặt lại bộ lọc", "Đã xóa toàn bộ điều kiện tìm kiếm và bộ lọc trạng thái, thời gian.");
     });
   }
 
@@ -1626,11 +1674,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Lắng nghe chọn lý do chuẩn từ Select dropdown (không cho nhập tay)
+  var rejectReasonSelect = document.getElementById("reject-reason-select");
+  if (rejectReasonSelect && rejectTextarea) {
+    rejectReasonSelect.addEventListener("change", function () {
+      var val = rejectReasonSelect.value;
+      if (val === "Khác") {
+        rejectTextarea.value = "";
+        rejectTextarea.focus();
+      } else {
+        rejectTextarea.value = val;
+      }
+      if (rejectCounter) rejectCounter.textContent = rejectTextarea.value.length + " / 200";
+      rejectTextarea.classList.remove("has-error");
+      var err = document.getElementById("reject-error-msg");
+      if (err) err.style.display = "none";
+    });
+  }
+
   // Chọn nhanh lý do từ chối điền vào textarea
   var reasonPills = document.querySelectorAll("#quick-reason-pills .reason-pill");
   reasonPills.forEach(function (pill) {
     pill.addEventListener("click", function () {
       var reasonVal = pill.getAttribute("data-reason");
+      if (rejectReasonSelect) {
+        var optMatch = Array.from(rejectReasonSelect.options).find(function (o) { return o.value === reasonVal; });
+        if (optMatch) rejectReasonSelect.value = reasonVal;
+        else rejectReasonSelect.value = "Khác";
+      }
       if (rejectTextarea) {
         rejectTextarea.value = reasonVal;
         rejectTextarea.focus();

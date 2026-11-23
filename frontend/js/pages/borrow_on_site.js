@@ -154,10 +154,10 @@
       // Gọi API tra cứu thẻ độc giả
       let res;
       try {
-        res = await api.get(`/readers/by-card/${encodeURIComponent(cardCode)}`);
+        res = await api.get(`/loans/readers/by-card/${encodeURIComponent(cardCode)}`);
       } catch (e) {
         // Fallback endpoint nếu router prefix khác
-        res = await api.get(`/loans/readers/${encodeURIComponent(cardCode)}`);
+        res = await api.get(`/library-cards/by-code/${encodeURIComponent(cardCode)}`);
       }
 
       state.reader = res;
@@ -276,8 +276,9 @@
     l3.textContent = "Nợ phạt vi phạm";
     const v3 = document.createElement("div");
     v3.className = "reader-stat-val font-mono";
-    v3.style.color = (r.unpaid_fines || 0) > 0 ? "var(--color-danger)" : "var(--color-success)";
-    v3.textContent = (r.unpaid_fines || 0) > 0 ? Number(r.unpaid_fines).toLocaleString("vi-VN") + " đ" : "0 đ (Sạch nợ)";
+    const unpaidFineVal = r.unpaid_fine ?? r.unpaid_fines ?? 0;
+    v3.style.color = unpaidFineVal > 0 ? "var(--color-danger)" : "var(--color-success)";
+    v3.textContent = unpaidFineVal > 0 ? Number(unpaidFineVal).toLocaleString("vi-VN") + " đ" : "0 đ (Sạch nợ)";
     stat3.appendChild(l3);
     stat3.appendChild(v3);
 
@@ -289,7 +290,8 @@
     dom.readerInfoDisplay.appendChild(statsGrid);
 
     // Cập nhật Pill trạng thái
-    if (r.status === "ACTIVE") {
+    const cardStatusVal = r.card_status || r.status;
+    if (cardStatusVal === "ACTIVE") {
       dom.readerStatusPill.className = "status-pill status-pill-success";
       dom.readerStatusPill.textContent = "Thẻ hợp lệ";
     } else {
@@ -328,9 +330,9 @@
     try {
       let copyData;
       try {
-        copyData = await api.get(`/copies/by-barcode/${encodeURIComponent(barcode)}`);
+        copyData = await api.get(`/loans/copies/by-barcode/${encodeURIComponent(barcode)}`);
       } catch (e) {
-        copyData = await api.get(`/loans/copies/${encodeURIComponent(barcode)}`);
+        copyData = await api.get(`/book_copies/code/${encodeURIComponent(barcode)}`);
       }
 
       state.copies.push(copyData);

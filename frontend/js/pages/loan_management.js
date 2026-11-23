@@ -1756,7 +1756,7 @@ document.addEventListener("DOMContentLoaded", function () {
         onConfirm: function () {
           showToast("info", "Đang đăng xuất...", "Phiên làm việc đã kết thúc.");
           setTimeout(function () {
-            window.location.href = "../index.html";
+            window.location.href = "home.html";
           }, 600);
         }
       });

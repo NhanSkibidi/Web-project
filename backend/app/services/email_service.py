@@ -145,14 +145,18 @@ def send_due_soon_reminder_email(
 ) -> dict:
     """Gửi email nhắc sách sắp đến hạn trong 2 ngày (cảnh báo vàng)."""
     status_txt = "hết hạn hôm nay" if days_remaining <= 0 else f"còn {days_remaining} ngày"
+    r_name = html_lib.escape(str(reader_name or ""))
+    l_code = html_lib.escape(str(loan_code or ""))
+    b_title = html_lib.escape(str(book_title or ""))
+    d_date = html_lib.escape(str(due_date or ""))
     subject = f"[UniLib KS25] Nhắc hạn trả sách ({status_txt}) — Phiếu #{loan_code}"
     body = f"""
-      <p>Xin chào <strong>{reader_name}</strong>,</p>
+      <p>Xin chào <strong>{r_name}</strong>,</p>
       <p>Ấn phẩm bạn đang mượn tại Thư viện KS25 sắp đến hạn hoàn trả:</p>
       <table width="100%" cellspacing="0" cellpadding="8" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;margin:14px 0;">
-        <tr><td style="width:160px;color:#92400E;"><strong>Mã phiếu mượn:</strong></td><td>#{loan_code}</td></tr>
-        <tr><td style="color:#92400E;"><strong>Tựa sách:</strong></td><td><strong>{book_title}</strong></td></tr>
-        <tr><td style="color:#92400E;"><strong>Ngày đến hạn:</strong></td><td style="color:#B45309;font-weight:bold;">{due_date} ({status_txt})</td></tr>
+        <tr><td style="width:160px;color:#92400E;"><strong>Mã phiếu mượn:</strong></td><td>#{l_code}</td></tr>
+        <tr><td style="color:#92400E;"><strong>Tựa sách:</strong></td><td><strong>{b_title}</strong></td></tr>
+        <tr><td style="color:#92400E;"><strong>Ngày đến hạn:</strong></td><td style="color:#B45309;font-weight:bold;">{d_date} ({status_txt})</td></tr>
       </table>
       <p>Bạn có thể truy cập cổng OPAC mục <strong>Phiếu mượn của tôi</strong> để gia hạn trực tuyến thêm <strong>7 ngày</strong> (nếu chưa từng gia hạn và không có người đặt trước), hoặc mang sách tới quầy trả đúng hạn.</p>
     """
@@ -169,14 +173,18 @@ def send_reservation_ready_email(
     pickup_deadline: str,
 ) -> dict:
     """Gửi email thông báo sách đặt trước đã sẵn sàng để đến nhận (xanh lá UniLib)."""
+    r_name = html_lib.escape(str(reader_name or ""))
+    b_title = html_lib.escape(str(book_title or ""))
+    c_code = html_lib.escape(str(copy_code or ""))
+    p_deadline = html_lib.escape(str(pickup_deadline or ""))
     subject = f"[UniLib KS25] Sách đặt trước đã sẵn sàng — {book_title}"
     body = f"""
-      <p>Xin chào <strong>{reader_name}</strong>,</p>
+      <p>Xin chào <strong>{r_name}</strong>,</p>
       <p>Tin vui! Cuốn sách bạn đặt trước tại Thư viện Số UniLib KS25 hiện <strong>đã sẵn sàng</strong> và được giữ riêng cho bạn tại quầy:</p>
       <table width="100%" cellspacing="0" cellpadding="8" style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;margin:14px 0;">
-        <tr><td style="width:160px;color:#065F46;"><strong>Tựa sách:</strong></td><td><strong>{book_title}</strong></td></tr>
-        <tr><td style="color:#065F46;"><strong>Mã bản sao giữ riêng:</strong></td><td><code>{copy_code}</code></td></tr>
-        <tr><td style="color:#065F46;"><strong>Hạn chót đến nhận:</strong></td><td style="color:#1B4332;font-weight:bold;">{pickup_deadline}</td></tr>
+        <tr><td style="width:160px;color:#065F46;"><strong>Tựa sách:</strong></td><td><strong>{b_title}</strong></td></tr>
+        <tr><td style="color:#065F46;"><strong>Mã bản sao giữ riêng:</strong></td><td><code>{c_code}</code></td></tr>
+        <tr><td style="color:#065F46;"><strong>Hạn chót đến nhận:</strong></td><td style="color:#1B4332;font-weight:bold;">{p_deadline}</td></tr>
       </table>
       <p>Vui lòng mang theo Thẻ thư viện đến quầy thủ thư trước thời hạn trên để hoàn tất thủ tục nhận sách. Sau thời hạn này, hệ thống sẽ tự động chuyển suất giữ chỗ cho độc giả tiếp theo.</p>
     """

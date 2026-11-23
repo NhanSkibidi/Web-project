@@ -26,7 +26,7 @@
   <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
   <header class="librarian-topbar">
     <div class="topbar-left">
-      <a href="../index.html" class="brand-badge">
+      <a href="home.html" class="brand-badge">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -36,23 +36,22 @@
         </div>
       </a>
       <nav class="topbar-nav">
-        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="home.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
       </nav>
     </div>
 
     <div class="topbar-right">
-      <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
-        <span class="material-symbols-outlined">shopping_bag</span>
-        <span class="badge-dot"></span>
-      </button>
-      <div class="topbar-divider"></div>
       <div class="librarian-profile">
-        <div class="librarian-avatar">Đ</div>
+        <div class="librarian-avatar" id="staff-avatar">?</div>
         <div class="librarian-info">
-          <span class="librarian-name">Trịnh Huy Đại</span>
-          <span class="librarian-role">Thủ thư ca trực</span>
+          <span class="librarian-name" id="staff-name">Thủ thư</span>
+          <span class="librarian-role" id="staff-role">Chưa xác thực</span>
         </div>
       </div>
+      <button type="button" id="btn-logout" class="topbar-icon-btn" title="Đăng xuất">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
     </div>
   </header>
 
@@ -63,38 +62,42 @@
       <span class="version-pill">v1.2</span>
     </div>
     <nav class="sidebar-rail-nav">
-      <a href="../index.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
         <span class="material-symbols-outlined">space_dashboard</span>
         <span class="rail-label">Tổng quan &amp; Thống kê</span>
       </a>
-      <a href="../pages/items.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
+      <a href="books.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
-        <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
-          <span class="material-symbols-outlined">receipt_long</span>
-          <span class="rail-label">Quản lý Phiếu mượn</span>
-        </a>
-        <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
-          <span class="material-symbols-outlined">library_add</span>
-          <span class="rail-label">Mượn sách tại quầy</span>
-        </a>
-        <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
-          <span class="material-symbols-outlined">assignment_return</span>
-          <span class="rail-label">Trả sách tại quầy</span>
-        </a>
-        <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
-          <span class="material-symbols-outlined">payments</span>
-          <span class="rail-label">Xử lý tiền phạt</span>
-        </a>
-        <a href="../index.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
-          <span class="material-symbols-outlined">badge</span>
-          <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
-        </a>
-        <a href="../index.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="rail-label">Cài đặt hệ thống</span>
-        </a>
+      <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+        <span class="material-symbols-outlined">category</span>
+        <span class="rail-label">Thể loại, Tác giả, NXB</span>
+      </a>
+      <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="rail-label">Quản lý Phiếu mượn</span>
+      </a>
+      <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+        <span class="material-symbols-outlined">library_add</span>
+        <span class="rail-label">Mượn sách tại quầy</span>
+      </a>
+      <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
+      </a>
+      <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="rail-label">Nhân sự &amp; Phân quyền</span>
+      </a>
     </nav>
     <div class="sidebar-rail-footer">
       <div style="display: flex; align-items: center;">
@@ -129,7 +132,7 @@
         <div class="header-actions">
           <button id="btn-view-history" type="button" class="btn-header-action">
             <span class="material-symbols-outlined">history</span>
-            <span>Lịch sử hôm nay (<strong id="history-count">14</strong>)</span>
+            <span>Lịch sử hôm nay (<strong id="history-count">0</strong>)</span>
           </button>
           <button id="btn-view-policy" type="button" class="btn-header-action">
             <span class="material-symbols-outlined">help_outline</span>
@@ -164,7 +167,7 @@
               <div class="scan-input-wrap">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <input id="barcode-scanner" type="text" autofocus autocomplete="off"
-                  placeholder="Quét mã vạch (Barcode) hoặc nhập mã bản sao..." value="UL-IT-2023-001">
+                  placeholder="Quét mã vạch (Barcode) hoặc nhập mã bản sao đang mượn...">
               </div>
               <button id="btn-scan" type="submit" class="btn-brand-primary">
                 <span class="material-symbols-outlined" style="font-size: 18px;">add_circle</span>
@@ -173,10 +176,7 @@
             </form>
 
             <div class="quick-chips-row">
-              <span>Mã test nhanh:</span>
-              <button type="button" class="chip-btn" data-code="UL-IT-2023-001">UL-IT-2023-001</button>
-              <button type="button" class="chip-btn" data-code="UL-EC-2022-045">UL-EC-2022-045</button>
-              <button type="button" class="chip-btn" data-code="UL-MA-2023-112">UL-MA-2023-112</button>
+              <span>Quét mã vạch trên gáy sách hoặc nhập mã bản sao (`copy_code`) từ hệ thống rồi nhấn Enter.</span>
             </div>
           </section>
 
@@ -184,30 +184,30 @@
           <section id="reader-card" class="panel-card">
             <div class="reader-profile-row">
               <div class="reader-avatar-wrap">
-                <div class="reader-avatar" id="reader-avatar-text">A</div>
+                <div class="reader-avatar" id="reader-avatar-text">?</div>
                 <div class="reader-info">
                   <h3>
-                    <span id="reader-name">Nguyễn Văn An</span>
-                    <span id="reader-id" class="id-badge">23010412</span>
+                    <span id="reader-name">Chưa quét ấn phẩm</span>
+                    <span id="reader-id" class="id-badge">--------</span>
                     <span id="card-status-badge" class="status-badge-valid">
                       <span class="dot"></span>
-                      Thẻ hợp lệ
+                      Chờ quét mã
                     </span>
                   </h3>
                   <div id="reader-email" style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
-                    docgia01@library.com · Khoa CNTT</div>
+                    Đang chờ thủ thư thao tác quét mã bản sao...</div>
                 </div>
               </div>
 
               <div class="loan-meta-box">
                 <div class="loan-meta-col">
                   <span class="label">Phiếu mượn gốc</span>
-                  <span id="loan-code" class="val loan-code">#PM-2024-0082</span>
+                  <span id="loan-code" class="val loan-code">Chưa rõ</span>
                 </div>
                 <div style="width: 1px; height: 28px; background: var(--color-border);"></div>
                 <div class="loan-meta-col">
                   <span class="label">Hạn trả quy định</span>
-                  <span id="due-date-display" class="val due-danger">09/10/2024</span>
+                  <span id="due-date-display" class="val">--/--/----</span>
                 </div>
               </div>
             </div>
@@ -215,11 +215,11 @@
             <div class="reader-footer-strip">
               <div style="display: flex; gap: 16px;">
                 <span>Ngày mượn: <strong id="borrow-date-display"
-                    style="color: var(--color-text-primary);">25/09/2024</strong></span>
-                <span>Tổng mượn đợt này: <strong id="borrow-count-display" style="color: var(--color-text-primary);">02
+                    style="color: var(--color-text-primary);">--/--/----</strong></span>
+                <span>Đang xử lý trả: <strong id="borrow-count-display" style="color: var(--color-text-primary);">00
                     ấn bản</strong></span>
               </div>
-              <span>Thủ thư duyệt: <strong style="color: var(--color-text-primary);">Trần Hoàng Phúc</strong></span>
+              <span>Thủ thư duyệt: <strong id="loan-librarian-display" style="color: var(--color-text-primary);">—</strong></span>
             </div>
           </section>
 
@@ -228,7 +228,7 @@
             <div class="table-card-header">
               <div class="card-title-group">
                 <span class="material-symbols-outlined">checklist</span>
-                <span>Danh sách ấn phẩm đang xử lý trả (<span id="items-count-badge">02</span>)</span>
+                <span>Danh sách ấn phẩm đang xử lý trả (<span id="items-count-badge">00</span>)</span>
               </div>
               <span style="font-size: 12px; color: var(--color-text-muted);">Tình trạng thực tế • Biểu phí kiểm
                 kê</span>
@@ -261,12 +261,17 @@
             </div>
 
             <div class="table-footer-strip">
-              <button id="btn-add-extra" type="button" class="btn-link-extra">
-                <span class="material-symbols-outlined" style="font-size: 18px;">add_circle_outline</span>
-                <span>+ Thêm ấn phẩm khác của độc giả <span id="add-extra-reader-name">Nguyễn Văn An</span></span>
-              </button>
-              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Đã quét 2/2 cuốn
-                theo phiếu gốc</span>
+              <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <button id="btn-add-extra" type="button" class="btn-link-extra">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">add_circle_outline</span>
+                  <span>+ Thêm ấn phẩm khác của <span id="add-extra-reader-name">độc giả</span></span>
+                </button>
+                <button id="btn-return-full-loan" type="button" class="btn-link-extra" style="display: none; color: var(--color-amber);">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">done_all</span>
+                  <span>Trả toàn bộ phiếu ngay</span>
+                </button>
+              </div>
+              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Chưa có bản sao nào trong lượt trả</span>
             </div>
           </section>
 
@@ -295,16 +300,16 @@
                 <span class="material-symbols-outlined">payments</span>
                 <span>Chi tiết quyết toán phí phạt</span>
               </div>
-              <span id="tx-code" class="tx-code-badge">#TX-20241028-09</span>
+              <span id="tx-code" class="tx-code-badge">#TX-NEW</span>
             </div>
 
             <div class="settlement-breakdown">
               <div class="settlement-row">
                 <span class="row-label">
                   <span class="material-symbols-outlined icon-danger">event_busy</span>
-                  <span>Phạt quá hạn (<span id="summary-overdue-days">19</span> ngày × 2.000đ)</span>
+                  <span>Phạt quá hạn (<span id="summary-overdue-days">0</span> ngày × 2.000đ)</span>
                 </span>
-                <span id="summary-overdue-amount" class="val">38.000 đ</span>
+                <span id="summary-overdue-amount" class="val">0 đ</span>
               </div>
 
               <div class="settlement-row">
@@ -312,7 +317,7 @@
                   <span class="material-symbols-outlined icon-amber">healing</span>
                   <span>Bồi thường hư hỏng / mất sách</span>
                 </span>
-                <span id="summary-damage-amount" class="val">20.000 đ</span>
+                <span id="summary-damage-amount" class="val">0 đ</span>
               </div>
 
               <div class="settlement-row">
@@ -326,10 +331,10 @@
               <div class="total-box">
                 <div>
                   <div class="total-label">TỔNG TIỀN CẦN THU</div>
-                  <div class="total-sub">Đã bao gồm VAT &amp; Phí nghiệp vụ</div>
+                  <div class="total-sub">Tính tự động theo quy chế thư viện</div>
                 </div>
                 <div class="total-amount">
-                  <span id="summary-total-amount">58.000</span>
+                  <span id="summary-total-amount">0</span>
                   <span style="font-size: 16px; font-weight: 500;">đ</span>
                 </div>
               </div>
@@ -360,13 +365,12 @@
               <div id="cash-calculator-box" class="cash-calc-box">
                 <div class="cash-calc-row">
                   <label for="cash-received-input">Số tiền khách đưa:</label>
-                  <input id="cash-received-input" type="text" value="100.000">
+                  <input id="cash-received-input" type="text" value="0">
                 </div>
                 <div class="cash-calc-row border-top">
                   <span>Tiền thừa trả khách:</span>
                   <strong id="cash-change-display"
-                    style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">42.000
-                    đ</strong>
+                    style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">0 đ</strong>
                 </div>
               </div>
 
@@ -422,12 +426,12 @@
                   </div>
                   <div class="vietqr-detail-row highlight-amount">
                     <span class="label">Số tiền:</span>
-                    <span class="val font-mono font-bold text-danger" id="vietqr-amount">58.000 đ</span>
+                    <span class="val font-mono font-bold text-danger" id="vietqr-amount">0 đ</span>
                   </div>
                   <div class="vietqr-detail-row">
                     <span class="label">Nội dung CK:</span>
                     <div class="val-copy-group">
-                      <span class="font-mono font-semibold" id="vietqr-memo">TRA SACH PM-2024-0082</span>
+                      <span class="font-mono font-semibold" id="vietqr-memo">TRA SACH</span>
                       <button type="button" class="btn-copy-chip"
                         onclick="copyText(document.getElementById('vietqr-memo').textContent, 'Đã chép nội dung chuyển khoản!')"
                         title="Sao chép nội dung">
@@ -458,7 +462,7 @@
                 <span class="custom-tick-box">
                   <span class="material-symbols-outlined tick-icon">check</span>
                 </span>
-                <span class="custom-tick-text">Gửi email thông báo hoàn tất cho sinh viên</span>
+                <span class="custom-tick-text">Tự động báo email cho người đặt trước kế tiếp (nếu có)</span>
               </label>
             </div>
 
@@ -486,9 +490,9 @@
           <span>© 2026 UniLib - Phân hệ Thủ thư quầy phục vụ sinh viên. Thực hiện: Trịnh Huy Đại (B25DTCN151).</span>
         </div>
         <div class="librarian-footer-links">
-          <a href="../index.html">Trang chủ mẫu</a>
-          <a href="#">Quy định mượn trả</a>
-          <a href="#">Hỗ trợ kỹ thuật</a>
+          <a href="home.html">Cổng Độc giả</a>
+          <a href="fines.html">Quầy Tiền phạt</a>
+          <a href="staff-dashboard.html">Bàn làm việc</a>
         </div>
       </div>
     </footer>
@@ -588,36 +592,36 @@
           </div>
         </div>
 
-        <!-- 2. Hư hỏng nhẹ -->
+        <!-- 2. Bảo toàn quyền mượn -->
         <div class="policy-card-item card-damaged">
           <div class="card-item-top">
             <div class="card-item-icon">
-              <span class="material-symbols-outlined">edit_note</span>
+              <span class="material-symbols-outlined">block</span>
             </div>
-            <span class="card-item-badge">Hỏng nhẹ</span>
+            <span class="card-item-badge">Điều kiện mượn</span>
           </div>
           <div class="card-item-main">
-            <h4 class="card-item-title">Viết vẽ, bẩn, rách mép</h4>
-            <div class="card-item-price font-mono">20.000 – 50.000 ₫</div>
+            <h4 class="card-item-title">Tạm khóa quyền mượn khi nợ phạt</h4>
+            <div class="card-item-price font-mono">has_unpaid_fines()</div>
             <p class="card-item-desc">
-              Áp dụng cho ấn phẩm có thể phục hồi bằng kỹ thuật ép nhiệt và vệ sinh bề mặt giấy.
+              Độc giả có khoản phạt chưa thanh toán hoặc miễn giảm sẽ bị chặn yêu cầu mượn mới cho đến khi hoàn tất.
             </p>
           </div>
         </div>
 
-        <!-- 3. Hư hỏng nặng -->
+        <!-- 3. Hư hỏng sách -->
         <div class="policy-card-item card-severe">
           <div class="card-item-top">
             <div class="card-item-icon">
               <span class="material-symbols-outlined">broken_image</span>
             </div>
-            <span class="card-item-badge">Hỏng nặng</span>
+            <span class="card-item-badge">Hỏng sách</span>
           </div>
           <div class="card-item-main">
-            <h4 class="card-item-title">Rách nát, thấm nước, mất trang</h4>
+            <h4 class="card-item-title">Hư hỏng / Rách nát / Thấm nước</h4>
             <div class="card-item-price font-mono">50% <span>giá bìa niêm yết</span></div>
             <p class="card-item-desc">
-              Áp dụng khi ấn phẩm bị hư hại trên 30% nội dung hoặc mất khả năng phục hồi nguyên trạng.
+              Bồi thường 50% giá bìa của sách; nếu đồng thời trả trễ hạn sẽ cộng thêm tiền phạt quá hạn theo ngày.
             </p>
           </div>
         </div>
@@ -632,9 +636,9 @@
           </div>
           <div class="card-item-main">
             <h4 class="card-item-title">Mất ấn bản / Không thu hồi</h4>
-            <div class="card-item-price font-mono">100% giá <span>+ 30.000 ₫</span></div>
+            <div class="card-item-price font-mono">100% <span>giá bìa niêm yết</span></div>
             <p class="card-item-desc">
-              Bồi thường 100% giá bìa cộng 30.000 ₫ chi phí mua bổ sung, biên mục và dán chip RFID.
+              Bồi thường 100% giá bìa niêm yết của cuốn sách; cộng phạt quá hạn nếu quá thời hạn quy định.
             </p>
           </div>
         </div>

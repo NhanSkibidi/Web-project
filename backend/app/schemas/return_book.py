@@ -23,6 +23,8 @@ class ReturnItemResponse(BaseModel):
     message: str = "Trả sách thành công"
     fine_id: int | None = None
     overdue_fine_amount: float = 0.0
+    reservation_notified: bool = False
+    reserved_for_reader: str | None = None
 
     class Config:
         from_attributes = True

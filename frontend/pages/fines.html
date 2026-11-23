@@ -26,7 +26,7 @@
   <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
   <header class="librarian-topbar">
     <div class="topbar-left">
-      <a href="../index.html" class="brand-badge">
+      <a href="home.html" class="brand-badge">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -36,23 +36,22 @@
         </div>
       </a>
       <nav class="topbar-nav">
-        <a href="../index.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="home.html" class="topbar-nav-link">Trang chủ</a>
+        <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
       </nav>
     </div>
 
     <div class="topbar-right">
-      <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
-        <span class="material-symbols-outlined">shopping_bag</span>
-        <span class="badge-dot"></span>
-      </button>
-      <div class="topbar-divider"></div>
       <div class="librarian-profile">
-        <div class="librarian-avatar">Đ</div>
+        <div class="librarian-avatar" id="user-avatar">?</div>
         <div class="librarian-info">
-          <span class="librarian-name" id="user-display-name">Trịnh Huy Đại</span>
-          <span class="librarian-role" id="user-display-role">Thủ thư ca trực</span>
+          <span class="librarian-name" id="user-display-name">Đang tải...</span>
+          <span class="librarian-role" id="user-display-role">Phiên làm việc</span>
         </div>
       </div>
+      <button type="button" id="btn-logout" class="topbar-icon-btn" title="Đăng xuất">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
     </div>
   </header>
 
@@ -71,9 +70,17 @@
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
-      <a href="loan_basket.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+      <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+        <span class="material-symbols-outlined">category</span>
+        <span class="rail-label">Thể loại, Tác giả, NXB</span>
+      </a>
+      <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
         <span class="material-symbols-outlined">receipt_long</span>
         <span class="rail-label">Quản lý Phiếu mượn</span>
+      </a>
+      <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+        <span class="material-symbols-outlined">library_add</span>
+        <span class="rail-label">Mượn sách tại quầy</span>
       </a>
       <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
         <span class="material-symbols-outlined">assignment_return</span>
@@ -83,9 +90,13 @@
         <span class="material-symbols-outlined">payments</span>
         <span class="rail-label">Xử lý tiền phạt</span>
       </a>
-      <a href="admin-users.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+      <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
         <span class="material-symbols-outlined">badge</span>
         <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="rail-label">Nhân sự &amp; Phân quyền</span>
       </a>
     </nav>
     <div class="sidebar-rail-footer">
@@ -655,7 +666,11 @@
   <!-- TOAST THÔNG BÁO -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- SCRIPT RIÊNG CỦA TRANG: TÁCH 3 FILE CHUẨN HTML + CSS + JS -->
+  <!-- SCRIPT RIÊNG CỦA TRANG: NẠP CONFIG + API + UTILS TRƯỚC FINES.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
   <script src="../js/pages/fines.js"></script>
 </body>
 

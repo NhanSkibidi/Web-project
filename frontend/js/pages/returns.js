@@ -1,146 +1,96 @@
 /**
- * Trả sách tại quầy & Thu phí phạt (Task T3CFF12)
+ * Trả sách tại quầy & Thu phí phạt (Task T3CFF12, T3CFEDE, T3CFEF8)
  * HN-KS25-CNTT1 - Sinh viên: Trịnh Huy Đại (B25DTCN151)
  */
-
-// Dữ liệu mẫu chuẩn bị sẵn theo đúng ảnh thiết kế Stitch (screen.png)
-const MOCK_PRESETS = {
-  "UL-IT-2023-001": {
-    copy_id: 1,
-    copy_code: "UL-IT-2023-001",
-    book_isbn: "9786040012345",
-    book_title: "Cấu trúc Dữ liệu & Giải thuật",
-    book_price: 100000,
-    shelf_location: "Kệ A3 - Ngăn 2",
-    copy_status: "BORROWED",
-    condition: "Bình thường / Nguyên vẹn",
-    is_borrowed: true,
-    loan_id: 82,
-    loan_code: "#PM-2024-0082",
-    loan_item_id: 101,
-    borrowed_at: "2024-09-25T08:30:00",
-    due_date: "2024-10-09T17:00:00",
-    is_overdue: true,
-    overdue_days: 19,
-    overdue_fine_amount: 38000,
-    user: {
-      id: 1,
-      full_name: "Nguyễn Văn An",
-      student_id: "23010412",
-      email: "docgia01@library.com",
-      card_status: "ACTIVE",
-    },
-    other_borrowed_items: [
-      {
-        copy_id: 4,
-        copy_code: "UL-IT-2023-004",
-        book_title: "Hệ thống Cơ sở Dữ liệu hiện đại",
-        book_price: 140000,
-        shelf_location: "Kệ B1 - Ngăn 1",
-        due_date: "28/10/2024",
-        is_overdue: false,
-        overdue_days: 0,
-        overdue_fine_amount: 0,
-      }
-    ]
-  },
-  "UL-IT-2023-004": {
-    copy_id: 4,
-    copy_code: "UL-IT-2023-004",
-    book_isbn: "9786040098765",
-    book_title: "Hệ thống Cơ sở Dữ liệu hiện đại",
-    book_price: 140000,
-    shelf_location: "Kệ B1 - Ngăn 1",
-    copy_status: "BORROWED",
-    condition: "Hư hỏng nhẹ (Rách trang bìa) • +20.000đ",
-    is_borrowed: true,
-    loan_id: 82,
-    loan_code: "#PM-2024-0082",
-    loan_item_id: 102,
-    borrowed_at: "2024-09-25T08:30:00",
-    due_date: "2024-10-28T17:00:00",
-    is_overdue: false,
-    overdue_days: 0,
-    overdue_fine_amount: 0,
-    user: {
-      id: 1,
-      full_name: "Nguyễn Văn An",
-      student_id: "23010412",
-      email: "docgia01@library.com",
-      card_status: "ACTIVE",
-    },
-    other_borrowed_items: []
-  },
-  "UL-EC-2022-045": {
-    copy_id: 2,
-    copy_code: "UL-EC-2022-045",
-    book_isbn: "9786040055555",
-    book_title: "Kinh tế vi mô ứng dụng",
-    book_price: 90000,
-    shelf_location: "Kệ C2 - Ngăn 4",
-    copy_status: "BORROWED",
-    condition: "Bình thường / Nguyên vẹn",
-    is_borrowed: true,
-    loan_id: 85,
-    loan_code: "#PM-2024-0085",
-    loan_item_id: 105,
-    borrowed_at: "2024-10-01T09:00:00",
-    due_date: "2024-10-15T17:00:00",
-    is_overdue: true,
-    overdue_days: 5,
-    overdue_fine_amount: 10000,
-    user: {
-      id: 2,
-      full_name: "Trần Thị Bình",
-      student_id: "23010488",
-      email: "docgia02@library.com",
-      card_status: "ACTIVE",
-    },
-    other_borrowed_items: []
-  },
-  "UL-MA-2023-112": {
-    copy_id: 3,
-    copy_code: "UL-MA-2023-112",
-    book_isbn: "9786040066666",
-    book_title: "Giải tích & Đại số tuyến tính",
-    book_price: 110000,
-    shelf_location: "Kệ A1 - Ngăn 1",
-    copy_status: "BORROWED",
-    condition: "Bình thường / Nguyên vẹn",
-    is_borrowed: true,
-    loan_id: 90,
-    loan_code: "#PM-2024-0090",
-    loan_item_id: 110,
-    borrowed_at: "2024-10-10T14:00:00",
-    due_date: "2024-10-24T17:00:00",
-    is_overdue: false,
-    overdue_days: 0,
-    overdue_fine_amount: 0,
-    user: {
-      id: 3,
-      full_name: "Lê Hoàng Cường",
-      student_id: "23010502",
-      email: "docgia03@library.com",
-      card_status: "ACTIVE",
-    },
-    other_borrowed_items: []
-  }
-};
 
 // State hiện tại của phiên tiếp nhận trả sách
 const state = {
   currentReader: null,
   activeItems: [],
   paymentMethod: "cash",
-  cashReceived: 100000,
-  txCode: "#TX-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-09",
+  cashReceived: 0,
+  txCode: "#TX-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-01",
+  shouldResetOnModalClose: false,
+  todaySummary: {
+    returned_today_count: 0,
+    fines_collected_today: 0,
+  },
 };
+
+function renderAuthGuard(reasonTitle, reasonDesc, ctaLabel, ctaHref) {
+  const container = document.querySelector(".returns-main-container");
+  if (!container) return;
+  container.innerHTML = `
+    <div class="panel-card" style="max-width: 560px; margin: 48px auto; padding: 32px; text-align: center;">
+      <div style="width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center;">
+        <span class="material-symbols-outlined" style="font-size: 28px;">lock</span>
+      </div>
+      <h2 class="font-headline" style="margin: 0 0 8px; color: var(--color-brand);">${escapeHtml(reasonTitle)}</h2>
+      <p style="margin: 0 0 22px; color: var(--color-text-secondary); font-size: 14px;">${escapeHtml(reasonDesc)}</p>
+      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <a href="${ctaHref}" class="btn-brand-primary" style="text-decoration: none;">${escapeHtml(ctaLabel)}</a>
+        <a href="home.html" class="btn-header-action" style="text-decoration: none;">Về Trang chủ</a>
+      </div>
+    </div>
+  `;
+}
 
 // Khởi chạy khi tài liệu nạp xong
 document.addEventListener("DOMContentLoaded", () => {
+  const token = typeof auth !== "undefined" ? auth.getToken() : null;
+  const staffUser = typeof auth !== "undefined" ? auth.getUser() : null;
+
+  if (!token || !staffUser) {
+    try { sessionStorage.setItem("redirect_after_login", window.location.href); } catch (_) {}
+    renderAuthGuard(
+      "Yêu cầu đăng nhập Thủ thư",
+      "Chức năng Tiếp nhận Trả sách tại quầy yêu cầu tài khoản Thủ thư (LIBRARIAN) hoặc Quản trị viên (ADMIN).",
+      "Đăng nhập ngay →",
+      "login.html#login"
+    );
+    return;
+  }
+
+  if (!["ADMIN", "LIBRARIAN"].includes(staffUser.role)) {
+    renderAuthGuard(
+      "Không đủ quyền truy cập (403)",
+      `Tài khoản "${staffUser.full_name || staffUser.email}" (${staffUser.role}) không có quyền sử dụng quầy trả sách.`,
+      "Quay về Cổng Độc giả",
+      "home.html"
+    );
+    return;
+  }
+
+  // Hiển thị thông tin thủ thư đang đăng nhập trên Topbar
+  const avatarEl = document.getElementById("staff-avatar");
+  const nameEl = document.getElementById("staff-name");
+  const roleEl = document.getElementById("staff-role");
+  if (avatarEl) avatarEl.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
+  if (nameEl) nameEl.textContent = staffUser.full_name || staffUser.email;
+  if (roleEl) roleEl.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
+
+  document.getElementById("btn-logout")?.addEventListener("click", () => {
+    auth.clearSession();
+    window.location.href = "login.html#login";
+  });
+
+  const txBadge = document.getElementById("tx-code");
+  if (txBadge) txBadge.textContent = state.txCode;
+
   initEventListeners();
-  // Khởi tạo mặc định 2 cuốn sách mẫu như ảnh mẫu stitch_screen.png
-  loadInitialDemoState();
+  renderAll();
+  loadTodaySummary();
+
+  // Nếu mở kèm ?copy_code=... thì tự tra cứu ngay
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get("copy_code") || params.get("barcode");
+    if (codeParam) {
+      const input = document.getElementById("barcode-scanner");
+      if (input) input.value = codeParam;
+      handleScanCode(codeParam);
+    }
+  } catch (_) {}
 });
 
 function initEventListeners() {
@@ -167,6 +117,25 @@ function initEventListeners() {
   const btnAddExtra = document.getElementById("btn-add-extra");
   if (btnAddExtra) {
     btnAddExtra.addEventListener("click", handleAddExtraItem);
+  }
+
+  // Nút trả toàn bộ phiếu mượn (POST /api/returns/loan)
+  const btnReturnFullLoan = document.getElementById("btn-return-full-loan");
+  if (btnReturnFullLoan) {
+    btnReturnFullLoan.addEventListener("click", handleReturnFullLoan);
+  }
+
+  // Checkbox chọn tất cả dòng trong bảng
+  const checkAllItems = document.getElementById("check-all-items");
+  if (checkAllItems) {
+    checkAllItems.addEventListener("change", (e) => {
+      const checked = Boolean(e.target.checked);
+      state.activeItems.forEach((it) => {
+        it.checked = checked;
+      });
+      renderTableRows();
+      updateSettlementCalculations();
+    });
   }
 
   // Máy tính tiền thừa khi khách đưa tiền mặt
@@ -215,8 +184,12 @@ function initEventListeners() {
   // Nút xem lịch sử trả hôm nay
   const btnViewHistory = document.getElementById("btn-view-history");
   if (btnViewHistory) {
-    btnViewHistory.addEventListener("click", () => {
-      showToast("Lịch sử hôm nay: Đã hoàn tất 14 lượt trả sách và thu 246.000đ tiền phạt.");
+    btnViewHistory.addEventListener("click", async () => {
+      await loadTodaySummary();
+      const s = state.todaySummary;
+      showToast(
+        `Hôm nay đã ghi nhận ${s.returned_today_count} lượt trả sách và thu ${formatVND(s.fines_collected_today)} tiền phạt.`
+      );
     });
   }
 
@@ -251,94 +224,33 @@ function initEventListeners() {
   }
 }
 
-// Khởi tạo trạng thái demo ban đầu đúng như ảnh chụp Stitch
-function loadInitialDemoState() {
-  const item1 = MOCK_PRESETS["UL-IT-2023-001"];
-  const item2 = MOCK_PRESETS["UL-IT-2023-004"];
-
-  state.currentReader = item1.user;
-  state.currentReader.loan_code = item1.loan_code;
-  state.currentReader.due_date = "09/10/2024";
-  state.currentReader.borrow_date = "25/09/2024";
-  state.currentReader.other_borrowed_items = item1.other_borrowed_items;
-
-  state.activeItems = [
-    {
-      copy_id: item1.copy_id,
-      copy_code: item1.copy_code,
-      book_title: item1.book_title,
-      shelf_location: item1.shelf_location,
-      due_date: "09/10/2024",
-      is_overdue: true,
-      overdue_days: 19,
-      overdue_fine: 38000,
-      condition_type: "NORMAL",
-      condition_label: "Bình thường / Nguyên vẹn",
-      note: "",
-      damage_fine: 0,
-      book_price: item1.book_price,
-    },
-    {
-      copy_id: item2.copy_id,
-      copy_code: item2.copy_code,
-      book_title: item2.book_title,
-      shelf_location: item2.shelf_location,
-      due_date: "28/10/2024",
-      is_overdue: false,
-      overdue_days: 0,
-      overdue_fine: 0,
-      condition_type: "LIGHT_DAMAGE",
-      condition_label: "Hư hỏng nhẹ (Rách trang bìa) • +20.000đ",
-      note: "Rách mép bìa sau ~ 3cm",
-      damage_fine: 20000,
-      book_price: item2.book_price,
+async function loadTodaySummary() {
+  try {
+    const res = await api.get("/returns/today-summary");
+    if (res) {
+      state.todaySummary = {
+        returned_today_count: Number(res.returned_today_count || 0),
+        fines_collected_today: Number(res.fines_collected_today || 0),
+      };
+      const countEl = document.getElementById("history-count");
+      if (countEl) countEl.textContent = String(state.todaySummary.returned_today_count);
     }
-  ];
-
-  renderAll();
+  } catch (err) {
+    console.warn("Không thể tải thống kê trả sách trong ngày:", err);
+  }
 }
 
-// Xử lý khi quét hoặc nhập mã ấn bản
+// Xử lý khi quét hoặc nhập mã ấn bản (Nối trực tiếp Backend /api/returns/lookup/{code})
 async function handleScanCode(code) {
+  const cleanCode = (code || "").trim();
+  if (!cleanCode) return;
+
   try {
-    showToast(`Đang tra cứu ấn bản "${code}"...`);
-    let data = null;
-
-    // 1. Thử gọi API book_copies có sẵn của backend
-    try {
-      const copyInfo = await api.get(`/book_copies/code/${encodeURIComponent(code)}`);
-      if (copyInfo) {
-        let bookInfo = null;
-        try {
-          bookInfo = await api.get(`/books/${encodeURIComponent(copyInfo.book_isbn)}`);
-        } catch (_) {}
-
-        data = {
-          copy_id: copyInfo.id,
-          copy_code: copyInfo.copy_code,
-          book_isbn: copyInfo.book_isbn,
-          book_title: bookInfo ? (bookInfo.title || bookInfo.name) : "Sách thư viện",
-          book_price: bookInfo ? Number(bookInfo.price || 100000) : 100000,
-          shelf_location: copyInfo.shelf_location || "Kệ tổng",
-          copy_status: copyInfo.status,
-          condition: copyInfo.condition || "Bình thường",
-          is_borrowed: true,
-          due_date: new Date().toISOString(),
-          overdue_days: 0,
-          overdue_fine_amount: 0,
-        };
-      }
-    } catch (err) {
-      console.warn("Backend API không khả dụng hoặc chưa có mã trong DB, dùng preset fallback:", err);
-    }
-
-    // 2. Dùng dữ liệu preset nếu có hoặc khi API không tìm thấy
-    if (!data && MOCK_PRESETS[code]) {
-      data = MOCK_PRESETS[code];
-    }
+    showToast(`Đang tra cứu ấn bản "${cleanCode}"...`);
+    const data = await api.get(`/returns/lookup/${encodeURIComponent(cleanCode)}`);
 
     if (!data) {
-      showToast(`Không tìm thấy ấn bản với mã "${code}"`, "error");
+      showToast(`Không tìm thấy ấn bản với mã "${cleanCode}"`, "error");
       return;
     }
 
@@ -349,25 +261,43 @@ async function handleScanCode(code) {
       return;
     }
 
-    // Thiết lập thông tin độc giả nếu chưa có
-    if (!state.currentReader && data.user) {
-      state.currentReader = data.user;
-      state.currentReader.loan_code = data.loan_code || `#PM-2024-${String(data.loan_id || "0082").padStart(4, "0")}`;
-      state.currentReader.due_date = data.due_date ? formatDate(data.due_date) : "Hôm nay";
-      state.currentReader.borrow_date = data.borrowed_at ? formatDate(data.borrowed_at) : "Hôm nay";
-      state.currentReader.other_borrowed_items = data.other_borrowed_items || [];
+    // Tránh gộp nhiều độc giả trong cùng 1 phiên trả
+    if (state.currentReader && state.currentReader.id && data.user && state.currentReader.id !== data.user.id) {
+      showToast(
+        `Ấn bản "${data.copy_code}" thuộc độc giả ${data.user.full_name}. Vui lòng hoàn tất hoặc hủy lượt hiện tại trước!`,
+        "error"
+      );
+      return;
     }
 
-    // Tính toán tiền phạt quá hạn
-    const overdueDays = data.overdue_days || 0;
-    const overdueFine = data.overdue_fine_amount || (overdueDays * 2000);
+    // Thiết lập hoặc bổ sung thông tin độc giả & phiếu mượn
+    if (!state.currentReader && data.user) {
+      state.currentReader = {
+        ...data.user,
+        loan_id: data.loan_id,
+        loan_code: data.loan_code || `#PM-${String(data.loan_id || "").padStart(4, "0")}`,
+        due_date: data.due_date ? formatDate(data.due_date) : "--/--/----",
+        is_overdue: Boolean(data.is_overdue),
+        borrow_date: data.borrowed_at ? formatDate(data.borrowed_at) : "--/--/----",
+        librarian_name: data.librarian_name || "Quầy trực",
+        other_borrowed_items: Array.isArray(data.other_borrowed_items) ? data.other_borrowed_items : [],
+      };
+    } else if (state.currentReader && Array.isArray(state.currentReader.other_borrowed_items)) {
+      state.currentReader.other_borrowed_items = state.currentReader.other_borrowed_items.filter(
+        (x) => x.copy_code !== data.copy_code
+      );
+    }
+
+    const overdueDays = Number(data.overdue_days || 0);
+    const overdueFine = Number(data.overdue_fine_amount || overdueDays * 2000);
 
     const newItem = {
       copy_id: data.copy_id,
       copy_code: data.copy_code,
+      loan_id: data.loan_id,
       book_title: data.book_title,
       shelf_location: data.shelf_location || "Kệ tổng",
-      due_date: data.due_date ? formatDate(data.due_date) : "Hôm nay",
+      due_date: data.due_date ? formatDate(data.due_date) : "--/--/----",
       is_overdue: overdueDays > 0,
       overdue_days: overdueDays,
       overdue_fine: overdueFine,
@@ -375,48 +305,58 @@ async function handleScanCode(code) {
       condition_label: "Bình thường / Nguyên vẹn",
       note: "",
       damage_fine: 0,
-      book_price: data.book_price || 100000,
+      book_price: Number(data.book_price || 0),
+      checked: true,
     };
 
     state.activeItems.push(newItem);
-    showToast(`Đã thêm "${data.book_title}" vào danh sách trả.`);
+    const scanInput = document.getElementById("barcode-scanner");
+    if (scanInput) scanInput.value = "";
+    showToast(`Đã thêm "${data.book_title}" (${data.copy_code}) vào danh sách trả.`);
 
     // Tự động hoàn tất nếu người dùng tick checkbox
     const autoComplete = document.getElementById("auto-single-complete");
     if (autoComplete && autoComplete.checked && state.activeItems.length === 1) {
       renderAll();
-      setTimeout(handleConfirmReturn, 500);
+      setTimeout(handleConfirmReturn, 400);
       return;
     }
 
     renderAll();
   } catch (err) {
-    showToast(err.message || "Lỗi xử lý kiểm tra ấn phẩm", "error");
+    showToast(err.message || `Không tìm thấy ấn bản "${cleanCode}" đang mượn`, "error");
   }
 }
 
 // Thêm ấn phẩm khác cùng phiếu mượn
 function handleAddExtraItem() {
   if (!state.currentReader || !state.currentReader.other_borrowed_items || state.currentReader.other_borrowed_items.length === 0) {
-    showToast("Độc giả không còn ấn bản nào khác đang mượn.");
+    showToast("Độc giả không còn ấn bản nào khác trong phiếu mượn này.");
     return;
   }
 
   const extra = state.currentReader.other_borrowed_items.shift();
+  if (state.activeItems.some((it) => it.copy_code === extra.copy_code)) {
+    renderAll();
+    return;
+  }
+
   const newItem = {
     copy_id: extra.copy_id,
     copy_code: extra.copy_code,
+    loan_id: state.currentReader.loan_id,
     book_title: extra.book_title,
-    shelf_location: extra.shelf_location,
-    due_date: extra.due_date || "28/10/2024",
-    is_overdue: extra.is_overdue || false,
-    overdue_days: extra.overdue_days || 0,
-    overdue_fine: extra.overdue_fine_amount || 0,
+    shelf_location: extra.shelf_location || "Kệ tổng",
+    due_date: extra.due_date ? formatDate(extra.due_date) : "--/--/----",
+    is_overdue: Boolean(extra.is_overdue),
+    overdue_days: Number(extra.overdue_days || 0),
+    overdue_fine: Number(extra.overdue_fine_amount || 0),
     condition_type: "NORMAL",
     condition_label: "Bình thường / Nguyên vẹn",
     note: "",
     damage_fine: 0,
-    book_price: extra.book_price || 120000,
+    book_price: Number(extra.book_price || 0),
+    checked: true,
   };
 
   state.activeItems.push(newItem);
@@ -424,7 +364,7 @@ function handleAddExtraItem() {
   renderAll();
 }
 
-// Thay đổi tình trạng sách ở mỗi dòng
+// Thay đổi tình trạng sách ở mỗi dòng (Khớp Backend: 0%, 50% Hỏng, 100% Mất)
 function handleConditionChange(index, newType) {
   const item = state.activeItems[index];
   if (!item) return;
@@ -433,18 +373,27 @@ function handleConditionChange(index, newType) {
   if (newType === "NORMAL") {
     item.condition_label = "Bình thường / Nguyên vẹn";
     item.damage_fine = 0;
-  } else if (newType === "LIGHT_DAMAGE") {
-    item.condition_label = "Hư hỏng nhẹ (Rách trang bìa) • +20.000đ";
-    item.damage_fine = 20000;
-  } else if (newType === "HEAVY_DAMAGE") {
-    item.condition_label = "Hư hỏng nặng (Mất trang / Rời bìa)";
+  } else if (newType === "DAMAGED") {
+    item.condition_label = "Hư hỏng sách (50% giá bìa)";
     item.damage_fine = Math.round(item.book_price * 0.5);
   } else if (newType === "LOST") {
-    item.condition_label = "Báo mất ấn bản";
+    item.condition_label = "Báo mất ấn bản (100% giá bìa)";
     item.damage_fine = Math.round(item.book_price * 1.0);
   }
 
+  renderReaderCard();
   renderTableRows();
+  updateSettlementCalculations();
+}
+
+function handleToggleItem(index, isChecked) {
+  const item = state.activeItems[index];
+  if (!item) return;
+  item.checked = Boolean(isChecked);
+  const checkAll = document.getElementById("check-all-items");
+  if (checkAll) {
+    checkAll.checked = state.activeItems.length > 0 && state.activeItems.every((it) => it.checked !== false);
+  }
   updateSettlementCalculations();
 }
 
@@ -452,6 +401,27 @@ function handleConditionChange(index, newType) {
 function handleRemoveItem(index) {
   const removed = state.activeItems.splice(index, 1)[0];
   if (removed) {
+    if (state.activeItems.length === 0) {
+      // Hết ấn phẩm trong bảng -> giải phóng độc giả hiện tại để quét lượt mới không bị kẹt
+      state.currentReader = null;
+    } else if (
+      state.currentReader &&
+      removed.loan_id === state.currentReader.loan_id &&
+      Array.isArray(state.currentReader.other_borrowed_items) &&
+      !state.currentReader.other_borrowed_items.some((x) => x.copy_code === removed.copy_code)
+    ) {
+      state.currentReader.other_borrowed_items.push({
+        copy_id: removed.copy_id,
+        copy_code: removed.copy_code,
+        book_title: removed.book_title,
+        shelf_location: removed.shelf_location,
+        due_date: removed.due_date,
+        is_overdue: removed.is_overdue,
+        overdue_days: removed.overdue_days,
+        overdue_fine_amount: removed.overdue_fine,
+        book_price: removed.book_price,
+      });
+    }
     showToast(`Đã bỏ "${removed.book_title}" khỏi lượt trả.`);
   }
   renderAll();
@@ -469,23 +439,69 @@ function renderReaderCard() {
   const reader = state.currentReader || {
     full_name: "Chưa quét ấn phẩm",
     student_id: "--------",
-    email: "Đang chờ thủ thư thao tác...",
+    email: "Đang chờ thủ thư thao tác quét mã bản sao...",
     loan_code: "Chưa rõ",
     due_date: "--/--/----",
     borrow_date: "--/--/----",
+    card_status: null,
+    librarian_name: "—",
+    other_borrowed_items: [],
   };
 
-  document.getElementById("reader-avatar-text").textContent = (reader.full_name || "A").charAt(0).toUpperCase();
+  const avatarText = reader.full_name && state.currentReader
+    ? reader.full_name.charAt(0).toUpperCase()
+    : "?";
+  document.getElementById("reader-avatar-text").textContent = avatarText;
   document.getElementById("reader-name").textContent = reader.full_name;
-  document.getElementById("reader-id").textContent = reader.student_id;
-  document.getElementById("reader-email").textContent = `${reader.email} · Khoa CNTT`;
-  document.getElementById("loan-code").textContent = reader.loan_code || "#PM-2024-0082";
-  document.getElementById("due-date-display").textContent = reader.due_date || "09/10/2024";
-  document.getElementById("borrow-date-display").textContent = reader.borrow_date || "25/09/2024";
+  document.getElementById("reader-id").textContent = reader.card_code || reader.student_id || "--------";
+  document.getElementById("reader-email").textContent = state.currentReader
+    ? `${reader.email || "Chưa cập nhật email"}${reader.phone ? " · " + reader.phone : ""}`
+    : reader.email;
+  document.getElementById("loan-code").textContent = reader.loan_code || "Chưa rõ";
+
+  const dueEl = document.getElementById("due-date-display");
+  if (dueEl) {
+    dueEl.textContent = reader.due_date || "--/--/----";
+    dueEl.classList.toggle("due-danger", Boolean(state.activeItems.some((it) => it.is_overdue)));
+  }
+
+  document.getElementById("borrow-date-display").textContent = reader.borrow_date || "--/--/----";
   document.getElementById("borrow-count-display").textContent = `${String(state.activeItems.length).padStart(2, "0")} ấn bản`;
-  document.getElementById("add-extra-reader-name").textContent = reader.full_name;
+
+  const libEl = document.getElementById("loan-librarian-display");
+  if (libEl) libEl.textContent = reader.librarian_name || "—";
+
+  const statusBadge = document.getElementById("card-status-badge");
+  if (statusBadge) {
+    const st = (reader.card_status || "").toUpperCase();
+    if (!state.currentReader) {
+      statusBadge.innerHTML = `<span class="dot"></span> Chờ quét mã`;
+    } else if (st === "ACTIVE") {
+      statusBadge.innerHTML = `<span class="dot"></span> Thẻ hợp lệ`;
+    } else {
+      statusBadge.innerHTML = `<span class="dot" style="background:#DC2626;"></span> Thẻ ${escapeHtml(st || "Bị khóa")}`;
+    }
+  }
+
+  document.getElementById("add-extra-reader-name").textContent = state.currentReader ? reader.full_name : "độc giả";
   document.getElementById("items-count-badge").textContent = String(state.activeItems.length).padStart(2, "0");
-  document.getElementById("scanned-progress-text").textContent = `Đã quét ${state.activeItems.length} cuốn theo phiếu mượn`;
+
+  const extraRemaining = Array.isArray(reader.other_borrowed_items) ? reader.other_borrowed_items.length : 0;
+  const totalOnLoan = state.activeItems.length + extraRemaining;
+  document.getElementById("scanned-progress-text").textContent = state.activeItems.length === 0
+    ? "Chưa có bản sao nào trong lượt trả"
+    : `Đã quét ${state.activeItems.length}/${totalOnLoan} cuốn thuộc phiếu mượn`;
+
+  const btnAddExtra = document.getElementById("btn-add-extra");
+  if (btnAddExtra) {
+    btnAddExtra.style.opacity = extraRemaining > 0 ? "1" : "0.55";
+  }
+
+  const btnFullLoan = document.getElementById("btn-return-full-loan");
+  if (btnFullLoan) {
+    const hasLoan = Boolean(state.currentReader && state.currentReader.loan_id && state.activeItems.length > 0);
+    btnFullLoan.style.display = hasLoan ? "inline-flex" : "none";
+  }
 }
 
 // Render các dòng của bảng ấn phẩm
@@ -496,26 +512,31 @@ function renderTableRows() {
   if (state.activeItems.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="py-12 text-center text-mutedtext">
+        <td colspan="6" class="py-12 text-center text-mutedtext">
           <span class="material-symbols-outlined text-[36px] text-warmborder block mb-1">inventory_2</span>
-          <span>Chưa có ấn bản nào được quét. Vui lòng nhập mã hoặc dùng mã test nhanh ở trên.</span>
+          <span>Chưa có ấn bản nào được quét. Vui lòng quét hoặc nhập mã bản sao ở trên.</span>
         </td>
       </tr>
     `;
+    const checkAll = document.getElementById("check-all-items");
+    if (checkAll) checkAll.checked = false;
     return;
+  }
+
+  const checkAll = document.getElementById("check-all-items");
+  if (checkAll) {
+    checkAll.checked = state.activeItems.every((it) => it.checked !== false);
   }
 
   tbody.innerHTML = state.activeItems
     .map((item, index) => {
       const isDamaged = item.condition_type !== "NORMAL";
       const totalItemFine = item.overdue_fine + item.damage_fine;
+      const isChecked = item.checked !== false;
 
       let conditionClass = "is-normal";
       let conditionIcon = "verified";
-      if (item.condition_type === "LIGHT_DAMAGE") {
-        conditionClass = "is-light-damage";
-        conditionIcon = "handyman";
-      } else if (item.condition_type === "HEAVY_DAMAGE") {
+      if (item.condition_type === "DAMAGED") {
         conditionClass = "is-heavy-damage";
         conditionIcon = "broken_image";
       } else if (item.condition_type === "LOST") {
@@ -528,7 +549,8 @@ function renderTableRows() {
           <!-- Cột 1: Custom Tick -->
           <td style="width: 44px; text-align: center;">
             <label class="custom-tick-label" style="justify-content: center; margin: 0;">
-              <input type="checkbox" class="custom-tick-input item-row-tick" checked>
+              <input type="checkbox" class="custom-tick-input item-row-tick" ${isChecked ? "checked" : ""}
+                     onchange="handleToggleItem(${index}, this.checked)">
               <span class="custom-tick-box">
                 <span class="material-symbols-outlined tick-icon">check</span>
               </span>
@@ -567,7 +589,7 @@ function renderTableRows() {
             </div>
           </td>
 
-          <!-- Cột 4: Tình trạng vật lý UI nâng cao -->
+          <!-- Cột 4: Tình trạng vật lý (khớp quy chuẩn Backend: 0% / 50% / 100%) -->
           <td style="min-width: 260px;">
             <div class="condition-control-wrap">
               <div class="condition-select-shell ${conditionClass}">
@@ -575,9 +597,8 @@ function renderTableRows() {
                 <select onchange="handleConditionChange(${index}, this.value)"
                         class="condition-select-native ${isDamaged ? "damaged" : ""}">
                   <option value="NORMAL" ${item.condition_type === "NORMAL" ? "selected" : ""}>Bình thường / Nguyên vẹn</option>
-                  <option value="LIGHT_DAMAGE" ${item.condition_type === "LIGHT_DAMAGE" ? "selected" : ""}>Hư hỏng nhẹ (Rách bìa) • +20.000đ</option>
-                  <option value="HEAVY_DAMAGE" ${item.condition_type === "HEAVY_DAMAGE" ? "selected" : ""}>Hư hỏng nặng (50% giá bìa: ${formatVND(item.book_price * 0.5)})</option>
-                  <option value="LOST" ${item.condition_type === "LOST" ? "selected" : ""}>Báo mất ấn bản (100% giá bìa: ${formatVND(item.book_price)})</option>
+                  <option value="DAMAGED" ${item.condition_type === "DAMAGED" ? "selected" : ""}>Hỏng sách (50% giá bìa: ${formatVND(item.book_price * 0.5)})</option>
+                  <option value="LOST" ${item.condition_type === "LOST" ? "selected" : ""}>Báo mất sách (100% giá bìa: ${formatVND(item.book_price)})</option>
                 </select>
                 <span class="material-symbols-outlined condition-arrow">expand_more</span>
               </div>
@@ -606,7 +627,15 @@ function renderTableRows() {
                 ${formatVND(totalItemFine)}
               </span>
               <span style="font-size: 11px; color: var(--color-text-muted);">
-                ${item.overdue_fine > 0 ? "Phạt hạn" : (item.damage_fine > 0 ? "Bồi thường" : "Miễn phí")}
+                ${
+                  item.overdue_fine > 0 && item.damage_fine > 0
+                    ? "Quá hạn + Bồi thường"
+                    : item.overdue_fine > 0
+                    ? "Phạt hạn"
+                    : item.damage_fine > 0
+                    ? "Bồi thường"
+                    : "Miễn phí"
+                }
               </span>
             </div>
           </td>
@@ -627,24 +656,31 @@ function renderTableRows() {
 
 // Cập nhật thẻ quyết toán tiền phạt bên phải
 function updateSettlementCalculations() {
-  const totalOverdueFine = state.activeItems.reduce((sum, it) => sum + (it.overdue_fine || 0), 0);
-  const totalDamageFine = state.activeItems.reduce((sum, it) => sum + (it.damage_fine || 0), 0);
+  const selectedItems = state.activeItems.filter((it) => it.checked !== false);
+  const totalOverdueFine = selectedItems.reduce((sum, it) => sum + (it.overdue_fine || 0), 0);
+  const totalDamageFine = selectedItems.reduce((sum, it) => sum + (it.damage_fine || 0), 0);
   const totalFine = totalOverdueFine + totalDamageFine;
-  const totalOverdueDays = state.activeItems.reduce((sum, it) => sum + (it.overdue_days || 0), 0);
+  const totalOverdueDays = selectedItems.reduce((sum, it) => sum + (it.overdue_days || 0), 0);
 
   document.getElementById("summary-overdue-days").textContent = totalOverdueDays;
   document.getElementById("summary-overdue-amount").textContent = formatVND(totalOverdueFine);
   document.getElementById("summary-damage-amount").textContent = formatVND(totalDamageFine);
   document.getElementById("summary-total-amount").textContent = formatNumber(totalFine);
 
-  // Đồng bộ số tiền hiển thị trên khung VietQR
+  // Đồng bộ số tiền & mã phiếu hiển thị trên khung VietQR
+  const memoRaw = state.currentReader?.loan_code
+    ? `TRA SACH ${state.currentReader.loan_code.replace("#", "")}`
+    : "TRA SACH UNILIB";
+  const memoEl = document.getElementById("vietqr-memo");
+  if (memoEl) memoEl.textContent = memoRaw;
+
   const vietQrAmountEl = document.getElementById("vietqr-amount");
   if (vietQrAmountEl) {
     vietQrAmountEl.textContent = formatVND(totalFine);
   }
   const vietQrImg = document.getElementById("vietqr-image");
   if (vietQrImg) {
-    const memo = encodeURIComponent("TRA SACH PM-2024-0082");
+    const memo = encodeURIComponent(memoRaw);
     vietQrImg.src = `https://img.vietqr.io/image/MB-99992525KS25-compact2.png?amount=${totalFine}&addInfo=${memo}&accountName=THU%20VIEN%20UNILIB`;
   }
 
@@ -706,72 +742,161 @@ function fallbackCopy(text, successMsg) {
   document.body.removeChild(ta);
 }
 
-// Xử lý xác nhận trả sách & thu tiền
-async function handleConfirmReturn() {
-  if (state.activeItems.length === 0) {
-    showToast("Vui lòng quét hoặc thêm ít nhất một ấn bản để trả!", "error");
+// Map phương thức thanh toán UI -> Backend
+function getBackendPaymentMethod() {
+  if (state.paymentMethod === "qr") return "CHUYỂN KHOẢN";
+  if (state.paymentMethod === "account") return "VÍ THƯ VIỆN";
+  return "TIỀN MẶT";
+}
+
+// Xử lý trả toàn bộ phiếu mượn (POST /api/returns/loan)
+async function handleReturnFullLoan() {
+  if (!state.currentReader || !state.currentReader.loan_id) {
+    showToast("Chưa xác định phiếu mượn đang xử lý.", "error");
+    return;
+  }
+  if (state.activeItems.some((it) => it.condition_type !== "NORMAL")) {
+    showToast("Có ấn phẩm hỏng/mất, vui lòng dùng nút 'XÁC NHẬN TRẢ SÁCH & THU TIỀN' để xử lý từng cuốn.", "error");
     return;
   }
 
-  const totalOverdueFine = state.activeItems.reduce((sum, it) => sum + (it.overdue_fine || 0), 0);
-  const totalDamageFine = state.activeItems.reduce((sum, it) => sum + (it.damage_fine || 0), 0);
-  const grandTotal = totalOverdueFine + totalDamageFine;
-
-  // Chuẩn bị payload gửi lên backend
-  const payload = {
-    items: state.activeItems.map((it) => ({
-      copy_code: it.copy_code,
-      condition: it.condition_type,
-      note: it.note || "",
-    })),
-    payment_method: state.paymentMethod,
-    pay_fines_now: true,
-  };
+  const btn = document.getElementById("btn-return-full-loan");
+  if (btn) btn.disabled = true;
 
   try {
-    showToast("Đang lưu giao dịch trả sách và thu phí phạt...");
+    showToast("Đang ghi nhận trả toàn bộ phiếu mượn...");
+    const res = await api.post("/returns/loan", { loan_id: state.currentReader.loan_id });
 
-    // Gọi các API backend có sẵn (/returns/item và /fines/report-issue)
-    for (const it of state.activeItems) {
+    const payMethodLabel = getBackendPaymentMethod();
+    if (Array.isArray(res.fine_ids) && res.fine_ids.length > 0) {
+      for (const fid of res.fine_ids) {
+        await api.post(`/fines/${fid}/pay`, {
+          payment_method: payMethodLabel,
+          note: `Thu khi trả cả phiếu #${state.currentReader.loan_id}`,
+        });
+      }
+    }
+
+    if (res.reservations_notified > 0) {
+      showToast(`Đã chuyển ${res.reservations_notified} bản sao sang giữ chỗ & xếp hàng gửi email báo độc giả đặt trước!`);
+    } else {
+      showToast(res.message || "Đã trả toàn bộ phiếu mượn thành công!");
+    }
+
+    await loadTodaySummary();
+    const returnedCount = Number(res.returned_count || state.activeItems.length);
+    state.activeItems = [];
+    state.shouldResetOnModalClose = true;
+    renderAll();
+    openReceiptModal(Number(res.total_fines_amount || 0), returnedCount);
+  } catch (err) {
+    showToast(err.message || "Không thể trả toàn bộ phiếu mượn", "error");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Xử lý xác nhận trả sách & thu tiền
+async function handleConfirmReturn() {
+  const selectedItems = state.activeItems.filter((it) => it.checked !== false);
+  if (selectedItems.length === 0) {
+    showToast("Vui lòng chọn ít nhất một ấn bản để xác nhận trả!", "error");
+    return;
+  }
+
+  const btn = document.getElementById("btn-confirm-return");
+  if (btn) btn.disabled = true;
+
+  const payMethodLabel = getBackendPaymentMethod();
+  const succeededCodes = [];
+  const failedErrors = [];
+  const reservationNotices = [];
+  let totalCollectedPaid = 0;
+
+  try {
+    showToast("Đang lưu giao dịch trả sách và xử lý phí phạt...");
+
+    for (const it of selectedItems) {
       try {
         if (it.condition_type === "NORMAL") {
           const res = await api.post("/returns/item", { copy_code: it.copy_code });
-          if (res && res.fine_id && state.paymentMethod) {
-            try { await api.post(`/fines/${res.fine_id}/pay`); } catch (_) {}
+          let itemPaid = 0;
+          if (res && res.fine_id) {
+            await api.post(`/fines/${res.fine_id}/pay`, {
+              payment_method: payMethodLabel,
+              note: "Thu tiền phạt quá hạn khi trả sách tại quầy",
+            });
+            itemPaid += Number(res.overdue_fine_amount || 0);
           }
+          if (res && res.reservation_notified && res.reserved_for_reader) {
+            reservationNotices.push(`${it.copy_code} → ${res.reserved_for_reader}`);
+          }
+          totalCollectedPaid += itemPaid;
+          succeededCodes.push(it.copy_code);
         } else {
           const res = await api.post("/fines/report-issue", {
             copy_code: it.copy_code,
             issue_type: it.condition_type === "LOST" ? "MẤT" : "HỎNG",
             note: it.note || "",
           });
-          if (res && res.fine_id && state.paymentMethod) {
-            try { await api.post(`/fines/${res.fine_id}/pay`); } catch (_) {}
+          let itemPaid = 0;
+          if (res && res.fine_id) {
+            await api.post(`/fines/${res.fine_id}/pay`, {
+              payment_method: payMethodLabel,
+              note: it.note || "Thu tiền bồi thường tại quầy",
+            });
+            itemPaid += Number(res.amount || 0);
           }
+          if (res && res.overdue_fine_id) {
+            await api.post(`/fines/${res.overdue_fine_id}/pay`, {
+              payment_method: payMethodLabel,
+              note: "Thu phạt quá hạn kèm theo khi trả sách hỏng/mất",
+            });
+            itemPaid += Number(res.overdue_fine_amount || 0);
+          }
+          totalCollectedPaid += itemPaid;
+          succeededCodes.push(it.copy_code);
         }
       } catch (err) {
-        console.warn(`Lỗi API cho cuốn ${it.copy_code} (có thể chưa có trong DB thực tế):`, err);
+        failedErrors.push(`${it.copy_code}: ${err.message || "Lỗi xử lý"}`);
       }
     }
 
-    // Hiển thị modal biên lai hoàn tất giao dịch
-    openReceiptModal(grandTotal);
-  } catch (err) {
-    console.error("Lỗi xác nhận trả sách:", err);
-    openReceiptModal(grandTotal);
+    if (succeededCodes.length === 0) {
+      showToast(`Trả sách thất bại: ${failedErrors.join(" | ")}`, "error");
+      return;
+    }
+
+    if (failedErrors.length > 0) {
+      showToast(`Đã trả ${succeededCodes.length} cuốn; lỗi ${failedErrors.length} cuốn: ${failedErrors[0]}`, "error");
+    } else if (reservationNotices.length > 0) {
+      showToast(`Trả thành công! Đã giữ chỗ & gửi email cho người đặt trước: ${reservationNotices.join(", ")}`);
+    } else {
+      showToast(`Hoàn tất trả ${succeededCodes.length} ấn bản và cập nhật thanh toán!`);
+    }
+
+    // Loại ngay các cuốn đã trả thành công khỏi bảng để tránh bấm xác nhận trùng
+    state.activeItems = state.activeItems.filter((it) => !succeededCodes.includes(it.copy_code));
+    state.shouldResetOnModalClose = state.activeItems.length === 0;
+    renderAll();
+
+    await loadTodaySummary();
+    openReceiptModal(totalCollectedPaid, succeededCodes.length);
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
 // Mở modal biên lai
-function openReceiptModal(totalPaid) {
+function openReceiptModal(totalPaid, returnedCount = state.activeItems.filter((it) => it.checked !== false).length) {
   const modal = document.getElementById("receipt-modal");
   if (!modal) return;
 
-  const reader = state.currentReader || { full_name: "Nguyễn Văn An", student_id: "23010412" };
+  const reader = state.currentReader || { full_name: "Độc giả", student_id: "--------" };
   document.getElementById("modal-tx-code").textContent = state.txCode.replace("#", "");
   document.getElementById("modal-reader-name").textContent = reader.full_name;
-  document.getElementById("modal-reader-id").textContent = reader.student_id;
-  document.getElementById("modal-returned-count").textContent = `${state.activeItems.length} cuốn`;
+  document.getElementById("modal-reader-id").textContent = reader.card_code || reader.student_id || "--------";
+  document.getElementById("modal-returned-count").textContent = `${returnedCount} cuốn`;
 
   const methodNames = {
     cash: "Tiền mặt",
@@ -787,25 +912,41 @@ function openReceiptModal(totalPaid) {
 function closeModal() {
   const modal = document.getElementById("receipt-modal");
   if (modal) modal.classList.add("hidden");
+  if (state.shouldResetOnModalClose) {
+    state.shouldResetOnModalClose = false;
+    resetDeskAfterSuccess();
+  }
 }
 
 // Reset bàn làm việc để tiếp nhận sinh viên mới
 function resetDeskAfterSuccess() {
-  closeModal();
+  state.shouldResetOnModalClose = false;
+  const modal = document.getElementById("receipt-modal");
+  if (modal) modal.classList.add("hidden");
   state.currentReader = null;
   state.activeItems = [];
+  state.cashReceived = 0;
   state.txCode = "#TX-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Math.floor(10 + Math.random() * 90);
-  document.getElementById("barcode-scanner").value = "";
-  document.getElementById("barcode-scanner").focus();
+  const txBadge = document.getElementById("tx-code");
+  if (txBadge) txBadge.textContent = state.txCode;
+  const cashInput = document.getElementById("cash-received-input");
+  if (cashInput) cashInput.value = "0";
+  const scanner = document.getElementById("barcode-scanner");
+  if (scanner) {
+    scanner.value = "";
+    scanner.focus();
+  }
   renderAll();
   showToast("Bàn làm việc sẵn sàng tiếp nhận lượt trả sách tiếp theo!");
 }
 
 // Hủy bỏ lượt tiếp nhận
 function handleCancelReturn() {
-  if (confirm("Bạn có chắc chắn muốn hủy bỏ lượt tiếp nhận trả sách này?")) {
-    resetDeskAfterSuccess();
+  if (state.activeItems.length === 0 && !state.currentReader) {
+    showToast("Bàn làm việc hiện đang trống.");
+    return;
   }
+  resetDeskAfterSuccess();
 }
 
 // Format VND: 38000 -> "38.000 đ"

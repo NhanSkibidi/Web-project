@@ -3,7 +3,12 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import Literal
 
-from app.core.dependencies import bearer_scheme, get_current_user
+from app.core.dependencies import bearer_scheme, get_current_user, require_librarian
+from app.models.user import User, UserRole
+from app.services.email_service import (
+    send_due_soon_reminder_email,
+    send_overdue_reminder_email,
+)
 from app.crud.loan_service import (
     approve_loan,
     cancel_online_loan,
@@ -25,7 +30,6 @@ from app.crud.loan_service import (
     validate_counter_borrow,
 )
 from app.db.session import get_db
-from app.services.email_service import send_overdue_reminder_email
 from app.schemas.loan import (
     CopyLookupResponse,
     CounterBorrowCreateRequest,
@@ -62,7 +66,7 @@ from app.crud.loan_service import (
 )
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
-readers_router = APIRouter(prefix="/readers", tags=["Readers"])
+# readers_router = APIRouter(prefix="/readers", tags=["Readers"])
 copies_router = APIRouter(prefix="/copies", tags=["Copies"])
 notifications_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
@@ -86,7 +90,7 @@ def _resolve_user_id(
 
 
 # ── API LỊCH SỬ MƯỢN TRẢ (DÙNG CHO TRANG CHI TIẾT ĐỘC GIẢ) ────
-
+"Lọc lịch sửa mượn sách"
 @router.get("", response_model=list[LoanHistoryOut])
 def list_loans(
     user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
@@ -97,7 +101,7 @@ def list_loans(
     """Lấy danh sách & lịch sử mượn trả sách từ module Mượn."""
     return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
 
-
+"Lọc "
 @router.get("/user/{user_id}", response_model=list[LoanHistoryOut])
 def list_loans_by_user(
     user_id: int,
@@ -108,24 +112,24 @@ def list_loans_by_user(
     """Lấy toàn bộ lịch sử mượn trả của một độc giả cụ thể (dùng cho trang Chi tiết độc giả)."""
     return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
 
-@readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
-def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
-    """Tra cứu độc giả theo mã thẻ thư viện (nhập hoặc quét mã)."""
-    return get_reader_by_card(db, card_code)
+# @readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
+# def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
+#     """Tra cứu độc giả theo mã thẻ thư viện (nhập hoặc quét mã)."""
+#     return get_reader_by_card(db, card_code)
 
 
 @router.get("/readers/by-card/{card_code}", response_model=ReaderLookupResponse)
 def lookup_reader_by_card_alias(card_code: str, db: Session = Depends(get_db)):
     return get_reader_by_card(db, card_code)
 
-@copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
-def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
-    return get_copy_by_barcode(db, barcode)
+# @copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
+# def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
+#     return get_copy_by_barcode(db, barcode)
 
 
-@router.get("/copies/by-barcode/{barcode}", response_model=CopyLookupResponse)
-def lookup_copy_by_barcode_alias(barcode: str, db: Session = Depends(get_db)):
-    return get_copy_by_barcode(db, barcode)
+@router.get("/copies/by-barcode/{copycode}", response_model=CopyLookupResponse)
+def lookup_copy_by_barcode_alias(copycode: str, db: Session = Depends(get_db)):
+    return get_copy_by_barcode(db=db, copycode=copycode)
 
 @router.post("/counter/validate", response_model=CounterBorrowValidateResponse)
 def validate_counter(
@@ -238,6 +242,7 @@ def get_overdue(
     search: str | None = Query(default=None, description="Tìm theo tên độc giả, email, tựa sách, mã vạch..."),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
+    _staff: User = Depends(require_librarian),
     db: Session = Depends(get_db),
 ):
     """
@@ -255,6 +260,7 @@ def get_due_soon(
     search: str | None = Query(default=None, description="Tìm theo tên độc giả, tựa sách, mã vạch..."),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
+    _staff: User = Depends(require_librarian),
     db: Session = Depends(get_db),
 ):
     """
@@ -267,15 +273,26 @@ def get_due_soon(
 @router.get("/notifications/my", response_model=InAppNotificationListResponse)
 @notifications_router.get("/my", response_model=InAppNotificationListResponse)
 def get_my_notifications(
-    user_id: int | None = Query(default=None, description="ID độc giả (None: lấy tất cả hoặc hệ thống)"),
+    user_id: int | None = Query(default=None, description="ID độc giả (chỉ Thủ thư/Admin mới truyền để xem của độc giả khác)"),
     limit: int = Query(default=30, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Lấy danh sách thông báo in-app cho chuông thông báo trên topbar header.
     Tự động đồng bộ và sinh thông báo nhắc nhở cho các sách quá hạn và sắp đến hạn.
     """
-    return sync_and_get_notifications(db, user_id=user_id, limit=limit)
+    if current_user.role == UserRole.READER:
+        if user_id is not None and user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Độc giả chỉ được xem thông báo của chính mình",
+            )
+        target_user_id = current_user.id
+    else:
+        target_user_id = user_id
+
+    return sync_and_get_notifications(db, user_id=target_user_id, limit=limit)
 
 
 @router.patch("/notifications/{notification_id}/read")
@@ -283,10 +300,12 @@ def get_my_notifications(
 def read_notification(
     notification_id: int,
     user_id: int | None = Query(default=None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Đánh dấu một thông báo là đã đọc."""
-    success = mark_notification_read(db, notification_id, user_id=user_id)
+    target_user_id = current_user.id if current_user.role == UserRole.READER else user_id
+    success = mark_notification_read(db, notification_id, user_id=target_user_id)
     return {"success": success, "notification_id": notification_id}
 
 
@@ -294,10 +313,12 @@ def read_notification(
 @notifications_router.post("/mark-all-read")
 def mark_all_read(
     user_id: int | None = Query(default=None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Đánh dấu toàn bộ thông báo in-app là đã đọc."""
-    count = mark_all_notifications_read(db, user_id=user_id)
+    target_user_id = current_user.id if current_user.role == UserRole.READER else user_id
+    count = mark_all_notifications_read(db, user_id=target_user_id)
     return {"success": True, "updated_count": count}
 
 
@@ -306,45 +327,61 @@ def remind_reader(
     loan_id: int,
     data: RemindLoanRequest,
     background_tasks: BackgroundTasks,
+    staff_user: User = Depends(require_librarian),
     db: Session = Depends(get_db),
 ):
     """
-    Thủ thư gửi thông báo in-app + email SMTP chạy nền nhắc trả sách quá hạn cho độc giả.
+    Thủ thư gửi thông báo in-app + email SMTP chạy nền nhắc trả sách quá hạn/sắp đến hạn cho độc giả.
     """
     result = remind_overdue_loan(
         db,
         loan_id=loan_id,
-        librarian_id=data.librarian_id,
+        librarian_id=staff_user.id,
         custom_message=data.message,
     )
     # Tích hợp gửi Email chạy nền qua FastAPI BackgroundTasks (Task T3D003D)
-    overdue_items = get_overdue_loans(db, user_id=result["user_id"]).get("items", [])
-    matched = [i for i in overdue_items if i["loan_id"] == loan_id]
-    if result.get("reader_email") and matched:
-        first = matched[0]
-        background_tasks.add_task(
-            send_overdue_reminder_email,
-            to_email=result["reader_email"],
-            reader_name=result["reader_name"],
-            loan_code=first["loan_code"],
-            book_title=first["book_title"],
-            due_date=first["due_date"],
-            days_overdue=first["days_overdue"],
-            estimated_fine=first["estimated_fine"],
-        )
+    if result.get("reader_email"):
+        overdue_items = get_overdue_loans(db, user_id=result["user_id"]).get("items", [])
+        matched = [i for i in overdue_items if i["loan_id"] == loan_id]
+        if matched:
+            first = matched[0]
+            background_tasks.add_task(
+                send_overdue_reminder_email,
+                to_email=result["reader_email"],
+                reader_name=result["reader_name"],
+                loan_code=first["loan_code"],
+                book_title=first["book_title"],
+                due_date=first["due_date"],
+                days_overdue=first["days_overdue"],
+                estimated_fine=first["estimated_fine"],
+            )
+        else:
+            due_soon_items = get_due_soon_loans(db, days=7, user_id=result["user_id"]).get("items", [])
+            matched_due = [i for i in due_soon_items if i["loan_id"] == loan_id]
+            if matched_due:
+                first_due = matched_due[0]
+                background_tasks.add_task(
+                    send_due_soon_reminder_email,
+                    to_email=result["reader_email"],
+                    reader_name=result["reader_name"],
+                    loan_code=first_due["loan_code"],
+                    book_title=first_due["book_title"],
+                    due_date=first_due["due_date"],
+                    days_remaining=first_due["days_remaining"],
+                )
     return result
 
 
 @router.post("/remind-all-overdue")
 def remind_all(
     background_tasks: BackgroundTasks,
-    librarian_id: int | None = Query(default=None),
+    staff_user: User = Depends(require_librarian),
     db: Session = Depends(get_db),
 ):
     """
     Thủ thư gửi thông báo in-app + email SMTP hàng loạt chạy nền đến tất cả độc giả quá hạn.
     """
-    result = remind_all_overdue(db, librarian_id=librarian_id)
+    result = remind_all_overdue(db, librarian_id=staff_user.id)
     overdue_items = get_overdue_loans(db, limit=500).get("items", [])
     queued_emails = 0
     for item in overdue_items:

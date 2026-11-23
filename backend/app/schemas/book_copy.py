@@ -6,9 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookCopyCreate(BaseModel):
-    copy_code: str
-    shelf_location: str
-    imported_at: date
+    copy_code: str = ""
+    shelf_location: str = "Kệ A1"
+    imported_at: date = Field(default_factory=date.today)
     condition: Literal["MỚI", "CŨ", "HỎNG"] = "MỚI"
     status: Literal[
         "AVAILABLE",

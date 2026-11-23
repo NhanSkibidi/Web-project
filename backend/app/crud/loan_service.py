@@ -15,6 +15,7 @@ from app.models.fine import Fine
 from app.models.reservation import Reservation
 from app.models.notification import Notification
 from app.crud.copy_status_log import change_copy_status
+from app.crud.fine import has_unpaid_fines
 
 MAX_BORROW_BOOKS = 5       
 MAX_COUNTER_BORROW_BOOKS = 3   # Giới hạn tối đa khi mượn tại quầy
@@ -47,17 +48,7 @@ def check_overdue_books(db: Session, user_id: int) -> None:
 
 
 def check_unpaid_fines(db: Session, user_id: int) -> None:
-    unpaid = (
-        db.query(Fine)
-        .filter(
-            Fine.user_id == user_id,
-            Fine.status == "UNPAID",
-            Fine.amount > 0,
-        )
-        .first()
-    )
-
-    if unpaid:
+    if has_unpaid_fines(db, user_id):
         raise HTTPException(
             status_code=400,
             detail="Bạn đang có khoản phạt chưa thanh toán",
@@ -640,9 +631,9 @@ def get_reader_by_card(db: Session, card_code: str) -> dict:
     }
 
 
-def get_copy_by_barcode(db: Session, barcode: str) -> dict:
+def get_copy_by_barcode(db: Session, copycode: str) -> dict:
     """Tra cứu bản sao sách theo mã vạch / copy_code."""
-    bc = barcode.strip() if barcode else ""
+    bc = copycode.strip() if copycode else ""
     if not bc:
         raise HTTPException(status_code=400, detail="Mã vạch không được để trống")
 
@@ -1740,15 +1731,35 @@ def remind_overdue_loan(
         if lib:
             lib_name = f"Thủ thư {lib.full_name}"
 
-    msg = custom_message or (
-        f"{lib_name} gửi lời nhắc: Phiếu mượn #{loan.code} của bạn có sách đã quá hạn. "
-        f"Vui lòng mang sách đến quầy thư viện trả trong thời gian sớm nhất để tránh tiền phạt phát sinh (2.000 đ/ngày)."
+    now = datetime.now()
+    is_overdue = any(
+        li.return_date is None and (li.due_date or loan.due_date) and (li.due_date or loan.due_date) < now
+        for li in (loan.loan_items or [])
+    )
+
+    if custom_message:
+        msg = custom_message
+    elif is_overdue:
+        msg = (
+            f"{lib_name} gửi lời nhắc: Phiếu mượn #{loan.code} của bạn có sách đã quá hạn. "
+            f"Vui lòng mang sách đến quầy thư viện trả trong thời gian sớm nhất để tránh tiền phạt phát sinh (2.000 đ/ngày)."
+        )
+    else:
+        msg = (
+            f"{lib_name} gửi lời nhắc: Phiếu mượn #{loan.code} của bạn sắp đến hạn trả. "
+            f"Vui lòng kiểm tra hạn trả, gia hạn trực tuyến (nếu đủ điều kiện) hoặc mang sách tới quầy trả đúng hạn."
+        )
+
+    title = (
+        f"Nhắc nhở trả sách quá hạn — Phiếu #{loan.code}"
+        if is_overdue
+        else f"Nhắc nhở sắp đến hạn trả sách — Phiếu #{loan.code}"
     )
 
     notif = Notification(
         user_id=loan.user_id,
         loan_id=loan.id,
-        title=f"Nhắc nhở trả sách quá hạn — Phiếu #{loan.code}",
+        title=title,
         message=msg,
         type="REMINDER",
         is_read=False,

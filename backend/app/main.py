@@ -29,6 +29,7 @@ from app.routers import (
     return_book,
     statistics,
     taxonomy,
+    reservation,
     users,
 )
 
@@ -66,7 +67,7 @@ app.include_router(auth.router, prefix="/api")
 # Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
 app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
-app.include_router(loans.readers_router, prefix="/api")
+# app.include_router(loans.readers_router, prefix="/api")
 app.include_router(loans.copies_router, prefix="/api")
 app.include_router(loans.notifications_router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
@@ -75,6 +76,7 @@ app.include_router(fine.router, prefix="/api")
 app.include_router(book.router, prefix="/api")
 app.include_router(loans_item.router, prefix="/api")
 app.include_router(taxonomy.router, prefix="/api")
+app.include_router(reservation.router, prefix="/api")
 app.include_router(email_reminders.router, prefix="/api")
 app.include_router(statistics.router, prefix="/api")
 app.include_router(library_cards.router, prefix="/api")

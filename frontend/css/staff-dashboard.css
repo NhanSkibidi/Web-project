@@ -380,7 +380,7 @@ body.dashboard-body {
   left: 0;
   bottom: 0;
   width: var(--sidebar-w-collapsed);
-  background: var(--color-surface);
+  background: #F5F3EF;
   border-right: 1px solid var(--color-border);
   z-index: 40;
   display: flex;

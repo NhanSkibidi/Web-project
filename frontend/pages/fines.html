@@ -23,10 +23,13 @@
 
 <body data-root="../" class="fines-body">
 
-  <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
-  <header class="librarian-topbar">
+  <!-- =========================================================================
+       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ THEO LOAN_MANAGEMENT
+       ========================================================================= -->
+  <header class="librarian-topbar site-header">
     <div class="topbar-left">
-      <a href="home.html" class="brand-badge">
+      <!-- Logo -->
+      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -35,38 +38,59 @@
           <span class="brand-sub">Thư viện số KS25</span>
         </div>
       </a>
-      <nav class="topbar-nav">
-        <a href="home.html" class="topbar-nav-link">Trang chủ</a>
-        <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <!-- Navigation Menu -->
+      <nav class="topbar-nav" id="navMenu">
+        <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
       </nav>
     </div>
 
+    <!-- Header Right Area -->
     <div class="topbar-right">
-      <div class="librarian-profile">
-        <div class="librarian-avatar" id="user-avatar">?</div>
-        <div class="librarian-info">
-          <span class="librarian-name" id="user-display-name">Đang tải...</span>
-          <span class="librarian-role" id="user-display-role">Phiên làm việc</span>
+      <!-- User Account Dropdown (đồng bộ loan_management) -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar"></div>
+          <div class="librarian-info">
+            <span class="librarian-name" id="userName"></span>
+            <span class="librarian-role" id="userRole"></span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="auth.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
         </div>
       </div>
-      <button type="button" id="btn-logout" class="topbar-icon-btn" title="Đăng xuất">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
     </div>
   </header>
 
-  <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG & NẢY LÊN) -->
+  <!-- =========================================================================
+       2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL (SIDEBAR THU GỌN / MỞ RỘNG)
+       ========================================================================= -->
   <aside id="app-sidebar" class="sidebar-rail">
     <div class="sidebar-rail-header">
-      <span>Phân hệ Thủ thư</span>
-      <span class="version-pill">v2.0</span>
+      <span>PHÂN HỆ THỦ THƯ</span>
     </div>
     <nav class="sidebar-rail-nav">
-      <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
         <span class="material-symbols-outlined">space_dashboard</span>
         <span class="rail-label">Tổng quan &amp; Thống kê</span>
       </a>
-      <a href="books.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
+      <a href="books.html" class="sidebar-rail-link" data-tooltip="Quản lý Đầu sách &amp; Bản sao">
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
@@ -74,15 +98,15 @@
         <span class="material-symbols-outlined">category</span>
         <span class="rail-label">Thể loại, Tác giả, NXB</span>
       </a>
-      <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+      <a href="loan_management.html" class="sidebar-rail-link" data-tooltip="Duyệt mượn trực tuyến">
         <span class="material-symbols-outlined">receipt_long</span>
-        <span class="rail-label">Quản lý Phiếu mượn</span>
+        <span class="rail-label">Quản lý phiếu mượn</span>
       </a>
-      <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+      <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
         <span class="material-symbols-outlined">library_add</span>
         <span class="rail-label">Mượn sách tại quầy</span>
       </a>
-      <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
+      <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
         <span class="material-symbols-outlined">assignment_return</span>
         <span class="rail-label">Trả sách tại quầy</span>
       </a>
@@ -90,25 +114,15 @@
         <span class="material-symbols-outlined">payments</span>
         <span class="rail-label">Xử lý tiền phạt</span>
       </a>
-      <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+      <a href="admin-users.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
         <span class="material-symbols-outlined">badge</span>
-        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+        <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
       </a>
       <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
         <span class="material-symbols-outlined">admin_panel_settings</span>
         <span class="rail-label">Nhân sự &amp; Phân quyền</span>
       </a>
     </nav>
-    <div class="sidebar-rail-footer">
-      <div style="display: flex; align-items: center;">
-        <span class="status-dot-pulse"></span>
-        <div class="sidebar-status-details">
-          <strong>Máy chủ Fines</strong>
-          <small>Hoạt động</small>
-        </div>
-      </div>
-      <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
-    </div>
   </aside>
 
   <!-- 3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH -->
@@ -118,29 +132,7 @@
       <!-- Tiêu đề trang & Thanh chuyển chế độ (Quầy Thủ thư vs Độc giả) -->
       <div class="page-header">
         <div>
-          <div class="breadcrumb-nav">
-            <span>Phân hệ Quản trị</span>
-            <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
-            <span class="highlight">Quản lý tiền phạt</span>
-          </div>
           <h1 class="page-title font-headline">Thu tiền phạt &amp; Miễn giảm vi phạm</h1>
-          <p class="page-subtitle">
-            Hệ thống quản lý các khoản phạt quá hạn, hỏng sách và mất sách. Hỗ trợ thu tiền trực tiếp, in biên lai thanh toán và Admin miễn giảm kèm lý do kiểm toán.
-          </p>
-        </div>
-
-        <!-- Tab chuyển đổi Quầy Thủ thư / Cổng Độc giả -->
-        <div class="header-actions">
-          <div class="view-mode-tabs" role="tablist">
-            <button type="button" class="tab-btn active" id="tab-staff-view" data-target="staff-view">
-              <span class="material-symbols-outlined">point_of_sale</span>
-              <span>Quầy Thủ thư</span>
-            </button>
-            <button type="button" class="tab-btn" id="tab-reader-view" data-target="reader-view">
-              <span class="material-symbols-outlined">person_search</span>
-              <span>Độc giả tra cứu</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -290,13 +282,15 @@
           <div class="reader-search-header">
             <div class="badge-pill">Cổng Độc Giả</div>
             <h2>Tra cứu khoản phạt cá nhân</h2>
-            <p>Nhập mã thẻ thư viện hoặc mã định danh bạn đọc để kiểm tra các khoản phí phạt, lịch sử thanh toán và biên lai điện tử.</p>
+            <p>Nhập mã thẻ thư viện hoặc mã định danh bạn đọc để kiểm tra các khoản phí phạt, lịch sử thanh toán và biên
+              lai điện tử.</p>
           </div>
 
           <div class="reader-input-box">
             <div class="input-with-icon">
               <span class="material-symbols-outlined">badge</span>
-              <input type="text" id="reader-card-input" placeholder="Nhập mã thẻ thư viện (VD: LC-2026-0042) hoặc User ID...">
+              <input type="text" id="reader-card-input"
+                placeholder="Nhập mã thẻ thư viện (VD: LC-2026-0042) hoặc User ID...">
             </div>
             <button type="button" class="btn btn-primary" id="btn-reader-check">
               <span class="material-symbols-outlined">search</span>
@@ -313,7 +307,8 @@
           <div class="alert-content">
             <h4 id="reader-alert-title">Tài khoản có khoản phạt chưa thanh toán</h4>
             <p id="reader-alert-desc">
-              Theo quy định mượn trả KS25, độc giả có khoản phạt chưa thanh toán sẽ tạm thời bị khóa quyền mượn sách mới. Vui lòng thanh toán tại quầy thủ thư hoặc chuyển khoản để tiếp tục sử dụng dịch vụ.
+              Theo quy định mượn trả KS25, độc giả có khoản phạt chưa thanh toán sẽ tạm thời bị khóa quyền mượn sách
+              mới. Vui lòng thanh toán tại quầy thủ thư hoặc chuyển khoản để tiếp tục sử dụng dịch vụ.
             </p>
           </div>
           <div class="alert-amount font-mono" id="reader-alert-amount">
@@ -350,6 +345,20 @@
       </div>
 
     </main>
+
+    <!-- 4. FOOTER TRANG WEB -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        © 2025 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền.
+      </div>
+      <div class="footer-right">
+        <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Quy định mượn trả</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
+      </div>
+    </footer>
   </div>
 
   <!-- ========================================================================= -->
@@ -427,7 +436,8 @@
         <div id="qr-transfer-box" class="qr-box" style="display: none;">
           <div class="qr-placeholder">
             <div class="mock-qr">
-              <span class="material-symbols-outlined" style="font-size: 64px; color: var(--color-brand);">qr_code_2</span>
+              <span class="material-symbols-outlined"
+                style="font-size: 64px; color: var(--color-brand);">qr_code_2</span>
             </div>
             <div class="qr-info">
               <p><strong>Ngân hàng:</strong> MB Bank (Quân Đội)</p>
@@ -506,14 +516,18 @@
           </label>
           <textarea id="waive-reason-input" class="form-textarea" rows="3"
             placeholder="Nhập lý do cụ thể (Ví dụ: Độc giả có giấy xác nhận điều trị nội trú tại bệnh viện; Sách trễ do bưu điện giao chậm; Chính sách tân sinh viên...)."></textarea>
-          
+
           <!-- Các gợi ý lý do nhanh -->
           <div class="quick-reasons">
             <span class="quick-reason-label">Gợi ý nhanh:</span>
-            <button type="button" class="chip-btn" data-reason="Độc giả có giấy xác nhận điều trị y tế tại bệnh viện">Có xác nhận y tế</button>
-            <button type="button" class="chip-btn" data-reason="Chính sách hỗ trợ miễn giảm tân sinh viên K25">Hỗ trợ sinh viên</button>
-            <button type="button" class="chip-btn" data-reason="Chậm trễ do sự cố bất khả kháng từ đơn vị vận chuyển">Sự cố vận chuyển</button>
-            <button type="button" class="chip-btn" data-reason="Lỗi ghi nhận thời gian từ hệ thống kiểm kê">Sai sót kiểm kê</button>
+            <button type="button" class="chip-btn" data-reason="Độc giả có giấy xác nhận điều trị y tế tại bệnh viện">Có
+              xác nhận y tế</button>
+            <button type="button" class="chip-btn" data-reason="Chính sách hỗ trợ miễn giảm tân sinh viên K25">Hỗ trợ
+              sinh viên</button>
+            <button type="button" class="chip-btn" data-reason="Chậm trễ do sự cố bất khả kháng từ đơn vị vận chuyển">Sự
+              cố vận chuyển</button>
+            <button type="button" class="chip-btn" data-reason="Lỗi ghi nhận thời gian từ hệ thống kiểm kê">Sai sót kiểm
+              kê</button>
           </div>
         </div>
       </div>
@@ -617,7 +631,8 @@
               <tfoot>
                 <tr>
                   <td colspan="4" class="text-right"><strong>TỔNG TIỀN ĐÃ THU:</strong></td>
-                  <td class="text-right font-mono"><strong class="total-price" id="receipt-total-amount">15.000 ₫</strong></td>
+                  <td class="text-right font-mono"><strong class="total-price" id="receipt-total-amount">15.000
+                      ₫</strong></td>
                 </tr>
               </tfoot>
             </table>
@@ -626,8 +641,12 @@
           <!-- Số tiền bằng chữ -->
           <div class="receipt-section receipt-words-box">
             <p><strong>Số tiền viết bằng chữ:</strong> <em id="receipt-amount-words">Mười lăm nghìn đồng chẵn</em></p>
-            <p><strong>Phương thức thanh toán:</strong> <span id="receipt-payment-method">Tiền mặt tại quầy</span> | <strong>Trạng thái:</strong> <span id="receipt-doc-status" class="receipt-status-pill">ĐÃ THANH TOÁN</span></p>
-            <p id="receipt-note-row" style="display: none;"><strong>Ghi chú:</strong> <span id="receipt-note-text"></span></p>
+            <p><strong>Phương thức thanh toán:</strong> <span id="receipt-payment-method">Tiền mặt tại quầy</span> |
+              <strong>Trạng thái:</strong> <span id="receipt-doc-status" class="receipt-status-pill">ĐÃ THANH
+                TOÁN</span>
+            </p>
+            <p id="receipt-note-row" style="display: none;"><strong>Ghi chú:</strong> <span
+                id="receipt-note-text"></span></p>
           </div>
 
           <!-- Phần ký tên hai bên -->
@@ -652,13 +671,33 @@
           </div>
 
           <div class="receipt-footer">
-            <span>Cảm ơn bạn đọc đã tuân thủ nội quy Thư viện số KS25. Biên lai này có giá trị làm chứng từ xác nhận giải phóng lượt mượn.</span>
+            <span>Cảm ơn bạn đọc đã tuân thủ nội quy Thư viện số KS25. Biên lai này có giá trị làm chứng từ xác nhận
+              giải phóng lượt mượn.</span>
           </div>
         </div>
       </div>
 
       <div class="modal-footer no-print">
         <button type="button" class="btn btn-secondary" data-close="modal-receipt">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
       </div>
     </div>
   </div>

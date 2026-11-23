@@ -159,6 +159,55 @@
     }, 3500);
   }
 
+  // HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (showConfirm - ĐỒNG BỘ LOAN_MANAGEMENT)
+  let activeConfirmCallback = null;
+
+  function showConfirm(options) {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+      if (iconBox) iconBox.classList.add("icon-red");
+      if (btnProceed) btnProceed.classList.add("btn-danger");
+      if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+      if (iconBox) iconBox.classList.add("icon-green");
+      if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+      if (iconBox) iconBox.classList.add("icon-blue");
+      if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+    activeConfirmCallback = null;
+  }
+
   // 6. GỌI API BACKEND CHUẨN (CÓ TOKEN VÀ BÁO LỖI THẬT)
   async function fetchAPI(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
@@ -729,21 +778,6 @@
 
   // 15. GẮN SỰ KIỆN KHỞI TẠO (EVENT LISTENERS)
   function initEvents() {
-    // Tab switching
-    document.getElementById("tab-staff-view").addEventListener("click", () => {
-      document.getElementById("tab-staff-view").classList.add("active");
-      document.getElementById("tab-reader-view").classList.remove("active");
-      document.getElementById("staff-view").style.display = "block";
-      document.getElementById("reader-view").style.display = "none";
-    });
-
-    document.getElementById("tab-reader-view").addEventListener("click", () => {
-      document.getElementById("tab-reader-view").classList.add("active");
-      document.getElementById("tab-staff-view").classList.remove("active");
-      document.getElementById("reader-view").style.display = "block";
-      document.getElementById("staff-view").style.display = "none";
-    });
-
     // Bộ lọc và tìm kiếm
     let debounceTimer;
     document.getElementById("filter-keyword").addEventListener("input", (e) => {
@@ -869,16 +903,115 @@
     currentUserRole = (user.role || "READER").toUpperCase();
     const roleLabels = { ADMIN: "Quản trị viên", LIBRARIAN: "Thủ thư trực quầy", READER: "Độc giả" };
 
-    const avatarEl = document.getElementById("user-avatar");
+    const avatarEl = document.getElementById("userAvatar");
     if (avatarEl) avatarEl.textContent = (user.full_name || user.email || "U").charAt(0).toUpperCase();
-    const nameEl = document.getElementById("user-display-name");
+    const nameEl = document.getElementById("userName");
     if (nameEl) nameEl.textContent = user.full_name || user.email;
-    const roleEl = document.getElementById("user-display-role");
+    const roleEl = document.getElementById("userRole");
     if (roleEl) roleEl.textContent = roleLabels[currentUserRole] || currentUserRole;
 
-    document.getElementById("btn-logout")?.addEventListener("click", () => {
-      if (typeof auth !== "undefined") auth.clearSession();
-      window.location.href = "login.html#login";
+    // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const navMenu = document.getElementById("navMenu");
+    if (mobileMenuToggle && navMenu) {
+      mobileMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle("show");
+      });
+    }
+
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+
+    if (userProfileBtn && userDropdownMenu) {
+      userProfileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle("show");
+        const isShown = userDropdownMenu.classList.contains("show");
+        userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+      });
+    }
+
+    function triggerLogoutConfirm(e) {
+      if (e) e.stopPropagation();
+      if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      showConfirm({
+        title: "Xác nhận đăng xuất?",
+        message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+        type: "red",
+        confirmText: "Đăng xuất",
+        cancelText: "Hủy",
+        onConfirm: () => {
+          if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+            auth.clearSession();
+          } else {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user_info");
+            localStorage.removeItem("library_card");
+            sessionStorage.removeItem("access_token");
+            sessionStorage.removeItem("user_info");
+          }
+          showToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "info");
+          setTimeout(() => {
+            window.location.href = "login.html#login";
+          }, 500);
+        }
+      });
+    }
+
+    if (logoutMenuBtn) logoutMenuBtn.addEventListener("click", triggerLogoutConfirm);
+
+    // Đóng dropdown và mobile menu khi click ngoài màn hình
+    document.addEventListener("click", () => {
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
+      if (navMenu && navMenu.classList.contains("show")) {
+        navMenu.classList.remove("show");
+      }
+    });
+
+    // Sự kiện trong Confirm Modal
+    const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+    const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+    const confirmModal = document.getElementById("confirm-modal");
+
+    if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+
+    if (btnConfirmProceed) {
+      btnConfirmProceed.addEventListener("click", () => {
+        const callback = activeConfirmCallback;
+        closeConfirmModal();
+        if (typeof callback === "function") {
+          callback();
+        }
+      });
+    }
+
+    if (confirmModal) {
+      confirmModal.addEventListener("click", (e) => {
+        if (e.target === confirmModal) closeConfirmModal();
+      });
+    }
+
+    // Phím Escape để đóng modal hoặc dropdown
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (confirmModal && confirmModal.classList.contains("active")) {
+          closeConfirmModal();
+        }
+        if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+          userDropdownMenu.classList.remove("show");
+          if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        }
+        if (navMenu && navMenu.classList.contains("show")) {
+          navMenu.classList.remove("show");
+        }
+      }
     });
 
     initEvents();
@@ -890,24 +1023,16 @@
       const wrap = document.querySelector(".fines-workspace-wrapper");
       if (wrap) wrap.style.marginLeft = "0";
 
-      const staffTab = document.getElementById("tab-staff-view");
-      const readerTab = document.getElementById("tab-reader-view");
       const staffView = document.getElementById("staff-view");
       const readerView = document.getElementById("reader-view");
       const readerSearchCard = document.querySelector(".reader-search-card");
 
-      if (staffTab) staffTab.style.display = "none";
       if (staffView) staffView.style.display = "none";
       if (readerSearchCard) readerSearchCard.style.display = "none";
-      if (readerTab) readerTab.classList.add("active");
       if (readerView) readerView.style.display = "block";
 
-      const bc = document.querySelector(".breadcrumb-nav .highlight");
-      if (bc) bc.textContent = "Khoản phạt cá nhân";
       const titleEl = document.querySelector(".page-title");
       if (titleEl) titleEl.textContent = "Khoản phạt cá nhân của tôi";
-      const subEl = document.querySelector(".page-subtitle");
-      if (subEl) subEl.textContent = "Theo dõi các khoản phạt vi phạm, trạng thái thanh toán và xem biên lai điện tử.";
 
       loadMyFinesForReader();
       return;
@@ -926,7 +1051,10 @@
         if (statusSel) statusSel.value = "ALL";
       }
       if (urlParams.get("tab") === "reader") {
-        document.getElementById("tab-reader-view")?.click();
+        const staffView = document.getElementById("staff-view");
+        const readerView = document.getElementById("reader-view");
+        if (staffView) staffView.style.display = "none";
+        if (readerView) readerView.style.display = "block";
       }
     } catch (_) {}
 

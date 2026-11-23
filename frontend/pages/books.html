@@ -54,14 +54,15 @@
         <div class="topbar-right">
             <!-- User Account Dropdown -->
             <div class="user-dropdown-container" id="userDropdownContainer">
-                <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
-                    aria-haspopup="true">
+                <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn"
+                    aria-expanded="false" aria-haspopup="true">
                     <div class="librarian-avatar" id="userAvatar"></div>
                     <div class="librarian-info">
                         <span class="librarian-name" id="userName"></span>
                         <span class="librarian-role" id="userRole"></span>
                     </div>
-                    <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+                    <span class="material-symbols-outlined"
+                        style="font-size: 16px; margin-left: 2px;">expand_more</span>
                 </button>
                 <div class="user-dropdown-menu" id="userDropdownMenu">
                     <a href="auth.html" class="dropdown-item">
@@ -114,7 +115,7 @@
                 <span class="material-symbols-outlined">payments</span>
                 <span class="rail-label">Xử lý tiền phạt</span>
             </a>
-            <a href="admin-users.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
+            <a href="readers.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
                 <span class="material-symbols-outlined">badge</span>
                 <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
             </a>
@@ -581,7 +582,7 @@
                             <span class="dot dot-danger"></span> <span id="stat-count-damaged">1</span> Hư hỏng
                         </span>
                         <span id="pill-stat-maintenance" class="status-pill pill-maintenance">
-                            <span class="dot dot-warning"></span> <span id="stat-count-maintenance">1</span> Bảo trì
+                            <span class="dot dot-warning"></span> <span id="stat-count-maintenance">1</span> Mất / Thanh lý
                         </span>
                     </div>
                     <div class="copies-shelf-badge">
@@ -617,7 +618,7 @@
                                     id="filterCountAvailable">8</span>)</button>
                             <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span
                                     id="filterCountBorrowed">2</span>)</button>
-                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span
+                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Mất / Thanh lý (<span
                                     id="filterCountIssues">2</span>)</button>
                         </div>
                         <div class="copies-actions-cluster">
@@ -728,11 +729,12 @@
                             <div class="status-form-col status-select-col">
                                 <label for="quickStatusSelect">Trạng thái mới <span class="req">*</span></label>
                                 <select id="quickStatusSelect" class="form-control">
-                                    <option value="DAMAGED">Hư hỏng / Chờ phục hồi (DAMAGED)</option>
                                     <option value="AVAILABLE">Khả dụng - Đưa lại giá (AVAILABLE)</option>
-                                    <option value="MAINTENANCE">Bảo dưỡng - Dán gáy (MAINTENANCE)</option>
+                                    <option value="BORROWED">Đang cho mượn (BORROWED)</option>
+                                    <option value="RESERVED">Đã đặt trước / Giữ chỗ (RESERVED)</option>
+                                    <option value="DAMAGED">Hư hỏng / Chờ phục hồi (DAMAGED)</option>
                                     <option value="LOST">Báo mất - Lập biên bản (LOST)</option>
-                                    <option value="LIQUIDATION">Đề nghị thanh lý (LIQUIDATED)</option>
+                                    <option value="DISPOSED">Đã thanh lý (DISPOSED)</option>
                                 </select>
                             </div>
                             <div class="status-form-col status-reason-col">
@@ -772,10 +774,6 @@
 
             <!-- Modal Footer: Clean & Essential Actions -->
             <div class="copies-hfd-footer">
-                <div class="footer-api-spec">
-                    <span class="material-symbols-outlined">terminal</span>
-                    <span>API: PATCH /api/v1/book-copies/status</span>
-                </div>
                 <div class="footer-actions">
                     <button id="closeCopiesModalFooterBtn" type="button" class="btn-action-outline">Đóng</button>
                     <button id="exportCopiesCsvBtn" type="button" class="btn-action-outline">

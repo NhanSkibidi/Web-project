@@ -422,19 +422,19 @@ body.dashboard-body {
 .sidebar-rail:not(:hover) .sidebar-rail-link:hover::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: 76px;
+  left: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%);
-  background: #1A202C;
+  background: #1B4332;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   white-space: nowrap;
-  z-index: 100;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.15s ease forwards;
 }
 
@@ -447,6 +447,7 @@ body.dashboard-body {
 }
 
 .sidebar-rail-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -457,7 +458,8 @@ body.dashboard-body {
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s;
+  cursor: pointer;
 }
 
 .sidebar-rail-link .material-symbols-outlined {
@@ -466,14 +468,26 @@ body.dashboard-body {
 }
 
 .sidebar-rail-link:hover {
-  background: var(--color-paper);
+  transform: translateX(3px);
+  background: var(--color-brand-subtle);
   color: var(--color-brand);
+  text-decoration: none;
 }
 
 .sidebar-rail-link.active {
   background: var(--color-brand);
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
+}
+
+.sidebar-rail-link.active:hover {
+  background: var(--color-brand);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.sidebar-rail-link.active .material-symbols-outlined {
+  color: #ffffff;
 }
 
 .rail-label {

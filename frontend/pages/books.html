@@ -217,25 +217,21 @@
                     <span class="material-symbols-outlined">search</span>
                     <input type="text" id="filter-search-input" placeholder="Tìm theo tên sách, tác giả, ISBN...">
                 </div>
-                <div>
-                    <select id="filter-category" class="filter-select">
-                        <option value="">Tất cả thể loại chuyên ngành</option>
-                        <option value="cntt">Công nghệ thông tin &amp; Phần mềm</option>
-                        <option value="kinhte">Kinh tế &amp; Quản trị kinh doanh</option>
-                        <option value="dientu">Kỹ thuật Điện tử - Viễn thông</option>
-                        <option value="toan">Khoa học Cơ bản &amp; Toán ứng dụng</option>
-                        <option value="ngoaingu">Ngoại ngữ &amp; Kỹ năng mềm</option>
-                    </select>
-                </div>
-                <div>
-                    <select id="filter-status" class="filter-select">
-                        <option value="">Trạng thái kho</option>
-                        <option value="available">AVAILABLE (Còn sẵn)</option>
-                        <option value="borrowed">BORROWED (Đang mượn)</option>
-                        <option value="reserved">RESERVED (Đã đặt trước)</option>
-                        <option value="lost">LOST/DAMAGED (Mất/Hỏng)</option>
-                    </select>
-                </div>
+                <select id="filter-category" class="filter-select">
+                    <option value="">Tất cả thể loại chuyên ngành</option>
+                    <option value="cntt">Công nghệ thông tin (IT · Phần mềm)</option>
+                    <option value="kinhte">Kinh tế &amp; Quản trị (ECO · Kinh doanh)</option>
+                    <option value="dientu">Kỹ thuật Điện tử (ECE · Viễn thông)</option>
+                    <option value="toan">Khoa học Cơ bản (SCI · Toán ứng dụng)</option>
+                    <option value="ngoaingu">Ngoại ngữ (LANG · Kỹ năng mềm)</option>
+                </select>
+                <select id="filter-status" class="filter-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="available">Sẵn sàng (AVAILABLE · Còn sách)</option>
+                    <option value="borrowed">Đang mượn (BORROWED · Lưu thông)</option>
+                    <option value="reserved">Đã đặt trước (RESERVED · Giữ chỗ)</option>
+                    <option value="lost">Hư hỏng / Báo mất (LOST/DAMAGED · Kiểm kê)</option>
+                </select>
                 <div class="filter-actions">
                     <button id="btn-reset-filter" type="button" class="btn-filter-reset" title="Xóa bộ lọc">
                         <span class="material-symbols-outlined">refresh</span>
@@ -416,8 +412,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="bookShelf">Kệ lưu trữ mặc định</label>
-                                <input type="text" id="bookShelf" class="form-input" placeholder="VD: Kệ A3 - Ngăn 2"
-                                    value="Kệ A3 - Ngăn 2">
+                                <select id="bookShelf" class="form-select">
+                                    <option value="Khu A - Kệ A1 (Kho CNTT)">Khu A - Kệ A1 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A2 (Kho CNTT)">Khu A - Kệ A2 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A3 (Kho CNTT)" selected>Khu A - Kệ A3 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A4 (Kho CNTT)">Khu A - Kệ A4 (Kho CNTT)</option>
+                                    <option value="Khu B - Kệ B1 (Kho Điện tử)">Khu B - Kệ B1 (Kho Điện tử)</option>
+                                    <option value="Khu B - Kệ B2 (Kho Điện tử)">Khu B - Kệ B2 (Kho Điện tử)</option>
+                                    <option value="Khu C - Kệ C1 (Kho Kinh tế)">Khu C - Kệ C1 (Kho Kinh tế)</option>
+                                    <option value="Khu C - Kệ C2 (Kho Kinh tế)">Khu C - Kệ C2 (Kho Kinh tế)</option>
+                                    <option value="Khu D - Kệ D1 (Kho Ngoại ngữ)">Khu D - Kệ D1 (Kho Ngoại ngữ)</option>
+                                    <option value="Khu D - Kệ D2 (Kho Ngoại ngữ)">Khu D - Kệ D2 (Kho Ngoại ngữ)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -660,13 +666,25 @@
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyShelf">Vị trí kệ (*)</label>
-                                    <input type="text" id="newCopyShelf" class="form-control"
-                                        placeholder="VD: Kệ A3-02-T1" required />
+                                    <select id="newCopyShelf" class="form-control" required>
+                                        <option value="Kệ A3-02-T1 (Khu CNTT)" selected>Kệ A3-02-T1 (Khu CNTT)</option>
+                                        <option value="Kệ A3-02-T2 (Khu CNTT)">Kệ A3-02-T2 (Khu CNTT)</option>
+                                        <option value="Kệ A2-01-T1 (Khu CNTT)">Kệ A2-01-T1 (Khu CNTT)</option>
+                                        <option value="Kệ B1-03-T1 (Khu Điện tử)">Kệ B1-03-T1 (Khu Điện tử)</option>
+                                        <option value="Khu C-01-T1 (Kho Kinh tế)">Khu C-01-T1 (Kho Kinh tế)</option>
+                                        <option value="Khu D-02-T1 (Kho Ngoại ngữ)">Khu D-02-T1 (Kho Ngoại ngữ)</option>
+                                        <option value="Kho Lưu trữ Trung tâm">Kho Lưu trữ Trung tâm</option>
+                                    </select>
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyCondition">Tình trạng thực tế</label>
-                                    <input type="text" id="newCopyCondition" class="form-control"
-                                        value="Mới 100% • Đã dán bọc" />
+                                    <select id="newCopyCondition" class="form-control">
+                                        <option value="Mới 100% • Đã dán bọc" selected>Mới 100% (Nguyên bản - Đã dán bọc)</option>
+                                        <option value="Tốt 95% • Đã qua sử dụng">Tốt 95% (Đã qua sử dụng)</option>
+                                        <option value="Khá 80% • Hơi cũ / ố vàng">Khá 80% (Hơi cũ / ố vàng nhẹ)</option>
+                                        <option value="Cũ 60% • Sờn gáy / quăn mép">Cũ 60% (Sờn gáy / quăn mép)</option>
+                                        <option value="Hỏng nhẹ • Cần tu sửa">Hỏng nhẹ (Cần tu sửa)</option>
+                                    </select>
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyPolicy">Chính sách</label>
@@ -740,8 +758,16 @@
                             <div class="status-form-col status-reason-col">
                                 <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span
                                         class="req">*</span></label>
-                                <input id="quickStatusReason" type="text" class="form-control"
-                                    placeholder="Nhập lý do chi tiết..." required />
+                                <select id="quickStatusReason" class="form-control" required>
+                                    <option value="Kiểm kê định kỳ - Xác nhận trạng thái" selected>Kiểm kê định kỳ - Xác nhận trạng thái</option>
+                                    <option value="Độc giả trả sách - Đưa lại lên giá">Độc giả trả sách - Đưa lại lên giá</option>
+                                    <option value="Bàn giao mượn sách cho bạn đọc">Bàn giao mượn sách cho bạn đọc</option>
+                                    <option value="Phát hiện hư hỏng - Chuyển tu sửa">Phát hiện hư hỏng - Chuyển tu sửa</option>
+                                    <option value="Độc giả báo mất - Chờ xử lý bồi thường">Độc giả báo mất - Chờ xử lý bồi thường</option>
+                                    <option value="Hết niên hạn - Đề xuất thanh lý">Hết niên hạn - Đề xuất thanh lý</option>
+                                    <option value="Điều chuyển vị trí lưu kho">Điều chuyển vị trí lưu kho</option>
+                                    <option value="Lý do nghiệp vụ khác">Lý do nghiệp vụ khác</option>
+                                </select>
                             </div>
                             <div class="status-form-col status-actions-col">
                                 <div class="librarian-mini-badge">

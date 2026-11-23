@@ -278,24 +278,36 @@
         </div>
 
         <div class="filter-controls-group">
+          <!-- Lọc trạng thái (Phong cách độc giả - Reader) -->
+          <div class="filter-select-wrapper">
+            <select id="filter-status" class="filter-select" aria-label="Lọc theo trạng thái">
+              <option value="all" selected>Tất cả trạng thái</option>
+              <option value="pending">Chờ duyệt (PENDING · Đăng ký)</option>
+              <option value="approved">Chờ nhận sách (APPROVED · Tại quầy)</option>
+              <option value="borrowed">Đang mượn (BORROWED · Lưu thông)</option>
+              <option value="overdue">Quá hạn (OVERDUE · Cần trả)</option>
+              <option value="rejected">Đã từ chối (REJECTED · Hủy phiếu)</option>
+            </select>
+          </div>
+
           <!-- Lọc thời gian -->
           <div class="filter-select-wrapper">
-            <select id="filter-time" aria-label="Lọc theo thời gian">
-              <option value="today">Hôm nay (28/10)</option>
-              <option value="3days">3 ngày qua</option>
+            <select id="filter-time" class="filter-select" aria-label="Lọc theo thời gian">
               <option value="all" selected>Tất cả thời gian</option>
+              <option value="today">Hôm nay (TODAY · 28/10)</option>
+              <option value="3days">3 ngày qua (3DAYS · Gần đây)</option>
             </select>
           </div>
 
           <!-- Lọc khoa / viện -->
           <div class="filter-select-wrapper">
-            <select id="filter-department" aria-label="Lọc theo khoa viện">
+            <select id="filter-department" class="filter-select" aria-label="Lọc theo khoa viện">
               <option value="all" selected>Tất cả khoa / viện</option>
-              <option value="CNTT & TT">CNTT &amp; TT</option>
-              <option value="Kinh tế">Kinh tế</option>
-              <option value="Điện tử">Điện tử</option>
-              <option value="Ngoại ngữ">Ngoại ngữ</option>
-              <option value="Cơ khí">Cơ khí</option>
+              <option value="CNTT & TT">Khoa CNTT &amp; TT (CNTT · Công nghệ)</option>
+              <option value="Kinh tế">Khoa Kinh tế (KT · Quản trị)</option>
+              <option value="Điện tử">Khoa Điện tử (DT · Viễn thông)</option>
+              <option value="Ngoại ngữ">Khoa Ngoại ngữ (NN · Sư phạm)</option>
+              <option value="Cơ khí">Khoa Cơ khí (CK · Động lực)</option>
             </select>
           </div>
 
@@ -545,15 +557,28 @@
           thông báo lý do đến sinh viên.
         </p>
 
-        <!-- Chọn nhanh lý do -->
+        <!-- Chọn lý do từ chối chuẩn phong cách Reader (Không cho gõ tự do khi chọn chuẩn) -->
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="reject-reason-select" class="input-label">Chọn lý do từ chối chuẩn (*)</label>
+          <select id="reject-reason-select" class="filter-select" style="width: 100%;">
+            <option value="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ</option>
+            <option value="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện của độc giả đã hết hạn hiệu lực</option>
+            <option value="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt giới hạn số lượng sách được phép mượn</option>
+            <option value="Độc giả đang có sách quá hạn lưu thông chưa hoàn trả">Độc giả đang có sách quá hạn lưu thông chưa hoàn trả</option>
+            <option value="Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa">Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa</option>
+            <option value="Khác">Lý do khác (Nhập chi tiết bổ sung bên dưới)</option>
+          </select>
+        </div>
+
+        <!-- Chọn nhanh lý do dạng Pills -->
         <div class="quick-reasons-wrap">
-          <label class="input-label">Chọn nhanh lý do từ chối:</label>
+          <label class="input-label">Hoặc chọn nhanh theo thẻ:</label>
           <div class="quick-reason-pills" id="quick-reason-pills">
-            <button type="button" class="reason-pill" data-reason="Bản sao sách không khả dụng">Bản sao sách không khả
+            <button type="button" class="reason-pill" data-reason="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách không khả
               dụng</button>
-            <button type="button" class="reason-pill" data-reason="Thẻ thư viện đã hết hạn">Thẻ thư viện đã hết
+            <button type="button" class="reason-pill" data-reason="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện đã hết
               hạn</button>
-            <button type="button" class="reason-pill" data-reason="Độc giả vượt giới hạn số sách được mượn">Độc giả vượt
+            <button type="button" class="reason-pill" data-reason="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt
               giới hạn số sách</button>
             <button type="button" class="reason-pill" data-reason="Khác">Khác</button>
           </div>

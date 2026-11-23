@@ -823,7 +823,7 @@
 
         if (dom.bookYear) dom.bookYear.value = new Date().getFullYear();
         if (dom.bookPageCount) dom.bookPageCount.value = 350;
-        if (dom.bookShelf) dom.bookShelf.value = "Kệ A1";
+        if (dom.bookShelf) dom.bookShelf.value = "Khu A - Kệ A3 (Kho CNTT)";
         if (dom.bookDescription) dom.bookDescription.value = "";
         if (dom.copiesCount) dom.copiesCount.value = 3;
 
@@ -882,7 +882,14 @@
 
             if (dom.bookYear) dom.bookYear.value = book.publish_year || new Date().getFullYear();
             if (dom.bookPageCount) dom.bookPageCount.value = book.page_count || 300;
-            if (dom.bookShelf) dom.bookShelf.value = book.shelf_location || "Kệ A1";
+            if (dom.bookShelf) {
+                const shelfVal = book.shelf_location || "Khu A - Kệ A3 (Kho CNTT)";
+                const hasOpt = Array.from(dom.bookShelf.options).some(o => o.value === shelfVal);
+                if (!hasOpt && shelfVal) {
+                    dom.bookShelf.add(new Option(shelfVal, shelfVal, true, true));
+                }
+                dom.bookShelf.value = shelfVal;
+            }
             if (dom.bookDescription) dom.bookDescription.value = book.description || "";
             if (dom.copiesCount) dom.copiesCount.value = book.total_copies || 1;
 
@@ -1653,8 +1660,12 @@
         }
 
         if (dom.quickStatusReason) {
-            dom.quickStatusReason.value = "";
-            dom.quickStatusReason.placeholder = "Nhập lý do chi tiết (bắt buộc khi báo hỏng/mất/thanh lý)...";
+            if (dom.quickStatusReason.tagName === "SELECT") {
+                dom.quickStatusReason.selectedIndex = 0;
+            } else {
+                dom.quickStatusReason.value = "";
+                dom.quickStatusReason.placeholder = "Nhập lý do chi tiết (bắt buộc khi báo hỏng/mất/thanh lý)...";
+            }
             dom.quickStatusReason.focus();
         }
 

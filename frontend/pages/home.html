@@ -16,8 +16,97 @@
 
 <body data-root="../">
 
-  <!-- HEADER CỐ ĐỊNH KHI CUỘN TRANG (STICKY HEADER) ĐƯỢC TỰ ĐỘNG RENDER BỞI LAYOUT.JS -->
-  <header id="app-header"></header>
+  <!-- =========================================================================
+       1. THANH TOPBAR CỐ ĐỊNH (HEADER) - CHUẨN THIẾT KẾ ĐỒNG BỘ BOOKS.HTML
+       ========================================================================= -->
+  <header class="librarian-topbar site-header">
+    <div class="topbar-left">
+      <!-- Logo -->
+      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
+        </div>
+      </a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <!-- Navigation Menu: Trang chủ, Tra cứu sách, Phiếu mượn và Thông báo -->
+      <nav class="topbar-nav" id="navMenu">
+        <a href="home.html" class="topbar-nav-link active" data-page="home">Trang chủ</a>
+        <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
+        <a href="loan_slip.html" class="topbar-nav-link" data-page="loan_slip">Phiếu mượn</a>
+        <a href="javascript:void(0)" class="topbar-nav-link" id="navNotifBtn" data-page="notifications">Thông báo</a>
+      </nav>
+    </div>
+
+    <!-- Header Right Area -->
+    <div class="topbar-right">
+      <!-- Chuông thông báo in-app (dropdown) -->
+      <div class="notif-dropdown-container" id="notifDropdownContainer">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo" aria-expanded="false" title="Thông báo nhắc trả sách">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+        </button>
+        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
+          <div class="notif-header">
+            <div class="notif-title-group">
+              <span class="notif-title">Thông báo mượn trả</span>
+              <span class="notif-badge-pill">0 mới</span>
+            </div>
+            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
+          </div>
+          <div class="notif-list">
+            <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 13px;">
+              Đang tải thông báo...
+            </div>
+          </div>
+          <div class="notif-footer">
+            <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Giỏ mượn sách -->
+      <a href="loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách" id="loanBasketBtn">
+        <span class="material-symbols-outlined">shopping_bag</span>
+      </a>
+
+      <!-- User Account Dropdown -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn"
+          aria-expanded="false" aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar">U</div>
+          <div class="librarian-info">
+            <span class="librarian-name" id="userName">Độc giả</span>
+            <span class="librarian-role" id="userRole">Sinh viên / Độc giả</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="auth.html" class="dropdown-item" id="userProfileLink">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <a href="loan_slip.html" class="dropdown-item">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <span>Phiếu mượn của tôi</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <main class="container">
 
@@ -196,6 +285,10 @@
           <span
             style="display:inline-block; width:4px; height:22px; background:var(--color-primary); border-radius:2px;"></span>
           <h2 class="section-title" id="books-section-title">Tài liệu mới nhập học kỳ này</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="carousel-page-indicator" style="font-size:13px; font-weight:600; color:var(--color-muted);">1 / 4</span>
+          <button type="button" class="btn-toggle-view" id="btn-view-all-books" onclick="toggleAllBooksView()">Xem tất cả (16 cuốn)</button>
         </div>
       </div>
 
@@ -433,15 +526,45 @@
 
   </main>
 
-  <!-- FOOTER ĐƯỢC RENDER TỰ ĐỘNG BỞI LAYOUT.JS -->
-  <footer id="app-footer"></footer>
+  <!-- FOOTER TRANG WEB (ĐỒNG BỘ BOOKS.HTML / LOAN_MANAGEMENT) -->
+  <footer class="app-footer">
+    <div class="footer-left">
+      © 2025 KS25 Library System - Cổng Tra Cứu &amp; Độc Giả Sinh Viên. Bảo lưu mọi quyền.
+    </div>
+    <div class="footer-right">
+      <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Quy định mượn trả</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ BOOKS.HTML)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts theo đúng thứ tự base của dự án -->
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
-  <script src="../js/layout.js?v=9.8"></script>
+  <script src="../js/notifications.js"></script>
   <script src="../js/pages/home.js?v=9.8"></script>
 </body>
 

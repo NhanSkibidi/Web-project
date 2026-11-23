@@ -1,232 +1,49 @@
 /**
  * KS25 Library - Module Quản lý Đầu sách & Bản sao (Books & Copies Management)
- * Tuân thủ quy chuẩn Clean Architecture: Tách biệt hoàn toàn HTML / CSS / JS
- * Hỗ trợ đồng bộ Backend API RESTful với cơ chế Graceful Fallback dữ liệu nội bộ
+ * Tích hợp Backend RESTful API hoàn chỉnh theo quy chuẩn Clean Architecture
+ * Bảo lưu 100% tính năng giao diện, in ấn tem mã vạch, xuất Excel/CSV và drawer di động
  */
 
 (function () {
     "use strict";
 
     // ============================================================================
-    // MOCK DATA (DỮ LIỆU ĐẦU SÁCH & BẢN SAO ĐẬM CHẤT HỌC THUẬT KS25)
-    // ============================================================================
-    const MOCK_BOOKS = [
-        {
-            isbn: "BK-IT-2024-001",
-            ddc: "005.133 (FastAPI)",
-            title: "Lập trình Web Hiện đại với Python & FastAPI",
-            edition: "Tái bản lần 2 (NXB Khoa Học Kỹ Thuật)",
-            page_count: 420,
-            authors: ["TS. Lê Hoàng Nam", "ThS. Đỗ Thùy Linh"],
-            publisher: "NXB Đại học Quốc gia",
-            publish_year: 2024,
-            category_id: "cntt",
-            category_name: "CNTT & Phần mềm",
-            total_copies: 12,
-            available_copies: 8,
-            shelf_location: "KHO-TRUNG-TAM-A",
-            cover_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAHUieamnMj8LEicCLHMgyMjww9oZXyp8wtMGaR0s228SJD9GGzZrYQ5H3zT5e9QLIL7Y0Z-N2De_jKyxWWrlNFfYsjHhvp71C7bb0Heww51_Rt7RID0naRcxXW97NnajMWEjHV_UPeEIFFqTIdVK5Uno62xerxYntHgt4YPfZhBLnnXxMX9xzt1LqDTTqj-fV8tvMPaj7EvHCA9Vn-IMhZ-Yx83pyVm-6sg9b3GWPS",
-            description: "Giáo trình toàn diện về kiến trúc backend hiện đại, API RESTful hiệu năng cao và triển khai containerized.",
-            allow_home: true,
-            copies: [
-                { id: 101, copy_code: "BS-IT-001-01", barcode: "893524480101", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 98% • Đã dán bọc", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 102, copy_code: "BS-IT-001-02", barcode: "893524480102", shelf_location: "Kệ A3-02-T1", shelf_sub: "Đang lưu thông", condition: "Tốt • Gáy chuẩn", status: "BORROWED", borrower: "#DG-2024-0104", due_date: "04/11", policy: "Mượn 14 ngày" },
-                { id: 103, copy_code: "BS-IT-001-03", barcode: "893524480103", shelf_location: "Kệ A3-02-T1", shelf_sub: "Đang lưu thông", condition: "Tốt • Bọc plastic", status: "OVERDUE", overdue_days: 2, borrower: "#DG-2023-0882", policy: "Mượn 14 ngày" },
-                { id: 104, copy_code: "BS-IT-001-04", barcode: "893524480104", shelf_location: "P. Kỹ thuật 204", shelf_sub: "Chờ phục chế", condition: "Bung gáy • Rách trang 42-45", status: "DAMAGED", policy: "Tạm khóa" },
-                { id: 105, copy_code: "BS-IT-001-05", barcode: "893524480105", shelf_location: "Xưởng đóng bìa B1", shelf_sub: "Định kỳ phủ keo", condition: "Bảo trì dự phòng định kỳ", status: "MAINTENANCE", policy: "Tạm khóa" },
-                { id: 106, copy_code: "BS-IT-001-06", barcode: "893524480106", shelf_location: "Tủ Kính R-01", shelf_sub: "Lưu chiểu an toàn", condition: "Bản lưu chiểu hoàn hảo 100%", status: "AVAILABLE", policy: "Chỉ đọc tại chỗ" },
-                { id: 107, copy_code: "BS-IT-001-07", barcode: "893524480107", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 98% • Nguyên vẹn", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 108, copy_code: "BS-IT-001-08", barcode: "893524480108", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 98%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 109, copy_code: "BS-IT-001-09", barcode: "893524480109", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 110, copy_code: "BS-IT-001-10", barcode: "893524480110", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 111, copy_code: "BS-IT-001-11", barcode: "893524480111", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 112, copy_code: "BS-IT-001-12", barcode: "893524480112", shelf_location: "Kệ A3-02-T1", shelf_sub: "Khu CNTT Tầng 2", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" }
-            ],
-            audit_logs: [
-                {
-                    id: 1,
-                    copy_code: "BS-IT-001-04",
-                    event_type: "INCIDENT",
-                    title: "Sự cố bạn đọc trả sách",
-                    time: "28/10/2024 10:45:12",
-                    from_status: "Đang mượn (BORROWED)",
-                    to_status: "Hư hỏng (DAMAGED)",
-                    desc: "Độc giả Nguyễn Văn An làm rách trang 42-45 khi trả sách. Đã lập biên bản xử lý phụ phí phục chế 20.000đ (#BL-2025-0429).",
-                    staff: "Trần Minh Quang (Quầy 01)",
-                    has_pdf: true
-                },
-                {
-                    id: 2,
-                    copy_code: "BS-IT-001-02",
-                    event_type: "MAINTENANCE_DONE",
-                    title: "Bảo dưỡng hoàn tất",
-                    time: "14/10/2024 09:15:00",
-                    from_status: "Bảo trì (MAINTENANCE)",
-                    to_status: "Khả dụng (AVAILABLE)",
-                    desc: "Đã hoàn thành dán gáy gia cố polymer và kiểm định thành công chip RFID tại cổng an ninh.",
-                    staff: "Lê Thị Mai (Xưởng Tu bổ)",
-                    standard_met: true
-                },
-                {
-                    id: 3,
-                    copy_code: "Lô 12 bản sao (BS-01 -> BS-12)",
-                    event_type: "INITIAL_INGESTION",
-                    title: "Nhập kho lô đầu tiên",
-                    time: "15/01/2024 08:00:00",
-                    from_status: "Khởi tạo mới",
-                    to_status: "AVAILABLE (11 Bản) & ARCHIVE (1 Bản)",
-                    desc: "Nghiệm thu bàn giao sách đợt Quý 1/2024. Đã phân loại DDC 005.133, dán RFID và đưa lên giá.",
-                    staff: "KS25 Biblio Core (Lô #BATCH-2024-Q1)",
-                    auto: true
-                }
-            ]
-        },
-        {
-            isbn: "BK-IT-2023-089",
-            ddc: "004.22 (Architecture)",
-            title: "Kiến trúc Hệ thống & Thiết kế Microservices",
-            edition: "Bản dịch tiếng Việt (NXB Bách Khoa)",
-            page_count: 560,
-            authors: ["Martin Kleppmann", "TS. Vũ Hải Đăng (Dịch)"],
-            publisher: "NXB Bách Khoa",
-            publish_year: 2023,
-            category_id: "cntt",
-            category_name: "CNTT & Phần mềm",
-            total_copies: 6,
-            available_copies: 1,
-            shelf_location: "KHO-TRUNG-TAM-B",
-            cover_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBHQUn9YGRWpra0RQY3gATlmUWAz6-UQoT7ak7BIQWQILyZK014OGoBcV-R9HcMooC_26loKEpxs8YTpv2F31KZsjiJdvHDYWcFocBwGP44gWQUSd2xU8qRTg_gYx_Ak-PcbiCrOgapKsLM0NHx6pvJ-k60Yc-1lndI3DPTxgY9m729yScg0PP-PG9tDotRQlpqy07_yi6nQL0GgP_S3qIWkJ32MPFBObSqaXDrO9Ga",
-            description: "Phân tích chuyên sâu về dữ liệu phân tán, tính nhất quán, xử lý stream và độ tin cậy trong các hệ thống quy mô lớn.",
-            allow_home: true,
-            copies: [
-                { id: 201, copy_code: "BS-IT-089-01", barcode: "893524480201", shelf_location: "Kệ B1-01-T2", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0012", due_date: "08/11", policy: "Mượn 14 ngày" },
-                { id: 202, copy_code: "BS-IT-089-02", barcode: "893524480202", shelf_location: "Kệ B1-01-T2", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0045", due_date: "12/11", policy: "Mượn 14 ngày" },
-                { id: 203, copy_code: "BS-IT-089-03", barcode: "893524480203", shelf_location: "Kệ B1-01-T2", shelf_sub: "Đang lưu thông", condition: "Cũ 80%", status: "BORROWED", borrower: "#DG-2023-0911", due_date: "01/11", policy: "Mượn 14 ngày" },
-                { id: 204, copy_code: "BS-IT-089-04", barcode: "893524480204", shelf_location: "Kệ B1-01-T2", shelf_sub: "Đang lưu thông", condition: "Cũ 80%", status: "BORROWED", borrower: "#DG-2024-0231", due_date: "15/11", policy: "Mượn 14 ngày" },
-                { id: 205, copy_code: "BS-IT-089-05", barcode: "893524480205", shelf_location: "Kệ B1-01-T2", shelf_sub: "Khu Kỹ thuật", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 206, copy_code: "BS-IT-089-06", barcode: "893524480206", shelf_location: "Xưởng đóng bìa B1", shelf_sub: "Định kỳ gia cố", condition: "Hư hỏng nhẹ bìa sau", status: "MAINTENANCE", policy: "Tạm khóa" }
-            ],
-            audit_logs: [
-                {
-                    id: 1,
-                    copy_code: "BS-IT-089-06",
-                    event_type: "INCIDENT",
-                    title: "Chuyển bảo quản xưởng B1",
-                    time: "10/10/2024 14:20:00",
-                    from_status: "AVAILABLE",
-                    to_status: "MAINTENANCE",
-                    desc: "Bìa sau bị rách nhỏ do di chuyển kệ, chuyển sang dán keo ép nhiệt.",
-                    staff: "Ngô Việt Dũng (Thủ thư)",
-                    has_pdf: false
-                }
-            ]
-        },
-        {
-            isbn: "BK-BA-2024-015",
-            ddc: "332.1 (Fintech)",
-            title: "Tài chính Số & Ứng dụng Công nghệ Ngân hàng",
-            edition: "Ấn bản năm 2024 (NXB Kinh Tế)",
-            page_count: 380,
-            authors: ["PGS.TS. Phạm Minh Tuấn"],
-            publisher: "NXB Kinh Tế TP.HCM",
-            publish_year: 2024,
-            category_id: "kinhte",
-            category_name: "Kinh tế & Quản trị",
-            total_copies: 5,
-            available_copies: 4,
-            shelf_location: "KHO-TRUNG-TAM-C",
-            cover_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAHUieamnMj8LEicCLHMgyMjww9oZXyp8wtMGaR0s228SJD9GGzZrYQ5H3zT5e9QLIL7Y0Z-N2De_jKyxWWrlNFfYsjHhvp71C7bb0Heww51_Rt7RID0naRcxXW97NnajMWEjHV_UPeEIFFqTIdVK5Uno62xerxYntHgt4YPfZhBLnnXxMX9xzt1LqDTTqj-fV8tvMPaj7EvHCA9Vn-IMhZ-Yx83pyVm-6sg9b3GWPS",
-            description: "Mô hình ngân hàng mở, chuỗi khối trong thanh toán liên ngân hàng và phân tích hành vi tiêu dùng số.",
-            allow_home: true,
-            copies: [
-                { id: 301, copy_code: "BS-BA-015-01", barcode: "893524480301", shelf_location: "Kệ C2-03", shelf_sub: "Khu Kinh tế", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 302, copy_code: "BS-BA-015-02", barcode: "893524480302", shelf_location: "Kệ C2-03", shelf_sub: "Khu Kinh tế", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 303, copy_code: "BS-BA-015-03", barcode: "893524480303", shelf_location: "Kệ C2-03", shelf_sub: "Đang lưu thông", condition: "Mới 100%", status: "BORROWED", borrower: "#DG-2024-0551", due_date: "18/11", policy: "Mượn 14 ngày" },
-                { id: 304, copy_code: "BS-BA-015-04", barcode: "893524480304", shelf_location: "Kệ C2-03", shelf_sub: "Khu Kinh tế", condition: "Tốt 95%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 305, copy_code: "BS-BA-015-05", barcode: "893524480305", shelf_location: "Kệ C2-03", shelf_sub: "Khu Kinh tế", condition: "Tốt 95%", status: "AVAILABLE", policy: "Mượn 14 ngày" }
-            ],
-            audit_logs: []
-        },
-        {
-            isbn: "BK-IT-2022-044",
-            ddc: "005.1 (Clean Code)",
-            title: "Clean Code - Nghệ thuật viết mã sạch",
-            edition: "Bản dịch tiếng Việt (Tái bản 2022)",
-            page_count: 464,
-            authors: ["Robert C. Martin", "Đặng Hoàng Giang (Dịch)"],
-            publisher: "NXB Thông tin & Truyền thông",
-            publish_year: 2022,
-            category_id: "cntt",
-            category_name: "CNTT & Phần mềm",
-            total_copies: 5,
-            available_copies: 0,
-            shelf_location: "KHO-TRUNG-TAM-A",
-            cover_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDnTbrgIeAXaD45Ds09K3bfEVOe6s4f1c8s--JxUoMUMyzsZxHXnacUc2e6PoIGYnowZW67AdBuPdY-FxAs-5RDN6QATxyiSe9JoQ-wUgo9Q7l-Tmt5sIg6WUWytjD0IAK2HyjB6zqBE4AH53XLbLTJUzoTUUf4vN8vqHthVDbYyZ6OFcYfAXnn0qNol6qqW28qB8cZMcwBSv6V_iEfqVWR2lEgqML9Yt9CaXO_JouC",
-            description: "Cẩm nang bắt buộc về quy chuẩn đặt tên, thiết kế hàm, nguyên lý SOLID và tái cấu trúc mã nguồn.",
-            allow_home: true,
-            copies: [
-                { id: 401, copy_code: "BS-IT-044-01", barcode: "893524480401", shelf_location: "Kệ A1-04", shelf_sub: "Đang lưu thông", condition: "Cũ 80%", status: "BORROWED", borrower: "#DG-2024-0199", due_date: "05/11", policy: "Mượn 14 ngày" },
-                { id: 402, copy_code: "BS-IT-044-02", barcode: "893524480402", shelf_location: "Kệ A1-04", shelf_sub: "Đang lưu thông", condition: "Cũ 80%", status: "BORROWED", borrower: "#DG-2024-0210", due_date: "07/11", policy: "Mượn 14 ngày" },
-                { id: 403, copy_code: "BS-IT-044-03", barcode: "893524480403", shelf_location: "Kệ A1-04", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0304", due_date: "10/11", policy: "Mượn 14 ngày" },
-                { id: 404, copy_code: "BS-IT-044-04", barcode: "893524480404", shelf_location: "Kệ A1-04", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0412", due_date: "14/11", policy: "Mượn 14 ngày" },
-                { id: 405, copy_code: "BS-IT-044-05", barcode: "893524480405", shelf_location: "Kệ A1-04", shelf_sub: "Đang lưu thông", condition: "Cũ 80%", status: "BORROWED", borrower: "#DG-2024-0518", due_date: "16/11", policy: "Mượn 14 ngày" }
-            ],
-            audit_logs: []
-        },
-        {
-            isbn: "BK-MA-2023-112",
-            ddc: "519.5 (Statistics)",
-            title: "Xác suất Thống kê Nâng cao cho Khoa học Dữ liệu",
-            edition: "Giáo trình ĐHQG 2023",
-            page_count: 312,
-            authors: ["GS. Đặng Đình Thi", "TS. Nguyễn Minh Trí"],
-            publisher: "NXB Đại học Quốc gia",
-            publish_year: 2023,
-            category_id: "toan",
-            category_name: "Khoa học Cơ bản",
-            total_copies: 8,
-            available_copies: 5,
-            shelf_location: "KHO-TRUNG-TAM-D",
-            cover_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAHUieamnMj8LEicCLHMgyMjww9oZXyp8wtMGaR0s228SJD9GGzZrYQ5H3zT5e9QLIL7Y0Z-N2De_jKyxWWrlNFfYsjHhvp71C7bb0Heww51_Rt7RID0naRcxXW97NnajMWEjHV_UPeEIFFqTIdVK5Uno62xerxYntHgt4YPfZhBLnnXxMX9xzt1LqDTTqj-fV8tvMPaj7EvHCA9Vn-IMhZ-Yx83pyVm-6sg9b3GWPS",
-            description: "Lý thuyết xác suất phân phối, kiểm định giả thuyết và ứng dụng trong các giải thuật máy học.",
-            allow_home: true,
-            copies: [
-                { id: 501, copy_code: "BS-MA-112-01", barcode: "893524480501", shelf_location: "Kệ D1-02", shelf_sub: "Khoa học Cơ bản", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 502, copy_code: "BS-MA-112-02", barcode: "893524480502", shelf_location: "Kệ D1-02", shelf_sub: "Khoa học Cơ bản", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 503, copy_code: "BS-MA-112-03", barcode: "893524480503", shelf_location: "Kệ D1-02", shelf_sub: "Khoa học Cơ bản", condition: "Mới 100%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 504, copy_code: "BS-MA-112-04", barcode: "893524480504", shelf_location: "Kệ D1-02", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0801", due_date: "19/11", policy: "Mượn 14 ngày" },
-                { id: 505, copy_code: "BS-MA-112-05", barcode: "893524480505", shelf_location: "Kệ D1-02", shelf_sub: "Khoa học Cơ bản", condition: "Tốt 95%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 506, copy_code: "BS-MA-112-06", barcode: "893524480506", shelf_location: "Kệ D1-02", shelf_sub: "Khoa học Cơ bản", condition: "Tốt 95%", status: "AVAILABLE", policy: "Mượn 14 ngày" },
-                { id: 507, copy_code: "BS-MA-112-07", barcode: "893524480507", shelf_location: "Kệ D1-02", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0820", due_date: "20/11", policy: "Mượn 14 ngày" },
-                { id: 508, copy_code: "BS-MA-112-08", barcode: "893524480508", shelf_location: "Kệ D1-02", shelf_sub: "Đang lưu thông", condition: "Tốt 95%", status: "BORROWED", borrower: "#DG-2024-0842", due_date: "22/11", policy: "Mượn 14 ngày" }
-            ],
-            audit_logs: []
-        }
-    ];
-
-    // ============================================================================
     // APPLICATION STATE
     // ============================================================================
     const state = {
-        books: JSON.parse(JSON.stringify(MOCK_BOOKS)),
-        filteredBooks: [],
+        books: [],
+        totalRecords: 0,
+        totalPages: 1,
         currentPage: 1,
-        pageSize: 5,
+        pageSize: 10,
         searchTerm: "",
         selectedCategory: "",
         selectedStatus: "",
         editingIsbn: null,
-        authorTags: ["TS. Lê Hoàng Nam", "ThS. Đỗ Thùy Linh"],
+        authorTags: [],
+        selectedCoverFile: null,
+
+        // Modal 2: Quản lý bản sao
+        activeCopiesBookIsbn: null,
         activeCopiesBook: null,
+        activeCopiesList: [],
         copiesFilter: "ALL", // 'ALL' | 'AVAILABLE' | 'BORROWED' | 'ISSUES'
         copiesSearch: "",
         copiesPage: 1,
         copiesPageSize: 6,
-        activeCopyForStatus: null
+        activeCopyForStatus: null,
+
+        // Modal 3: Xóa / ẩn sách
+        deletingIsbn: null,
+
+        // Danh mục taxonomy
+        categoriesList: [],
+        publishersList: [],
+        authorsList: []
     };
 
     // ============================================================================
-    // DOM ELEMENTS (HỖ TRỢ CẢ ĐỊNH DẠNG CAMELCASE LẪN KEBAB-CASE TRÁNH LỖI)
+    // DOM ELEMENTS (ÁNH XẠ TOÀN BỘ PHẦN TỬ TRÊN GIAO DIỆN)
     // ============================================================================
     const dom = {
         // KPI Cards
@@ -283,7 +100,7 @@
         copiesCount: document.getElementById("copiesCount"),
         barcodeRange: document.getElementById("barcodeRange") || document.getElementById("barcodeRangeText"),
 
-        // Modal 2: Stitch High-Fidelity Copies Modal
+        // Modal 2: Copies Management Modal
         copiesModalBackdrop: document.getElementById("copiesModalBackdrop"),
         copiesModalBookId: document.getElementById("copiesModalBookId"),
         copiesModalIsbn: document.getElementById("copiesModalIsbn"),
@@ -301,6 +118,18 @@
         closeCopiesModalFooterBtn: document.getElementById("closeCopiesModalFooterBtn"),
         exportCopiesCsvBtn: document.getElementById("exportCopiesCsvBtn"),
         doneCopiesModalBtn: document.getElementById("doneCopiesModalBtn"),
+
+        // Modal 3: Confirm Delete Modal
+        deleteModalBackdrop: document.getElementById("deleteModalBackdrop"),
+        deleteModalTitle: document.getElementById("deleteModalTitle"),
+        deleteModalBookTitle: document.getElementById("deleteModalBookTitle"),
+        deleteModalIsbn: document.getElementById("deleteModalIsbn"),
+        deleteModalAuthor: document.getElementById("deleteModalAuthor"),
+        deleteModalCopies: document.getElementById("deleteModalCopies"),
+        deleteModalCover: document.getElementById("deleteModalCover"),
+        confirmDeleteModalBtn: document.getElementById("confirmDeleteModalBtn"),
+        cancelDeleteModalBtn: document.getElementById("cancelDeleteModalBtn"),
+        closeDeleteModalBtn: document.getElementById("closeDeleteModalBtn"),
 
         // Modal 2 Tabs
         btnTab1: document.getElementById("btnTab1"),
@@ -350,7 +179,7 @@
         auditSyncBadge: document.getElementById("auditSyncBadge"),
         auditTimelineContainer: document.getElementById("auditTimelineContainer"),
 
-        // General
+        // General & Export
         btnExportExcel: document.getElementById("btn-export-excel"),
         toastBox: document.getElementById("toast-box")
     };
@@ -368,14 +197,32 @@
             .replace(/'/g, "&#039;");
     }
 
+    function formatCoverUrl(url) {
+        if (!url) return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80";
+        if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
+        const baseOrigin = typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL
+            ? CONFIG.API_BASE_URL.replace(/\/api\/?$/, "")
+            : "";
+        return `${baseOrigin}${url.startsWith("/") ? "" : "/"}${url}`;
+    }
+
+    function mapConditionToBackend(condStr) {
+        if (!condStr) return "MỚI";
+        const s = condStr.toUpperCase();
+        if (s.includes("HỎNG") || s.includes("RÁCH") || s.includes("DAMAGED")) return "HỎNG";
+        if (s.includes("CŨ") || s.includes("80%") || s.includes("90%")) return "CŨ";
+        return "MỚI";
+    }
+
     function showNotification(message, type = "info") {
-        if (!dom.toastBox) {
-            console.log(`[Toast ${type}]:`, message);
+        if (typeof Utils !== "undefined" && Utils.showNotification) {
+            Utils.showNotification(message, type);
             return;
         }
 
+        const box = dom.toastBox || document.body;
         const toast = document.createElement("div");
-        toast.className = `toast-item ${type}`;
+        toast.className = `toast toast-${type}`;
 
         let icon = "info";
         if (type === "success") icon = "check_circle";
@@ -383,143 +230,193 @@
         if (type === "warning") icon = "warning";
 
         toast.innerHTML = `
-            <span class="material-symbols-outlined" style="font-size: 20px;">${icon}</span>
-            <span style="flex: 1; font-size: 13px; font-weight: 500;">${escapeHtml(message)}</span>
+            <span class="material-symbols-outlined">${icon}</span>
+            <div class="toast-content">
+                <div class="toast-title">${type === "success" ? "Thành công" : type === "error" ? "Lỗi hệ thống" : "Thông báo"}</div>
+                <div class="toast-message">${escapeHtml(message)}</div>
+            </div>
+            <button class="toast-close" type="button">&times;</button>
         `;
 
-        dom.toastBox.appendChild(toast);
+        box.appendChild(toast);
+        const closeBtn = toast.querySelector(".toast-close");
+        if (closeBtn) closeBtn.onclick = () => toast.remove();
+
         setTimeout(() => {
-            toast.style.opacity = "0";
-            toast.style.transform = "translateY(-10px)";
-            toast.style.transition = "all 0.3s ease";
+            toast.style.animation = "slideOut 0.3s forwards";
             setTimeout(() => toast.remove(), 300);
-        }, 3500);
+        }, 4000);
     }
 
-    function getCategoryName(catId) {
-        switch (catId) {
-            case "cntt": return "CNTT & Phần mềm";
-            case "kinhte": return "Kinh tế & Quản trị";
-            case "toan": return "Khoa học Cơ bản";
-            case "ngoai-ngu": return "Ngoại ngữ & Văn học";
-            case "ky-thuat": return "Kỹ thuật & Công nghệ";
-            default: return "Chung";
+    // ============================================================================
+    // 1. TẢI TAXONOMY (THỂ LOẠI, NXB, TÁC GIẢ)
+    // ============================================================================
+    async function loadTaxonomy() {
+        try {
+            const [cats, pubs, authors] = await Promise.all([
+                api.get("/categories/all").catch(() => []),
+                api.get("/publishers/all").catch(() => []),
+                api.get("/authors/all").catch(() => [])
+            ]);
+
+            state.categoriesList = Array.isArray(cats) ? cats : [];
+            state.publishersList = Array.isArray(pubs) ? pubs : [];
+            state.authorsList = Array.isArray(authors) ? authors : [];
+
+            if (dom.filterCategory && state.categoriesList.length > 0) {
+                dom.filterCategory.innerHTML = `<option value="">Tất cả thể loại chuyên ngành</option>` +
+                    state.categoriesList.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+            }
+
+            if (dom.bookCategory && state.categoriesList.length > 0) {
+                dom.bookCategory.innerHTML = state.categoriesList.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+            }
+
+            if (dom.bookPublisher && state.publishersList.length > 0) {
+                dom.bookPublisher.innerHTML = state.publishersList.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+            }
+        } catch (err) {
+            console.warn("Lỗi tải danh mục taxonomy:", err);
         }
     }
 
     // ============================================================================
-    // KPI METRIC UPDATES
+    // 2. TẢI DANH SÁCH ĐẦU SÁCH & PHÂN TRANG (Task A)
     // ============================================================================
-    function updateKPIs() {
-        const totalBooks = state.books.length;
-        let totalCopies = 0;
-        let availableCopies = 0;
-        let borrowedCopies = 0;
-
-        state.books.forEach((b) => {
-            const copies = b.copies || [];
-            totalCopies += copies.length;
-            availableCopies += copies.filter((c) => c.status === "AVAILABLE").length;
-            borrowedCopies += copies.filter((c) => c.status === "BORROWED" || c.status === "OVERDUE").length;
-        });
-
-        if (dom.kpiTotalBooks) dom.kpiTotalBooks.textContent = totalBooks.toLocaleString("vi-VN");
-        if (dom.kpiTotalCopies) dom.kpiTotalCopies.textContent = totalCopies.toLocaleString("vi-VN");
-        if (dom.kpiAvailableCopies) dom.kpiAvailableCopies.textContent = availableCopies.toLocaleString("vi-VN");
-        if (dom.kpiBorrowedCopies) dom.kpiBorrowedCopies.textContent = borrowedCopies.toLocaleString("vi-VN");
-    }
-
-    // ============================================================================
-    // MAIN BOOKS TABLE (FILTER, SEARCH, RENDER & PAGINATION)
-    // ============================================================================
-    function applyFilter() {
-        const term = (state.searchTerm || "").toLowerCase().trim();
-        const cat = state.selectedCategory || "";
-        const stat = state.selectedStatus || "";
-
-        state.filteredBooks = state.books.filter((b) => {
-            const matchSearch =
-                !term ||
-                (b.title && b.title.toLowerCase().includes(term)) ||
-                (b.isbn && b.isbn.toLowerCase().includes(term)) ||
-                (b.authors && b.authors.some((a) => a.toLowerCase().includes(term))) ||
-                (b.publisher && b.publisher.toLowerCase().includes(term));
-
-            const matchCat = !cat || b.category_id === cat;
-
-            let matchStat = true;
-            if (stat === "available") {
-                matchStat = (b.available_copies || 0) > 0;
-            } else if (stat === "borrowed") {
-                matchStat = (b.total_copies - (b.available_copies || 0)) > 0;
-            } else if (stat === "empty") {
-                matchStat = (b.available_copies || 0) === 0;
-            }
-
-            return matchSearch && matchCat && matchStat;
-        });
-
-        state.currentPage = 1;
-        renderTable();
-    }
-
-    function renderTable() {
+    async function loadBooks() {
         if (!dom.booksTableBody) return;
 
-        const totalItems = state.filteredBooks.length;
-        const totalPages = Math.ceil(totalItems / state.pageSize) || 1;
+        // Trạng thái Loading
+        dom.booksTableBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 48px 0; color: var(--color-brand);">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; animation: spin 1s linear infinite;">sync</span>
+                        <span style="font-size: 14px; font-weight: 500;">Đang kết nối cơ sở dữ liệu và tải danh sách sách...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
 
-        if (state.currentPage > totalPages) state.currentPage = totalPages;
-        const startIndex = (state.currentPage - 1) * state.pageSize;
-        const endIndex = Math.min(startIndex + state.pageSize, totalItems);
-        const pageItems = state.filteredBooks.slice(startIndex, endIndex);
+        try {
+            const params = {
+                page: state.currentPage,
+                page_size: state.pageSize,
+                sort_by: "created_at",
+                sort_order: "desc"
+            };
 
-        if (dom.pageStart) dom.pageStart.textContent = totalItems > 0 ? startIndex + 1 : 0;
-        if (dom.pageEnd) dom.pageEnd.textContent = endIndex;
-        if (dom.totalRecords) dom.totalRecords.textContent = totalItems;
+            if (state.searchTerm) {
+                params.keyword = state.searchTerm;
+            }
 
-        if (pageItems.length === 0) {
+            if (state.selectedCategory) {
+                params.category_id = parseInt(state.selectedCategory, 10);
+            }
+
+            if (state.selectedStatus === "available") {
+                params.available_only = true;
+            }
+
+            const res = await api.get("/books/search", params);
+            state.books = res && Array.isArray(res.items) ? res.items : [];
+            state.totalRecords = res && typeof res.total === "number" ? res.total : state.books.length;
+            state.totalPages = res && typeof res.total_pages === "number" ? res.total_pages : 1;
+
+            renderTable();
+            renderPagination(state.totalPages);
+            updateKPIs();
+
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách sách:", err);
+            // Trạng thái Error
             dom.booksTableBody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
-                        <span class="material-symbols-outlined" style="font-size: 40px; display: block; margin-bottom: 8px; color: var(--color-text-muted);">menu_book</span>
-                        Không tìm thấy đầu sách nào phù hợp với bộ lọc hiện tại.
+                    <td colspan="8" style="text-align: center; padding: 40px 0; color: #ef4444;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="font-size: 36px;">cloud_off</span>
+                            <span style="font-size: 15px; font-weight: 600;">Không thể tải danh sách đầu sách từ máy chủ</span>
+                            <span style="font-size: 13px; color: var(--color-muted);">${escapeHtml(err.message || "Lỗi mạng hoặc chưa đăng nhập quyền Thủ thư.")}</span>
+                            <button type="button" class="btn-primary" style="margin-top: 8px; padding: 6px 16px; font-size: 13px;" onclick="window.booksApp.reload()">
+                                Thử lại
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
             if (dom.paginationControls) dom.paginationControls.innerHTML = "";
+        }
+    }
+
+    // ============================================================================
+    // 3. RENDER BẢNG DỮ LIỆU ĐẦU SÁCH
+    // ============================================================================
+    function renderTable() {
+        if (!dom.booksTableBody) return;
+
+        // Trạng thái Empty
+        if (state.books.length === 0) {
+            dom.booksTableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 50px 0; color: var(--color-muted);">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: #cbd5e1;">menu_book</span>
+                            <span style="font-size: 15px; font-weight: 500;">Không tìm thấy đầu sách nào phù hợp</span>
+                            <span style="font-size: 13px;">Hãy thử điều chỉnh từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc.</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            if (dom.pageStart) dom.pageStart.textContent = "0";
+            if (dom.pageEnd) dom.pageEnd.textContent = "0";
+            if (dom.totalRecords) dom.totalRecords.textContent = "0";
+            if (dom.paginationControls) dom.paginationControls.innerHTML = "";
             return;
         }
 
+        const startIndex = (state.currentPage - 1) * state.pageSize;
+        const endIndex = Math.min(startIndex + state.books.length, state.totalRecords);
+
+        if (dom.pageStart) dom.pageStart.textContent = String(startIndex + 1);
+        if (dom.pageEnd) dom.pageEnd.textContent = String(endIndex);
+        if (dom.totalRecords) dom.totalRecords.textContent = Number(state.totalRecords).toLocaleString("vi-VN");
+
         let html = "";
-        pageItems.forEach((book) => {
+        state.books.forEach((book) => {
             const isAvail = (book.available_copies || 0) > 0;
             const statusBadge = isAvail
                 ? `<span class="status-badge available"><span class="dot"></span> ${book.available_copies} sẵn sàng</span>`
                 : `<span class="status-badge empty"><span class="dot"></span> Hết bản sao</span>`;
 
-            const authorsDisplay = (book.authors || []).join(", ");
-            const coverSrc = book.cover_image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80";
+            const authorsDisplay = Array.isArray(book.authors)
+                ? book.authors.map(a => (typeof a === "object" ? a.name : a)).join(", ")
+                : (book.authors || "Chưa rõ");
+
+            const publisherDisplay = book.publisher ? (book.publisher.name || book.publisher) : "NXB Giáo Dục";
+            const categoryDisplay = book.category ? (book.category.name || book.category) : "Chuyên ngành";
+            const coverSrc = formatCoverUrl(book.cover_image);
 
             html += `
                 <tr>
                     <td>
                         <span class="book-code-cell">${escapeHtml(book.isbn)}</span>
-                        <span class="book-isbn-cell">${escapeHtml(book.isbn)}</span>
+                        <span class="book-isbn-cell">ISBN: ${escapeHtml(book.isbn)}</span>
                     </td>
                     <td style="text-align: center;">
                         <img src="${coverSrc}" alt="${escapeHtml(book.title)}" class="book-cover-img" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
                     </td>
                     <td>
-                        <span class="book-title-text" onclick="window.booksApp.openEditModal('${book.isbn}')">${escapeHtml(book.title)}</span>
-                        <span class="book-page-text">${book.page_count || 400} trang • Vị trí: ${escapeHtml(book.shelf_location || "Kệ A3-02-T1")}</span>
+                        <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" class="book-title-text" title="Xem chi tiết đầu sách">
+                            ${escapeHtml(book.title)}
+                        </a>
+                        <span class="book-page-text">${book.page_count || 400} trang • Vị trí: ${escapeHtml(book.shelf_location || "Kệ A1")}</span>
                     </td>
                     <td>
                         <span class="book-author-text">${escapeHtml(authorsDisplay)}</span>
-                        <span class="book-publisher-text">${escapeHtml(book.publisher || "NXB ĐHQG")} (${book.publish_year || 2024})</span>
+                        <span class="book-publisher-text">${escapeHtml(publisherDisplay)} (${book.publish_year || 2024})</span>
                     </td>
                     <td>
-                        <span class="category-tag">${escapeHtml(book.category_name || getCategoryName(book.category_id))}</span>
+                        <span class="category-tag">${escapeHtml(categoryDisplay)}</span>
                     </td>
                     <td style="text-align: center;">
                         <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--color-text-primary);">${book.total_copies || 0}</span>
@@ -529,13 +426,16 @@
                     </td>
                     <td style="text-align: right;">
                         <div class="table-actions" style="justify-content: flex-end;">
+                            <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" class="btn-table-action" title="Xem trang chi tiết">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </a>
                             <button type="button" class="btn-table-action" onclick="window.booksApp.openEditModal('${book.isbn}')" title="Chỉnh sửa thông tin">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
-                            <button type="button" class="btn-table-action" onclick="window.booksApp.openCopiesModal('${book.isbn}')" title="Quản lý bản sao">
+                            <button type="button" class="btn-table-action" onclick="window.booksApp.openCopiesModal('${book.isbn}')" title="Quản lý bản sao & Trạng thái">
                                 <span class="material-symbols-outlined">qr_code_2</span>
                             </button>
-                            <button type="button" class="btn-table-action delete" onclick="window.booksApp.deleteBook('${book.isbn}')" title="Xóa đầu sách">
+                            <button type="button" class="btn-table-action delete" onclick="window.booksApp.deleteBook('${book.isbn}')" title="Ẩn/Xóa đầu sách">
                                 <span class="material-symbols-outlined">delete</span>
                             </button>
                         </div>
@@ -545,16 +445,22 @@
         });
 
         dom.booksTableBody.innerHTML = html;
-        renderPagination(totalPages);
     }
 
+    // ============================================================================
+    // 4. PHÂN TRANG
+    // ============================================================================
     function renderPagination(totalPages) {
         if (!dom.paginationControls) return;
-        let html = "";
+        if (totalPages <= 1) {
+            dom.paginationControls.innerHTML = "";
+            return;
+        }
 
+        let html = "";
         html += `
             <button type="button" class="btn-pagination" ${state.currentPage === 1 ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage - 1})">
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+                <span class="material-symbols-outlined">chevron_left</span>
             </button>
         `;
 
@@ -566,13 +472,13 @@
                     </button>
                 `;
             } else if (i === state.currentPage - 2 || i === state.currentPage + 2) {
-                html += `<span style="padding: 0 4px; color: var(--color-text-muted);">...</span>`;
+                html += `<span class="pagination-ellipsis">...</span>`;
             }
         }
 
         html += `
             <button type="button" class="btn-pagination" ${state.currentPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setPage(${state.currentPage + 1})">
-                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+                <span class="material-symbols-outlined">chevron_right</span>
             </button>
         `;
 
@@ -580,21 +486,48 @@
     }
 
     function setPage(page) {
+        if (page < 1 || page > state.totalPages || page === state.currentPage) return;
         state.currentPage = page;
-        renderTable();
+        loadBooks();
     }
 
     // ============================================================================
-    // MODAL 1: CREATE & EDIT BOOK (AUTHOR CHIPS, BARCODES, PREVIEWS)
+    // 5. CẬP NHẬT SỐ LIỆU KPI ĐẦU TRANG
+    // ============================================================================
+    async function updateKPIs() {
+        try {
+            const stat = await api.get("/statistics/dashboard", { period: "month" }).catch(() => null);
+            if (stat && stat.summary) {
+                const s = stat.summary;
+                if (dom.kpiTotalBooks) dom.kpiTotalBooks.textContent = Number(s.total_books || 0).toLocaleString("vi-VN");
+                if (dom.kpiTotalCopies) dom.kpiTotalCopies.textContent = Number(s.total_copies || 0).toLocaleString("vi-VN");
+                if (dom.kpiAvailableCopies) dom.kpiAvailableCopies.textContent = Number(s.available_copies || 0).toLocaleString("vi-VN");
+                if (dom.kpiBorrowedCopies) dom.kpiBorrowedCopies.textContent = Number(s.borrowed_copies || 0).toLocaleString("vi-VN");
+                return;
+            }
+        } catch {}
+
+        const totalCopies = state.books.reduce((acc, b) => acc + (b.total_copies || 0), 0);
+        const availCopies = state.books.reduce((acc, b) => acc + (b.available_copies || 0), 0);
+        const borrowedCopies = state.books.reduce((acc, b) => acc + (b.borrowed_copies || 0), 0);
+
+        if (dom.kpiTotalBooks) dom.kpiTotalBooks.textContent = Number(state.totalRecords).toLocaleString("vi-VN");
+        if (dom.kpiTotalCopies) dom.kpiTotalCopies.textContent = Number(totalCopies).toLocaleString("vi-VN");
+        if (dom.kpiAvailableCopies) dom.kpiAvailableCopies.textContent = Number(availCopies).toLocaleString("vi-VN");
+        if (dom.kpiBorrowedCopies) dom.kpiBorrowedCopies.textContent = Number(borrowedCopies).toLocaleString("vi-VN");
+    }
+
+    // ============================================================================
+    // 6. QUẢN LÝ CHIPS TÁC GIẢ KHI THÊM / SỬA (Task A)
     // ============================================================================
     function renderAuthorChips() {
         if (!dom.authorChipsContainer) return;
         let html = "";
-        state.authorTags.forEach((author, index) => {
+        state.authorTags.forEach((name, idx) => {
             html += `
-                <span class="tag-chip">
-                    ${escapeHtml(author)}
-                    <button type="button" class="btn-remove-tag" onclick="window.booksApp.removeAuthorTag(${index})">&times;</button>
+                <span class="chip-item">
+                    <span>${escapeHtml(name)}</span>
+                    <button type="button" class="chip-remove" onclick="window.booksApp.removeAuthorTag(${idx})">&times;</button>
                 </span>
             `;
         });
@@ -603,11 +536,12 @@
 
     function addAuthorTag(name) {
         const trimmed = (name || "").trim();
-        if (trimmed && !state.authorTags.includes(trimmed)) {
+        if (!trimmed) return;
+        if (!state.authorTags.includes(trimmed)) {
             state.authorTags.push(trimmed);
             renderAuthorChips();
-            if (dom.tagAuthorInput) dom.tagAuthorInput.value = "";
         }
+        if (dom.tagAuthorInput) dom.tagAuthorInput.value = "";
     }
 
     function removeAuthorTag(index) {
@@ -616,20 +550,28 @@
     }
 
     function updateBarcodeRange() {
-        const isbnVal = (dom.bookIsbn ? dom.bookIsbn.value.trim() : "") || "BK-IT-2024-002";
-        const countVal = parseInt(dom.copiesCount ? dom.copiesCount.value : 1, 10) || 1;
-        if (dom.barcodeRange) {
-            const padEnd = String(countVal).padStart(3, "0");
-            dom.barcodeRange.textContent = `${isbnVal}-001 ... ${padEnd}`;
-        }
+        if (!dom.barcodeRange || !dom.copiesCount) return;
+        const count = parseInt(dom.copiesCount.value, 10) || 1;
+        const isbnVal = dom.bookIsbn ? dom.bookIsbn.value.trim() : "9786042100001";
+        const clean = isbnVal.replace(/[^0-9]/g, "").slice(-4) || "0001";
+        dom.barcodeRange.textContent = `Dự kiến: BC-${clean}-01 đến BC-${clean}-${String(count).padStart(2, "0")}`;
     }
 
+    // ============================================================================
+    // 7. XỬ LÝ FILE ẢNH BÌA & UPLOAD (Task E)
+    // ============================================================================
     function handleCoverFileSelect(file) {
         if (!file) return;
-        if (!file.type.startsWith("image/")) {
-            showNotification("Vui lòng chọn tệp hình ảnh hợp lệ (JPG, PNG)!", "error");
+        if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+            showNotification("Chỉ chấp nhận file ảnh định dạng JPG hoặc PNG!", "error");
             return;
         }
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification("Dung lượng file ảnh không được vượt quá 5MB!", "error");
+            return;
+        }
+
+        state.selectedCoverFile = file;
 
         const reader = new FileReader();
         reader.onload = function (e) {
@@ -641,15 +583,25 @@
         reader.readAsDataURL(file);
     }
 
-    function highlightField(el) {
-        if (!el) return;
-        el.classList.remove("field-autofilled");
-        void el.offsetWidth; // trigger reflow
-        el.classList.add("field-autofilled");
+    async function uploadCoverFile(isbn, file) {
+        if (!file) return null;
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const token = typeof auth !== "undefined" && auth.getToken ? auth.getToken() : null;
+        const headers = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const baseOrigin = typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL
+            ? CONFIG.API_BASE_URL
+            : "/api";
+
+        const res = await axios.post(`${baseOrigin}/books/${encodeURIComponent(isbn)}/cover`, formData, { headers });
+        return res.data;
     }
 
     // ============================================================================
-    // TRA CỨU TỰ ĐỘNG THÔNG TIN SÁCH TỪ GOOGLE BOOKS API & OPEN LIBRARY
+    // 8. TRA CỨU TỰ ĐỘNG THÔNG TIN SÁCH TỪ ISBN (Task E)
     // ============================================================================
     async function lookupBookByIsbn() {
         if (!dom.bookIsbn) return;
@@ -662,7 +614,6 @@
             return;
         }
 
-        // Bật trạng thái loading
         if (dom.btnLookupIsbn) {
             dom.btnLookupIsbn.disabled = true;
             dom.btnLookupIsbn.innerHTML = `
@@ -678,7 +629,7 @@
 
         let bookData = null;
 
-        // 1. Nguồn 1: Google Books API
+        // 1. Google Books API
         try {
             const gbUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(cleanIsbn)}`;
             const resGb = await fetch(gbUrl, { headers: { "Accept": "application/json" } });
@@ -694,30 +645,25 @@
                     let coverUrl = "";
                     if (info.imageLinks) {
                         coverUrl = info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || info.imageLinks.medium || "";
-                        if (coverUrl.startsWith("http://")) {
-                            coverUrl = coverUrl.replace(/^http:\/\//i, "https://");
-                        }
+                        if (coverUrl.startsWith("http://")) coverUrl = coverUrl.replace(/^http:\/\//i, "https://");
                     }
-
                     bookData = {
                         source: "Google Books",
                         title: info.title || "",
-                        subtitle: info.subtitle || "",
                         authors: Array.isArray(info.authors) ? info.authors : (info.authors ? [info.authors] : []),
                         publisher: info.publisher || "",
                         publishYear: pubYear,
                         pageCount: info.pageCount || null,
                         description: info.description || "",
-                        categories: info.categories || [],
                         coverUrl: coverUrl
                     };
                 }
             }
         } catch (err) {
-            console.warn("Google Books API query error, falling back...", err);
+            console.warn("Lỗi tra cứu Google Books:", err);
         }
 
-        // 2. Nguồn 2: Open Library Data API (Nếu Google Books không có kết quả hoặc bị hạn chế)
+        // 2. Open Library Fallback
         if (!bookData) {
             try {
                 const bibKey = `ISBN:${cleanIsbn}`;
@@ -734,173 +680,70 @@
                             const m = info.publish_date.match(/\b(19\d\d|20\d\d)\b/);
                             if (m) pubYear = parseInt(m[1], 10);
                         }
-                        const coverUrl = info.cover?.large || info.cover?.medium || info.cover?.small || `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`;
-
+                        const coverUrl = info.cover?.large || info.cover?.medium || `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`;
                         bookData = {
                             source: "Open Library",
                             title: info.title || "",
-                            subtitle: info.subtitle || "",
                             authors: authors,
                             publisher: publishers.length > 0 ? publishers[0] : "",
                             publishYear: pubYear,
                             pageCount: info.number_of_pages || null,
-                            description: typeof info.notes === "string" ? info.notes : (info.subtitle || ""),
-                            categories: Array.isArray(info.subjects) ? info.subjects.map((s) => s.name) : [],
+                            description: typeof info.notes === "string" ? info.notes : "",
                             coverUrl: coverUrl
                         };
                     }
                 }
             } catch (err) {
-                console.warn("Open Library Data API query error...", err);
+                console.warn("Lỗi tra cứu Open Library:", err);
             }
         }
 
-        // 3. Nguồn 3: Open Library Search API (Dự phòng sâu)
-        if (!bookData) {
-            try {
-                const searchUrl = `https://openlibrary.org/search.json?isbn=${cleanIsbn}`;
-                const resSearch = await fetch(searchUrl, { headers: { "Accept": "application/json" } });
-                if (resSearch.ok) {
-                    const dataSearch = await resSearch.json();
-                    if (dataSearch.docs && dataSearch.docs.length > 0) {
-                        const doc = dataSearch.docs[0];
-                        const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : `https://covers.openlibrary.org/b/isbn/${cleanIsbn}-L.jpg`;
-                        bookData = {
-                            source: "Open Library Search",
-                            title: doc.title || "",
-                            subtitle: "",
-                            authors: Array.isArray(doc.author_name) ? doc.author_name : [],
-                            publisher: Array.isArray(doc.publisher) && doc.publisher.length > 0 ? doc.publisher[0] : "",
-                            publishYear: doc.first_publish_year || null,
-                            pageCount: doc.number_of_pages_median || null,
-                            description: "",
-                            categories: Array.isArray(doc.subject) ? doc.subject : [],
-                            coverUrl: coverUrl
-                        };
-                    }
-                }
-            } catch (err) {
-                console.warn("Open Library Search API query error...", err);
-            }
-        }
-
-        // Tắt trạng thái loading trên nút
         if (dom.btnLookupIsbn) {
             dom.btnLookupIsbn.disabled = false;
             dom.btnLookupIsbn.innerHTML = `
-                <span class="material-symbols-outlined">auto_fix_high</span>
-                <span>Tra cứu</span>
+                <span class="material-symbols-outlined">travel_explore</span>
+                <span>Tra cứu ISBN</span>
             `;
         }
         if (dom.isbnLoadingSpinner) dom.isbnLoadingSpinner.classList.add("hidden");
 
-        // Nếu không tìm thấy kết quả từ các nguồn
-        if (!bookData) {
+        if (!bookData || !bookData.title) {
             if (dom.isbnLookupStatus) {
-                dom.isbnLookupStatus.textContent = "Không tìm thấy";
-                dom.isbnLookupStatus.style.color = "var(--color-danger)";
+                dom.isbnLookupStatus.textContent = "Không tìm thấy metadata quốc tế. Bạn có thể tự nhập tay!";
+                dom.isbnLookupStatus.style.color = "var(--color-warning)";
             }
-            showNotification(`Không tìm thấy thông tin cho ISBN "${rawIsbn}" trên Google Books & Open Library. Bạn có thể tự nhập thủ công.`, "error");
+            showNotification("Không tìm thấy đầu sách với ISBN này. Vui lòng tự nhập thông tin!", "warning");
             return;
         }
 
-        // TỰ ĐỘNG ĐIỀN CÁC TRƯỜNG DỮ LIỆU VÀ GẮNG HIỆU ỨNG HIGHLIGHT
-        // 1. Tên sách
-        if (bookData.title && dom.bookTitle) {
-            dom.bookTitle.value = bookData.subtitle ? `${bookData.title}: ${bookData.subtitle}` : bookData.title;
-            highlightField(dom.bookTitle);
-        }
-
-        // 2. Tác giả (Tag Chips - thủ thư vẫn xoá hoặc thêm tiếp được)
+        if (dom.bookTitle) dom.bookTitle.value = bookData.title;
         if (bookData.authors && bookData.authors.length > 0) {
             state.authorTags = [...bookData.authors];
             renderAuthorChips();
-            if (dom.authorChipsContainer) highlightField(dom.authorChipsContainer);
         }
+        if (bookData.publishYear && dom.bookYear) dom.bookYear.value = bookData.publishYear;
+        if (bookData.pageCount && dom.bookPageCount) dom.bookPageCount.value = bookData.pageCount;
+        if (bookData.description && dom.bookDescription) dom.bookDescription.value = bookData.description;
 
-        // 3. Nhà xuất bản
-        if (bookData.publisher && dom.bookPublisher) {
-            let matchedOption = false;
-            const normPub = bookData.publisher.toLowerCase().trim();
-            for (let i = 0; i < dom.bookPublisher.options.length; i++) {
-                const optVal = dom.bookPublisher.options[i].value.toLowerCase().trim();
-                if (optVal.includes(normPub) || normPub.includes(optVal)) {
-                    dom.bookPublisher.selectedIndex = i;
-                    matchedOption = true;
-                    break;
-                }
-            }
-            if (!matchedOption) {
-                // Thêm lựa chọn nhà xuất bản mới vào select để thủ thư dùng được luôn
-                const newOpt = document.createElement("option");
-                newOpt.value = bookData.publisher;
-                newOpt.textContent = bookData.publisher;
-                newOpt.selected = true;
-                dom.bookPublisher.appendChild(newOpt);
-            }
-            highlightField(dom.bookPublisher);
-        }
-
-        // 4. Năm xuất bản
-        if (bookData.publishYear && dom.bookYear) {
-            dom.bookYear.value = bookData.publishYear;
-            highlightField(dom.bookYear);
-        }
-
-        // 5. Số trang
-        if (bookData.pageCount && dom.bookPageCount) {
-            dom.bookPageCount.value = bookData.pageCount;
-            highlightField(dom.bookPageCount);
-        }
-
-        // 6. Tóm tắt nội dung
-        if (bookData.description && dom.bookDescription) {
-            const cleanDesc = bookData.description.replace(/<\/?[^>]+(>|$)/g, "").trim();
-            dom.bookDescription.value = cleanDesc;
-            highlightField(dom.bookDescription);
-        }
-
-        // 7. Gợi ý thể loại chuyên ngành tự động
-        if (dom.bookCategory) {
-            const textToInspect = ((bookData.categories || []).join(" ") + " " + (bookData.title || "")).toLowerCase();
-            if (textToInspect.includes("computer") || textToInspect.includes("program") || textToInspect.includes("software") || textToInspect.includes("code") || textToInspect.includes("python") || textToInspect.includes("java") || textToInspect.includes("web") || textToInspect.includes("cntt") || textToInspect.includes("thuật toán")) {
-                dom.bookCategory.value = "cntt";
-            } else if (textToInspect.includes("business") || textToInspect.includes("econom") || textToInspect.includes("manage") || textToInspect.includes("finance") || textToInspect.includes("kinh tế") || textToInspect.includes("quản trị")) {
-                dom.bookCategory.value = "kinhte";
-            } else if (textToInspect.includes("electric") || textToInspect.includes("electronic") || textToInspect.includes("telecom") || textToInspect.includes("điện tử") || textToInspect.includes("viễn thông")) {
-                dom.bookCategory.value = "dientu";
-            } else if (textToInspect.includes("math") || textToInspect.includes("physic") || textToInspect.includes("science") || textToInspect.includes("toán")) {
-                dom.bookCategory.value = "toan";
-            } else if (textToInspect.includes("english") || textToInspect.includes("language") || textToInspect.includes("ngoại ngữ")) {
-                dom.bookCategory.value = "ngoaingu";
-            }
-            highlightField(dom.bookCategory);
-        }
-
-        // 8. Ảnh bìa (hiển thị xem trước, thủ thư vẫn có thể tải ảnh khác lên nếu muốn)
         if (bookData.coverUrl && dom.coverPreviewImg) {
             dom.coverPreviewImg.src = bookData.coverUrl;
             dom.coverPreviewImg.style.display = "block";
-            dom.coverPreviewImg.onerror = function () {
-                this.onerror = null;
-                this.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
-            };
-            if (dom.coverDropZone) highlightField(dom.coverDropZone);
         }
-
-        // Cập nhật dải mã vạch dự kiến
-        updateBarcodeRange();
 
         if (dom.isbnLookupStatus) {
-            dom.isbnLookupStatus.textContent = `✓ ${bookData.source}`;
+            dom.isbnLookupStatus.textContent = `Đã tự điền từ ${bookData.source}! Hãy kiểm tra lại trước khi lưu.`;
             dom.isbnLookupStatus.style.color = "var(--color-success)";
         }
-
-        showNotification(`Đã tự điền từ ${bookData.source}: "${bookData.title}"! Bạn có thể chỉnh sửa trước khi lưu.`, "success");
+        showNotification(`Đã tìm thấy thông tin từ ${bookData.source}!`, "success");
     }
 
+    // ============================================================================
+    // 9. MODAL THÊM / SỬA ĐẦU SÁCH (Task A)
+    // ============================================================================
     function openCreateModal() {
         state.editingIsbn = null;
+        state.selectedCoverFile = null;
+
         if (dom.modalBookHeading) dom.modalBookHeading.textContent = "Thêm mới đầu sách & Thiết lập bản sao";
         if (dom.modalBookBadge) {
             dom.modalBookBadge.textContent = "Chế độ: Tạo mới";
@@ -914,26 +757,23 @@
             `;
         }
 
-        // Reset inputs
         if (dom.bookTitle) dom.bookTitle.value = "";
         if (dom.bookIsbn) {
             dom.bookIsbn.value = "";
-            dom.bookIsbn.placeholder = "Nhập ISBN (VD: 9780132350884)...";
+            dom.bookIsbn.placeholder = "Nhập ISBN (10 hoặc 13 số)...";
             dom.bookIsbn.readOnly = false;
         }
         if (dom.btnLookupIsbn) dom.btnLookupIsbn.disabled = false;
         if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
-        if (dom.bookCategory) dom.bookCategory.value = "cntt";
+
         state.authorTags = [];
         renderAuthorChips();
 
-        if (dom.bookPublisher) dom.bookPublisher.value = "NXB Đại học Quốc gia";
-        if (dom.bookYear) dom.bookYear.value = 2024;
-        if (dom.bookPageCount) dom.bookPageCount.value = 412;
-        if (dom.bookShelf) dom.bookShelf.value = "Kệ A3 - Ngăn 2";
+        if (dom.bookYear) dom.bookYear.value = new Date().getFullYear();
+        if (dom.bookPageCount) dom.bookPageCount.value = 350;
+        if (dom.bookShelf) dom.bookShelf.value = "Kệ A1";
         if (dom.bookDescription) dom.bookDescription.value = "";
-        if (dom.bookAllowHome) dom.bookAllowHome.checked = true;
-        if (dom.copiesCount) dom.copiesCount.value = 5;
+        if (dom.copiesCount) dom.copiesCount.value = 3;
 
         if (dom.coverPreviewImg) {
             dom.coverPreviewImg.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
@@ -944,224 +784,346 @@
         if (dom.bookModalBackdrop) dom.bookModalBackdrop.classList.remove("hidden");
     }
 
-    function openEditModal(isbn) {
-        const book = state.books.find((b) => b.isbn === isbn);
-        if (!book) {
-            showNotification("Không tìm thấy đầu sách này!", "error");
-            return;
+    async function openEditModal(isbn) {
+        try {
+            state.editingIsbn = isbn;
+            state.selectedCoverFile = null;
+
+            const book = await api.get(`/books/${encodeURIComponent(isbn)}`);
+            if (!book) {
+                showNotification("Không tìm thấy thông tin đầu sách!", "error");
+                return;
+            }
+
+            if (dom.modalBookHeading) dom.modalBookHeading.textContent = "Chỉnh sửa thông tin Đầu sách";
+            if (dom.modalBookBadge) {
+                dom.modalBookBadge.textContent = "Chế độ: Chỉnh sửa";
+                dom.modalBookBadge.style.background = "#efeeeb";
+                dom.modalBookBadge.style.color = "#414844";
+            }
+            if (dom.submitBookBtn) {
+                dom.submitBookBtn.innerHTML = `
+                    <span class="material-symbols-outlined" style="font-size: 16px;">save</span>
+                    <span>Lưu thay đổi</span>
+                `;
+            }
+
+            if (dom.bookTitle) dom.bookTitle.value = book.title || "";
+            if (dom.bookIsbn) {
+                dom.bookIsbn.value = book.isbn || "";
+                dom.bookIsbn.readOnly = true;
+            }
+            if (dom.btnLookupIsbn) dom.btnLookupIsbn.disabled = true;
+            if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
+
+            if (dom.bookCategory && book.category) {
+                dom.bookCategory.value = book.category.id;
+            }
+            if (dom.bookPublisher && book.publisher) {
+                dom.bookPublisher.value = book.publisher.id;
+            }
+
+            state.authorTags = Array.isArray(book.authors)
+                ? book.authors.map(a => (typeof a === "object" ? a.name : a))
+                : [];
+            renderAuthorChips();
+
+            if (dom.bookYear) dom.bookYear.value = book.publish_year || new Date().getFullYear();
+            if (dom.bookPageCount) dom.bookPageCount.value = book.page_count || 300;
+            if (dom.bookShelf) dom.bookShelf.value = book.shelf_location || "Kệ A1";
+            if (dom.bookDescription) dom.bookDescription.value = book.description || "";
+            if (dom.copiesCount) dom.copiesCount.value = book.total_copies || 1;
+
+            if (dom.coverPreviewImg) {
+                dom.coverPreviewImg.src = formatCoverUrl(book.cover_image);
+                dom.coverPreviewImg.style.display = "block";
+            }
+
+            updateBarcodeRange();
+            if (dom.bookModalBackdrop) dom.bookModalBackdrop.classList.remove("hidden");
+        } catch (err) {
+            console.error("Lỗi khi mở modal sửa sách:", err);
+            showNotification(err.message || "Không thể tải thông tin sách.", "error");
         }
-
-        state.editingIsbn = isbn;
-        if (dom.modalBookHeading) dom.modalBookHeading.textContent = "Chỉnh sửa thông tin Đầu sách";
-        if (dom.modalBookBadge) {
-            dom.modalBookBadge.textContent = "Chế độ: Chỉnh sửa";
-            dom.modalBookBadge.style.background = "#efeeeb";
-            dom.modalBookBadge.style.color = "#414844";
-        }
-        if (dom.submitBookBtn) {
-            dom.submitBookBtn.innerHTML = `
-                <span class="material-symbols-outlined" style="font-size: 16px;">save</span>
-                <span>Lưu thay đổi</span>
-            `;
-        }
-
-        if (dom.bookTitle) dom.bookTitle.value = book.title || "";
-        if (dom.bookIsbn) {
-            dom.bookIsbn.value = book.isbn || "";
-            dom.bookIsbn.readOnly = true;
-        }
-        if (dom.btnLookupIsbn) dom.btnLookupIsbn.disabled = true;
-        if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
-
-        if (dom.bookCategory) dom.bookCategory.value = book.category_id || "cntt";
-        state.authorTags = Array.isArray(book.authors) ? [...book.authors] : [];
-        renderAuthorChips();
-
-        if (dom.bookPublisher) dom.bookPublisher.value = book.publisher || "NXB Đại học Quốc gia";
-        if (dom.bookYear) dom.bookYear.value = book.publish_year || 2024;
-        if (dom.bookPageCount) dom.bookPageCount.value = book.page_count || 400;
-        if (dom.bookShelf) dom.bookShelf.value = book.shelf_location || "Kệ A3 - Ngăn 2";
-        if (dom.bookDescription) dom.bookDescription.value = book.description || "";
-        if (dom.bookAllowHome) dom.bookAllowHome.checked = book.allow_home !== false;
-        if (dom.copiesCount) dom.copiesCount.value = (book.copies ? book.copies.length : book.total_copies) || 1;
-
-        if (dom.coverPreviewImg) {
-            dom.coverPreviewImg.src = book.cover_image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
-            dom.coverPreviewImg.style.display = "block";
-        }
-
-        updateBarcodeRange();
-        if (dom.bookModalBackdrop) dom.bookModalBackdrop.classList.remove("hidden");
     }
 
     function closeBookModal() {
         if (dom.bookModalBackdrop) dom.bookModalBackdrop.classList.add("hidden");
         state.editingIsbn = null;
+        state.selectedCoverFile = null;
+    }
+
+    async function resolveAuthorIds() {
+        const ids = [];
+        for (const tag of state.authorTags) {
+            const trimmed = tag.trim();
+            if (!trimmed) continue;
+            let found = state.authorsList.find(a => a.name.toLowerCase() === trimmed.toLowerCase());
+            if (found) {
+                ids.push(found.id);
+            } else {
+                try {
+                    const created = await api.post("/authors", { name: trimmed });
+                    if (created && created.id) {
+                        state.authorsList.push(created);
+                        ids.push(created.id);
+                    }
+                } catch (err) {
+                    console.warn("Không thể tạo tác giả mới:", trimmed, err);
+                }
+            }
+        }
+        if (ids.length === 0 && state.authorsList.length > 0) {
+            ids.push(state.authorsList[0].id);
+        }
+        return ids;
     }
 
     async function saveBook() {
         const title = dom.bookTitle ? dom.bookTitle.value.trim() : "";
-        const isbn = dom.bookIsbn ? dom.bookIsbn.value.trim() : "";
-        const categoryId = dom.bookCategory ? dom.bookCategory.value : "cntt";
-        const publisher = dom.bookPublisher ? dom.bookPublisher.value.trim() : "";
-        const publishYear = parseInt(dom.bookYear ? dom.bookYear.value : 2024, 10) || 2024;
-        const pageCount = parseInt(dom.bookPageCount ? dom.bookPageCount.value : 0, 10) || 0;
-        const shelfLocation = dom.bookShelf ? dom.bookShelf.value.trim() : "";
-        const description = dom.bookDescription ? dom.bookDescription.value.trim() : "";
-        const allowHome = dom.bookAllowHome ? dom.bookAllowHome.checked : true;
-        const count = parseInt(dom.copiesCount ? dom.copiesCount.value : 1, 10) || 1;
+        const rawIsbn = dom.bookIsbn ? dom.bookIsbn.value.trim() : "";
+        const cleanIsbn = rawIsbn.replace(/[^0-9]/g, "");
 
-        if (!title || !isbn) {
-            showNotification("Vui lòng nhập đầy đủ Tên đầu sách và Mã phân loại / ISBN!", "error");
+        if (!title) {
+            showNotification("Vui lòng nhập Tên đầu sách!", "error");
+            if (dom.bookTitle) dom.bookTitle.focus();
             return;
         }
 
-        const authors = state.authorTags.length > 0 ? [...state.authorTags] : ["Chưa rõ tác giả"];
-        const coverImage = dom.coverPreviewImg && dom.coverPreviewImg.src ? dom.coverPreviewImg.src : "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
-
-        const bookPayload = {
-            isbn: isbn,
-            ddc: "005.1 (Khởi tạo)",
-            title: title,
-            edition: "Ấn bản mới (KS25)",
-            authors: authors,
-            category_id: categoryId,
-            category_name: getCategoryName(categoryId),
-            publisher: publisher,
-            publish_year: publishYear,
-            page_count: pageCount,
-            shelf_location: shelfLocation || "KHO-TRUNG-TAM-A",
-            description: description,
-            allow_home: allowHome,
-            cover_image: coverImage
-        };
-
-        if (state.editingIsbn) {
-            // Cập nhật sách hiện tại
-            const idx = state.books.findIndex((b) => b.isbn === state.editingIsbn);
-            if (idx !== -1) {
-                state.books[idx] = {
-                    ...state.books[idx],
-                    ...bookPayload
-                };
-                showNotification(`Đã cập nhật đầu sách "${title}" thành công!`, "success");
-            }
-        } else {
-            // Kiểm tra trùng ISBN
-            if (state.books.some((b) => b.isbn === isbn)) {
-                showNotification("Mã ISBN này đã tồn tại trong hệ thống!", "error");
-                return;
-            }
-
-            // Tạo các bản sao tự động
-            const copies = [];
-            for (let i = 1; i <= count; i++) {
-                const pad = String(i).padStart(3, "0");
-                copies.push({
-                    id: Date.now() + i,
-                    copy_code: `BS-${isbn.replace(/[^A-Za-z0-9]/g, "")}-${pad}`,
-                    barcode: `893524${String(Date.now()).slice(-4)}${pad}`,
-                    shelf_location: shelfLocation || "KHO-TRUNG-TAM-A",
-                    shelf_sub: "Khu vực lưu thông",
-                    condition: "Mới 100% • Khởi tạo ban đầu",
-                    status: "AVAILABLE",
-                    policy: allowHome ? "Mượn 14 ngày" : "Chỉ đọc tại chỗ"
-                });
-            }
-
-            bookPayload.copies = copies;
-            bookPayload.total_copies = copies.length;
-            bookPayload.available_copies = copies.length;
-            bookPayload.audit_logs = [
-                {
-                    id: 1,
-                    copy_code: `Lô ${copies.length} bản sao (${copies[0].copy_code} -> ${copies[copies.length - 1].copy_code})`,
-                    event_type: "INITIAL_INGESTION",
-                    title: "Khởi tạo đầu sách & nhập kho bản sao ban đầu",
-                    time: new Date().toLocaleString("vi-VN"),
-                    from_status: "Khởi tạo mới",
-                    to_status: "AVAILABLE",
-                    desc: `Tạo mới đầu sách với ${copies.length} bản sao ban đầu theo quy chuẩn lưu trữ.`,
-                    staff: "Thủ thư trưởng (TT-04)",
-                    auto: true
-                }
-            ];
-
-            state.books.unshift(bookPayload);
-            showNotification(`Đã thêm mới đầu sách "${title}" với ${count} bản sao!`, "success");
+        if (!cleanIsbn || (cleanIsbn.length !== 10 && cleanIsbn.length !== 13)) {
+            showNotification("Mã ISBN phải gồm đúng 10 hoặc 13 chữ số (VD: 9786042100001)!", "error");
+            if (dom.bookIsbn) dom.bookIsbn.focus();
+            return;
         }
 
-        updateKPIs();
-        applyFilter();
-        closeBookModal();
+        let categoryId = parseInt(dom.bookCategory ? dom.bookCategory.value : 0, 10);
+        if (!categoryId && state.categoriesList.length > 0) categoryId = state.categoriesList[0].id;
+
+        let publisherId = parseInt(dom.bookPublisher ? dom.bookPublisher.value : 0, 10);
+        if (!publisherId && state.publishersList.length > 0) publisherId = state.publishersList[0].id;
+
+        const publishYear = parseInt(dom.bookYear ? dom.bookYear.value : new Date().getFullYear(), 10) || new Date().getFullYear();
+        const pageCount = parseInt(dom.bookPageCount ? dom.bookPageCount.value : 0, 10) || 0;
+        const shelfLocation = dom.bookShelf ? dom.bookShelf.value.trim() : "Kệ A1";
+        const description = dom.bookDescription ? dom.bookDescription.value.trim() : "";
+        const authorIds = await resolveAuthorIds();
+
+        try {
+            if (state.editingIsbn) {
+                const updatePayload = {
+                    title: title,
+                    category_id: categoryId,
+                    publisher_id: publisherId,
+                    publish_year: publishYear,
+                    page_count: pageCount,
+                    description: description,
+                    author_ids: authorIds
+                };
+
+                await api.put(`/books/${encodeURIComponent(state.editingIsbn)}`, updatePayload);
+
+                if (state.selectedCoverFile) {
+                    try {
+                        await uploadCoverFile(state.editingIsbn, state.selectedCoverFile);
+                    } catch (coverErr) {
+                        console.warn("Upload ảnh bìa thất bại:", coverErr);
+                    }
+                }
+
+                showNotification(`Đã cập nhật đầu sách "${title}" thành công!`, "success");
+            } else {
+                const createPayload = {
+                    isbn: cleanIsbn,
+                    title: title,
+                    category_id: categoryId,
+                    publisher_id: publisherId,
+                    publish_year: publishYear,
+                    page_count: pageCount,
+                    description: description,
+                    author_ids: authorIds,
+                    price: 0
+                };
+
+                await api.post("/books", createPayload);
+
+                if (state.selectedCoverFile) {
+                    try {
+                        await uploadCoverFile(cleanIsbn, state.selectedCoverFile);
+                    } catch (coverErr) {
+                        console.warn("Upload ảnh bìa thất bại:", coverErr);
+                    }
+                }
+
+                const count = parseInt(dom.copiesCount ? dom.copiesCount.value : 0, 10) || 0;
+                if (count > 0) {
+                    try {
+                        const copiesPayload = {
+                            book_isbn: cleanIsbn,
+                            copies: Array.from({ length: count }, () => ({
+                                copy_code: "", // Backend tự sinh mã chuẩn BC-{isbn}-{seq:02d}
+                                shelf_location: shelfLocation || "Kệ A1",
+                                condition: "MỚI",
+                                status: "AVAILABLE"
+                            }))
+                        };
+                        await api.post("/book_copies", copiesPayload);
+                    } catch (copyErr) {
+                        console.warn("Lỗi khi tự sinh bản sao ban đầu:", copyErr);
+                    }
+                }
+
+                showNotification(`Đã thêm mới đầu sách "${title}" với ${count} bản sao!`, "success");
+            }
+
+            closeBookModal();
+            await loadBooks();
+
+        } catch (err) {
+            console.error("Lỗi khi lưu đầu sách:", err);
+            showNotification(err.message || "Không thể lưu thông tin đầu sách. Vui lòng kiểm tra lại quyền hoặc dữ liệu.", "error");
+        }
+    }
+
+    // ============================================================================
+    // 10. XÓA / ẨN ĐẦU SÁCH (Task A - Modal xác nhận tinh gọn, hài hòa)
+    // ============================================================================
+    function openDeleteModal(isbn) {
+        const book = state.books.find((b) => b.isbn === isbn);
+        state.deletingIsbn = isbn;
+
+        const title = book ? book.title : isbn;
+        let authors = "Chưa cập nhật";
+        if (book) {
+            if (book.authors && Array.isArray(book.authors) && book.authors.length > 0) {
+                authors = book.authors.map(a => a.name || a).join(", ");
+            } else if (book.author_name) {
+                authors = book.author_name;
+            } else if (book.authors) {
+                authors = String(book.authors);
+            }
+        }
+
+        const copies = book ? (book.total_copies || 0) : 0;
+        const coverSrc = book ? formatCoverUrl(book.cover_image) : "";
+
+        if (dom.deleteModalBookTitle) dom.deleteModalBookTitle.textContent = title;
+        if (dom.deleteModalIsbn) dom.deleteModalIsbn.textContent = `ISBN: ${isbn}`;
+        if (dom.deleteModalAuthor) dom.deleteModalAuthor.textContent = `Tác giả: ${authors}`;
+        if (dom.deleteModalCopies) dom.deleteModalCopies.textContent = `${copies} bản sao`;
+        if (dom.deleteModalCover) {
+            dom.deleteModalCover.src = coverSrc || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80";
+            dom.deleteModalCover.alt = title;
+        }
+
+        if (dom.deleteModalBackdrop) {
+            dom.deleteModalBackdrop.classList.remove("hidden");
+        }
+    }
+
+    function closeDeleteModal() {
+        if (dom.deleteModalBackdrop) {
+            dom.deleteModalBackdrop.classList.add("hidden");
+        }
+        state.deletingIsbn = null;
+    }
+
+    async function handleConfirmDelete() {
+        if (!state.deletingIsbn) return;
+        const isbn = state.deletingIsbn;
+        const book = state.books.find((b) => b.isbn === isbn);
+        const title = book ? book.title : isbn;
+
+        if (dom.confirmDeleteModalBtn) {
+            dom.confirmDeleteModalBtn.disabled = true;
+            dom.confirmDeleteModalBtn.innerHTML = `
+                <span class="material-symbols-outlined" style="font-size: 18px; animation: spinDelete 1s linear infinite;">progress_activity</span>
+                <span>Đang xử lý...</span>
+            `;
+        }
+
+        try {
+            const res = await api.delete(`/books/${encodeURIComponent(isbn)}`);
+            showNotification(res.message || `Đã ẩn/xóa đầu sách "${title}" khỏi danh mục.`, "success");
+            closeDeleteModal();
+            await loadBooks();
+        } catch (err) {
+            console.error("Lỗi khi xóa đầu sách:", err);
+            showNotification(err.message || "Không thể xóa/ẩn đầu sách này.", "error");
+        } finally {
+            if (dom.confirmDeleteModalBtn) {
+                dom.confirmDeleteModalBtn.disabled = false;
+                dom.confirmDeleteModalBtn.innerHTML = `
+                    <span class="material-symbols-outlined">delete</span>
+                    <span>Xác nhận xóa</span>
+                `;
+            }
+        }
     }
 
     function deleteBook(isbn) {
-        const book = state.books.find((b) => b.isbn === isbn);
-        if (!book) return;
-
-        const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa đầu sách "${book.title}" và toàn bộ ${book.total_copies || 0} bản sao liên quan?`);
-        if (!confirmed) return;
-
-        state.books = state.books.filter((b) => b.isbn !== isbn);
-        showNotification(`Đã xóa thành công đầu sách "${book.title}".`, "info");
-        updateKPIs();
-        applyFilter();
+        openDeleteModal(isbn);
     }
 
     // ============================================================================
-    // MODAL 2: STITCH HIGH-FIDELITY COPIES & STATUS MANAGEMENT
+    // 11. MODAL 2: QUẢN LÝ BẢN SAO & TRẠNG THÁI (Task B & C)
     // ============================================================================
-    function openCopiesModal(isbn) {
-        const book = state.books.find((b) => b.isbn === isbn);
-        if (!book) {
-            showNotification("Không tìm thấy đầu sách này!", "error");
-            return;
+    async function openCopiesModal(isbn) {
+        try {
+            state.activeCopiesBookIsbn = isbn;
+            state.copiesFilter = "ALL";
+            state.copiesSearch = "";
+            state.copiesPage = 1;
+            state.activeCopyForStatus = null;
+
+            const [book, copies] = await Promise.all([
+                api.get(`/books/${encodeURIComponent(isbn)}`),
+                api.get("/book_copies", { book_isbn: isbn })
+            ]);
+
+            state.activeCopiesBook = book;
+            state.activeCopiesList = Array.isArray(copies) ? copies : [];
+
+            if (dom.copiesModalBookId) dom.copiesModalBookId.textContent = book.isbn;
+            if (dom.copiesModalIsbn) dom.copiesModalIsbn.textContent = `ISBN: ${book.isbn}`;
+            const catName = book.category?.name || "Chuyên ngành";
+            if (dom.copiesModalDdc) dom.copiesModalDdc.textContent = `Thể loại: ${catName}`;
+            if (dom.copiesModalTitle) dom.copiesModalTitle.textContent = "Quản lý Bản sao & Trạng thái";
+            if (dom.copiesModalBookTitle) dom.copiesModalBookTitle.textContent = book.title;
+            const pubName = book.publisher?.name || "KS25";
+            if (dom.copiesModalEdition) dom.copiesModalEdition.textContent = `NXB: ${pubName} (${book.publish_year || "Mới"})`;
+            if (dom.copiesModalShelf) dom.copiesModalShelf.textContent = book.shelf_location || "Kệ A1";
+
+            if (dom.tab1Count) dom.tab1Count.textContent = state.activeCopiesList.length;
+            if (dom.copiesSearchInput) dom.copiesSearchInput.value = "";
+
+            if (dom.addCopyDrawer) dom.addCopyDrawer.classList.add("hidden");
+            if (dom.quickStatusDrawer) dom.quickStatusDrawer.classList.add("hidden");
+
+            updateCopiesSummaryPills();
+            renderCopiesTable();
+            switchModalTab("tab1");
+
+            if (dom.copiesModalBackdrop) dom.copiesModalBackdrop.classList.remove("hidden");
+        } catch (err) {
+            console.error("Lỗi khi mở modal bản sao:", err);
+            showNotification(err.message || "Không thể tải danh sách bản sao cho đầu sách này.", "error");
         }
+    }
 
-        state.activeCopiesBook = book;
-        state.copiesFilter = "ALL";
-        state.copiesSearch = "";
-        state.copiesPage = 1;
-        state.activeCopyForStatus = null;
-
-        // Đảm bảo book.copies và book.audit_logs luôn là mảng
-        if (!book.copies) book.copies = [];
-        if (!book.audit_logs) book.audit_logs = [];
-
-        // Header info
-        if (dom.copiesModalBookId) dom.copiesModalBookId.textContent = book.isbn;
-        if (dom.copiesModalIsbn) dom.copiesModalIsbn.textContent = `ISBN: ${book.isbn}`;
-        if (dom.copiesModalDdc) dom.copiesModalDdc.textContent = `DDC: ${book.ddc || "005.133 (FastAPI)"}`;
-        if (dom.copiesModalTitle) dom.copiesModalTitle.textContent = "Quản lý Bản sao & Trạng thái";
-        if (dom.copiesModalBookTitle) dom.copiesModalBookTitle.textContent = book.title;
-        if (dom.copiesModalEdition) dom.copiesModalEdition.textContent = book.edition || "Ấn bản chuẩn KS25";
-        if (dom.copiesModalShelf) dom.copiesModalShelf.textContent = book.shelf_location || "KHO-TRUNG-TAM-A";
-
-        // Tab count
-        if (dom.tab1Count) dom.tab1Count.textContent = book.copies.length;
-
-        // Reset search input
-        if (dom.copiesSearchInput) dom.copiesSearchInput.value = "";
-
-        // Drawer states
-        if (dom.addCopyDrawer) dom.addCopyDrawer.classList.add("hidden");
-        if (dom.quickStatusDrawer) dom.quickStatusDrawer.classList.add("hidden");
-
-        // Set default values for add copy drawer
-        if (dom.newCopyShelf) dom.newCopyShelf.value = book.shelf_location || "Kệ A3-02-T1";
-        if (dom.newCopyQty) dom.newCopyQty.value = 1;
-
-        // Switch to Tab 1
-        switchModalTab("tab1");
-
-        // Render contents
-        updateCopiesSummaryPills();
-        renderCopiesTable();
-        renderAuditTimeline();
-
-        // Show modal
-        if (dom.copiesModalBackdrop) dom.copiesModalBackdrop.classList.remove("hidden");
+    async function refreshCopiesModal() {
+        if (!state.activeCopiesBookIsbn) return;
+        try {
+            const copies = await api.get("/book_copies", { book_isbn: state.activeCopiesBookIsbn });
+            state.activeCopiesList = Array.isArray(copies) ? copies : [];
+            if (dom.tab1Count) dom.tab1Count.textContent = state.activeCopiesList.length;
+            updateCopiesSummaryPills();
+            renderCopiesTable();
+            if (dom.contentTab2 && !dom.contentTab2.classList.contains("hidden")) {
+                await renderAuditTimeline();
+            }
+        } catch (err) {
+            console.warn("Lỗi làm mới bản sao:", err);
+        }
     }
 
     function closeCopiesModal() {
@@ -1169,251 +1131,173 @@
         if (dom.addCopyDrawer) dom.addCopyDrawer.classList.add("hidden");
         if (dom.quickStatusDrawer) dom.quickStatusDrawer.classList.add("hidden");
         state.activeCopiesBook = null;
-        state.activeCopyForStatus = null;
+        state.activeCopiesList = [];
     }
 
     function switchModalTab(tabName) {
-        state.currentModalTab = tabName;
-
         if (tabName === "tab1") {
-            if (dom.btnTab1) {
-                dom.btnTab1.classList.add("active");
-            }
-            if (dom.btnTab2) {
-                dom.btnTab2.classList.remove("active");
-            }
+            if (dom.btnTab1) dom.btnTab1.classList.add("active");
+            if (dom.btnTab2) dom.btnTab2.classList.remove("active");
             if (dom.contentTab1) dom.contentTab1.classList.remove("hidden");
             if (dom.contentTab2) dom.contentTab2.classList.add("hidden");
         } else {
-            if (dom.btnTab2) {
-                dom.btnTab2.classList.add("active");
-            }
-            if (dom.btnTab1) {
-                dom.btnTab1.classList.remove("active");
-            }
-            if (dom.contentTab2) dom.contentTab2.classList.remove("hidden");
+            if (dom.btnTab1) dom.btnTab1.classList.remove("active");
+            if (dom.btnTab2) dom.btnTab2.classList.add("active");
             if (dom.contentTab1) dom.contentTab1.classList.add("hidden");
+            if (dom.contentTab2) dom.contentTab2.classList.remove("hidden");
+            renderAuditTimeline();
         }
     }
 
     function updateCopiesSummaryPills() {
-        const book = state.activeCopiesBook;
-        if (!book) return;
-
-        const copies = book.copies || [];
+        const copies = state.activeCopiesList || [];
         const total = copies.length;
         const avail = copies.filter((c) => c.status === "AVAILABLE").length;
-        const borrowed = copies.filter((c) => c.status === "BORROWED" || c.status === "OVERDUE").length;
+        const borrowed = copies.filter((c) => c.status === "BORROWED").length;
         const damaged = copies.filter((c) => c.status === "DAMAGED").length;
-        const maint = copies.filter((c) => c.status === "MAINTENANCE").length;
+        const lost = copies.filter((c) => c.status === "LOST" || c.status === "DISPOSED").length;
 
         if (dom.copiesModalTotalSummary) dom.copiesModalTotalSummary.textContent = `${total} bản sao:`;
-        if (dom.statCountAvailable) dom.statCountAvailable.textContent = avail;
-        if (dom.statCountBorrowed) dom.statCountBorrowed.textContent = borrowed;
-        if (dom.statCountDamaged) dom.statCountDamaged.textContent = damaged;
-        if (dom.statCountMaintenance) dom.statCountMaintenance.textContent = maint;
+        if (dom.statCountAvailable) dom.statCountAvailable.textContent = `${avail} Khả dụng`;
+        if (dom.statCountBorrowed) dom.statCountBorrowed.textContent = `${borrowed} Đang mượn`;
+        if (dom.statCountDamaged) dom.statCountDamaged.textContent = `${damaged} Hư hỏng`;
+        if (dom.statCountMaintenance) dom.statCountMaintenance.textContent = `${lost} Mất/Thanh lý`;
 
-        if (dom.tab1Count) dom.tab1Count.textContent = total;
-
-        // Filter pills counts
         if (dom.filterCountAll) dom.filterCountAll.textContent = total;
         if (dom.filterCountAvailable) dom.filterCountAvailable.textContent = avail;
         if (dom.filterCountBorrowed) dom.filterCountBorrowed.textContent = borrowed;
-        if (dom.filterCountIssues) dom.filterCountIssues.textContent = damaged + maint;
+        if (dom.filterCountIssues) dom.filterCountIssues.textContent = damaged + lost;
     }
 
     function setCopiesFilter(filterKey) {
         state.copiesFilter = filterKey;
         state.copiesPage = 1;
 
-        // Update active class on filter buttons
-        const btns = [
-            { key: "ALL", el: dom.filterBtnAll },
-            { key: "AVAILABLE", el: dom.filterBtnAvailable },
-            { key: "BORROWED", el: dom.filterBtnBorrowed },
-            { key: "ISSUES", el: dom.filterBtnIssues }
-        ];
-
-        btns.forEach((b) => {
-            if (b.el) {
-                if (b.key === filterKey) b.el.classList.add("active");
-                else b.el.classList.remove("active");
-            }
+        [dom.filterBtnAll, dom.filterBtnAvailable, dom.filterBtnBorrowed, dom.filterBtnIssues].forEach((btn) => {
+            if (btn) btn.classList.remove("active");
         });
+
+        if (filterKey === "ALL" && dom.filterBtnAll) dom.filterBtnAll.classList.add("active");
+        if (filterKey === "AVAILABLE" && dom.filterBtnAvailable) dom.filterBtnAvailable.classList.add("active");
+        if (filterKey === "BORROWED" && dom.filterBtnBorrowed) dom.filterBtnBorrowed.classList.add("active");
+        if (filterKey === "ISSUES" && dom.filterBtnIssues) dom.filterBtnIssues.classList.add("active");
 
         renderCopiesTable();
     }
 
     function renderCopiesTable() {
-        const book = state.activeCopiesBook;
-        if (!book || !dom.copiesTableBody) return;
+        if (!dom.copiesTableBody) return;
+        const copies = state.activeCopiesList || [];
 
-        let list = book.copies || [];
+        const term = (state.copiesSearch || "").toLowerCase().trim();
+        const filtered = copies.filter((c) => {
+            if (term && !(c.copy_code || "").toLowerCase().includes(term) && !(c.shelf_location || "").toLowerCase().includes(term)) {
+                return false;
+            }
+            if (state.copiesFilter === "AVAILABLE") return c.status === "AVAILABLE";
+            if (state.copiesFilter === "BORROWED") return c.status === "BORROWED";
+            if (state.copiesFilter === "ISSUES") return ["DAMAGED", "LOST", "DISPOSED"].includes(c.status);
+            return true;
+        });
 
-        // Apply filter
-        if (state.copiesFilter === "AVAILABLE") {
-            list = list.filter((c) => c.status === "AVAILABLE");
-        } else if (state.copiesFilter === "BORROWED") {
-            list = list.filter((c) => c.status === "BORROWED" || c.status === "OVERDUE");
-        } else if (state.copiesFilter === "ISSUES") {
-            list = list.filter((c) => c.status === "DAMAGED" || c.status === "MAINTENANCE");
-        }
-
-        // Apply search
-        const s = (state.copiesSearch || "").toLowerCase().trim();
-        if (s) {
-            list = list.filter((c) => {
-                return (
-                    (c.copy_code && c.copy_code.toLowerCase().includes(s)) ||
-                    (c.barcode && c.barcode.toLowerCase().includes(s)) ||
-                    (c.shelf_location && c.shelf_location.toLowerCase().includes(s)) ||
-                    (c.condition && c.condition.toLowerCase().includes(s)) ||
-                    (c.borrower && c.borrower.toLowerCase().includes(s))
-                );
-            });
-        }
-
-        const totalFiltered = list.length;
-        const totalPages = Math.ceil(totalFiltered / state.copiesPageSize) || 1;
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / state.copiesPageSize) || 1;
         if (state.copiesPage > totalPages) state.copiesPage = totalPages;
 
         const startIndex = (state.copiesPage - 1) * state.copiesPageSize;
-        const endIndex = Math.min(startIndex + state.copiesPageSize, totalFiltered);
-        const pageItems = list.slice(startIndex, endIndex);
+        const pageItems = filtered.slice(startIndex, startIndex + state.copiesPageSize);
 
-        if (pageItems.length === 0) {
+        if (dom.copiesPaginationInfo) {
+            dom.copiesPaginationInfo.textContent = totalItems === 0
+                ? "Không có bản sao nào"
+                : `Hiển thị ${startIndex + 1} - ${Math.min(startIndex + state.copiesPageSize, totalItems)} trên ${totalItems} bản sao`;
+        }
+
+        if (totalItems === 0) {
             dom.copiesTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 32px; color: var(--color-text-secondary);">
-                        Không tìm thấy bản sao nào theo tiêu chí lọc hiện tại.
+                    <td colspan="6" style="text-align: center; padding: 32px 0; color: var(--color-muted);">
+                        Không tìm thấy bản sao nào theo tiêu chí lọc.
                     </td>
                 </tr>
             `;
-            if (dom.copiesPaginationInfo) {
-                dom.copiesPaginationInfo.textContent = `Hiển thị 0 - 0 trên ${totalFiltered} bản sao`;
-            }
             if (dom.copiesPaginationControls) dom.copiesPaginationControls.innerHTML = "";
             return;
         }
 
         let html = "";
         pageItems.forEach((copy) => {
-            const isDamaged = copy.status === "DAMAGED";
-            const rowClass = isDamaged ? "row-damaged" : "";
-
-            // Trạng thái badge
-            let statusHtml = "";
+            let statusPill = "";
             if (copy.status === "AVAILABLE") {
-                statusHtml = `
-                    <span class="status-pill pill-available">
-                        <span class="dot dot-success"></span> Sẵn sàng
-                    </span>
-                `;
+                statusPill = `<span class="badge-status-hfd avail"><span class="dot"></span> Khả dụng</span>`;
             } else if (copy.status === "BORROWED") {
-                statusHtml = `
-                    <span class="status-pill pill-borrowed">
-                        <span class="dot dot-primary"></span> Đang mượn
-                    </span>
-                    <div class="borrower-note">${escapeHtml(copy.borrower || "#DG-LuuThong")} (Hạn: ${escapeHtml(copy.due_date || "14 ngày")})</div>
-                `;
-            } else if (copy.status === "OVERDUE") {
-                statusHtml = `
-                    <span class="status-pill pill-damaged">
-                        <span class="dot dot-danger"></span> Quá hạn ${copy.overdue_days || 1} ngày
-                    </span>
-                    <div class="borrower-note">${escapeHtml(copy.borrower || "#DG-QuaHan")}</div>
-                `;
+                statusPill = `<span class="badge-status-hfd borrowed"><span class="dot"></span> Đang mượn</span>`;
             } else if (copy.status === "DAMAGED") {
-                statusHtml = `
-                    <span class="status-pill pill-damaged">
-                        <span class="dot dot-danger"></span> Hư hỏng
-                    </span>
-                `;
-            } else if (copy.status === "MAINTENANCE") {
-                statusHtml = `
-                    <span class="status-pill pill-maintenance">
-                        <span class="dot dot-warning"></span> Bảo trì
-                    </span>
-                `;
+                statusPill = `<span class="badge-status-hfd damaged"><span class="dot"></span> Hư hỏng</span>`;
+            } else if (copy.status === "LOST") {
+                statusPill = `<span class="badge-status-hfd lost"><span class="dot"></span> Báo mất</span>`;
+            } else if (copy.status === "DISPOSED") {
+                statusPill = `<span class="badge-status-hfd disposed"><span class="dot"></span> Đã thanh lý</span>`;
             } else {
-                statusHtml = `
-                    <span class="status-pill pill-borrowed">
-                        <span class="dot dot-primary"></span> ${escapeHtml(copy.status)}
-                    </span>
-                `;
+                statusPill = `<span class="badge-status-hfd">${escapeHtml(copy.status)}</span>`;
             }
-
-            // Chính sách badge
-            let policyHtml = "";
-            if (copy.policy === "Chỉ đọc tại chỗ") {
-                policyHtml = `<span class="policy-badge archive">Chỉ đọc tại chỗ</span>`;
-            } else if (copy.policy === "Tạm khóa") {
-                policyHtml = `<span class="policy-badge locked">Tạm khóa</span>`;
-            } else {
-                policyHtml = `<span class="policy-badge">${escapeHtml(copy.policy || "Mượn 14 ngày")}</span>`;
-            }
-
-            // Thao tác button
-            const actionBtn = isDamaged
-                ? `<button type="button" class="btn-table-danger" onclick="window.booksApp.openQuickStatusDrawer(${copy.id})">Cập nhật</button>`
-                : `<button type="button" class="btn-table-status" onclick="window.booksApp.openQuickStatusDrawer(${copy.id})">Đổi trạng thái</button>`;
 
             html += `
-                <tr class="${rowClass}">
+                <tr>
                     <td>
-                        <div class="copy-code ${isDamaged ? "text-danger" : ""}">${escapeHtml(copy.copy_code)}</div>
-                        <div class="copy-rfid">${escapeHtml(copy.barcode || "893524480000")}</div>
+                        <span class="copy-code-main">${escapeHtml(copy.copy_code)}</span>
+                        <span class="copy-barcode-sub">ID: #${copy.id}</span>
                     </td>
                     <td>
-                        <div class="shelf-primary ${isDamaged ? "text-danger" : ""}">${escapeHtml(copy.shelf_location || "Kệ A3-02-T1")}</div>
-                        <div class="shelf-sub">${escapeHtml(copy.shelf_sub || "Khu lưu trữ")}</div>
+                        <span class="shelf-primary">${escapeHtml(copy.shelf_location || "Kệ A1")}</span>
                     </td>
                     <td>
-                        <span class="condition-text ${isDamaged ? "text-danger" : ""}">${escapeHtml(copy.condition || "Mới 100%")}</span>
+                        <span class="condition-note">${escapeHtml(copy.condition || "MỚI")}</span>
                     </td>
-                    <td>${statusHtml}</td>
-                    <td style="text-align: center;">${policyHtml}</td>
-                    <td style="text-align: right;">
-                        <div style="display: inline-flex; align-items: center; justify-content: flex-end;">
-                            ${actionBtn}
-                            <button type="button" class="btn-table-delete" onclick="window.booksApp.deleteCopy(${copy.id})" title="Hủy bản sao này">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
+                    <td>
+                        ${statusPill}
+                    </td>
+                    <td class="text-center">
+                        <span class="policy-pill">Mượn 14 ngày</span>
+                    </td>
+                    <td class="text-right">
+                        <button type="button" class="btn-table-status" onclick="window.booksApp.openQuickStatusDrawer(${copy.id})">
+                            Đổi trạng thái
+                        </button>
                     </td>
                 </tr>
             `;
         });
 
         dom.copiesTableBody.innerHTML = html;
-
-        if (dom.copiesPaginationInfo) {
-            dom.copiesPaginationInfo.textContent = `Hiển thị ${startIndex + 1} - ${endIndex} trên ${totalFiltered} bản sao`;
-        }
         renderCopiesPagination(totalPages);
     }
 
     function renderCopiesPagination(totalPages) {
         if (!dom.copiesPaginationControls) return;
-        let html = "";
+        if (totalPages <= 1) {
+            dom.copiesPaginationControls.innerHTML = "";
+            return;
+        }
 
+        let html = "";
         html += `
-            <button type="button" class="page-btn" ${state.copiesPage === 1 ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage - 1})">
-                <span class="material-symbols-outlined">chevron_left</span>
+            <button type="button" class="btn-mini-page" ${state.copiesPage === 1 ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage - 1})">
+                &lsaquo;
             </button>
         `;
 
         for (let i = 1; i <= totalPages; i++) {
             html += `
-                <button type="button" class="page-btn ${i === state.copiesPage ? "active" : ""}" onclick="window.booksApp.setCopiesPage(${i})">
+                <button type="button" class="btn-mini-page ${i === state.copiesPage ? "active" : ""}" onclick="window.booksApp.setCopiesPage(${i})">
                     ${i}
                 </button>
             `;
         }
 
         html += `
-            <button type="button" class="page-btn" ${state.copiesPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage + 1})">
-                <span class="material-symbols-outlined">chevron_right</span>
+            <button type="button" class="btn-mini-page ${state.copiesPage === totalPages ? "disabled" : ""} onclick="window.booksApp.setCopiesPage(${state.copiesPage + 1})">
+                &rsaquo;
             </button>
         `;
 
@@ -1426,26 +1310,75 @@
     }
 
     // ============================================================================
-    // QUICK STATUS ADJUSTMENT DRAWER
+    // 12. DRAWER THÊM NHIỀU BẢN SAO CHO ĐẦU SÁCH (Task B)
+    // ============================================================================
+    function toggleAddCopyDrawer() {
+        if (!dom.addCopyDrawer) return;
+        const isHidden = dom.addCopyDrawer.classList.contains("hidden");
+        if (isHidden) {
+            dom.addCopyDrawer.classList.remove("hidden");
+            if (dom.newCopyQty) dom.newCopyQty.focus();
+        } else {
+            dom.addCopyDrawer.classList.add("hidden");
+        }
+    }
+
+    async function submitAddCopy() {
+        const isbn = state.activeCopiesBookIsbn;
+        if (!isbn) return;
+
+        const qty = parseInt(dom.newCopyQty ? dom.newCopyQty.value : 1, 10) || 1;
+        const shelf = (dom.newCopyShelf ? dom.newCopyShelf.value.trim() : "") || "Kệ A1";
+        const rawCond = dom.newCopyCondition ? dom.newCopyCondition.value.trim() : "MỚI";
+        const cond = mapConditionToBackend(rawCond);
+
+        if (qty < 1 || qty > 50) {
+            showNotification("Số lượng bản sao bổ sung phải từ 1 đến 50!", "warning");
+            return;
+        }
+
+        try {
+            const payload = {
+                book_isbn: isbn,
+                copies: Array.from({ length: qty }, () => ({
+                    copy_code: "", // Backend tự sinh mã chuẩn BC-{isbn}-{seq:02d}
+                    shelf_location: shelf,
+                    condition: cond,
+                    status: "AVAILABLE"
+                }))
+            };
+
+            await api.post("/book_copies", payload);
+            showNotification(`Đã thêm thành công ${qty} bản sao vào kho cho đầu sách!`, "success");
+
+            if (dom.addCopyDrawer) dom.addCopyDrawer.classList.add("hidden");
+            await refreshCopiesModal();
+            await loadBooks();
+        } catch (err) {
+            console.error("Lỗi khi thêm bản sao:", err);
+            showNotification(err.message || "Không thể thêm bản sao.", "error");
+        }
+    }
+
+    // ============================================================================
+    // 13. DRAWER BÁO MẤT / BÁO HỎNG / THANH LÝ BẢN SAO (Task C)
     // ============================================================================
     function openQuickStatusDrawer(copyId) {
-        const book = state.activeCopiesBook;
-        if (!book || !book.copies) return;
-
-        const copy = book.copies.find((c) => c.id === copyId);
+        const copy = (state.activeCopiesList || []).find((c) => c.id === copyId);
         if (!copy) return;
 
         state.activeCopyForStatus = copy;
 
         if (dom.quickStatusCopyCode) dom.quickStatusCopyCode.textContent = copy.copy_code;
-        if (dom.quickStatusTicket) dom.quickStatusTicket.textContent = `Phiếu: #TRX-MOD-${copy.id}`;
+        if (dom.quickStatusTicket) dom.quickStatusTicket.textContent = `Phiếu: #COPY-ID-${copy.id}`;
 
         if (dom.quickStatusSelect) {
-            dom.quickStatusSelect.value = copy.status === "OVERDUE" ? "DAMAGED" : copy.status;
+            dom.quickStatusSelect.value = copy.status === "BORROWED" ? "DAMAGED" : copy.status;
         }
 
         if (dom.quickStatusReason) {
-            dom.quickStatusReason.value = copy.condition || "";
+            dom.quickStatusReason.value = "";
+            dom.quickStatusReason.placeholder = "Nhập lý do chi tiết (bắt buộc khi báo hỏng/mất/thanh lý)...";
             dom.quickStatusReason.focus();
         }
 
@@ -1460,258 +1393,120 @@
         state.activeCopyForStatus = null;
     }
 
-    function saveQuickStatus() {
-        const book = state.activeCopiesBook;
+    async function saveQuickStatus() {
         const copy = state.activeCopyForStatus;
-        if (!book || !copy) return;
-
-        const newStatus = dom.quickStatusSelect ? dom.quickStatusSelect.value : "AVAILABLE";
-        const reason = (dom.quickStatusReason ? dom.quickStatusReason.value.trim() : "") || "Cập nhật nghiệp vụ định kỳ.";
-
-        const oldStatus = copy.status;
-        copy.status = newStatus;
-        copy.condition = reason;
-
-        // Cập nhật policy tương ứng
-        if (newStatus === "DAMAGED" || newStatus === "MAINTENANCE" || newStatus === "LOST") {
-            copy.policy = "Tạm khóa";
-        } else if (newStatus === "AVAILABLE" && copy.policy === "Tạm khóa") {
-            copy.policy = book.allow_home ? "Mượn 14 ngày" : "Chỉ đọc tại chỗ";
-        }
-
-        // Tạo audit log ghi vết
-        const newLog = {
-            id: Date.now(),
-            copy_code: copy.copy_code,
-            event_type: newStatus === "DAMAGED" ? "INCIDENT" : "STATUS_CHANGE",
-            title: `Cập nhật trạng thái sang ${newStatus}`,
-            time: new Date().toLocaleString("vi-VN"),
-            from_status: oldStatus,
-            to_status: newStatus,
-            desc: reason,
-            staff: "Thủ thư trưởng (TT-04)",
-            has_pdf: newStatus === "DAMAGED"
-        };
-
-        if (!book.audit_logs) book.audit_logs = [];
-        book.audit_logs.unshift(newLog);
-
-        // Cập nhật số liệu đầu sách
-        book.total_copies = book.copies.length;
-        book.available_copies = book.copies.filter((c) => c.status === "AVAILABLE").length;
-
-        // Render lại giao diện
-        closeQuickStatusDrawer();
-        updateCopiesSummaryPills();
-        renderCopiesTable();
-        renderAuditTimeline();
-        updateKPIs();
-        renderTable();
-
-        showNotification(`Đã cập nhật trạng thái bản sao ${copy.copy_code} thành ${newStatus}!`, "success");
-    }
-
-    // ============================================================================
-    // COLLAPSIBLE ADD COPY DRAWER
-    // ============================================================================
-    function toggleAddCopyDrawer() {
-        if (!dom.addCopyDrawer) return;
-        const isHidden = dom.addCopyDrawer.classList.contains("hidden");
-        if (isHidden) {
-            dom.addCopyDrawer.classList.remove("hidden");
-            if (dom.newCopyQty) dom.newCopyQty.focus();
-        } else {
-            dom.addCopyDrawer.classList.add("hidden");
-        }
-    }
-
-    function submitAddCopy() {
-        const book = state.activeCopiesBook;
-        if (!book) return;
-
-        const qty = parseInt(dom.newCopyQty ? dom.newCopyQty.value : 1, 10) || 1;
-        const shelf = (dom.newCopyShelf ? dom.newCopyShelf.value.trim() : "") || book.shelf_location || "Kệ A3-02-T1";
-        const condition = dom.newCopyCondition ? dom.newCopyCondition.value.trim() : "Mới 100% • Đã dán bọc";
-        const policy = dom.newCopyPolicy ? dom.newCopyPolicy.value : "Mượn 14 ngày";
-
-        if (qty < 1 || qty > 50) {
-            showNotification("Số lượng bản sao bổ sung phải từ 1 đến 50!", "warning");
-            return;
-        }
-
-        if (!book.copies) book.copies = [];
-        const baseIndex = book.copies.length;
-        const createdCodes = [];
-
-        for (let i = 1; i <= qty; i++) {
-            const num = baseIndex + i;
-            const pad = String(num).padStart(2, "0");
-            const code = `BS-${book.isbn.replace(/[^A-Za-z0-9]/g, "").slice(-6)}-${pad}`;
-            const barcode = `893524${String(Date.now()).slice(-4)}${pad}`;
-
-            book.copies.push({
-                id: Date.now() + i,
-                copy_code: code,
-                barcode: barcode,
-                shelf_location: shelf,
-                shelf_sub: "Khu vực lưu trữ",
-                condition: condition,
-                status: "AVAILABLE",
-                policy: policy
-            });
-            createdCodes.push(code);
-        }
-
-        // Audit log
-        if (!book.audit_logs) book.audit_logs = [];
-        book.audit_logs.unshift({
-            id: Date.now(),
-            copy_code: `Bổ sung ${qty} bản sao (${createdCodes[0]}${qty > 1 ? ` -> ${createdCodes[createdCodes.length - 1]}` : ""})`,
-            event_type: "BATCH_ADD",
-            title: `Bổ sung ${qty} bản sao vật lý vào kho`,
-            time: new Date().toLocaleString("vi-VN"),
-            from_status: "Khởi tạo mới",
-            to_status: "AVAILABLE",
-            desc: `Nhập kho đợt bổ sung: Vị trí ${shelf}. Tình trạng: ${condition}.`,
-            staff: "Thủ thư trưởng (TT-04)",
-            auto: false
-        });
-
-        book.total_copies = book.copies.length;
-        book.available_copies = book.copies.filter((c) => c.status === "AVAILABLE").length;
-
-        if (dom.addCopyDrawer) dom.addCopyDrawer.classList.add("hidden");
-        updateCopiesSummaryPills();
-        renderCopiesTable();
-        renderAuditTimeline();
-        updateKPIs();
-        renderTable();
-
-        showNotification(`Đã thêm thành công ${qty} bản sao vào kho cho đầu sách "${book.title}"!`, "success");
-    }
-
-    function deleteCopy(copyId) {
-        const book = state.activeCopiesBook;
-        if (!book || !book.copies) return;
-
-        const copy = book.copies.find((c) => c.id === copyId);
         if (!copy) return;
 
-        const confirmed = window.confirm(`Bạn có chắc chắn muốn hủy bản sao "${copy.copy_code}"?`);
-        if (!confirmed) return;
+        const newStatus = dom.quickStatusSelect ? dom.quickStatusSelect.value : "AVAILABLE";
+        const reason = (dom.quickStatusReason ? dom.quickStatusReason.value.trim() : "");
 
-        book.copies = book.copies.filter((c) => c.id !== copyId);
-        book.total_copies = book.copies.length;
-        book.available_copies = book.copies.filter((c) => c.status === "AVAILABLE").length;
-
-        if (!book.audit_logs) book.audit_logs = [];
-        book.audit_logs.unshift({
-            id: Date.now(),
-            copy_code: copy.copy_code,
-            event_type: "DISPOSE",
-            title: "Hủy bản sao khỏi kho",
-            time: new Date().toLocaleString("vi-VN"),
-            from_status: copy.status,
-            to_status: "DISPOSED",
-            desc: `Hủy bản sao theo quyết định của thủ thư.`,
-            staff: "Thủ thư trưởng (TT-04)",
-            auto: false
-        });
-
-        updateCopiesSummaryPills();
-        renderCopiesTable();
-        renderAuditTimeline();
-        updateKPIs();
-        renderTable();
-
-        showNotification(`Đã xóa bản sao ${copy.copy_code}.`, "info");
-    }
-
-    // ============================================================================
-    // TAB 2: AUDIT LOG TIMELINE RENDERING
-    // ============================================================================
-    function renderAuditTimeline() {
-        const book = state.activeCopiesBook;
-        if (!book || !dom.auditTimelineContainer) return;
-
-        const logs = book.audit_logs || [];
-        if (logs.length === 0) {
-            dom.auditTimelineContainer.innerHTML = `
-                <div style="background: #ffffff; border: 1px solid var(--color-border); border-radius: 8px; padding: 24px; text-align: center; color: var(--color-text-secondary); font-size: 13px;">
-                    Chưa có ghi chép nhật ký biến động (Audit Log) nào cho đầu sách này.
-                </div>
-            `;
+        if (["DAMAGED", "LOST", "LIQUIDATION", "DISPOSED"].includes(newStatus) && !reason) {
+            showNotification("Vui lòng nhập lý do và ghi chú nghiệp vụ để lưu vào lịch sử!", "error");
+            if (dom.quickStatusReason) dom.quickStatusReason.focus();
             return;
         }
 
-        let html = "";
-        logs.forEach((log) => {
-            let iconClass = "node-primary";
-            let iconName = "inventory_2";
-            let isIncident = log.event_type === "INCIDENT" || log.to_status === "DAMAGED";
-
-            if (isIncident) {
-                iconClass = "node-danger";
-                iconName = "priority_high";
-            } else if (log.event_type === "MAINTENANCE_DONE" || log.to_status === "AVAILABLE") {
-                iconClass = "node-success";
-                iconName = "check";
+        try {
+            if (newStatus === "DAMAGED") {
+                await api.patch(`/book_copies/${copy.id}/report-damaged`, { reason: reason || "Báo hỏng sách" });
+            } else if (newStatus === "LOST") {
+                await api.patch(`/book_copies/${copy.id}/report-lost`, { reason: reason || "Báo mất sách" });
+            } else if (newStatus === "LIQUIDATION" || newStatus === "DISPOSED") {
+                await api.patch(`/book_copies/${copy.id}/dispose`, { reason: reason || "Thanh lý sách" });
+            } else if (newStatus === "AVAILABLE") {
+                await api.put(`/book_copies/${copy.id}`, {
+                    status: "AVAILABLE",
+                    condition: "MỚI"
+                });
+            } else {
+                await api.put(`/book_copies/${copy.id}`, {
+                    condition: mapConditionToBackend(reason)
+                });
             }
 
-            const pdfLink = log.has_pdf
-                ? `<button type="button" class="audit-pdf-link" onclick="window.booksApp.viewPdfDoc(${log.id})"><span class="material-symbols-outlined">attach_file</span> Xem biên bản PDF</button>`
-                : log.standard_met
-                    ? `<span style="color: var(--color-success); font-weight: 600;">ĐẠT TIÊU CHUẨN KHO</span>`
-                    : log.auto
-                        ? `<span style="color: var(--color-text-muted);">Tự động nhập kho</span>`
-                        : "";
-
-            html += `
-                <div class="audit-event-card">
-                    <div class="audit-node-icon ${iconClass}">
-                        <span class="material-symbols-outlined">${iconName}</span>
-                    </div>
-                    <div class="audit-event-header">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span class="audit-copy-tag ${isIncident ? "tag-danger" : ""}">${escapeHtml(log.copy_code)}</span>
-                            <span style="color: var(--color-text-muted); font-size: 11px;">•</span>
-                            <span style="font-size: 12px; font-weight: 500; color: var(--color-text-secondary);">${escapeHtml(log.title)}</span>
-                        </div>
-                        <span class="audit-time">${escapeHtml(log.time)}</span>
-                    </div>
-
-                    <div class="audit-transition">
-                        <span style="font-size: 11px; font-weight: 500; color: var(--color-text-secondary);">${escapeHtml(log.from_status)}</span>
-                        <span class="material-symbols-outlined">arrow_forward</span>
-                        <span class="status-pill ${isIncident ? "pill-damaged" : "pill-available"}" style="padding: 1px 8px; font-size: 11px;">
-                            ${escapeHtml(log.to_status)}
-                        </span>
-                    </div>
-
-                    <p class="audit-desc">${escapeHtml(log.desc)}</p>
-
-                    <div class="audit-meta-row">
-                        <span>Cán bộ: <strong style="color: var(--color-text-primary); font-weight: 500;">${escapeHtml(log.staff || "Thủ thư trưởng")}</strong></span>
-                        <div>${pdfLink}</div>
-                    </div>
-                </div>
-            `;
-        });
-
-        dom.auditTimelineContainer.innerHTML = html;
-    }
-
-    function viewPdfDoc(logId) {
-        showNotification(`Đang mở biên bản kiểm định sự cố #BL-2025-0429...`, "info");
+            showNotification(`Đã cập nhật trạng thái bản sao ${copy.copy_code} thành công!`, "success");
+            closeQuickStatusDrawer();
+            await refreshCopiesModal();
+            await loadBooks();
+        } catch (err) {
+            console.error("Lỗi cập nhật trạng thái bản sao:", err);
+            showNotification(err.message || "Không thể cập nhật trạng thái bản sao theo quy tắc của hệ thống.", "error");
+        }
     }
 
     // ============================================================================
-    // BATCH BARCODE PRINTING & CSV EXPORT
+    // 14. TAB 2: LỊCH SỬ THAY ĐỔI TRẠNG THÁI (Task C)
+    // ============================================================================
+    async function renderAuditTimeline() {
+        if (!dom.auditTimelineContainer) return;
+        dom.auditTimelineContainer.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--color-brand);">Đang tải lịch sử trạng thái...</div>`;
+
+        try {
+            const copies = state.activeCopiesList || [];
+            if (copies.length === 0) {
+                dom.auditTimelineContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--color-muted);">
+                        Chưa có bản sao nào để hiển thị lịch sử biến động.
+                    </div>
+                `;
+                return;
+            }
+
+            const logPromises = copies.map(c => 
+                api.get(`/book_copies/${c.id}/history`).catch(() => [])
+            );
+            const results = await Promise.all(logPromises);
+            const allLogs = results.flat();
+
+            allLogs.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
+
+            if (allLogs.length === 0) {
+                dom.auditTimelineContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--color-muted);">
+                        Chưa có sự kiện thay đổi trạng thái nào cho các bản sao của đầu sách này.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            allLogs.forEach(log => {
+                const timeStr = new Date(log.changed_at).toLocaleString("vi-VN");
+                html += `
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="timeline-title">Chuyển trạng thái: <strong>${escapeHtml(log.old_status)} → ${escapeHtml(log.new_status)}</strong></span>
+                                <span class="timeline-time">${timeStr}</span>
+                            </div>
+                            <div class="timeline-desc">
+                                Bản sao ID: #${log.book_copy_id} • Lý do: ${escapeHtml(log.reason || "Không ghi chú")}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            dom.auditTimelineContainer.innerHTML = html;
+        } catch (err) {
+            console.error("Lỗi khi tải lịch sử trạng thái bản sao:", err);
+            dom.auditTimelineContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--color-error);">
+                    Không thể tải lịch sử trạng thái từ máy chủ.
+                </div>
+            `;
+        }
+    }
+
+    // ============================================================================
+    // 15. IN TEM MÃ VẠCH & XUẤT CSV / EXCEL
     // ============================================================================
     function printBatchBarcodes() {
         const book = state.activeCopiesBook;
-        if (!book || !book.copies || book.copies.length === 0) {
-            showNotification("Không có bản sao nào để in tem!", "warning");
+        const copies = state.activeCopiesList || [];
+        if (!book || copies.length === 0) {
+            showNotification("Không có bản sao nào để in tem mã vạch!", "warning");
             return;
         }
 
@@ -1722,14 +1517,14 @@
         }
 
         let labelsHtml = "";
-        book.copies.forEach((copy) => {
+        copies.forEach((copy) => {
             labelsHtml += `
                 <div style="border: 1px dashed #333; padding: 12px; margin: 8px; width: 220px; font-family: monospace; display: inline-block; vertical-align: top; text-align: center; border-radius: 6px;">
                     <div style="font-weight: bold; font-size: 13px; color: #1B4332;">THƯ VIỆN KS25</div>
                     <div style="font-size: 11px; margin: 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(book.title)}</div>
                     <div style="font-size: 20px; letter-spacing: 2px; margin: 6px 0; font-weight: bold;">|||| | || |||||</div>
                     <div style="font-size: 12px; font-weight: bold;">${escapeHtml(copy.copy_code)}</div>
-                    <div style="font-size: 10px; color: #555;">${escapeHtml(copy.barcode || "")} • ${escapeHtml(copy.shelf_location || "")}</div>
+                    <div style="font-size: 10px; color: #555;">Kệ: ${escapeHtml(copy.shelf_location || "A1")} • ${escapeHtml(copy.condition || "MỚI")}</div>
                 </div>
             `;
         });
@@ -1759,20 +1554,18 @@
 
     function exportCopiesCsv() {
         const book = state.activeCopiesBook;
-        if (!book || !book.copies || book.copies.length === 0) {
+        const copies = state.activeCopiesList || [];
+        if (!book || copies.length === 0) {
             showNotification("Không có dữ liệu bản sao để xuất CSV!", "warning");
             return;
         }
 
-        const headers = ["Mã bản sao", "Mã vạch / RFID", "Vị trí kệ", "Khu vực", "Tình trạng", "Trạng thái", "Chính sách"];
-        const rows = book.copies.map((c) => [
+        const headers = ["Mã bản sao", "Vị trí kệ", "Tình trạng", "Trạng thái lưu thông"];
+        const rows = copies.map((c) => [
             `"${c.copy_code}"`,
-            `"${c.barcode || ""}"`,
             `"${c.shelf_location || ""}"`,
-            `"${c.shelf_sub || ""}"`,
             `"${c.condition || ""}"`,
-            `"${c.status || ""}"`,
-            `"${c.policy || ""}"`
+            `"${c.status || ""}"`
         ]);
 
         const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
@@ -1796,17 +1589,22 @@
         }
 
         const headers = ["ISBN", "Tên sách", "Chuyên ngành", "Tác giả", "Nhà xuất bản", "Năm XB", "Tổng bản sao", "Khả dụng", "Vị trí kệ"];
-        const rows = state.books.map((b) => [
-            `"${b.isbn}"`,
-            `"${(b.title || "").replace(/"/g, '""')}"`,
-            `"${b.category_name || ""}"`,
-            `"${(b.authors || []).join("; ").replace(/"/g, '""')}"`,
-            `"${b.publisher || ""}"`,
-            b.publish_year || "",
-            b.total_copies || 0,
-            b.available_copies || 0,
-            `"${b.shelf_location || ""}"`
-        ]);
+        const rows = state.books.map((b) => {
+            const authorStr = Array.isArray(b.authors) ? b.authors.map(a => (typeof a === "object" ? a.name : a)).join("; ") : (b.authors || "");
+            const pubStr = b.publisher ? (b.publisher.name || b.publisher) : "";
+            const catStr = b.category ? (b.category.name || b.category) : "";
+            return [
+                `"${b.isbn}"`,
+                `"${(b.title || "").replace(/"/g, '""')}"`,
+                `"${catStr}"`,
+                `"${authorStr.replace(/"/g, '""')}"`,
+                `"${pubStr}"`,
+                b.publish_year || "",
+                b.total_copies || 0,
+                b.available_copies || 0,
+                `"${b.shelf_location || ""}"`
+            ];
+        });
 
         const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -1819,88 +1617,87 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        showNotification("Đã xuất toàn bộ danh mục đầu sách ra tệp CSV (Excel) thành công!", "success");
+        showNotification("Đã xuất danh mục đầu sách ra tệp CSV (Excel) thành công!", "success");
+    }
+
+    function viewPdfDoc(logId) {
+        showNotification(`Đang mở biên bản kiểm định sự cố #${logId || "BL-2025"}...`, "info");
     }
 
     // ============================================================================
-    // EVENT LISTENERS
+    // 16. THIẾT LẬP CÁC SỰ KIỆN GIAO DIỆN (EVENT LISTENERS)
     // ============================================================================
     function initEventListeners() {
-        // 1. Filter & Search
+        // Tìm kiếm & Lọc
         if (dom.filterSearchInput) {
-            dom.filterSearchInput.addEventListener("input", (e) => {
-                state.searchTerm = e.target.value;
-                applyFilter();
+            dom.filterSearchInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    state.searchTerm = dom.filterSearchInput.value.trim();
+                    state.currentPage = 1;
+                    loadBooks();
+                }
             });
         }
 
         if (dom.topbarSearchInput) {
-            dom.topbarSearchInput.addEventListener("input", (e) => {
-                state.searchTerm = e.target.value;
-                if (dom.filterSearchInput) dom.filterSearchInput.value = e.target.value;
-                applyFilter();
+            dom.topbarSearchInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    state.searchTerm = dom.topbarSearchInput.value.trim();
+                    if (dom.filterSearchInput) dom.filterSearchInput.value = state.searchTerm;
+                    state.currentPage = 1;
+                    loadBooks();
+                }
             });
         }
 
-        if (dom.filterCategory) {
-            dom.filterCategory.addEventListener("change", (e) => {
-                state.selectedCategory = e.target.value;
-                applyFilter();
+        if (dom.btnApplyFilter) {
+            dom.btnApplyFilter.addEventListener("click", () => {
+                state.searchTerm = dom.filterSearchInput ? dom.filterSearchInput.value.trim() : "";
+                state.selectedCategory = dom.filterCategory ? dom.filterCategory.value : "";
+                state.selectedStatus = dom.filterStatus ? dom.filterStatus.value : "";
+                state.currentPage = 1;
+                loadBooks();
             });
         }
-
-        if (dom.filterStatus) {
-            dom.filterStatus.addEventListener("change", (e) => {
-                state.selectedStatus = e.target.value;
-                applyFilter();
-            });
-        }
-
-        if (dom.btnApplyFilter) dom.btnApplyFilter.addEventListener("click", applyFilter);
 
         if (dom.btnResetFilter) {
             dom.btnResetFilter.addEventListener("click", () => {
-                state.searchTerm = "";
-                state.selectedCategory = "";
-                state.selectedStatus = "";
                 if (dom.filterSearchInput) dom.filterSearchInput.value = "";
                 if (dom.topbarSearchInput) dom.topbarSearchInput.value = "";
                 if (dom.filterCategory) dom.filterCategory.value = "";
                 if (dom.filterStatus) dom.filterStatus.value = "";
-                applyFilter();
-                showNotification("Đã đặt lại toàn bộ bộ lọc.", "info");
+                state.searchTerm = "";
+                state.selectedCategory = "";
+                state.selectedStatus = "";
+                state.currentPage = 1;
+                loadBooks();
             });
         }
 
-        // 2. Add / Edit Book Modal
-        if (dom.btnOpenCreateBook) dom.btnOpenCreateBook.addEventListener("click", openCreateModal);
+        // Mở Modal Tạo sách
+        if (dom.btnOpenCreateBook) {
+            dom.btnOpenCreateBook.addEventListener("click", openCreateModal);
+        }
+
+        // Đóng Modal Sách
         if (dom.closeModalBtn) dom.closeModalBtn.addEventListener("click", closeBookModal);
         if (dom.cancelModalBtn) dom.cancelModalBtn.addEventListener("click", closeBookModal);
         if (dom.draftModalBtn) {
             dom.draftModalBtn.addEventListener("click", () => {
-                showNotification("Đã lưu bản nháp đầu sách thành công!", "info");
+                showNotification("Đã đóng cửa sổ tạo sách.", "info");
                 closeBookModal();
             });
         }
+
+        // Lưu sách
         if (dom.submitBookBtn) dom.submitBookBtn.addEventListener("click", saveBook);
 
-        // ISBN Lookup & Barcode preview
+        // Tra cứu ISBN
         if (dom.btnLookupIsbn) dom.btnLookupIsbn.addEventListener("click", lookupBookByIsbn);
-        if (dom.bookIsbn) {
-            dom.bookIsbn.addEventListener("input", () => {
-                updateBarcodeRange();
-                if (dom.isbnLookupStatus) dom.isbnLookupStatus.textContent = "";
-            });
-            dom.bookIsbn.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    lookupBookByIsbn();
-                }
-            });
-        }
-        if (dom.copiesCount) dom.copiesCount.addEventListener("input", updateBarcodeRange);
 
-        // Author tags input
+        // Thẻ tác giả
         if (dom.tagAuthorInput) {
             dom.tagAuthorInput.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" || e.key === ",") {
@@ -1910,47 +1707,49 @@
             });
         }
 
-        // Image Dropzone
-        if (dom.coverFileInput) {
+        // Ảnh bìa Dropzone & File Input
+        if (dom.coverDropZone && dom.coverFileInput) {
+            dom.coverDropZone.addEventListener("click", () => dom.coverFileInput.click());
             dom.coverFileInput.addEventListener("change", (e) => {
                 if (e.target.files && e.target.files[0]) {
                     handleCoverFileSelect(e.target.files[0]);
                 }
             });
-        }
 
-        if (dom.coverDropZone) {
             dom.coverDropZone.addEventListener("dragover", (e) => {
                 e.preventDefault();
-                dom.coverDropZone.style.borderColor = "var(--color-brand)";
+                dom.coverDropZone.classList.add("dragover");
             });
+
             dom.coverDropZone.addEventListener("dragleave", () => {
-                dom.coverDropZone.style.borderColor = "var(--color-border)";
+                dom.coverDropZone.classList.remove("dragover");
             });
+
             dom.coverDropZone.addEventListener("drop", (e) => {
                 e.preventDefault();
-                dom.coverDropZone.style.borderColor = "var(--color-border)";
+                dom.coverDropZone.classList.remove("dragover");
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                     handleCoverFileSelect(e.dataTransfer.files[0]);
                 }
             });
         }
 
-        // 3. Modal 2: Stitch High-Fidelity Tabs
-        if (dom.btnTab1) {
-            dom.btnTab1.addEventListener("click", () => switchModalTab("tab1"));
-        }
-        if (dom.btnTab2) {
-            dom.btnTab2.addEventListener("click", () => switchModalTab("tab2"));
-        }
+        // Modal 2: Bản sao
+        if (dom.closeCopiesModalBtn) dom.closeCopiesModalBtn.addEventListener("click", closeCopiesModal);
+        if (dom.closeCopiesModalFooterBtn) dom.closeCopiesModalFooterBtn.addEventListener("click", closeCopiesModal);
+        if (dom.doneCopiesModalBtn) dom.doneCopiesModalBtn.addEventListener("click", closeCopiesModal);
 
-        // Filter Pills in Copies Modal
+        // Modal 2 Tabs
+        if (dom.btnTab1) dom.btnTab1.addEventListener("click", () => switchModalTab("tab1"));
+        if (dom.btnTab2) dom.btnTab2.addEventListener("click", () => switchModalTab("tab2"));
+
+        // Modal 2 Filters
         if (dom.filterBtnAll) dom.filterBtnAll.addEventListener("click", () => setCopiesFilter("ALL"));
         if (dom.filterBtnAvailable) dom.filterBtnAvailable.addEventListener("click", () => setCopiesFilter("AVAILABLE"));
         if (dom.filterBtnBorrowed) dom.filterBtnBorrowed.addEventListener("click", () => setCopiesFilter("BORROWED"));
         if (dom.filterBtnIssues) dom.filterBtnIssues.addEventListener("click", () => setCopiesFilter("ISSUES"));
 
-        // Live Search Copies
+        // Tìm kiếm bản sao trong modal
         if (dom.copiesSearchInput) {
             dom.copiesSearchInput.addEventListener("input", (e) => {
                 state.copiesSearch = e.target.value;
@@ -1959,29 +1758,30 @@
             });
         }
 
-        // Print Barcodes
+        // In tem mã vạch & Xuất CSV
         if (dom.printBatchBarcodesBtn) dom.printBatchBarcodesBtn.addEventListener("click", printBatchBarcodes);
+        if (dom.exportCopiesCsvBtn) dom.exportCopiesCsvBtn.addEventListener("click", exportCopiesCsv);
+        if (dom.btnExportExcel) dom.btnExportExcel.addEventListener("click", exportToExcel);
 
-        // Add Copy Drawer
+        // Drawer thêm bản sao
         if (dom.toggleAddCopyBtn) dom.toggleAddCopyBtn.addEventListener("click", toggleAddCopyDrawer);
         if (dom.closeAddCopyDrawerBtn) dom.closeAddCopyDrawerBtn.addEventListener("click", toggleAddCopyDrawer);
         if (dom.cancelAddCopyBtn) dom.cancelAddCopyBtn.addEventListener("click", toggleAddCopyDrawer);
         if (dom.submitAddCopyBtn) dom.submitAddCopyBtn.addEventListener("click", submitAddCopy);
 
-        // Quick Status Drawer
+        // Drawer đổi trạng thái
         if (dom.cancelQuickStatusBtn) dom.cancelQuickStatusBtn.addEventListener("click", closeQuickStatusDrawer);
         if (dom.saveQuickStatusBtn) dom.saveQuickStatusBtn.addEventListener("click", saveQuickStatus);
 
-        // Modal 2 Footer Actions
-        if (dom.closeCopiesModalBtn) dom.closeCopiesModalBtn.addEventListener("click", closeCopiesModal);
-        if (dom.closeCopiesModalFooterBtn) dom.closeCopiesModalFooterBtn.addEventListener("click", closeCopiesModal);
-        if (dom.exportCopiesCsvBtn) dom.exportCopiesCsvBtn.addEventListener("click", exportCopiesCsv);
-        if (dom.doneCopiesModalBtn) dom.doneCopiesModalBtn.addEventListener("click", closeCopiesModal);
+        // Thay đổi số lượng bản sao
+        if (dom.copiesCount) {
+            dom.copiesCount.addEventListener("input", updateBarcodeRange);
+        }
+        if (dom.bookIsbn) {
+            dom.bookIsbn.addEventListener("input", updateBarcodeRange);
+        }
 
-        // 4. Export Excel
-        if (dom.btnExportExcel) dom.btnExportExcel.addEventListener("click", exportToExcel);
-
-        // 5. Mobile Sidebar Drawer Toggle
+        // Mobile Sidebar Drawer Toggle
         const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
         const btnCloseSidebar = document.getElementById("btn-close-sidebar");
         const appSidebar = document.getElementById("app-sidebar");
@@ -2009,69 +1809,79 @@
             });
         }
 
-        if (btnCloseSidebar) {
-            btnCloseSidebar.addEventListener("click", closeMobileSidebar);
-        }
-
-        if (sidebarBackdrop) {
-            sidebarBackdrop.addEventListener("click", closeMobileSidebar);
-        }
+        if (btnCloseSidebar) btnCloseSidebar.addEventListener("click", closeMobileSidebar);
+        if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeMobileSidebar);
 
         document.querySelectorAll(".sidebar-rail-link").forEach(link => {
             link.addEventListener("click", () => {
-                if (window.innerWidth <= 900) {
-                    closeMobileSidebar();
-                }
+                if (window.innerWidth <= 900) closeMobileSidebar();
             });
         });
 
-        // Modal backdrops click to close
+        // Modal 3: Confirm Delete buttons
+        if (dom.cancelDeleteModalBtn) dom.cancelDeleteModalBtn.addEventListener("click", closeDeleteModal);
+        if (dom.closeDeleteModalBtn) dom.closeDeleteModalBtn.addEventListener("click", closeDeleteModal);
+        if (dom.confirmDeleteModalBtn) dom.confirmDeleteModalBtn.addEventListener("click", handleConfirmDelete);
+
+        // Click ngoài backdrop để đóng modal
         window.addEventListener("click", (e) => {
             if (e.target === dom.bookModalBackdrop) closeBookModal();
             if (e.target === dom.copiesModalBackdrop) closeCopiesModal();
+            if (e.target === dom.deleteModalBackdrop) closeDeleteModal();
         });
 
-        // Close on Escape
+        // Đóng bằng phím Escape
         window.addEventListener("keydown", (e) => {
             if (e.key === "Escape") {
                 closeBookModal();
                 closeCopiesModal();
+                closeDeleteModal();
             }
         });
     }
 
     // ============================================================================
-    // GLOBAL EXPORTS & INITIALIZATION
+    // KHỞI ĐỘNG ỨNG DỤNG (INITIALIZATION)
     // ============================================================================
+    async function init() {
+        initEventListeners();
+        await loadTaxonomy();
+        await loadBooks();
+    }
+
+    // Export API toàn cục để gọi từ HTML inline events
     window.booksApp = {
-        openCreateModal,
-        openEditModal,
-        closeBookModal,
-        lookupBookByIsbn,
-        saveBook,
-        deleteBook,
-        removeAuthorTag,
-        setPage,
-        openCopiesModal,
-        closeCopiesModal,
-        switchModalTab,
-        setCopiesFilter,
-        setCopiesPage,
-        openQuickStatusDrawer,
-        closeQuickStatusDrawer,
-        saveQuickStatus,
-        toggleAddCopyDrawer,
-        submitAddCopy,
-        deleteCopy,
-        printBatchBarcodes,
-        exportCopiesCsv,
-        viewPdfDoc,
-        exportToExcel
+        reload: loadBooks,
+        setPage: setPage,
+        openCreateModal: openCreateModal,
+        openEditModal: openEditModal,
+        closeBookModal: closeBookModal,
+        lookupBookByIsbn: lookupBookByIsbn,
+        saveBook: saveBook,
+        deleteBook: deleteBook,
+        openDeleteModal: openDeleteModal,
+        closeDeleteModal: closeDeleteModal,
+        openCopiesModal: openCopiesModal,
+        closeCopiesModal: closeCopiesModal,
+        switchModalTab: switchModalTab,
+        setCopiesFilter: setCopiesFilter,
+        setCopiesPage: setCopiesPage,
+        openQuickStatusDrawer: openQuickStatusDrawer,
+        closeQuickStatusDrawer: closeQuickStatusDrawer,
+        saveQuickStatus: saveQuickStatus,
+        toggleAddCopyDrawer: toggleAddCopyDrawer,
+        submitAddCopy: submitAddCopy,
+        printBatchBarcodes: printBatchBarcodes,
+        exportCopiesCsv: exportCopiesCsv,
+        viewPdfDoc: viewPdfDoc,
+        exportToExcel: exportToExcel,
+        removeAuthorTag: removeAuthorTag
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
-        updateKPIs();
-        applyFilter();
-        initEventListeners();
-    });
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+
 })();

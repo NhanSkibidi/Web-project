@@ -1862,6 +1862,143 @@
     }
 
     // ============================================================================
+    // TẢI VÀ ĐỒNG BỘ THÔNG TIN NGƯỜI DÙNG (FULL NAME & ROLE) TỪ DATABASE / SESSION
+    // ============================================================================
+    async function loadUserProfile() {
+        const userProfileBtn = document.getElementById("userProfileBtn");
+        const avatarEl = document.getElementById("userAvatar") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-avatar") : null);
+        const nameEl = document.getElementById("userName") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-name") : null);
+        const roleEl = document.getElementById("userRole") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-role") : null);
+
+        function mapRoleLabel(role) {
+            if (!role) return "Độc giả";
+            const r = String(role).toUpperCase();
+            if (r === "ADMIN") return "Quản trị viên";
+            if (r === "LIBRARIAN") return "Thủ thư";
+            if (r === "READER") return "Sinh viên / Độc giả";
+            return role;
+        }
+
+        function renderUser(user) {
+            if (!user) return;
+            const fullName = user.full_name || user.name || user.email || "Người dùng";
+            const roleText = mapRoleLabel(user.role);
+            const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
+
+            if (avatarEl) avatarEl.textContent = initial;
+            if (nameEl) nameEl.textContent = fullName;
+            if (roleEl) roleEl.textContent = roleText;
+        }
+
+        let cachedUser = null;
+        if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+            cachedUser = auth.getUser();
+        } else {
+            try {
+                const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+                if (raw) cachedUser = JSON.parse(raw);
+            } catch (e) {
+                console.warn("Không đọc được user_info từ cache:", e);
+            }
+        }
+
+        if (cachedUser) {
+            renderUser(cachedUser);
+        }
+
+        try {
+            let freshUser = null;
+            if (typeof auth !== "undefined" && typeof auth.syncSession === "function") {
+                freshUser = await auth.syncSession();
+            } else if (typeof api !== "undefined" && typeof api.get === "function") {
+                const token = (typeof auth !== "undefined" && typeof auth.getToken === "function")
+                    ? auth.getToken()
+                    : (localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token"));
+                if (token) {
+                    freshUser = await api.get("/auth/me");
+                    if (freshUser) {
+                        if (typeof auth !== "undefined" && typeof auth.setUser === "function") {
+                            auth.setUser(freshUser);
+                        } else {
+                            localStorage.setItem("user_info", JSON.stringify(freshUser));
+                        }
+                    }
+                }
+            } else {
+                const token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
+                if (token) {
+                    const baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+                    const res = await fetch(baseUrl + "/auth/me", {
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                            "Content-Type": "application/json"
+                        }
+                    });
+                    if (res.ok) {
+                        freshUser = await res.json();
+                        localStorage.setItem("user_info", JSON.stringify(freshUser));
+                    }
+                }
+            }
+
+            if (freshUser) {
+                renderUser(freshUser);
+            }
+        } catch (err) {
+            console.warn("Không thể đồng bộ hồ sơ user từ database:", err);
+        }
+    }
+
+    // ============================================================================
+    // HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (showConfirm - ĐỒNG BỘ LOAN_MANAGEMENT)
+    // ============================================================================
+    let activeConfirmCallback = null;
+
+    function showConfirm(options) {
+        // options = { title, message, type: "green"|"red"|"blue", confirmText, cancelText, onConfirm }
+        const modal = document.getElementById("confirm-modal");
+        const titleEl = document.getElementById("confirm-title");
+        const msgEl = document.getElementById("confirm-message");
+        const iconBox = document.getElementById("confirm-icon-box");
+        const iconEl = document.getElementById("confirm-icon");
+        const btnProceed = document.getElementById("btn-confirm-proceed");
+        const btnCancel = document.getElementById("btn-confirm-cancel");
+
+        if (!modal) return;
+
+        if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+        if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+        // Màu sắc icon & nút xác nhận
+        if (iconBox) iconBox.className = "confirm-icon-circle";
+        if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+        if (options.type === "red") {
+            if (iconBox) iconBox.classList.add("icon-red");
+            if (btnProceed) btnProceed.classList.add("btn-danger");
+            if (iconEl) iconEl.textContent = "warning";
+        } else if (options.type === "green") {
+            if (iconBox) iconBox.classList.add("icon-green");
+            if (iconEl) iconEl.textContent = "check_circle";
+        } else {
+            if (iconBox) iconBox.classList.add("icon-blue");
+            if (iconEl) iconEl.textContent = "help_outline";
+        }
+
+        if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+        if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+        activeConfirmCallback = options.onConfirm || null;
+        modal.classList.add("active");
+    }
+
+    function closeConfirmModal() {
+        const modal = document.getElementById("confirm-modal");
+        if (modal) modal.classList.remove("active");
+        activeConfirmCallback = null;
+    }
+
+    // ============================================================================
     // 16. THIẾT LẬP CÁC SỰ KIỆN GIAO DIỆN (EVENT LISTENERS)
     // ============================================================================
     function initEventListeners() {
@@ -2021,41 +2158,68 @@
             dom.bookIsbn.addEventListener("input", updateBarcodeRange);
         }
 
-        // Mobile Sidebar Drawer Toggle
-        const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
-        const btnCloseSidebar = document.getElementById("btn-close-sidebar");
-        const appSidebar = document.getElementById("app-sidebar");
-        const sidebarBackdrop = document.getElementById("sidebar-backdrop");
-
-        function openMobileSidebar() {
-            if (appSidebar) appSidebar.classList.add("mobile-open");
-            if (sidebarBackdrop) sidebarBackdrop.classList.remove("hidden");
-            document.body.style.overflow = "hidden";
-        }
-
-        function closeMobileSidebar() {
-            if (appSidebar) appSidebar.classList.remove("mobile-open");
-            if (sidebarBackdrop) sidebarBackdrop.classList.add("hidden");
-            document.body.style.overflow = "";
-        }
-
-        if (btnToggleSidebar) {
-            btnToggleSidebar.addEventListener("click", () => {
-                if (appSidebar && appSidebar.classList.contains("mobile-open")) {
-                    closeMobileSidebar();
-                } else {
-                    openMobileSidebar();
-                }
+        // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
+        const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+        const navMenu = document.getElementById("navMenu");
+        if (mobileMenuToggle && navMenu) {
+            mobileMenuToggle.addEventListener("click", (e) => {
+                e.stopPropagation();
+                navMenu.classList.toggle("show");
             });
         }
 
-        if (btnCloseSidebar) btnCloseSidebar.addEventListener("click", closeMobileSidebar);
-        if (sidebarBackdrop) sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+        const userProfileBtn = document.getElementById("userProfileBtn");
+        const userDropdownMenu = document.getElementById("userDropdownMenu");
+        const logoutMenuBtn = document.getElementById("logoutMenuBtn");
 
-        document.querySelectorAll(".sidebar-rail-link").forEach(link => {
-            link.addEventListener("click", () => {
-                if (window.innerWidth <= 900) closeMobileSidebar();
+        if (userProfileBtn && userDropdownMenu) {
+            userProfileBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle("show");
+                const isShown = userDropdownMenu.classList.contains("show");
+                userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
             });
+        }
+
+        if (logoutMenuBtn) {
+            logoutMenuBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+                showConfirm({
+                    title: "Xác nhận đăng xuất?",
+                    message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+                    type: "red",
+                    confirmText: "Đăng xuất",
+                    cancelText: "Hủy",
+                    onConfirm: () => {
+                        if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+                            auth.clearSession();
+                        } else {
+                            localStorage.removeItem("access_token");
+                            localStorage.removeItem("token");
+                            localStorage.removeItem("user_info");
+                            localStorage.removeItem("library_card");
+                            sessionStorage.removeItem("access_token");
+                            sessionStorage.removeItem("user_info");
+                        }
+                        showNotification("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "info");
+                        setTimeout(() => {
+                            window.location.href = "login.html#login";
+                        }, 500);
+                    }
+                });
+            });
+        }
+
+        // Đóng dropdown và mobile menu khi click ngoài màn hình
+        document.addEventListener("click", () => {
+            if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+                userDropdownMenu.classList.remove("show");
+                if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+            }
+            if (navMenu && navMenu.classList.contains("show")) {
+                navMenu.classList.remove("show");
+            }
         });
 
         // Modal 3: Confirm Delete buttons
@@ -2089,6 +2253,29 @@
             });
         }
 
+        // Sự kiện trong Hộp thoại xác nhận chung (Confirm modal)
+        const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+        const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+        const confirmModal = document.getElementById("confirm-modal");
+
+        if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+
+        if (btnConfirmProceed) {
+            btnConfirmProceed.addEventListener("click", () => {
+                const callback = activeConfirmCallback;
+                closeConfirmModal();
+                if (typeof callback === "function") {
+                    callback();
+                }
+            });
+        }
+
+        if (confirmModal) {
+            confirmModal.addEventListener("click", (e) => {
+                if (e.target === confirmModal) closeConfirmModal();
+            });
+        }
+
         // Click ngoài backdrop để đóng modal
         window.addEventListener("click", (e) => {
             if (e.target === dom.bookModalBackdrop) closeBookModal();
@@ -2099,11 +2286,18 @@
 
         // Đóng bằng phím Escape
         window.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") {
+            if (e.key === "Escape" || e.keyCode === 27) {
                 closeBookModal();
                 closeCopiesModal();
                 closeDeleteModal();
                 closeBookDetailModal();
+                closeConfirmModal();
+                const uMenu = document.getElementById("userDropdownMenu");
+                if (uMenu) uMenu.classList.remove("show");
+                const uBtn = document.getElementById("userProfileBtn");
+                if (uBtn) uBtn.setAttribute("aria-expanded", "false");
+                const nMenu = document.getElementById("navMenu");
+                if (nMenu) nMenu.classList.remove("show");
             }
         });
     }
@@ -2113,6 +2307,7 @@
     // ============================================================================
     async function init() {
         initEventListeners();
+        loadUserProfile();
         await loadTaxonomy();
 
         // Nhận từ khoá hoặc thể loại từ URL query params nếu có (VD: books.html?q=Python hoặc ?category_id=1)
@@ -2159,7 +2354,9 @@
         exportToExcel: exportToExcel,
         removeAuthorTag: removeAuthorTag,
         openBookDetailModal: openBookDetailModal,
-        closeBookDetailModal: closeBookDetailModal
+        closeBookDetailModal: closeBookDetailModal,
+        showConfirm: showConfirm,
+        closeConfirmModal: closeConfirmModal
     };
 
     if (document.readyState === "loading") {

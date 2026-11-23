@@ -101,6 +101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         { href: "home.html", label: "🏠 Trang chủ Thư viện" },
         { href: "catalog.html", label: "🔎 Tra cứu Danh mục Ấn bản" },
         { href: "loan_slip.html", label: "📋 Phiếu mượn của tôi" },
+        { href: "fines.html", label: "💰 Tiền phạt của tôi" },
         { href: "loan_basket.html", label: "🛒 Giỏ mượn sách" },
       ];
     }
@@ -183,6 +184,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     renderShortcuts(profile.role);
+    loadMyFinesSummary(profile.role);
+  }
+
+  // ---------- 1b. TẢI TÓM TẮT TIỀN PHẠT CÁ NHÂN (GET /api/fines/my-fines) ----------
+  async function loadMyFinesSummary(role) {
+    const section = document.getElementById("pf-fines-section");
+    if (!section) return;
+    if (role !== "READER") {
+      section.hidden = true;
+      return;
+    }
+
+    section.hidden = false;
+    const pillEl = document.getElementById("pf-fines-status-pill");
+    const countEl = document.getElementById("pf-fines-unpaid-count");
+    const amountEl = document.getElementById("pf-fines-unpaid-amount");
+
+    try {
+      const data = await api.get("/fines/my-fines");
+      const unpaidCount = Number(data?.unpaid_count || 0);
+      const totalUnpaid = Number(data?.total_unpaid_amount || 0);
+
+      if (countEl) countEl.textContent = `${unpaidCount} khoản`;
+      if (amountEl) {
+        amountEl.textContent = `${totalUnpaid.toLocaleString("vi-VN")} đ`;
+        amountEl.style.color = unpaidCount > 0 ? "#dc2626" : "";
+        amountEl.style.fontWeight = unpaidCount > 0 ? "700" : "";
+      }
+      if (pillEl) {
+        if (unpaidCount > 0) {
+          pillEl.textContent = "Còn nợ phạt";
+          pillEl.className = "status-pill status-locked";
+        } else {
+          pillEl.textContent = "Không nợ phạt";
+          pillEl.className = "status-pill status-active";
+        }
+      }
+    } catch (_) {
+      if (pillEl) {
+        pillEl.textContent = "Chưa tải được";
+        pillEl.className = "status-pill";
+      }
+      if (countEl) countEl.textContent = "--";
+      if (amountEl) amountEl.textContent = "--";
+    }
   }
 
   // ---------- 1. TẢI HỒ SƠ HIỆN TẠI (GET /api/users/me) ----------

@@ -39,6 +39,7 @@ class FineDetailResponse(BaseModel):
     user_phone: str | None = None
     card_code: str | None = None
     loan_id: int
+    loan_code: str | None = None
     book_copy_id: int
     copy_code: str | None = None
     book_title: str | None = None

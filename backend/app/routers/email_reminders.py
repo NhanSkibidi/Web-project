@@ -3,12 +3,14 @@ Router gửi Email nhắc hạn trả sách & thông báo đặt trước sẵn 
 Sử dụng FastAPI BackgroundTasks để gửi SMTP không chặn (non-blocking) phản hồi HTTP.
 """
 from datetime import datetime, timedelta
+import html as html_lib
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.dependencies import require_librarian
 from app.crud.loan_service import get_due_soon_loans, get_overdue_loans
 from app.db.session import get_db
 from app.models.Book import Book
@@ -22,7 +24,11 @@ from app.services.email_service import (
     send_reservation_ready_email,
 )
 
-router = APIRouter(prefix="/emails", tags=["Email Reminders (Bonus)"])
+router = APIRouter(
+    prefix="/emails",
+    tags=["Email Reminders (Bonus)"],
+    dependencies=[Depends(require_librarian)],
+)
 
 
 class TestEmailRequest(BaseModel):
@@ -166,7 +172,8 @@ def send_test_email(
     background_tasks: BackgroundTasks,
 ):
     """Gửi 1 email thử nghiệm chạy nền bằng BackgroundTasks để kiểm tra cấu hình Gmail SMTP."""
-    html = f"<p>{payload.message}</p><p><em>Thời điểm gửi: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</em></p>"
+    safe_msg = html_lib.escape(payload.message)
+    html = f"<p>{safe_msg}</p><p><em>Thời điểm gửi: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</em></p>"
     background_tasks.add_task(
         send_email_smtp,
         to_email=str(payload.to_email),

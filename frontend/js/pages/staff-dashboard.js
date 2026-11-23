@@ -338,13 +338,18 @@
   }
 
   // Thử kết nối lại máy chủ khi gặp lỗi
-  function retryConnection() {
+  async function retryConnection() {
     switchState("state-loading");
     showToast("Đang kiểm tra kết nối với máy chủ FastAPI KS25...", "warning");
-    setTimeout(() => {
+    const ok = await loadDashboardStatistics(false);
+    if (ok) {
+      await syncOverdueData();
       switchState("state-success");
       showToast("Đã khôi phục kết nối thành công!");
-    }, 1000);
+    } else {
+      switchState("state-error");
+      showToast("Vẫn chưa thể kết nối tới máy chủ thống kê.", "error");
+    }
   }
 
   // Cập nhật số liệu theo khoảng thời gian (Task T3CFF62)
@@ -366,36 +371,12 @@
       btn.classList.toggle("active", btn.getAttribute("data-time") === filterKey);
     });
 
-    // Cập nhật ngay mock fallback trước khi chờ API
-    const data = TIME_DATA[filterKey] || TIME_DATA.month;
-    const totalBooksEl = document.getElementById("stat-total-books");
-    const booksTrendEl = document.getElementById("stat-books-trend");
-    const totalCopiesEl = document.getElementById("stat-total-copies");
-    const availCopiesEl = document.getElementById("stat-avail-copies");
-    const borrowedCopiesEl = document.getElementById("stat-borrowed-copies");
-    const damagedCopiesEl = document.getElementById("stat-damaged-copies");
-    const activeLoansEl = document.getElementById("stat-active-loans");
-    const overdueLoansEl = document.getElementById("stat-overdue-loans");
-    const activeReadersEl = document.getElementById("stat-active-readers");
-    const readersBreakdownEl = document.getElementById("stat-readers-breakdown");
-
-    if (totalBooksEl) totalBooksEl.textContent = data.totalBooks;
-    if (booksTrendEl) booksTrendEl.textContent = data.booksTrend;
-    if (totalCopiesEl) totalCopiesEl.textContent = data.totalCopies;
-    if (availCopiesEl) availCopiesEl.textContent = data.availCopies;
-    if (borrowedCopiesEl) borrowedCopiesEl.textContent = data.borrowedCopies;
-    if (damagedCopiesEl) damagedCopiesEl.textContent = data.damagedCopies;
-    if (activeLoansEl) activeLoansEl.textContent = data.activeLoans;
-    if (overdueLoansEl) overdueLoansEl.textContent = data.overdueLoans;
-    if (activeReadersEl) activeReadersEl.textContent = data.activeReaders;
-    if (readersBreakdownEl) readersBreakdownEl.textContent = data.readersBreakdown;
-
     loadDashboardStatistics(true);
   }
 
   // ── TASK T3CFF62: ĐỒNG BỘ DASHBOARD THỐNG KÊ TỪ /api/statistics/dashboard ──
   async function loadDashboardStatistics(showNotify = false) {
-    if (typeof api === "undefined") return;
+    if (typeof api === "undefined") return false;
 
     const params = {
       group_by: currentGroupBy,
@@ -410,7 +391,7 @@
 
     try {
       const res = await api.get("/statistics/dashboard", params);
-      if (!res || !res.summary) return;
+      if (!res || !res.summary) return false;
       lastDashboardPayload = res;
 
       const s = res.summary;
@@ -439,7 +420,10 @@
       setTxt("stat-borrowed-copies", `${Number(s.borrowed_copies).toLocaleString("vi-VN")} mượn`);
       setTxt("stat-damaged-copies", `${Number(s.damaged_or_lost_copies).toLocaleString("vi-VN")} mất/hỏng`);
       setTxt("stat-active-loans", Number(s.loans_in_period).toLocaleString("vi-VN"));
-      setTxt("stat-overdue-loans", `${Number(s.overdue_books_count).toLocaleString("vi-VN")} sách quá hạn`);
+      setTxt(
+        "stat-overdue-loans",
+        `${Number(s.overdue_books_count).toLocaleString("vi-VN")} sách quá hạn (${Number(s.overdue_loans_count || 0)} phiếu)`
+      );
       setTxt("stat-fines-collected", `${Number(s.collected_fines_amount || 0).toLocaleString("vi-VN")} đ`);
       setTxt(
         "stat-fines-meta",
@@ -512,6 +496,22 @@
             })
             .join("");
         }
+      } else if (Array.isArray(res.popular_categories)) {
+        if (categoryBarChartInstance) {
+          categoryBarChartInstance.data.labels = [];
+          categoryBarChartInstance.data.datasets[0].data = [];
+          categoryBarChartInstance.update();
+        }
+        const catTbody = document.getElementById("category-table-body");
+        if (catTbody) {
+          catTbody.innerHTML = `
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">
+                Chưa có dữ liệu thể loại trong kỳ này.
+              </td>
+            </tr>
+          `;
+        }
       }
 
       // 5. Cập nhật Bảng Top Sách mượn nhiều nhất
@@ -563,11 +563,16 @@
         const labelMap = { today: "Hôm nay", week: "Tuần này", month: "Tháng này", year: "Năm nay", custom: "Khoảng ngày tùy chọn" };
         showToast(`Đã đồng bộ số liệu thống kê: ${labelMap[res.period] || res.period}`);
       }
+      return true;
     } catch (err) {
-      if (showNotify) {
-        const labelMap = { today: "Hôm nay", week: "Tuần này", month: "Tháng này", year: "Năm nay" };
-        showToast(`Đang hiển thị số liệu mẫu (${labelMap[currentPeriod] || currentPeriod})`, "warning");
+      if (err && (err.status === 401 || err.status === 403)) {
+        showToast(err.message || "Phiên đăng nhập hết hạn hoặc bạn không có quyền xem thống kê.", "error");
+        return false;
       }
+      if (showNotify || err?.status === 0) {
+        showToast(err?.message || "Không thể tải dữ liệu thống kê từ máy chủ.", "error");
+      }
+      return false;
     }
   }
 
@@ -614,10 +619,6 @@
 
       if (overdueRes.status === "fulfilled" && overdueRes.value) {
         cachedOverdueItems = overdueRes.value.items || [];
-        const statOverdueEl = document.getElementById("stat-overdue-loans");
-        if (statOverdueEl) {
-          statOverdueEl.textContent = `${overdueRes.value.total || cachedOverdueItems.length} phiếu quá hạn cần xử lý`;
-        }
       }
 
       if (dueSoonRes.status === "fulfilled" && dueSoonRes.value) {
@@ -780,14 +781,17 @@
       btn.addEventListener("click", async () => {
         const loanId = btn.getAttribute("data-loan");
         const readerName = btn.getAttribute("data-name");
+        const originalText = btn.textContent.trim();
         btn.disabled = true;
         btn.textContent = "Đang gửi...";
 
         try {
-          await api.post(`/loans/${loanId}/remind`, {
-            message: `Thủ thư nhắc nhở: Vui lòng lưu ý trả sách đúng hạn để tránh phí phạt!`,
-          });
-          showToast(`Đã gửi thông báo nhắc nhở in-app thành công cho ${readerName}!`);
+          const msg =
+            currentOverdueSubtab === "duesoon"
+              ? "Thủ thư nhắc nhở: Sách bạn đang mượn sắp đến hạn trả, vui lòng chuẩn bị trả đúng hạn hoặc gia hạn online."
+              : "Thủ thư nhắc nhở: Vui lòng lưu ý trả sách quá hạn để tránh phát sinh thêm phí phạt!";
+          const res = await api.post(`/loans/${loanId}/remind`, { message: msg });
+          showToast(res?.message || `Đã gửi thông báo nhắc nhở thành công cho ${readerName}!`);
           btn.textContent = "✓ Đã gửi";
           btn.style.background = "#dcfce7";
           btn.style.color = "#15803d";
@@ -795,8 +799,9 @@
             window.unilibNotifications.load();
           }
         } catch (e) {
-          showToast(`Đã gửi thông báo nhắc nhở cho độc giả ${readerName}!`);
-          btn.textContent = "✓ Đã gửi";
+          btn.disabled = false;
+          btn.textContent = originalText;
+          showToast(`Gửi nhắc nhở thất bại: ${e?.message || "Lỗi kết nối máy chủ"}`, "error");
         }
       });
     });
@@ -812,10 +817,76 @@
       .replace(/'/g, "&#39;");
   }
 
+  function renderStaffGuard(title, desc, ctaLabel, ctaHref) {
+    const mainEl = document.querySelector(".dashboard-main-container");
+    if (!mainEl) return;
+    mainEl.innerHTML = `
+      <div class="dashboard-card" style="max-width: 560px; margin: 56px auto; padding: 32px; text-align: center;">
+        <div style="width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center;">
+          <span class="material-symbols-outlined" style="font-size: 28px;">lock</span>
+        </div>
+        <h2 class="font-headline" style="margin: 0 0 8px; color: var(--color-brand);">${escapeHtml(title)}</h2>
+        <p style="margin: 0 0 22px; color: var(--color-text-secondary); font-size: 14px;">${escapeHtml(desc)}</p>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+          <a href="${ctaHref}" class="btn-export-primary" style="text-decoration: none;">${escapeHtml(ctaLabel)}</a>
+          <a href="home.html" class="btn-export-primary" style="text-decoration: none; background: var(--color-surface); color: var(--color-brand); border: 1px solid var(--color-border);">Về Trang chủ</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function refreshEmailStatusTooltip() {
+    try {
+      const st = await api.get("/emails/status");
+      const modeText = st?.smtp_configured ? `SMTP Gmail (${st.smtp_user})` : "Dry-Run (ghi log server)";
+      const btnDue = document.getElementById("btnEmailDueSoon");
+      const btnOver = document.getElementById("btnRemindOverdue");
+      if (btnDue) btnDue.title = `Gửi email nhắc hạn 2 ngày tới · Chế độ: ${modeText}`;
+      if (btnOver) btnOver.title = `Gửi thông báo in-app & email quá hạn · Chế độ: ${modeText}`;
+    } catch (_) {}
+  }
+
   // Khởi tạo và lắng nghe các sự kiện
   function init() {
+    const token = typeof auth !== "undefined" ? auth.getToken() : null;
+    const staffUser = typeof auth !== "undefined" ? auth.getUser() : null;
+
+    if (!token || !staffUser) {
+      try { sessionStorage.setItem("redirect_after_login", window.location.href); } catch (_) {}
+      renderStaffGuard(
+        "Yêu cầu đăng nhập Thủ thư / Admin",
+        "Trang Tổng quan & Thống kê Thư viện yêu cầu tài khoản Thủ thư (LIBRARIAN) hoặc Quản trị viên (ADMIN).",
+        "Đăng nhập ngay →",
+        "login.html#login"
+      );
+      return;
+    }
+
+    if (!["ADMIN", "LIBRARIAN"].includes(staffUser.role)) {
+      renderStaffGuard(
+        "Không có quyền truy cập (403)",
+        `Tài khoản "${staffUser.full_name || staffUser.email}" (${staffUser.role}) không thuộc nhóm quản trị thư viện.`,
+        "Về Cổng Độc giả",
+        "home.html"
+      );
+      return;
+    }
+
+    const avatarEl = document.getElementById("staff-avatar");
+    const nameEl = document.getElementById("staff-name");
+    const roleEl = document.getElementById("staff-role");
+    if (avatarEl) avatarEl.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
+    if (nameEl) nameEl.textContent = staffUser.full_name || staffUser.email;
+    if (roleEl) roleEl.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
+
+    document.getElementById("btn-logout")?.addEventListener("click", () => {
+      auth.clearSession();
+      window.location.href = "login.html#login";
+    });
+
     initCharts();
     syncLiveDataFromApi();
+    refreshEmailStatusTooltip();
 
     // 1. Chuyển đổi trạng thái hệ thống
     document.querySelectorAll(".state-btn").forEach((btn) => {
@@ -912,7 +983,7 @@
       });
     }
 
-    // 5. Nút gửi nhắc nhở quá hạn hàng loạt
+    // 5. Nút gửi nhắc nhở quá hạn hàng loạt (in-app + email nền)
     const btnRemind = document.getElementById("btnRemindOverdue");
     if (btnRemind) {
       btnRemind.addEventListener("click", async () => {
@@ -921,17 +992,42 @@
 
         try {
           const res = await api.post("/loans/remind-all-overdue");
-          const count = res?.sent_count || cachedOverdueItems.length || 18;
-          showToast(`Đã gửi thông báo in-app nhắc nhở tự động đến ${count} độc giả có phiếu mượn quá hạn!`);
-        } catch (e) {
-          showToast(`Đã gửi thông báo nhắc nhở tự động đến các độc giả có phiếu mượn quá hạn!`);
-        } finally {
-          btnRemind.disabled = false;
-          btnRemind.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span><span>Gửi thông báo nhắc nhở hàng loạt</span>`;
+          const count = res?.sent_count ?? 0;
+          const queued = res?.queued_emails ?? 0;
+          showToast(
+            queued > 0
+              ? `Đã gửi ${count} nhắc nhở in-app và xếp hàng ${queued} email cảnh báo quá hạn!`
+              : `Đã gửi thông báo in-app nhắc nhở đến ${count} phiếu quá hạn!`
+          );
           if (window.unilibNotifications && window.unilibNotifications.load) {
             window.unilibNotifications.load();
           }
           await syncOverdueData();
+        } catch (e) {
+          showToast(`Gửi nhắc nhở hàng loạt thất bại: ${e?.message || "Lỗi máy chủ"}`, "error");
+        } finally {
+          btnRemind.disabled = false;
+          btnRemind.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">outgoing_mail</span><span>Gửi thông báo nhắc nhở hàng loạt</span>`;
+        }
+      });
+    }
+
+    // 5b. Nút gửi Email nhắc hạn trả trong 2 ngày (Task Bonus T3D003D)
+    const btnEmailDueSoon = document.getElementById("btnEmailDueSoon");
+    if (btnEmailDueSoon) {
+      btnEmailDueSoon.addEventListener("click", async () => {
+        btnEmailDueSoon.disabled = true;
+        btnEmailDueSoon.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s infinite linear; font-size: 16px;">sync</span> Đang xếp hàng email...`;
+        try {
+          const res = await api.post("/emails/remind-due-soon?days=2");
+          showToast(
+            `${res?.message || "Đã xếp hàng gửi email nhắc hạn"} (${res?.mode === "smtp" ? "SMTP Gmail" : "Dry-Run"})`
+          );
+        } catch (e) {
+          showToast(`Không thể gửi email nhắc hạn: ${e?.message || "Lỗi máy chủ"}`, "error");
+        } finally {
+          btnEmailDueSoon.disabled = false;
+          btnEmailDueSoon.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">mark_email_unread</span><span>Email nhắc sắp đến hạn</span>`;
         }
       });
     }

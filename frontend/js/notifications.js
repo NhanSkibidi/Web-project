@@ -7,47 +7,59 @@
   "use strict";
 
   const API_BASE = (function () {
-    if (window.API_BASE_URL) return window.API_BASE_URL;
+    if (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) {
+      return CONFIG.API_BASE_URL.replace(/\/api\/?$/, "");
+    }
+    if (window.API_BASE_URL) return window.API_BASE_URL.replace(/\/api\/?$/, "");
     if (window.location.port === "8000") return "";
     return "http://127.0.0.1:8000";
   })();
 
-  function getCurrentUserId() {
-    try {
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        const u = JSON.parse(userStr);
-        if (u && u.id) return u.id;
-      }
-      const rawId = localStorage.getItem("user_id");
-      if (rawId) return parseInt(rawId, 10);
-    } catch (e) {
-      /* ignore */
+  function getAuthToken() {
+    if (typeof auth !== "undefined" && typeof auth.getToken === "function") {
+      return auth.getToken();
     }
-    return null;
+    return (
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("access_token") ||
+      null
+    );
   }
 
-  // Dữ liệu fallback offline khi backend chưa chạy
-  const OFFLINE_NOTIFICATIONS = [
-    {
-      id: "demo-1",
-      type: "OVERDUE",
-      title: "Quá hạn trả: Cấu trúc Dữ liệu & Giải thuật",
-      message: "Phiếu #PM-2024-0082 đã quá hạn 18 ngày. Tiền phạt dự kiến: 36.000 đ. Vui lòng mang sách tới quầy để trả.",
-      time_ago: "10 phút trước",
-      is_read: false,
-      loan_code: "PM-2024-0082",
-    },
-    {
-      id: "demo-2",
-      type: "DUE_SOON",
-      title: "Sắp đến hạn trả sách (còn 1 ngày)",
-      message: "Ấn phẩm 'Hệ thống Cơ sở Dữ liệu hiện đại' đến hạn vào ngày mai. Bạn có thể gia hạn online thêm 7 ngày hoặc trả tại quầy.",
-      time_ago: "2 giờ trước",
-      is_read: false,
-      loan_code: "PM-2024-0095",
-    },
-  ];
+  function getCurrentUser() {
+    if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+      const u = auth.getUser();
+      if (u) return u;
+    }
+    try {
+      const raw =
+        localStorage.getItem("user_info") ||
+        sessionStorage.getItem("user_info") ||
+        localStorage.getItem("user");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function getCurrentUserId() {
+    const user = getCurrentUser();
+    if (user && user.id) return user.id;
+    const rawId = localStorage.getItem("user_id");
+    return rawId ? parseInt(rawId, 10) : null;
+  }
+
+  function renderEmptyState(message, icon = "mark_email_read") {
+    const listEl = document.querySelector(".notif-list");
+    if (!listEl) return;
+    listEl.innerHTML = `
+      <div style="padding: 28px 16px; text-align: center; color: #64748b;">
+        <span class="material-symbols-outlined" style="font-size: 36px; opacity: 0.55;">${icon}</span>
+        <p style="margin: 8px 0 0; font-size: 13px;">${escapeHtml(message)}</p>
+      </div>
+    `;
+  }
 
   function getIconByType(type) {
     switch (type) {
@@ -76,12 +88,19 @@
       return;
     }
 
+    const user = getCurrentUser();
+    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
+    const targetPage = isStaff ? "loan_management.html" : "loan_slip.html";
+    const slipBase = window.location.pathname.includes("/pages/")
+      ? targetPage
+      : `pages/${targetPage}`;
+
     listEl.innerHTML = items
       .map((item) => {
         const { cls, icon } = getIconByType(item.type);
         const unreadClass = item.is_read ? "" : "is-unread";
         const dotStyle = item.is_read ? 'style="display: none;"' : "";
-        const href = item.loan_id ? `loan_slip.html?loan_id=${item.loan_id}` : "loan_slip.html";
+        const href = item.loan_id ? `${slipBase}?loan_id=${item.loan_id}` : slipBase;
 
         return `
           <a href="${href}" class="notif-item ${unreadClass}" data-id="${item.id}">
@@ -146,23 +165,36 @@
   }
 
   async function loadNotifications() {
+    const token = getAuthToken();
+    if (!token) {
+      updateBadge(0);
+      renderEmptyState("Đăng nhập để xem thông báo nhắc trả sách.", "lock_open");
+      return;
+    }
+
     const userId = getCurrentUserId();
-    const url = userId
-      ? `${API_BASE}/api/loans/notifications/my?user_id=${userId}&limit=20`
-      : `${API_BASE}/api/loans/notifications/my?limit=20`;
+    const user = getCurrentUser();
+    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
+    const url =
+      !isStaff && userId
+        ? `${API_BASE}/api/loans/notifications/my?user_id=${userId}&limit=20`
+        : `${API_BASE}/api/loans/notifications/my?limit=20`;
 
     try {
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       updateBadge(data.unread_count || 0);
       renderNotificationList(data.items || []);
     } catch (err) {
-      // Fallback offline mượt mà
-      const unreadCount = OFFLINE_NOTIFICATIONS.filter((n) => !n.is_read).length;
-      updateBadge(unreadCount);
-      renderNotificationList(OFFLINE_NOTIFICATIONS);
+      updateBadge(0);
+      renderEmptyState("Không thể tải thông báo từ máy chủ lúc này.", "cloud_off");
     }
   }
 
@@ -182,11 +214,15 @@
       }
     }
 
-    if (String(id).startsWith("demo-")) return;
+    const token = getAuthToken();
+    if (!token || String(id).startsWith("demo-")) return;
 
     try {
       await fetch(`${API_BASE}/api/loans/notifications/${id}/read`, {
         method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
     } catch (e) {
       /* ignore */
@@ -202,13 +238,24 @@
 
     updateBadge(0);
 
+    const token = getAuthToken();
+    if (!token) return;
+
     const userId = getCurrentUserId();
-    const url = userId
-      ? `${API_BASE}/api/loans/notifications/mark-all-read?user_id=${userId}`
-      : `${API_BASE}/api/loans/notifications/mark-all-read`;
+    const user = getCurrentUser();
+    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
+    const url =
+      !isStaff && userId
+        ? `${API_BASE}/api/loans/notifications/mark-all-read?user_id=${userId}`
+        : `${API_BASE}/api/loans/notifications/mark-all-read`;
 
     try {
-      await fetch(url, { method: "POST" });
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     } catch (e) {
       /* ignore */
     }
@@ -230,7 +277,8 @@
     const markReadBtn = document.getElementById("notifMarkReadBtn");
     const notifContainer = document.getElementById("notifDropdownContainer");
 
-    if (bellBtn && notifMenu) {
+    if (bellBtn && notifMenu && !bellBtn.dataset.notifBound) {
+      bellBtn.dataset.notifBound = "1";
       bellBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         const isHidden = notifMenu.hasAttribute("hidden") || notifMenu.style.display === "none";
@@ -256,39 +304,51 @@
       });
     }
 
-    if (markReadBtn) {
+    if (markReadBtn && !markReadBtn.dataset.notifBound) {
+      markReadBtn.dataset.notifBound = "1";
       markReadBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         markAllAsRead();
       });
     }
 
-    // Đóng khi click ngoài
-    document.addEventListener("click", (e) => {
-      if (notifContainer && !notifContainer.contains(e.target) && notifMenu) {
-        notifMenu.setAttribute("hidden", "");
-        notifMenu.style.display = "none";
-        if (bellBtn) bellBtn.setAttribute("aria-expanded", "false");
-      }
-    });
+    if (!window.__unilibNotifDocBound) {
+      window.__unilibNotifDocBound = true;
+      // Đóng khi click ngoài
+      document.addEventListener("click", (e) => {
+        const containerNow = document.getElementById("notifDropdownContainer");
+        const menuNow = document.getElementById("notifDropdownMenu");
+        const bellNow = document.getElementById("notifBellBtn");
+        if (containerNow && !containerNow.contains(e.target) && menuNow) {
+          menuNow.setAttribute("hidden", "");
+          menuNow.style.display = "none";
+          if (bellNow) bellNow.setAttribute("aria-expanded", "false");
+        }
+      });
 
-    // Phím Escape đóng dropdown
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && notifMenu && !notifMenu.hasAttribute("hidden")) {
-        notifMenu.setAttribute("hidden", "");
-        notifMenu.style.display = "none";
-        if (bellBtn) bellBtn.setAttribute("aria-expanded", "false");
-      }
-    });
+      // Phím Escape đóng dropdown
+      document.addEventListener("keydown", (e) => {
+        const menuNow = document.getElementById("notifDropdownMenu");
+        const bellNow = document.getElementById("notifBellBtn");
+        if (e.key === "Escape" && menuNow && !menuNow.hasAttribute("hidden")) {
+          menuNow.setAttribute("hidden", "");
+          menuNow.style.display = "none";
+          if (bellNow) bellNow.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
 
     // Nạp dữ liệu thông báo
-    loadNotifications();
+    if (notifContainer) {
+      loadNotifications();
+    }
   }
 
   // Export API ra window
   window.unilibNotifications = {
     load: loadNotifications,
     markAllRead: markAllAsRead,
+    init: setupNotificationListeners,
   };
 
   if (document.readyState === "loading") {

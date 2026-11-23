@@ -244,6 +244,7 @@ function renderReaderLayout() {
     const isHome = currentPath.endsWith("/index.html") || currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
     const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/catalog.html") || currentPath.endsWith("/books.html");
     const isLoanSlip = currentPath.endsWith("/loan_slip.html");
+    const isFines = currentPath.endsWith("/fines.html");
 
     // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
     const staffShortcutHtml =
@@ -251,47 +252,30 @@ function renderReaderLayout() {
         ? `<a href="${root}pages/staff-dashboard.html" class="topbar-nav-link" title="Bàn làm việc quản trị">⚡ Quản trị</a>`
         : "";
 
+    // Nếu là Độc giả đang đăng nhập -> hiện lối vào Tiền phạt cá nhân (Task T3CFF2C)
+    const readerFinesLinkHtml =
+      user && user.role === "READER"
+        ? `<a href="${root}pages/fines.html" class="topbar-nav-link ${isFines ? "active" : ""}">Tiền phạt</a>`
+        : "";
+
     const notifHtml = `
       <div class="notif-dropdown-container" id="notifDropdownContainer">
         <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
-          <span class="notif-badge" id="notifBadge">2</span>
+          <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
         </button>
         <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
           <div class="notif-header">
             <div class="notif-title-group">
               <span class="notif-title">Thông báo mượn trả</span>
-              <span class="notif-badge-pill">2 mới</span>
+              <span class="notif-badge-pill">0 mới</span>
             </div>
             <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
           </div>
           <div class="notif-list">
-            <a href="${root}pages/loan_slip.html" class="notif-item is-unread is-overdue">
-              <div class="notif-icon-box overdue">
-                <span class="material-symbols-outlined">error</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
-                <span class="notif-time">10 phút trước • Quá hạn</span>
-              </div>
-            </a>
-            <a href="${root}pages/loan_slip.html" class="notif-item is-unread is-due-soon">
-              <div class="notif-icon-box due-soon">
-                <span class="material-symbols-outlined">alarm</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
-                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
-              </div>
-            </a>
+            <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 13px;">
+              Đang tải thông báo...
+            </div>
           </div>
           <div class="notif-footer">
             <a href="${root}pages/loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
@@ -353,6 +337,7 @@ function renderReaderLayout() {
           <a href="${root}pages/home.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
           <a href="${root}pages/search.html" class="topbar-nav-link ${isSearch ? "active" : ""}">Tra cứu sách</a>
           <a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
+          ${readerFinesLinkHtml}
           ${staffShortcutHtml}
         </nav>
       </div>
@@ -364,47 +349,10 @@ function renderReaderLayout() {
       window.location.href = `${root}pages/login.html#login`;
     });
 
-    // Wire up in-app notification dropdown
-    const bellBtn = document.getElementById("notifBellBtn");
-    const notifMenu = document.getElementById("notifDropdownMenu");
-    const markReadBtn = document.getElementById("notifMarkReadBtn");
-    const notifBadge = document.getElementById("notifBadge");
-
-    if (bellBtn && notifMenu) {
-      bellBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isHidden = notifMenu.hasAttribute("hidden") || notifMenu.style.display === "none";
-        if (isHidden) {
-          notifMenu.removeAttribute("hidden");
-          notifMenu.style.display = "block";
-          bellBtn.setAttribute("aria-expanded", "true");
-        } else {
-          notifMenu.setAttribute("hidden", "");
-          notifMenu.style.display = "none";
-          bellBtn.setAttribute("aria-expanded", "false");
-        }
-      });
+    // Chuông thông báo được quản lý tập trung bởi notifications.js (tránh gắn 2 lần gây double-toggle)
+    if (window.unilibNotifications && typeof window.unilibNotifications.init === "function") {
+      window.unilibNotifications.init();
     }
-
-    if (markReadBtn) {
-      markReadBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        document.querySelectorAll(".notif-item.is-unread").forEach((item) => item.classList.remove("is-unread"));
-        document.querySelectorAll(".notif-dot").forEach((dot) => (dot.style.display = "none"));
-        if (notifBadge) notifBadge.style.display = "none";
-        markReadBtn.textContent = "Đã đọc";
-        markReadBtn.style.opacity = "0.6";
-      });
-    }
-
-    document.addEventListener("click", (e) => {
-      const container = document.getElementById("notifDropdownContainer");
-      if (container && !container.contains(e.target) && notifMenu) {
-        notifMenu.setAttribute("hidden", "");
-        notifMenu.style.display = "none";
-        if (bellBtn) bellBtn.setAttribute("aria-expanded", "false");
-      }
-    });
   }
 
   if (footerEl) {

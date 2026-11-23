@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+a<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -29,6 +29,7 @@
         <a href="home.html">Trang chủ</a>
         <a href="catalog.html">Tra cứu sách</a>
         <a href="loan_slip.html">Phiếu mượn</a>
+        <a href="fines.html">Tiền phạt</a>
         <a href="profile.html" class="active">Hồ sơ cá nhân</a>
       </nav>
     </div>
@@ -115,6 +116,30 @@
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- Tóm tắt tiền phạt của độc giả (Task T3CFF2C) -->
+        <section id="pf-fines-section" class="pf-card" hidden>
+          <div class="pf-card-head">
+            <h3 class="pf-card-title">💰 Khoản phạt của tôi</h3>
+            <span id="pf-fines-status-pill" class="status-pill status-active">Đang tải...</span>
+          </div>
+          <div class="pf-card-body">
+            <div class="meta-list">
+              <div class="meta-row">
+                <span class="meta-label">Khoản chưa nộp</span>
+                <span id="pf-fines-unpaid-count" class="meta-value meta-mono">--</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">Tổng tiền chưa nộp</span>
+                <span id="pf-fines-unpaid-amount" class="meta-value meta-mono">--</span>
+              </div>
+            </div>
+            <a href="fines.html" class="shortcut-link" style="margin-top: 12px;">
+              <span>Xem chi tiết &amp; biên lai tiền phạt</span>
+              <span>→</span>
+            </a>
           </div>
         </section>
 

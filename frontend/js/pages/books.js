@@ -1986,7 +1986,7 @@
             } else {
                 const token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
                 if (token) {
-                    const baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+                    const baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://127.0.0.1:8000/api";
                     const res = await fetch(baseUrl + "/auth/me", {
                         headers: {
                             "Authorization": "Bearer " + token,

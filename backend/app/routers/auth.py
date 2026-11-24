@@ -20,6 +20,7 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.crud.library_card import sync_card_expiration
 from app.db.session import get_db
 from app.models.library_card import CardStatus, CardType, LibraryCard
 from app.models.user import User, UserRole, UserStatus
@@ -115,15 +116,13 @@ def get_my_card(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Lấy thẻ thư viện mới nhất của độc giả đang đăng nhập (tự chuyển EXPIRED nếu quá hạn)."""
+    """Lấy thẻ thư viện mới nhất của độc giả đang đăng nhập (tự chuyển EXPIRED và ghi log nếu quá hạn)."""
     card = (
         db.query(LibraryCard)
         .filter(LibraryCard.reader_id == user.id)
         .order_by(LibraryCard.id.desc())
         .first()
     )
-    if card and card.status == CardStatus.ACTIVE and card.expiry_date and card.expiry_date < date.today():
-        card.status = CardStatus.EXPIRED
-        db.commit()
-        db.refresh(card)
+    if card:
+        sync_card_expiration(db, card, commit=True)
     return card

@@ -5,75 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chi tiết Độc giả &amp; Lịch sử mượn trả | UniLib KS25</title>
   <link rel="icon" href="../assets/images/logo.svg">
-  <link rel="stylesheet" href="../css/readers.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/readers.css?v=2.0">
 </head>
-<body class="readers-app">
+<body data-root="../" class="readers-body readers-app">
 
-  <!-- Top Header -->
-  <header class="ul-topbar">
-    <div class="ul-topbar-left">
-      <button id="btn-mobile-sidebar" type="button" class="ul-icon-btn ul-mobile-toggle">☰</button>
-      <a href="home.html" class="ul-brand">
-        <div class="ul-brand-icon">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
+  <!-- 1. TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (ĐỒNG BỘ READERS.HTML) -->
+  <header class="librarian-topbar site-header">
+    <div class="topbar-left">
+      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">local_library</span>
         </div>
-        <div>
-          <span class="ul-brand-name">UniLib</span>
-          <span class="ul-brand-sub">Thư viện số</span>
+        <div class="brand-text">
+          <span class="brand-name">UniLib</span>
+          <span class="brand-sub">Thư viện số KS25</span>
         </div>
       </a>
 
-      <nav class="ul-topnav">
-        <a href="home.html">Trang chủ</a>
-        <a href="catalog.html">Tra cứu sách</a>
-        <a href="loan_slip.html">Phiếu mượn của tôi</a>
-        <a href="readers.html" class="active">Quản trị thư viện</a>
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <nav class="topbar-nav" id="navMenu">
+        <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
       </nav>
     </div>
 
-    <div class="ul-topbar-right">
-      <a href="profile.html" class="ul-staff-chip" style="text-decoration:none; color:inherit;" title="Hồ sơ cá nhân & Đổi mật khẩu">
-        <div id="top-staff-avatar" class="ul-avatar-sm">T</div>
-        <div>
-          <span id="top-staff-name" class="ul-staff-name">Thủ thư</span>
-          <span id="top-staff-role" class="ul-staff-role">Thủ thư trực quầy</span>
+    <div class="topbar-right">
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar">T</div>
+          <div class="librarian-info">
+            <span class="librarian-name" id="userName">Thủ thư</span>
+            <span class="librarian-role" id="userRole">Thủ thư trực quầy</span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="profile.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
         </div>
-      </a>
-      <button id="btn-top-logout" type="button" class="ul-icon-btn" title="Đăng xuất">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      </button>
+      </div>
     </div>
   </header>
 
-  <div class="ul-shell">
-    <!-- Left Sidebar -->
-    <aside id="ul-sidebar" class="ul-sidebar">
-      <div class="ul-sidebar-inner">
-        <div class="ul-sidebar-heading">Phân hệ Thủ thư</div>
-        <a href="staff-dashboard.html" class="ul-side-link">📊 Tổng quan &amp; Thống kê</a>
-        <a href="books.html" class="ul-side-link">📚 Quản lý Đầu sách &amp; Bản sao</a>
-        <a href="staff-dashboard.html#loans" class="ul-side-link">📋 Quản lý Phiếu mượn</a>
-        <a href="returns.html" class="ul-side-link">↩ Trả sách tại quầy</a>
-        <a href="readers.html" class="ul-side-link active">🪪 Độc giả &amp; Thẻ thư viện</a>
-        <hr class="ul-side-divider">
-        <a href="admin-users.html" class="ul-side-link">⚙ Cài đặt hệ thống</a>
-      </div>
-      <div class="ul-sidebar-footer">
-        <span class="server-dot"></span>
-        <span>Máy chủ: K1-Online</span>
-      </div>
-    </aside>
+  <!-- 2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL -->
+  <aside id="app-sidebar" class="sidebar-rail">
+    <div class="sidebar-rail-header">
+      <span>PHÂN HỆ THỦ THƯ</span>
+    </div>
+    <nav class="sidebar-rail-nav">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
+        <span class="material-symbols-outlined">space_dashboard</span>
+        <span class="rail-label">Tổng quan &amp; Thống kê</span>
+      </a>
+      <a href="books.html" class="sidebar-rail-link" data-tooltip="Quản lý Đầu sách &amp; Bản sao">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
+      </a>
+      <a href="taxonomy.html" class="sidebar-rail-link" data-tooltip="Thể loại, Tác giả, NXB">
+        <span class="material-symbols-outlined">category</span>
+        <span class="rail-label">Thể loại, Tác giả, NXB</span>
+      </a>
+      <a href="loan_management.html" class="sidebar-rail-link" data-tooltip="Duyệt mượn trực tuyến">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="rail-label">Quản lý phiếu mượn</span>
+      </a>
+      <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
+        <span class="material-symbols-outlined">library_add</span>
+        <span class="rail-label">Mượn sách tại quầy</span>
+      </a>
+      <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
+      </a>
+      <a href="fines.html" class="sidebar-rail-link" data-tooltip="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
+      </a>
+      <a href="readers.html" class="sidebar-rail-link active" data-tooltip="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link" data-tooltip="Nhân sự &amp; Phân quyền">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="rail-label">Nhân sự &amp; Phân quyền</span>
+      </a>
+    </nav>
+  </aside>
 
-    <!-- Main Content -->
-    <div class="ul-workspace">
-      <main id="detail-main-content" class="ul-content">
+  <!-- 3. KHU VỰC NỘI DUNG CHÍNH -->
+  <div class="readers-workspace-wrapper">
+    <main id="detail-main-content" class="readers-main-container">
         <!-- Breadcrumb & Back -->
         <div class="page-head-row">
           <div>
@@ -237,11 +275,14 @@
         </div>
       </main>
 
-      <footer class="ul-footer">
-        <div>© 2026 UniLib MVP · Nhóm CNTT KS25. Bảo lưu mọi quyền.</div>
-        <div><a href="readers.html" style="color:var(--primary); text-decoration:none; font-weight:600;">← Danh sách độc giả</a></div>
-      </footer>
-    </div>
+    <footer class="app-footer">
+      <div class="footer-left">
+        © 2026 KS25 Library System - Phân hệ Quản lý Độc giả &amp; Thẻ thư viện. Bảo lưu mọi quyền.
+      </div>
+      <div class="footer-right">
+        <a href="readers.html" class="footer-link">← Danh sách độc giả</a>
+      </div>
+    </footer>
   </div>
 
   <!-- Modal Gia hạn -->
@@ -311,7 +352,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
-  <script src="../js/utils.js"></script>
-  <script src="../js/pages/reader-detail.js"></script>
+  <script src="../js/utils.js?v=2.0"></script>
+  <script src="../js/pages/reader-detail.js?v=2.0"></script>
 </body>
 </html>

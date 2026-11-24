@@ -271,7 +271,10 @@
   menu.addEventListener('click', async e => {
     if (!e.target.closest('[data-act="logout"]')) return;
     setMenu(false);
-    if (await dialog({ type: 'info', title: 'Đăng xuất?', msg: 'Bạn sẽ thoát khỏi phiên làm việc hiện tại.', ok: 'Đăng xuất' })) window.location.href = 'login.html';
+    if (await dialog({ type: 'info', title: 'Đăng xuất?', msg: 'Bạn sẽ thoát khỏi phiên làm việc hiện tại.', ok: 'Đăng xuất' })) {
+      if (typeof auth !== 'undefined' && typeof auth.clearSession === 'function') auth.clearSession();
+      window.location.href = 'login.html#login';
+    }
   });
 
   // Hỗ trợ chọn nhanh filter hoặc tra cứu phiếu qua URL

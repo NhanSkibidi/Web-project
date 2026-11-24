@@ -1824,7 +1824,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         var token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
         if (token) {
-          var baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+          var baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://127.0.0.1:8000/api";
           var res = await fetch(baseUrl + "/auth/me", {
             headers: {
               "Authorization": "Bearer " + token,

@@ -12,6 +12,13 @@ import jwt
 from app.core.config import settings
 
 
+def validate_password_bytes(password: str) -> str:
+    """Đảm bảo mật khẩu không vượt quá giới hạn 72 byte UTF-8 của bcrypt."""
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError("Mật khẩu không được vượt quá 72 byte khi mã hóa UTF-8")
+    return password
+
+
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -22,7 +29,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def create_access_token(subject: int) -> str:
     now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(hours=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_at = now + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(
         {"sub": str(subject), "iat": now, "exp": expires_at},
         settings.JWT_SECRET_KEY,

@@ -130,6 +130,10 @@ let currentScope = "all";
 let currentViewMode = "grid";
 let savedBookmarks = new Set();
 let currentPage = 1;
+let currentDisplayedBooks = [...SEARCH_BOOKS_DATA];
+let pendingBorrowBookId = null;
+let lastModalTriggerEl = null;
+let searchUiBound = false;
 
 // Hàm tạo SVG Fallback offline cho bìa sách
 function createSvgCover(title, sub, color) {
@@ -156,6 +160,7 @@ function createSvgCover(title, sub, color) {
 
 // Render danh sách sách
 function renderSearchResults(books) {
+  currentDisplayedBooks = Array.isArray(books) ? books : [];
   const container = document.getElementById("books-results-grid");
   const countEl = document.getElementById("results-count");
   if (!container) return;
@@ -405,18 +410,238 @@ function handleSortChange(sortType) {
   renderSearchResults(sorted);
 }
 
-// Mượn sách trực tuyến
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatDateVN(date) {
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function generateLoanSlipCode() {
+  const year = new Date().getFullYear();
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return `PM-${year}-${num}`;
+}
+
+function getToastIconSvg(type) {
+  if (type === "warning") {
+    return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+  }
+  if (type === "info") {
+    return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+  }
+  return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+}
+
+function dismissSearchToast(toastEl) {
+  if (!toastEl || toastEl.dataset.closing === "1") return;
+  toastEl.dataset.closing = "1";
+  toastEl.classList.remove("is-visible");
+  toastEl.classList.add("is-hiding");
+  window.setTimeout(() => {
+    if (toastEl.parentNode) {
+      toastEl.parentNode.removeChild(toastEl);
+    }
+  }, 240);
+}
+
+function showSearchToast({
+  type = "success",
+  title = "",
+  message = "",
+  chips = [],
+  actionText = "",
+  actionHref = "",
+  duration = 6500
+}) {
+  const stack = document.getElementById("search-toast-stack");
+  if (!stack) return;
+
+  const existing = stack.querySelectorAll(".search-toast:not(.is-hiding)");
+  if (existing.length >= 3) {
+    dismissSearchToast(existing[0]);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `search-toast search-toast--${type}`;
+  toast.setAttribute("role", "status");
+
+  const chipsHtml = Array.isArray(chips) && chips.length > 0
+    ? `<div class="search-toast-meta">${chips.map((c) => `<span class="search-toast-chip">${escapeHtml(c)}</span>`).join("")}</div>`
+    : "";
+
+  const actionHtml = actionText && actionHref
+    ? `<div class="search-toast-actions"><a href="${escapeHtml(actionHref)}" class="search-toast-link">${escapeHtml(actionText)} <span aria-hidden="true">→</span></a></div>`
+    : "";
+
+  toast.innerHTML = `
+    <div class="search-toast-icon">${getToastIconSvg(type)}</div>
+    <div class="search-toast-content">
+      <div class="search-toast-title">${escapeHtml(title)}</div>
+      <p class="search-toast-desc">${escapeHtml(message)}</p>
+      ${chipsHtml}
+      ${actionHtml}
+    </div>
+    <button type="button" class="search-toast-close" aria-label="Đóng thông báo">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    <div class="search-toast-progress" style="animation-duration: ${duration}ms"></div>
+  `;
+
+  const closeBtn = toast.querySelector(".search-toast-close");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => dismissSearchToast(toast));
+  }
+
+  let remaining = duration;
+  let startedAt = Date.now();
+  let timerId = window.setTimeout(() => dismissSearchToast(toast), remaining);
+
+  toast.addEventListener("mouseenter", () => {
+    window.clearTimeout(timerId);
+    remaining = Math.max(0, remaining - (Date.now() - startedAt));
+  });
+
+  toast.addEventListener("mouseleave", () => {
+    if (toast.dataset.closing === "1") return;
+    startedAt = Date.now();
+    timerId = window.setTimeout(() => dismissSearchToast(toast), remaining);
+  });
+
+  stack.appendChild(toast);
+  window.requestAnimationFrame(() => {
+    toast.classList.add("is-visible");
+  });
+}
+
+function closeBorrowModal() {
+  const modal = document.getElementById("borrow-confirm-modal");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  pendingBorrowBookId = null;
+
+  if (lastModalTriggerEl && document.contains(lastModalTriggerEl)) {
+    lastModalTriggerEl.focus();
+  }
+  lastModalTriggerEl = null;
+}
+
+// Mượn sách trực tuyến - mở hộp thoại xác nhận theo chủ đề web
 function handleBorrowOnline(bookId) {
   const book = SEARCH_BOOKS_DATA.find((b) => b.id === bookId);
   if (!book) return;
 
-  const confirmed = confirm(
-    `📚 XÁC NHẬN MƯỢN TRỰC TUYẾN:\n\n- Tác phẩm: ${book.title}\n- Tác giả: ${book.author}\n- Vị trí nhận sách: ${book.shelfLocation} (${book.shelfTag})\n- Hạn trả: 14 ngày kể từ hôm nay\n\nBạn có muốn gửi yêu cầu mượn đến quầy thủ thư không?`
-  );
-
-  if (confirmed) {
-    alert(`✓ Đã tạo phiếu mượn thành công cho cuốn "${book.title}". Vui lòng xuất trình mã sinh viên tại ${book.shelfTag} để nhận sách!`);
+  if (!book.available || book.copies <= 0) {
+    showSearchToast({
+      type: "warning",
+      title: "Ấn bản tạm hết bản sao",
+      message: `Cuốn "${book.title}" hiện không còn bản sao trên kệ. Bạn có thể bấm "Đặt trước" để giữ chỗ.`,
+      chips: [book.shelfTag]
+    });
+    return;
   }
+
+  const modal = document.getElementById("borrow-confirm-modal");
+  if (!modal) return;
+
+  pendingBorrowBookId = bookId;
+  lastModalTriggerEl = document.activeElement;
+
+  const today = new Date();
+  const dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+  const coverEl = document.getElementById("borrow-modal-cover");
+  const statusEl = document.getElementById("borrow-modal-status");
+  const titleEl = document.getElementById("borrow-modal-book-title");
+  const authorEl = document.getElementById("borrow-modal-author");
+  const isbnEl = document.getElementById("borrow-modal-isbn");
+  const locationEl = document.getElementById("borrow-modal-location");
+  const shelfTagEl = document.getElementById("borrow-modal-shelf-tag");
+  const dateEl = document.getElementById("borrow-modal-date");
+  const dueDateEl = document.getElementById("borrow-modal-due-date");
+
+  if (coverEl) {
+    const fallbackSvg = createSvgCover(book.title, book.coverSub, book.coverColor);
+    coverEl.onerror = function() {
+      coverEl.onerror = null;
+      coverEl.src = fallbackSvg;
+    };
+    coverEl.src = book.coverOnline;
+    coverEl.alt = book.title;
+  }
+  if (statusEl) statusEl.textContent = book.statusText;
+  if (titleEl) titleEl.textContent = book.title;
+  if (authorEl) authorEl.textContent = `Tác giả: ${book.author}`;
+  if (isbnEl) isbnEl.textContent = `ISBN: ${book.isbn}`;
+  if (locationEl) locationEl.textContent = book.shelfLocation;
+  if (shelfTagEl) shelfTagEl.textContent = book.shelfTag;
+  if (dateEl) dateEl.textContent = formatDateVN(today);
+  if (dueDateEl) dueDateEl.textContent = formatDateVN(dueDate);
+
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  const confirmBtn = document.getElementById("btn-confirm-borrow");
+  if (confirmBtn) {
+    window.setTimeout(() => confirmBtn.focus(), 40);
+  }
+}
+
+function confirmBorrowOnline() {
+  if (!pendingBorrowBookId) return;
+  const book = SEARCH_BOOKS_DATA.find((b) => b.id === pendingBorrowBookId);
+  if (!book) {
+    closeBorrowModal();
+    return;
+  }
+
+  if (book.copies <= 0) {
+    closeBorrowModal();
+    showSearchToast({
+      type: "warning",
+      title: "Không thể hoàn tất yêu cầu",
+      message: `Cuốn "${book.title}" đã hết bản sao khả dụng.`
+    });
+    return;
+  }
+
+  book.copies = Math.max(0, book.copies - 1);
+  book.available = book.copies > 0;
+  book.statusText = book.available
+    ? `${book.copies}/${book.totalCopies} CÓ SẴN`
+    : "ĐÃ MƯỢN HẾT (VỪA ĐĂNG KÝ)";
+
+  const today = new Date();
+  const dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const dueDateStr = formatDateVN(dueDate);
+  const slipCode = generateLoanSlipCode();
+
+  closeBorrowModal();
+  renderSearchResults(currentDisplayedBooks);
+
+  showSearchToast({
+    type: "success",
+    title: "Xác nhận mượn sách thành công",
+    message: `Đã tạo phiếu mượn cho cuốn "${book.title}". Vui lòng xuất trình thẻ sinh viên tại quầy thủ thư trong 48 giờ.`,
+    chips: [slipCode, book.shelfTag, `Hạn trả: ${dueDateStr}`],
+    actionText: "Xem phiếu mượn",
+    actionHref: "loan_slip.html",
+    duration: 7500
+  });
 }
 
 // Đặt trước sách đã mượn hết
@@ -424,31 +649,57 @@ function handleReserveBook(bookId) {
   const book = SEARCH_BOOKS_DATA.find((b) => b.id === bookId);
   if (!book) return;
 
-  alert(`⏱ ĐÃ ĐẶT CHỖ THÀNH CÔNG:\nCuốn "${book.title}" hiện đang có người mượn (dự kiến trả ngày 18/10). Khi sách về kho, hệ thống thư viện sẽ tự động gửi thông báo qua email sinh viên của bạn!`);
+  showSearchToast({
+    type: "warning",
+    title: "Đã đặt giữ chỗ thành công",
+    message: `Cuốn "${book.title}" đã được đưa vào danh sách chờ. Hệ thống sẽ gửi thông báo qua email sinh viên ngay khi sách về kho.`,
+    chips: [book.shelfTag, `ISBN: ${book.isbn}`],
+    duration: 6500
+  });
 }
 
 // Đánh dấu sách yêu thích
 function toggleBookmark(bookId, buttonEl) {
+  const book = SEARCH_BOOKS_DATA.find((b) => b.id === bookId);
+  const bookLabel = book ? `"${book.title}"` : "ấn bản";
+
   if (savedBookmarks.has(bookId)) {
     savedBookmarks.delete(bookId);
     buttonEl.classList.remove("bookmarked");
     buttonEl.title = "Lưu vào danh sách đọc";
     const svg = buttonEl.querySelector("svg");
     if (svg) svg.setAttribute("fill", "none");
+    showSearchToast({
+      type: "info",
+      title: "Đã bỏ lưu ấn bản",
+      message: `Đã xóa ${bookLabel} khỏi danh sách đọc của bạn.`,
+      duration: 2800
+    });
   } else {
     savedBookmarks.add(bookId);
     buttonEl.classList.add("bookmarked");
     buttonEl.title = "Bỏ lưu khỏi danh sách";
     const svg = buttonEl.querySelector("svg");
     if (svg) svg.setAttribute("fill", "currentColor");
+    showSearchToast({
+      type: "info",
+      title: "Đã lưu vào danh sách đọc",
+      message: `Bạn có thể xem lại ${bookLabel} bất cứ lúc nào.`,
+      duration: 2800
+    });
   }
 }
 
 // Gửi đề xuất sách mới
 function handleBookSuggestion() {
   const title = prompt("Nhập tên sách/tài liệu bạn muốn đề xuất thư viện bổ sung:", "Deep Learning Specialization");
-  if (title) {
-    alert(`Cảm ơn bạn! Đề xuất sách "${title}" đã được chuyển tới ban biên mục thư viện.`);
+  if (title && title.trim()) {
+    showSearchToast({
+      type: "info",
+      title: "Đã tiếp nhận đề xuất bổ sung",
+      message: `Cảm ơn bạn! Đề xuất "${title.trim()}" đã được chuyển tới ban biên mục thư viện.`,
+      duration: 5000
+    });
   }
 }
 
@@ -475,7 +726,13 @@ function simulateBarcodeFound() {
   } else {
     applyFilters();
   }
-  alert("✓ Đã quét thành công mã ISBN: 978-604-0123-45! Đang hiển thị ấn bản tương ứng.");
+  showSearchToast({
+    type: "success",
+    title: "Quét mã vạch thành công",
+    message: "Đã nhận diện ấn bản tương ứng trong danh mục lưu thông.",
+    chips: ["ISBN: 978-604-0123-45"],
+    duration: 4500
+  });
 }
 
 // Phân trang
@@ -503,12 +760,49 @@ function goToPage(page) {
   }
 }
 
-// Khởi chạy ban đầu
-document.addEventListener("DOMContentLoaded", () => {
+function initBorrowModalBindings() {
+  if (searchUiBound) return;
+  searchUiBound = true;
+
+  const borrowBackdrop = document.getElementById("borrow-confirm-modal");
+  const closeBtn = document.getElementById("btn-close-borrow-modal");
+  const cancelBtn = document.getElementById("btn-cancel-borrow");
+  const confirmBtn = document.getElementById("btn-confirm-borrow");
+
+  if (borrowBackdrop) {
+    borrowBackdrop.addEventListener("click", (e) => {
+      if (e.target === borrowBackdrop) {
+        closeBorrowModal();
+      }
+    });
+  }
+
+  if (closeBtn) closeBtn.addEventListener("click", closeBorrowModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeBorrowModal);
+  if (confirmBtn) confirmBtn.addEventListener("click", confirmBorrowOnline);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (borrowBackdrop && borrowBackdrop.classList.contains("is-open")) {
+      closeBorrowModal();
+      return;
+    }
+    const barcodeModal = document.getElementById("barcode-modal");
+    if (barcodeModal && barcodeModal.style.display === "flex") {
+      closeBarcodeModal();
+    }
+  });
+}
+
+function initSearchPage() {
+  initBorrowModalBindings();
   renderSearchResults(SEARCH_BOOKS_DATA);
-});
+}
+
+// Khởi chạy ban đầu
+document.addEventListener("DOMContentLoaded", initSearchPage);
 
 // Chạy trực tiếp nếu script nạp sau DOMContentLoaded
 if (document.readyState === "complete" || document.readyState === "interactive") {
-  renderSearchResults(SEARCH_BOOKS_DATA);
+  initSearchPage();
 }

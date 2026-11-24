@@ -26,16 +26,52 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  document.getElementById("top-staff-avatar").textContent = (staffUser.full_name || "T").charAt(0).toUpperCase();
-  document.getElementById("top-staff-name").textContent = staffUser.full_name || staffUser.email;
-  document.getElementById("top-staff-role").textContent = staffUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư trực quầy";
+  const userAvatar = document.getElementById("userAvatar");
+  const userName = document.getElementById("userName");
+  const userRole = document.getElementById("userRole");
+  if (userAvatar) userAvatar.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
+  if (userName) userName.textContent = staffUser.full_name || staffUser.email;
+  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
 
-  document.getElementById("btn-top-logout")?.addEventListener("click", () => {
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const navMenu = document.getElementById("navMenu");
+  if (mobileMenuToggle && navMenu) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle("show");
+    });
+  }
+
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
+  if (userProfileBtn && userDropdownMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("show");
+      userProfileBtn.setAttribute("aria-expanded", userDropdownMenu.classList.contains("show") ? "true" : "false");
+    });
+  }
+
+  document.addEventListener("click", () => {
+    if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    }
+    if (navMenu && navMenu.classList.contains("show")) {
+      navMenu.classList.remove("show");
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  document.getElementById("logoutMenuBtn")?.addEventListener("click", () => {
     auth.clearSession();
     window.location.href = "login.html#login";
-  });
-  document.getElementById("btn-mobile-sidebar")?.addEventListener("click", () => {
-    document.getElementById("ul-sidebar")?.classList.toggle("open");
   });
 
   const urlParams = new URLSearchParams(window.location.search);

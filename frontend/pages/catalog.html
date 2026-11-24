@@ -29,8 +29,10 @@
         <nav class="unilib-nav">
           <a href="home.html">Trang chủ</a>
           <a href="catalog.html" class="active">Tra cứu sách</a>
-          <a href="loan_slip.html">Phiếu mượn của tôi</a>
-          <a href="readers.html" id="nav-staff-link">Quản trị thư viện</a>
+          <a href="loan_slip.html" data-auth-required="true">Phiếu mượn của tôi</a>
+          <a href="reservations.html" data-auth-required="true">Đặt trước</a>
+          <a href="fines.html" data-role-allow="READER">Tiền phạt</a>
+          <a href="staff-dashboard.html" id="nav-staff-link" data-role-allow="ADMIN,LIBRARIAN">Quản trị thư viện</a>
         </nav>
       </div>
 

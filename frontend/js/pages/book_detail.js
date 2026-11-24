@@ -68,12 +68,24 @@
     const userNameEl = document.getElementById("headerUserName");
     const userRoleEl = document.getElementById("headerUserRole");
     const userAvatarEl = document.getElementById("headerUserAvatar");
+    const profileEl = document.getElementById("headerUserProfile");
 
     if (!user) {
       if (overlay) overlay.style.display = "flex";
+      if (userNameEl) userNameEl.textContent = "Đăng nhập";
+      if (userRoleEl) userRoleEl.textContent = "Khách tham quan";
+      if (userAvatarEl) userAvatarEl.textContent = "?";
+      if (profileEl) {
+        profileEl.setAttribute("onclick", "window.location.href='login.html#login'");
+        profileEl.title = "Đăng nhập tài khoản";
+      }
       return false;
     } else {
       if (overlay) overlay.style.display = "none";
+      if (profileEl) {
+        profileEl.setAttribute("onclick", "window.location.href='profile.html'");
+        profileEl.title = "Hồ sơ cá nhân & Đổi mật khẩu";
+      }
       if (userNameEl) userNameEl.textContent = user.full_name || user.email || "Bạn đọc";
       if (userRoleEl) {
         const roleMap = {
@@ -311,7 +323,7 @@
         `;
       } else if (isBorrowed) {
         actionBtn = `
-          <button type="button" class="btn-copy-action btn-copy-reserve" onclick="alert('Đã ghi nhận yêu cầu đặt trước bản sao ${escapeHtml(c.copy_code)} khi bạn đọc trả sách!')">
+          <button type="button" class="btn-copy-action btn-copy-reserve" onclick="showToast('Đã ghi nhận yêu cầu đặt trước bản sao ${escapeHtml(c.copy_code)} khi bạn đọc trả sách!', 'success')">
             Đặt trước
           </button>
         `;

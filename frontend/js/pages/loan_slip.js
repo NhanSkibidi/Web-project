@@ -277,6 +277,29 @@
     }
   });
 
+  // Mobile menu toggle
+  const mobileToggle = $('#mobileMenuToggle'), navMenu = $('#navMenu');
+  if (mobileToggle && navMenu) {
+    mobileToggle.addEventListener('click', e => {
+      e.stopPropagation();
+      navMenu.classList.toggle('show');
+      const isShow = navMenu.classList.contains('show');
+      mobileToggle.setAttribute('aria-expanded', isShow ? 'true' : 'false');
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#navMenu') && !e.target.closest('#mobileMenuToggle')) {
+        navMenu.classList.remove('show');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && navMenu.classList.contains('show')) {
+        navMenu.classList.remove('show');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   // Hỗ trợ chọn nhanh filter hoặc tra cứu phiếu qua URL
   window.setSlipFilter = (newFilter) => {
     filter = newFilter;

@@ -285,8 +285,25 @@ function closeCustomDropdown() {
 function setupEventListeners() {
     // Mobile menu toggle
     if (mobileMenuToggle && navMenu) {
-        mobileMenuToggle.addEventListener('click', () => {
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
             navMenu.classList.toggle('show');
+            const isShow = navMenu.classList.contains('show');
+            mobileMenuToggle.setAttribute('aria-expanded', isShow ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#navMenu') && !e.target.closest('#mobileMenuToggle')) {
+                navMenu.classList.remove('show');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navMenu.classList.contains('show')) {
+                navMenu.classList.remove('show');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
         });
     }
 

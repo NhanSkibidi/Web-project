@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException, Header
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.reservation import (
@@ -82,7 +83,7 @@ def api_get_my_reservations(
     return get_user_reservations(db, user_id=effective_user_id)
 
 
-@router.get("/staff/ready", response_model=List[ReservationResponse])
+@router.get("/staff/ready", response_model=List[ReservationResponse], dependencies=[Depends(require_librarian)])
 def api_get_staff_ready_reservations(
     db: Session = Depends(get_db),
 ):
@@ -112,7 +113,7 @@ def api_cancel_reservation(
     return cancel_reservation(db, reservation_id=reservation_id, user_id=effective_user_id)
 
 
-@router.post("/{reservation_id}/fulfill", response_model=ReservationResponse)
+@router.post("/{reservation_id}/fulfill", response_model=ReservationResponse, dependencies=[Depends(require_librarian)])
 def api_fulfill_reservation(
     reservation_id: int,
     db: Session = Depends(get_db),
@@ -123,7 +124,7 @@ def api_fulfill_reservation(
     return fulfill_reservation(db, reservation_id=reservation_id)
 
 
-@router.post("/check-expired")
+@router.post("/check-expired", dependencies=[Depends(require_librarian)])
 def api_check_expired_reservations(
     db: Session = Depends(get_db),
 ):

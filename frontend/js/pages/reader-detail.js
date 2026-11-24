@@ -26,13 +26,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Đồng bộ Topbar & User Info (Đồng bộ loan_management)
+  // Đồng bộ Topbar & User Info
   const userAvatar = document.getElementById("userAvatar");
   const userName = document.getElementById("userName");
   const userRole = document.getElementById("userRole");
   if (userAvatar) userAvatar.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
   if (userName) userName.textContent = staffUser.full_name || staffUser.email;
-  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư trực quầy";
+  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
 
   // Mobile Menu Toggle
   const mobileMenuToggle = document.getElementById("mobileMenuToggle");
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (logoutMenuBtn) logoutMenuBtn.addEventListener("click", triggerLogoutConfirm);
 
-  // Đóng dropdown và mobile menu khi click ngoài màn hình
+  // Đóng dropdown và mobile menu khi click ngoài màn hình hoặc nhấn Escape
   document.addEventListener("click", () => {
     if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
       userDropdownMenu.classList.remove("show");
@@ -140,6 +140,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (navMenu && navMenu.classList.contains("show")) {
       navMenu.classList.remove("show");
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
     }
   });
 

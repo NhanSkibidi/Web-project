@@ -6,6 +6,9 @@ venv/
 env/
 rkl/
 
+# Database test files
+*.db
+
 # Cấu hình bí mật
 .env
 

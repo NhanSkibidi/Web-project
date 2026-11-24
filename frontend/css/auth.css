@@ -765,6 +765,12 @@ body.auth-page {
   color: #166534;
 }
 
+.alert-info {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
 /* Demo Accounts Box */
 .demo-accounts-box {
   margin-top: 24px;
@@ -974,4 +980,27 @@ body.auth-page {
 
 .auth-footer-links a:hover {
   color: var(--color-primary);
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  max-width: 420px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: #FFFFFF;
+  box-shadow: var(--shadow-lg);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  z-index: 9999;
+}
+
+.toast-success {
+  background: var(--color-primary);
+}
+
+.toast-error {
+  background: var(--color-accent-danger);
 }

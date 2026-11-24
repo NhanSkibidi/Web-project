@@ -133,19 +133,19 @@ def get_author_by_id(author_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/authors", response_model=AuthorResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/authors", response_model=AuthorResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])
 def create_author(data: AuthorCreate, db: Session = Depends(get_db)):
     """Thêm tác giả mới (tên không được trùng)."""
     return crud_tax.create_author(db, data)
 
 
-@router.put("/authors/{author_id}", response_model=AuthorResponse)
+@router.put("/authors/{author_id}", response_model=AuthorResponse, dependencies=[Depends(require_librarian)])
 def update_author(author_id: int, data: AuthorUpdate, db: Session = Depends(get_db)):
     """Cập nhật thông tin tác giả (tên không được trùng)."""
     return crud_tax.update_author(db, author_id, data)
 
 
-@router.delete("/authors/{author_id}")
+@router.delete("/authors/{author_id}", dependencies=[Depends(require_librarian)])
 def delete_author(author_id: int, db: Session = Depends(get_db)):
     """Xoá tác giả (chặn xoá nếu vẫn còn đầu sách liên kết và báo lỗi rõ ràng)."""
     return crud_tax.delete_author(db, author_id)
@@ -198,19 +198,19 @@ def get_publisher_by_id(publisher_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/publishers", response_model=PublisherResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/publishers", response_model=PublisherResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])
 def create_publisher(data: PublisherCreate, db: Session = Depends(get_db)):
     """Thêm nhà xuất bản mới (tên không được trùng)."""
     return crud_tax.create_publisher(db, data)
 
 
-@router.put("/publishers/{publisher_id}", response_model=PublisherResponse)
+@router.put("/publishers/{publisher_id}", response_model=PublisherResponse, dependencies=[Depends(require_librarian)])
 def update_publisher(publisher_id: int, data: PublisherUpdate, db: Session = Depends(get_db)):
     """Cập nhật thông tin nhà xuất bản (tên không được trùng)."""
     return crud_tax.update_publisher(db, publisher_id, data)
 
 
-@router.delete("/publishers/{publisher_id}")
+@router.delete("/publishers/{publisher_id}", dependencies=[Depends(require_librarian)])
 def delete_publisher(publisher_id: int, db: Session = Depends(get_db)):
     """Xoá nhà xuất bản (chặn xoá nếu vẫn còn đầu sách liên kết và báo lỗi rõ ràng)."""
     return crud_tax.delete_publisher(db, publisher_id)

@@ -1840,6 +1840,44 @@ table.readers-table tbody tr.is-selected {
 .toast-success { background: var(--primary); }
 .toast-error { background: var(--danger); }
 
+.detail-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 3px;
+  background: var(--bg, #FAF8F5);
+  border: 1px solid var(--border, #E6E2D8);
+  border-radius: 8px;
+}
+
+.detail-tab-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-sec, #4A5568);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.detail-tab-btn:hover {
+  background: #EDE9E0;
+  color: var(--text, #1A202C);
+}
+
+.detail-tab-btn.active {
+  background: var(--primary, #1B4332);
+  color: #FFFFFF;
+}
+
+.detail-tab-btn:focus-visible {
+  outline: 2px solid var(--primary, #1B4332);
+  outline-offset: 2px;
+}
+
 /* ---------- 10. @MEDIA PRINT — IN RIÊNG PHÔI THẺ THƯ VIỆN BẰNG WINDOW.PRINT() ---------- */
 @media print {
   @page {

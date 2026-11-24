@@ -22,7 +22,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def create_access_token(subject: int) -> str:
     now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_at = now + timedelta(hours=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(
         {"sub": str(subject), "iat": now, "exp": expires_at},
         settings.JWT_SECRET_KEY,

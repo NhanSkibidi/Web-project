@@ -75,10 +75,161 @@
 
   // Khởi chạy khi DOM sẵn sàng
   document.addEventListener("DOMContentLoaded", () => {
+    initLayout();
     initEvents();
     loadStats();
     loadData();
   });
+
+  // ==============================================================================
+  // 0. KHỞI TẠO BỐ CỤC CHUNG (TOPBAR, USER DROPDOWN, CONFIRM LOGOUT)
+  // ==============================================================================
+  let activeConfirmCallback = null;
+
+  function showConfirm(options) {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+      if (iconBox) iconBox.classList.add("icon-red");
+      if (btnProceed) btnProceed.classList.add("btn-danger");
+      if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+      if (iconBox) iconBox.classList.add("icon-green");
+      if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+      if (iconBox) iconBox.classList.add("icon-blue");
+      if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+    activeConfirmCallback = null;
+  }
+
+  function initLayout() {
+    // Chặn quyền Admin/Thủ thư
+    if (typeof auth !== "undefined") {
+      const user = auth.getUser();
+      if (!user || (user.role !== "ADMIN" && user.role !== "LIBRARIAN")) {
+        sessionStorage.setItem("redirect_after_login", window.location.href);
+        window.location.href = "login.html#login";
+        return;
+      }
+
+      // Đồng bộ thông tin người dùng lên Topbar
+      const avatarEl = document.getElementById("userAvatar");
+      const nameEl = document.getElementById("userName");
+      const roleEl = document.getElementById("userRole");
+      if (avatarEl) avatarEl.textContent = (user.full_name || user.email || "A").charAt(0).toUpperCase();
+      if (nameEl) nameEl.textContent = user.full_name || user.email || "Thủ thư";
+      if (roleEl) roleEl.textContent = user.role === "ADMIN" ? "Quản trị viên" : "Thủ thư";
+    }
+
+    // Toggle menu mobile
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const navMenu = document.getElementById("navMenu");
+    if (mobileMenuToggle && navMenu) {
+      mobileMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle("show");
+      });
+    }
+
+    // User Account Dropdown
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+
+    if (userProfileBtn && userDropdownMenu) {
+      userProfileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle("show");
+        const isShown = userDropdownMenu.classList.contains("show");
+        userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+      });
+    }
+
+    // Nút đăng xuất mở modal xác nhận
+    if (logoutMenuBtn) {
+      logoutMenuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        showConfirm({
+          title: "Xác nhận đăng xuất?",
+          message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+          type: "red",
+          confirmText: "Đăng xuất",
+          cancelText: "Hủy",
+          onConfirm: () => {
+            if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+              auth.clearSession();
+            } else {
+              localStorage.clear();
+              sessionStorage.clear();
+            }
+            window.location.href = "login.html#login";
+          }
+        });
+      });
+    }
+
+    // Đóng dropdown khi click ngoài
+    document.addEventListener("click", () => {
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
+      if (navMenu && navMenu.classList.contains("show")) {
+        navMenu.classList.remove("show");
+      }
+    });
+
+    // Các nút trong Confirm Modal
+    const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+    const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+    const confirmModal = document.getElementById("confirm-modal");
+
+    if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+    if (btnConfirmProceed) {
+      btnConfirmProceed.addEventListener("click", () => {
+        const callback = activeConfirmCallback;
+        closeConfirmModal();
+        if (typeof callback === "function") callback();
+      });
+    }
+    if (confirmModal) {
+      confirmModal.addEventListener("click", (e) => {
+        if (e.target === confirmModal) closeConfirmModal();
+      });
+    }
+  }
 
   // ==============================================================================
   // 1. GẮN SỰ KIỆN GIAO DIỆN
@@ -328,7 +479,9 @@
       const booksCount = item.books_count || 0;
       const hasBooks = booksCount > 0;
       const badgeClass = hasBooks ? "books-count-badge has-books" : "books-count-badge";
-      const badgeText = hasBooks ? `📚 ${booksCount} cuốn` : `0 cuốn`;
+      const badgeText = hasBooks
+        ? `<span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 2px;">menu_book</span> ${booksCount} cuốn`
+        : `0 cuốn`;
 
       const safeName = escapeHtml(item.name || "");
       const safeDesc = escapeHtml(item.description || item.biography || "—");
@@ -347,10 +500,10 @@
             <td>
               <div class="table-actions" style="justify-content: center;">
                 <button type="button" class="btn-action-icon" title="Chỉnh sửa thể loại" onclick="openEditModal(${item.id})">
-                  ✏️
+                  <span class="material-symbols-outlined">edit</span>
                 </button>
                 <button type="button" class="btn-action-icon btn-action-delete" title="Xoá thể loại" onclick="openDeleteModal(${item.id})">
-                  🗑️
+                  <span class="material-symbols-outlined">delete</span>
                 </button>
               </div>
             </td>
@@ -370,10 +523,10 @@
             <td>
               <div class="table-actions" style="justify-content: center;">
                 <button type="button" class="btn-action-icon" title="Chỉnh sửa tác giả" onclick="openEditModal(${item.id})">
-                  ✏️
+                  <span class="material-symbols-outlined">edit</span>
                 </button>
                 <button type="button" class="btn-action-icon btn-action-delete" title="Xoá tác giả" onclick="openDeleteModal(${item.id})">
-                  🗑️
+                  <span class="material-symbols-outlined">delete</span>
                 </button>
               </div>
             </td>
@@ -393,10 +546,10 @@
             <td>
               <div class="table-actions" style="justify-content: center;">
                 <button type="button" class="btn-action-icon" title="Chỉnh sửa NXB" onclick="openEditModal(${item.id})">
-                  ✏️
+                  <span class="material-symbols-outlined">edit</span>
                 </button>
                 <button type="button" class="btn-action-icon btn-action-delete" title="Xoá NXB" onclick="openDeleteModal(${item.id})">
-                  🗑️
+                  <span class="material-symbols-outlined">delete</span>
                 </button>
               </div>
             </td>
@@ -413,8 +566,13 @@
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-8">
-          <p style="color: var(--color-danger); font-weight: 600;">⚠️ ${escapeHtml(msg || "Lỗi tải dữ liệu")}</p>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="location.reload()">Thử lại</button>
+          <p style="color: var(--color-danger); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="material-symbols-outlined" style="font-size: 20px;">warning</span>
+            <span>${escapeHtml(msg || "Lỗi tải dữ liệu")}</span>
+          </p>
+          <div style="margin-top: 10px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="location.reload()">Thử lại</button>
+          </div>
         </td>
       </tr>
     `;
@@ -476,7 +634,7 @@
 
     document.getElementById("formItemId").value = "";
     document.getElementById("formModalTitle").textContent = cfg.modalAddTitle;
-    document.getElementById("modalHeaderIcon").textContent = "➕";
+    document.getElementById("modalHeaderIcon").innerHTML = '<span class="material-symbols-outlined">add_circle</span>';
     document.getElementById("btnSubmitText").textContent = "Lưu dữ liệu";
 
     // Cấu hình nhãn
@@ -516,7 +674,7 @@
 
     document.getElementById("formItemId").value = item.id;
     document.getElementById("formModalTitle").textContent = `${cfg.modalEditTitle} #${item.id}`;
-    document.getElementById("modalHeaderIcon").textContent = "✏️";
+    document.getElementById("modalHeaderIcon").innerHTML = '<span class="material-symbols-outlined">edit</span>';
     document.getElementById("btnSubmitText").textContent = "Cập nhật thay đổi";
 
     // Điền dữ liệu cũ
@@ -683,9 +841,9 @@
     const toast = document.createElement("div");
     toast.className = `toast-item toast-${type}`;
 
-    const icon = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
+    const icon = type === "success" ? "check_circle" : type === "error" ? "error" : "info";
     toast.innerHTML = `
-      <span class="toast-icon">${icon}</span>
+      <span class="material-symbols-outlined toast-icon">${icon}</span>
       <span class="toast-msg">${escapeHtml(message)}</span>
     `;
 

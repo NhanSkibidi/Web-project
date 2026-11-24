@@ -101,17 +101,25 @@ body.dashboard-body {
   gap: 12px;
   text-decoration: none;
   color: inherit;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand-badge:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background-color: var(--color-brand);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);
+  overflow: hidden;
 }
 
 .brand-text {
@@ -121,24 +129,24 @@ body.dashboard-body {
 
 .brand-name {
   font-family: var(--font-headline);
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-brand);
+  color: var(--color-text-primary, #1B4332);
   line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .brand-sub {
   font-size: 11px;
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  color: var(--color-text-muted, #52796F);
+  line-height: 1.1;
+  margin-top: 2px;
 }
 
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-left: 20px;
-  border-left: 1px solid var(--color-border);
+  gap: 8px;
 }
 
 .topbar-nav-link {
@@ -146,15 +154,37 @@ body.dashboard-body {
   font-weight: 600;
   color: var(--color-text-secondary);
   text-decoration: none;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: 7px 14px;
+  border-radius: var(--radius-btn, 8px);
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.topbar-nav-link:hover,
+.topbar-nav-link:hover {
+  color: #ffffff;
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.2);
+  text-decoration: none;
+}
+
+.topbar-nav-link:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .topbar-nav-link.active {
-  color: var(--color-brand);
-  background: var(--color-brand-light);
+  color: #ffffff;
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(27, 67, 50, 0.2);
 }
 
 .topbar-right {
@@ -163,80 +193,145 @@ body.dashboard-body {
   gap: 16px;
 }
 
-.topbar-search {
+/* User Account Dropdown (đồng bộ loan_management) */
+.user-dropdown-container {
   position: relative;
-  width: 280px;
+}
+
+@keyframes notifSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.user-profile-btn {
   display: flex;
   align-items: center;
-}
-
-.topbar-search .material-symbols-outlined {
-  position: absolute;
-  left: 12px;
-  color: var(--color-text-muted);
-  font-size: 18px;
-  pointer-events: none;
-}
-
-.topbar-search input {
-  width: 100%;
-  padding: 8px 14px 8px 36px;
-  font-size: 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  outline: none;
-  color: var(--color-text-primary);
-  transition: all 0.2s;
-}
-
-.topbar-search input:focus {
-  border-color: var(--color-brand);
-  box-shadow: 0 0 0 2px var(--color-brand-subtle);
-}
-
-.topbar-icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 20px;
   cursor: pointer;
-  position: relative;
-  transition: all 0.2s;
+  transition: transform 0.2s, background 0.15s;
+  color: inherit;
+  font-family: inherit;
 }
 
-.topbar-icon-btn:hover {
-  background: var(--color-brand-light);
-  color: var(--color-brand);
-  border-color: var(--color-brand);
+.user-profile-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(27, 67, 50, 0.05);
 }
 
-.topbar-icon-badge {
+.user-dropdown-menu {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  background-color: var(--color-brand);
-  color: #fff;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 700;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 210px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 6px;
+  display: none;
+  z-index: 1000;
+  animation: notifSlideDown 0.15s ease;
+}
+
+.user-dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  text-align: left;
 }
 
-.topbar-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--color-border);
+.dropdown-item:hover {
+  background-color: #FAF8F5;
+  color: var(--color-brand);
+}
+
+.dropdown-item.text-danger {
+  color: #DC2626;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #FEF2F2;
+  color: #B91C1C;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 6px 0;
+}
+
+/* Mobile Menu Toggle Button (đồng bộ loan_management) */
+.mobile-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+
+  .topbar-nav {
+    display: none;
+    position: absolute;
+    top: var(--topbar-height, 64px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    flex-direction: column;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    gap: 8px;
+  }
+
+  .topbar-nav.show {
+    display: flex;
+  }
 }
 
 .librarian-profile {
@@ -285,7 +380,7 @@ body.dashboard-body {
   left: 0;
   bottom: 0;
   width: var(--sidebar-w-collapsed);
-  background: var(--color-surface);
+  background: #F5F3EF;
   border-right: 1px solid var(--color-border);
   z-index: 40;
   display: flex;
@@ -323,13 +418,24 @@ body.dashboard-body {
   transform: translateX(0);
 }
 
-.version-pill {
-  font-size: 10px;
-  padding: 2px 6px;
-  background: var(--color-brand-light);
-  color: var(--color-brand);
+/* Tooltip hiển thị khi sidebar ở chế độ thu gọn */
+.sidebar-rail:not(:hover) .sidebar-rail-link:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1B4332;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
   border-radius: 6px;
-  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.15s ease forwards;
 }
 
 .sidebar-rail-nav {
@@ -341,6 +447,7 @@ body.dashboard-body {
 }
 
 .sidebar-rail-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -351,23 +458,36 @@ body.dashboard-body {
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s;
+  cursor: pointer;
 }
 
 .sidebar-rail-link .material-symbols-outlined {
   font-size: 22px;
-  shrink: 0;
+  flex-shrink: 0;
 }
 
 .sidebar-rail-link:hover {
-  background: var(--color-paper);
+  transform: translateX(3px);
+  background: var(--color-brand-subtle);
   color: var(--color-brand);
+  text-decoration: none;
 }
 
 .sidebar-rail-link.active {
   background: var(--color-brand);
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
+}
+
+.sidebar-rail-link.active:hover {
+  background: var(--color-brand);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.sidebar-rail-link.active .material-symbols-outlined {
+  color: #ffffff;
 }
 
 .rail-label {
@@ -741,7 +861,7 @@ body.dashboard-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  shrink: 0;
+  flex-shrink: 0;
 }
 
 .kpi-value-row {
@@ -864,7 +984,7 @@ body.dashboard-body {
   position: relative;
   width: 176px;
   height: 176px;
-  shrink: 0;
+  flex-shrink: 0;
 }
 
 .chart-center-text {
@@ -1097,8 +1217,13 @@ body.dashboard-body {
    5. STATE 2: LOADING (SKELETON)
    ============================================================================== */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton-shimmer {
@@ -1126,8 +1251,13 @@ body.dashboard-body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ==============================================================================
@@ -1308,46 +1438,47 @@ body.dashboard-body {
 }
 
 /* ==============================================================================
-   8. FOOTER HỆ THỐNG (Đồng bộ books.html)
+   8. FOOTER TRANG WEB (ĐỒNG BỘ LOAN_MANAGEMENT)
    ============================================================================== */
-.librarian-footer {
+.app-footer {
+  padding: 20px 32px;
   border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: #FAF8F5;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: auto;
 }
 
-.librarian-footer-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.footer-left {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
-@media (min-width: 640px) {
-  .librarian-footer-inner {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.librarian-footer-links {
+.footer-right {
   display: flex;
   align-items: center;
-  gap: 20px;
-  font-weight: 500;
+  gap: 10px;
 }
 
-.librarian-footer-links a {
-  color: var(--color-text-secondary);
+.footer-link {
+  color: var(--color-text-muted);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.15s;
 }
 
-.librarian-footer-links a:hover {
+.footer-link:hover {
   color: var(--color-brand);
+  text-decoration: underline;
+}
+
+.footer-dot {
+  font-size: 10px;
+  opacity: 0.6;
 }
 
 /* ==============================================================================
@@ -1389,6 +1520,7 @@ body.dashboard-body {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1556,181 +1688,149 @@ body.dashboard-body {
 }
 
 /* ==============================================================================
-   11. CHUÔNG THÔNG BÁO IN-APP TRÊN TOPBAR (TASK T3CFF48)
+   11. HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM MODAL - ĐỒNG BỘ LOAN_MANAGEMENT)
    ============================================================================== */
-.notif-dropdown-container {
-  position: relative;
-}
-
-.notif-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: #D9381E;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(217, 56, 30, 0.35);
-  font-family: var(--font-mono);
-}
-
-.notif-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: -20px;
-  width: 380px;
-  max-width: calc(100vw - 32px);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-elevated);
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1000;
-  overflow: hidden;
-}
-
-.notif-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--color-paper);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.notif-title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.notif-title {
-  font-family: var(--font-headline);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-brand);
-}
-
-.notif-badge-pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #FEE2E2;
-  color: #DC2626;
-}
-
-.notif-mark-read {
-  font-size: 12px;
-  color: var(--color-brand);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 4px;
-}
-
-.notif-list {
-  max-height: 360px;
-  overflow-y: auto;
-}
-
-.notif-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border-subtle);
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.15s;
-}
-
-.notif-item:hover {
-  background: var(--color-paper);
-}
-
-.notif-item.is-unread {
-  background: #FDFBF7;
-}
-
-.notif-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  padding: 20px;
 }
 
-.notif-icon-box.overdue {
-  background: #FEE2E2;
-  color: #DC2626;
-}
-
-.notif-icon-box.due-soon {
-  background: #FEF3C7;
-  color: #D97706;
-}
-
-.notif-icon-box.reminder {
-  background: #E0F2FE;
-  color: #0369A1;
-}
-
-.notif-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notif-item-title {
+.modal-backdrop.active {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  line-height: 1.3;
-  gap: 8px;
+  animation: fadeIn 0.2s ease forwards;
 }
 
-.notif-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #D9381E;
-  flex-shrink: 0;
+.modal-dialog.modal-confirm {
+  background: var(--color-surface, #FFFFFF);
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--shadow-elevated, 0 16px 40px rgba(0, 0, 0, 0.16));
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.notif-item-desc {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 4px 0 6px;
-  line-height: 1.4;
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.notif-time {
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-
-.notif-footer {
-  padding: 10px 16px;
-  background: var(--color-paper);
-  border-top: 1px solid var(--color-border);
+.confirm-content-wrap {
+  padding: 28px 24px 20px;
   text-align: center;
 }
 
-.notif-view-all {
-  font-size: 12px;
+.confirm-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-icon-circle.icon-blue {
+  background: var(--color-info-bg, #EFF6FF);
+  color: var(--color-info, #2563EB);
+}
+
+.confirm-icon-circle.icon-green {
+  background: var(--color-success-bg, #ECFDF5);
+  color: var(--color-success, #059669);
+}
+
+.confirm-icon-circle.icon-red {
+  background: var(--color-danger-bg, #FEF2F2);
+  color: var(--color-danger, #DC2626);
+}
+
+.confirm-icon-circle .material-symbols-outlined {
+  font-size: 28px;
+}
+
+.confirm-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1A1A1A);
+  margin: 0 0 8px;
+}
+
+.confirm-message {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6B7280);
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.confirm-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-confirm-cancel {
+  flex: 1;
+  padding: 9px 16px;
+  border: 1px solid var(--color-border, #E5E7EB);
+  background: var(--color-surface, #FFFFFF);
+  border-radius: var(--radius-btn, 8px);
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-brand);
-  text-decoration: none;
-  display: inline-block;
+  color: var(--color-text-secondary, #4B5563);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.btn-confirm-cancel:hover {
+  background: #EFECE6;
+}
+
+.btn-confirm-proceed {
+  flex: 1;
+  padding: 9px 16px;
+  border: none;
+  background: var(--color-brand, #1B4332);
+  color: #ffffff;
+  border-radius: var(--radius-btn, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  font-family: inherit;
+}
+
+.btn-confirm-proceed:hover {
+  background: var(--color-brand-hover, #2D6A4F);
+  transform: translateY(-1px);
+}
+
+.btn-confirm-proceed.btn-danger {
+  background: var(--color-danger, #DC2626);
+}
+
+.btn-confirm-proceed.btn-danger:hover {
+  background: #B91C1C;
 }

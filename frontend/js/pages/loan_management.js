@@ -602,6 +602,7 @@ var loanData = [
 // 2. BIẾN TRẠNG THÁI TOÀN CỤC CỦA BẢNG VÀ BỘ LỌC
 // ------------------------------------------------------------------------------
 var currentTab = "pending";        // Mặc định chọn tab "Chờ duyệt" như giao diện ảnh
+var currentStatusFilter = "all";   // Bộ lọc trạng thái đồng bộ phong cách Reader
 var currentSearchKeyword = "";     // Từ khóa tìm kiếm
 var currentTimeFilter = "all";     // Lọc theo thời gian
 var currentDeptFilter = "all";     // Lọc theo khoa / viện
@@ -782,13 +783,24 @@ function updateCountsAndStats() {
 // ------------------------------------------------------------------------------
 function getFilteredLoans() {
   return loanData.filter(function (loan) {
-    // 1. Lọc theo Tab
-    if (currentTab === "pending" && loan.trangThai !== "Chờ duyệt") return false;
-    if (currentTab === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
-    if (currentTab === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
-    if (currentTab === "borrowed" && loan.trangThai !== "Đang mượn") return false;
-    if (currentTab === "overdue" && loan.trangThai !== "Quá hạn") return false;
-    if (currentTab === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    // 1. Lọc theo Trạng thái (đồng bộ phong cách Reader)
+    if (currentStatusFilter !== "all") {
+      if (currentStatusFilter === "pending" && loan.trangThai !== "Chờ duyệt") return false;
+      if (currentStatusFilter === "approved" && loan.trangThai !== "Đang chuẩn bị" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentStatusFilter === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
+      if (currentStatusFilter === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentStatusFilter === "borrowed" && loan.trangThai !== "Đang mượn") return false;
+      if (currentStatusFilter === "overdue" && loan.trangThai !== "Quá hạn") return false;
+      if (currentStatusFilter === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    } else if (currentTab !== "all") {
+      if (currentTab === "pending" && loan.trangThai !== "Chờ duyệt") return false;
+      if (currentTab === "approved" && loan.trangThai !== "Đang chuẩn bị" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentTab === "preparing" && loan.trangThai !== "Đang chuẩn bị") return false;
+      if (currentTab === "ready" && loan.trangThai !== "Sẵn sàng nhận") return false;
+      if (currentTab === "borrowed" && loan.trangThai !== "Đang mượn") return false;
+      if (currentTab === "overdue" && loan.trangThai !== "Quá hạn") return false;
+      if (currentTab === "rejected" && loan.trangThai !== "Đã từ chối" && loan.trangThai !== "Hết hạn nhận") return false;
+    }
 
     // 2. Lọc theo từ khóa (Mã phiếu, Họ tên độc giả, MSSV)
     if (currentSearchKeyword.trim() !== "") {
@@ -1394,13 +1406,21 @@ function openRejectModal(loanId) {
   var errorMsg = document.getElementById("reject-error-msg");
   var counterEl = document.getElementById("reject-char-counter");
 
+  var selectReason = document.getElementById("reject-reason-select");
+
   if (codeEl) codeEl.textContent = "Phiếu mượn #" + loan.maPhieu + " - Độc giả: " + loan.docGia.ten;
+  if (selectReason) {
+    selectReason.selectedIndex = 0;
+  }
   if (textarea) {
-    textarea.value = "";
+    textarea.value = selectReason ? selectReason.value : "";
     textarea.classList.remove("has-error");
   }
   if (errorMsg) errorMsg.style.display = "none";
-  if (counterEl) counterEl.textContent = "0 / 200";
+  if (counterEl) {
+    var initLen = textarea ? textarea.value.length : 0;
+    counterEl.textContent = initLen + " / 200";
+  }
 
   if (modal) modal.classList.add("active");
 }
@@ -1480,6 +1500,9 @@ function escapeHtml(str) {
 // 18. KHỞI TẠO SỰ KIỆN GIAO DIỆN (DOM CONTENT LOADED)
 // ------------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", function () {
+  // 0. Tải thông tin tài khoản đang đăng nhập (full name, role) từ Database / Session
+  loadUserProfile();
+
   // 1. Kiểm tra trạng thái quá hạn
   updateOverdueStatuses();
 
@@ -1487,17 +1510,40 @@ document.addEventListener("DOMContentLoaded", function () {
   updateCountsAndStats();
   renderLoanTable();
 
-  // 3. Sự kiện chuyển Tab
+  // 3. Sự kiện chuyển Tab & Bộ lọc Trạng thái (đồng bộ 2 chiều phong cách Reader)
   var tabButtons = document.querySelectorAll("#filter-tabs .tab-btn");
+  var statusSelect = document.getElementById("filter-status");
+
   tabButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       tabButtons.forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
       currentTab = btn.getAttribute("data-tab");
+      currentStatusFilter = currentTab;
+      if (statusSelect) {
+        statusSelect.value = currentTab;
+      }
       currentPage = 1;
       renderLoanTable();
     });
   });
+
+  if (statusSelect) {
+    statusSelect.addEventListener("change", function () {
+      currentStatusFilter = statusSelect.value;
+      if (currentStatusFilter !== "all") {
+        currentTab = currentStatusFilter;
+        tabButtons.forEach(function (b) {
+          b.classList.remove("active");
+          if (b.getAttribute("data-tab") === currentStatusFilter) {
+            b.classList.add("active");
+          }
+        });
+      }
+      currentPage = 1;
+      renderLoanTable();
+    });
+  }
 
   // 4. Sự kiện Tìm kiếm ngay khi gõ
   var searchInput = document.getElementById("filter-keyword");
@@ -1513,8 +1559,10 @@ document.addEventListener("DOMContentLoaded", function () {
   var btnApply = document.getElementById("btn-apply-filter");
   if (btnApply) {
     btnApply.addEventListener("click", function () {
+      var statusSelect = document.getElementById("filter-status");
       var timeSelect = document.getElementById("filter-time");
       var deptSelect = document.getElementById("filter-department");
+      if (statusSelect) currentStatusFilter = statusSelect.value;
       if (timeSelect) currentTimeFilter = timeSelect.value;
       if (deptSelect) currentDeptFilter = deptSelect.value;
       if (searchInput) currentSearchKeyword = searchInput.value;
@@ -1529,18 +1577,21 @@ document.addEventListener("DOMContentLoaded", function () {
   if (btnReset) {
     btnReset.addEventListener("click", function () {
       if (searchInput) searchInput.value = "";
+      var statusSelect = document.getElementById("filter-status");
       var timeSelect = document.getElementById("filter-time");
       var deptSelect = document.getElementById("filter-department");
+      if (statusSelect) statusSelect.value = "all";
       if (timeSelect) timeSelect.value = "all";
       if (deptSelect) deptSelect.value = "all";
 
       currentSearchKeyword = "";
+      currentStatusFilter = "all";
       currentTimeFilter = "all";
       currentDeptFilter = "all";
       currentPage = 1;
 
       renderLoanTable();
-      showToast("info", "Đã đặt lại bộ lọc", "Đã xóa toàn bộ điều kiện tìm kiếm và bộ lọc thời gian.");
+      showToast("info", "Đã đặt lại bộ lọc", "Đã xóa toàn bộ điều kiện tìm kiếm và bộ lọc trạng thái, thời gian.");
     });
   }
 
@@ -1623,11 +1674,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Lắng nghe chọn lý do chuẩn từ Select dropdown (không cho nhập tay)
+  var rejectReasonSelect = document.getElementById("reject-reason-select");
+  if (rejectReasonSelect && rejectTextarea) {
+    rejectReasonSelect.addEventListener("change", function () {
+      var val = rejectReasonSelect.value;
+      if (val === "Khác") {
+        rejectTextarea.value = "";
+        rejectTextarea.focus();
+      } else {
+        rejectTextarea.value = val;
+      }
+      if (rejectCounter) rejectCounter.textContent = rejectTextarea.value.length + " / 200";
+      rejectTextarea.classList.remove("has-error");
+      var err = document.getElementById("reject-error-msg");
+      if (err) err.style.display = "none";
+    });
+  }
+
   // Chọn nhanh lý do từ chối điền vào textarea
   var reasonPills = document.querySelectorAll("#quick-reason-pills .reason-pill");
   reasonPills.forEach(function (pill) {
     pill.addEventListener("click", function () {
       var reasonVal = pill.getAttribute("data-reason");
+      if (rejectReasonSelect) {
+        var optMatch = Array.from(rejectReasonSelect.options).find(function (o) { return o.value === reasonVal; });
+        if (optMatch) rejectReasonSelect.value = reasonVal;
+        else rejectReasonSelect.value = "Khác";
+      }
       if (rejectTextarea) {
         rejectTextarea.value = reasonVal;
         rejectTextarea.focus();
@@ -1670,14 +1744,10 @@ document.addEventListener("DOMContentLoaded", function () {
       closeConfirmModal();
       var uMenu = document.getElementById("userDropdownMenu");
       if (uMenu) uMenu.classList.remove("show");
-      var nMenu = document.getElementById("notifDropdownMenu");
-      if (nMenu) nMenu.setAttribute("hidden", "");
-      var nBell = document.getElementById("notifBellBtn");
-      if (nBell) nBell.setAttribute("aria-expanded", "false");
     }
   });
 
-  // 14. Điều khiển Header đồng bộ theo loan_basket (Mobile menu, Notifications, User Dropdown)
+  // 14. Điều khiển Header (Mobile menu, User Dropdown)
   var mobileMenuToggle = document.getElementById("mobileMenuToggle");
   var navMenu = document.getElementById("navMenu");
   if (mobileMenuToggle && navMenu) {
@@ -1687,41 +1757,92 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Chuông thông báo In-app
-  var notifBellBtn = document.getElementById("notifBellBtn");
-  var notifMenu = document.getElementById("notifDropdownMenu");
-  var notifMarkReadBtn = document.getElementById("notifMarkReadBtn");
-  var notifBadge = document.getElementById("notifBadge");
+  // ----------------------------------------------------------------------------
+  // TẢI VÀ ĐỒNG BỘ THÔNG TIN NGƯỜI DÙNG (FULL NAME & ROLE) TỪ DATABASE / SESSION
+  // ----------------------------------------------------------------------------
+  async function loadUserProfile() {
+    var avatarEl = document.getElementById("userAvatar") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-avatar") : null);
+    var nameEl = document.getElementById("userName") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-name") : null);
+    var roleEl = document.getElementById("userRole") || (userProfileBtn ? userProfileBtn.querySelector(".librarian-role") : null);
 
-  if (notifBellBtn && notifMenu) {
-    notifBellBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var isHidden = notifMenu.hasAttribute("hidden");
-      if (isHidden) {
-        notifMenu.removeAttribute("hidden");
-        notifBellBtn.setAttribute("aria-expanded", "true");
-        var uMenu = document.getElementById("userDropdownMenu");
-        if (uMenu) uMenu.classList.remove("show");
-      } else {
-        notifMenu.setAttribute("hidden", "");
-        notifBellBtn.setAttribute("aria-expanded", "false");
+    function mapRoleLabel(role) {
+      if (!role) return "Độc giả";
+      var r = String(role).toUpperCase();
+      if (r === "ADMIN") return "Quản trị viên";
+      if (r === "LIBRARIAN") return "Thủ thư";
+      if (r === "READER") return "Sinh viên / Độc giả";
+      return role;
+    }
+
+    function renderUser(user) {
+      if (!user) return;
+      var fullName = user.full_name || user.name || user.email || "Người dùng";
+      var roleText = mapRoleLabel(user.role);
+      var initial = (fullName.trim().charAt(0) || "U").toUpperCase();
+
+      if (avatarEl) avatarEl.textContent = initial;
+      if (nameEl) nameEl.textContent = fullName;
+      if (roleEl) roleEl.textContent = roleText;
+    }
+
+    // 1. Đọc ngay từ cache (localStorage / auth.getUser()) để hiển thị tức thì, không bị giật lag
+    var cachedUser = null;
+    if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+      cachedUser = auth.getUser();
+    } else {
+      try {
+        var raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+        if (raw) cachedUser = JSON.parse(raw);
+      } catch (e) {
+        console.warn("Không đọc được user_info từ cache:", e);
       }
-    });
+    }
 
-    if (notifMarkReadBtn) {
-      notifMarkReadBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var unreadItems = notifMenu.querySelectorAll(".notif-item.is-unread");
-        unreadItems.forEach(function (item) {
-          item.classList.remove("is-unread");
-          var dot = item.querySelector(".notif-dot");
-          if (dot) dot.remove();
-        });
-        if (notifBadge) notifBadge.style.display = "none";
-        var pill = notifMenu.querySelector(".notif-badge-pill");
-        if (pill) pill.textContent = "0 mới";
-        showToast("info", "Thông báo", "Đã đánh dấu đã đọc tất cả thông báo.");
-      });
+    if (cachedUser) {
+      renderUser(cachedUser);
+    }
+
+    // 2. Lấy dữ liệu mới nhất trực tiếp từ database qua endpoint /auth/me
+    try {
+      var freshUser = null;
+      if (typeof auth !== "undefined" && typeof auth.syncSession === "function") {
+        freshUser = await auth.syncSession();
+      } else if (typeof api !== "undefined" && typeof api.get === "function") {
+        var token = (typeof auth !== "undefined" && typeof auth.getToken === "function")
+          ? auth.getToken()
+          : (localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token"));
+        if (token) {
+          freshUser = await api.get("/auth/me");
+          if (freshUser) {
+            if (typeof auth !== "undefined" && typeof auth.setUser === "function") {
+              auth.setUser(freshUser);
+            } else {
+              localStorage.setItem("user_info", JSON.stringify(freshUser));
+            }
+          }
+        }
+      } else {
+        var token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
+        if (token) {
+          var baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+          var res = await fetch(baseUrl + "/auth/me", {
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            }
+          });
+          if (res.ok) {
+            freshUser = await res.json();
+            localStorage.setItem("user_info", JSON.stringify(freshUser));
+          }
+        }
+      }
+
+      if (freshUser) {
+        renderUser(freshUser);
+      }
+    } catch (err) {
+      console.warn("Không thể đồng bộ hồ sơ user từ database:", err);
     }
   }
 
@@ -1736,10 +1857,6 @@ document.addEventListener("DOMContentLoaded", function () {
       userDropdownMenu.classList.toggle("show");
       var isShown = userDropdownMenu.classList.contains("show");
       userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
-      if (notifMenu && !notifMenu.hasAttribute("hidden")) {
-        notifMenu.setAttribute("hidden", "");
-        if (notifBellBtn) notifBellBtn.setAttribute("aria-expanded", "false");
-      }
     });
   }
 
@@ -1754,9 +1871,19 @@ document.addEventListener("DOMContentLoaded", function () {
         confirmText: "Đăng xuất",
         cancelText: "Hủy",
         onConfirm: function () {
+          if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+            auth.clearSession();
+          } else {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user_info");
+            localStorage.removeItem("library_card");
+            sessionStorage.removeItem("access_token");
+            sessionStorage.removeItem("user_info");
+          }
           showToast("info", "Đang đăng xuất...", "Phiên làm việc đã kết thúc.");
           setTimeout(function () {
-            window.location.href = "home.html";
+            window.location.href = "login.html#login";
           }, 600);
         }
       });
@@ -1768,10 +1895,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
       userDropdownMenu.classList.remove("show");
       if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
-    }
-    if (notifMenu && !notifMenu.hasAttribute("hidden")) {
-      notifMenu.setAttribute("hidden", "");
-      if (notifBellBtn) notifBellBtn.setAttribute("aria-expanded", "false");
     }
     if (navMenu && navMenu.classList.contains("show")) {
       navMenu.classList.remove("show");

@@ -23,10 +23,13 @@
 
 <body data-root="../" class="returns-body">
 
-  <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
-  <header class="librarian-topbar">
+  <!-- =========================================================================
+       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ THEO LOAN_MANAGEMENT
+       ========================================================================= -->
+  <header class="librarian-topbar site-header">
     <div class="topbar-left">
-      <a href="home.html" class="brand-badge">
+      <!-- Logo -->
+      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -35,38 +38,59 @@
           <span class="brand-sub">Thư viện số KS25</span>
         </div>
       </a>
-      <nav class="topbar-nav">
-        <a href="home.html" class="topbar-nav-link">Trang chủ</a>
-        <a href="catalog.html" class="topbar-nav-link">Tra cứu sách</a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <!-- Navigation Menu -->
+      <nav class="topbar-nav" id="navMenu">
+        <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
       </nav>
     </div>
 
+    <!-- Header Right Area -->
     <div class="topbar-right">
-      <div class="librarian-profile">
-        <div class="librarian-avatar" id="staff-avatar">?</div>
-        <div class="librarian-info">
-          <span class="librarian-name" id="staff-name">Thủ thư</span>
-          <span class="librarian-role" id="staff-role">Chưa xác thực</span>
+      <!-- User Account Dropdown (đồng bộ loan_management) -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar"></div>
+          <div class="librarian-info">
+            <span class="librarian-name" id="userName"></span>
+            <span class="librarian-role" id="userRole"></span>
+          </div>
+          <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+        </button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="auth.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
         </div>
       </div>
-      <button type="button" id="btn-logout" class="topbar-icon-btn" title="Đăng xuất">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
     </div>
   </header>
 
-  <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG) -->
+  <!-- =========================================================================
+       2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL (SIDEBAR THU GỌN / MỞ RỘNG)
+       ========================================================================= -->
   <aside id="app-sidebar" class="sidebar-rail">
     <div class="sidebar-rail-header">
-      <span>Phân hệ Thủ thư</span>
-      <span class="version-pill">v1.2</span>
+      <span>PHÂN HỆ THỦ THƯ</span>
     </div>
     <nav class="sidebar-rail-nav">
-      <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+      <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
         <span class="material-symbols-outlined">space_dashboard</span>
         <span class="rail-label">Tổng quan &amp; Thống kê</span>
       </a>
-      <a href="books.html" class="sidebar-rail-link" title="Quản lý Đầu sách &amp; Bản sao">
+      <a href="books.html" class="sidebar-rail-link" data-tooltip="Quản lý Đầu sách &amp; Bản sao">
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
@@ -74,15 +98,15 @@
         <span class="material-symbols-outlined">category</span>
         <span class="rail-label">Thể loại, Tác giả, NXB</span>
       </a>
-      <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
+      <a href="loan_management.html" class="sidebar-rail-link" data-tooltip="Duyệt mượn trực tuyến">
         <span class="material-symbols-outlined">receipt_long</span>
-        <span class="rail-label">Quản lý Phiếu mượn</span>
+        <span class="rail-label">Quản lý phiếu mượn</span>
       </a>
-      <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+      <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
         <span class="material-symbols-outlined">library_add</span>
         <span class="rail-label">Mượn sách tại quầy</span>
       </a>
-      <a href="returns.html" class="sidebar-rail-link active" title="Trả sách tại quầy">
+      <a href="returns.html" class="sidebar-rail-link active" data-tooltip="Trả sách tại quầy">
         <span class="material-symbols-outlined">assignment_return</span>
         <span class="rail-label">Trả sách tại quầy</span>
       </a>
@@ -90,25 +114,15 @@
         <span class="material-symbols-outlined">payments</span>
         <span class="rail-label">Xử lý tiền phạt</span>
       </a>
-      <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+      <a href="readers.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
         <span class="material-symbols-outlined">badge</span>
-        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+        <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
       </a>
       <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
         <span class="material-symbols-outlined">admin_panel_settings</span>
         <span class="rail-label">Nhân sự &amp; Phân quyền</span>
       </a>
     </nav>
-    <div class="sidebar-rail-footer">
-      <div style="display: flex; align-items: center;">
-        <span class="status-dot-pulse"></span>
-        <div class="sidebar-status-details">
-          <strong>Máy chủ K1</strong>
-          <small>Online</small>
-        </div>
-      </div>
-      <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
-    </div>
   </aside>
 
   <!-- 3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH -->
@@ -118,16 +132,7 @@
       <!-- Tiêu đề trang & các nút tác vụ nhanh -->
       <div class="page-header">
         <div>
-          <div class="breadcrumb-nav">
-            <span>Phân hệ Quản trị</span>
-            <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
-            <span class="highlight">Trả sách tại quầy</span>
-          </div>
           <h1 class="page-title">Trả sách tại quầy &amp; Thu phí phạt</h1>
-          <p class="page-subtitle">
-            Quét mã vạch ấn bản, kiểm tra tình trạng vật lý, tự động tính toán số ngày quá hạn và phát hành biên lai
-            hoàn trả.
-          </p>
         </div>
         <div class="header-actions">
           <button id="btn-view-history" type="button" class="btn-header-action">
@@ -219,7 +224,8 @@
                 <span>Đang xử lý trả: <strong id="borrow-count-display" style="color: var(--color-text-primary);">00
                     ấn bản</strong></span>
               </div>
-              <span>Thủ thư duyệt: <strong id="loan-librarian-display" style="color: var(--color-text-primary);">—</strong></span>
+              <span>Thủ thư duyệt: <strong id="loan-librarian-display"
+                  style="color: var(--color-text-primary);">—</strong></span>
             </div>
           </section>
 
@@ -266,12 +272,14 @@
                   <span class="material-symbols-outlined" style="font-size: 18px;">add_circle_outline</span>
                   <span>+ Thêm ấn phẩm khác của <span id="add-extra-reader-name">độc giả</span></span>
                 </button>
-                <button id="btn-return-full-loan" type="button" class="btn-link-extra" style="display: none; color: var(--color-amber);">
+                <button id="btn-return-full-loan" type="button" class="btn-link-extra"
+                  style="display: none; color: var(--color-amber);">
                   <span class="material-symbols-outlined" style="font-size: 18px;">done_all</span>
                   <span>Trả toàn bộ phiếu ngay</span>
                 </button>
               </div>
-              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Chưa có bản sao nào trong lượt trả</span>
+              <span id="scanned-progress-text" style="font-size: 12px; color: var(--color-text-muted);">Chưa có bản sao
+                nào trong lượt trả</span>
             </div>
           </section>
 
@@ -370,7 +378,8 @@
                 <div class="cash-calc-row border-top">
                   <span>Tiền thừa trả khách:</span>
                   <strong id="cash-change-display"
-                    style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">0 đ</strong>
+                    style="color: var(--color-success); font-family: 'JetBrains Mono', monospace; font-size: 14px;">0
+                    đ</strong>
                 </div>
               </div>
 
@@ -482,18 +491,17 @@
       </div>
     </main>
 
-    <!-- 4. FOOTER CỦA PHÂN HỆ QUẢN TRỊ -->
-    <footer class="librarian-footer">
-      <div class="librarian-footer-inner">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="material-symbols-outlined" style="color: var(--color-brand); font-size: 18px;">verified</span>
-          <span>© 2026 UniLib - Phân hệ Thủ thư quầy phục vụ sinh viên. Thực hiện: Trịnh Huy Đại (B25DTCN151).</span>
-        </div>
-        <div class="librarian-footer-links">
-          <a href="home.html">Cổng Độc giả</a>
-          <a href="fines.html">Quầy Tiền phạt</a>
-          <a href="staff-dashboard.html">Bàn làm việc</a>
-        </div>
+    <!-- 4. FOOTER TRANG WEB -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        © 2025 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền.
+      </div>
+      <div class="footer-right">
+        <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Quy định mượn trả</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
       </div>
     </footer>
   </div>
@@ -671,6 +679,25 @@
           <span>Đã hiểu &amp; Đóng</span>
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
       </div>
     </div>
   </div>

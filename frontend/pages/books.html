@@ -23,14 +23,13 @@
 
 <body data-root="../" class="books-body">
 
-    <!-- 1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ QUẢN TRỊ THƯ VIỆN -->
-    <header class="librarian-topbar">
+    <!-- =========================================================================
+         1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ THEO LOAN_MANAGEMENT
+         ========================================================================= -->
+    <header class="librarian-topbar site-header">
         <div class="topbar-left">
-            <button id="btn-toggle-sidebar" class="mobile-menu-btn" type="button" aria-label="Mở menu điều hướng"
-                title="Mở danh mục điều hướng">
-                <span class="material-symbols-outlined">menu</span>
-            </button>
-            <a href="home.html" class="brand-badge">
+            <!-- Logo -->
+            <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
                 <div class="brand-icon">
                     <span class="material-symbols-outlined">local_library</span>
                 </div>
@@ -39,57 +38,76 @@
                     <span class="brand-sub">Thư viện số KS25</span>
                 </div>
             </a>
-            <nav class="topbar-nav">
-                <a href="home.html" class="topbar-nav-link">Trang chủ</a>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <nav class="topbar-nav" id="navMenu">
+                <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
             </nav>
         </div>
 
+        <!-- Header Right Area -->
         <div class="topbar-right">
-            <button type="button" class="topbar-icon-btn" title="Giỏ tiếp nhận">
-                <span class="material-symbols-outlined">shopping_bag</span>
-                <span class="badge-dot"></span>
-            </button>
-            <div class="topbar-divider"></div>
-            <div class="librarian-profile">
-                <div class="librarian-avatar">Đ</div>
-                <div class="librarian-info">
-                    <span class="librarian-name">Trịnh Huy Đại</span>
-                    <span class="librarian-role">Thủ thư ca trực</span>
+            <!-- User Account Dropdown -->
+            <div class="user-dropdown-container" id="userDropdownContainer">
+                <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn"
+                    aria-expanded="false" aria-haspopup="true">
+                    <div class="librarian-avatar" id="userAvatar"></div>
+                    <div class="librarian-info">
+                        <span class="librarian-name" id="userName"></span>
+                        <span class="librarian-role" id="userRole"></span>
+                    </div>
+                    <span class="material-symbols-outlined"
+                        style="font-size: 16px; margin-left: 2px;">expand_more</span>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu">
+                    <a href="auth.html" class="dropdown-item">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        <span>Thông tin cá nhân</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Đăng xuất</span>
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- LỚP PHỦ BACKDROP KHI MỞ MENU TRÊN THIẾT BỊ DI ĐỘNG -->
-    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
-
-    <!-- 2. THANH ĐIỀU HƯỚNG DẠNG RAIL (MẶC ĐỊNH HIỆN ICON, RÊ CHUỘT MỞ RỘNG) -->
+    <!-- =========================================================================
+         2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL (SIDEBAR THU GỌN / MỞ RỘNG)
+         ========================================================================= -->
     <aside id="app-sidebar" class="sidebar-rail">
         <div class="sidebar-rail-header">
-            <span>Phân hệ Thủ thư</span>
-            <span class="version-pill">v1.2</span>
-            <button id="btn-close-sidebar" class="sidebar-close-btn" type="button" aria-label="Đóng menu">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+            <span>PHÂN HỆ THỦ THƯ</span>
         </div>
         <nav class="sidebar-rail-nav">
-            <a href="staff-dashboard.html" class="sidebar-rail-link" title="Tổng quan &amp; Thống kê">
+            <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
                 <span class="material-symbols-outlined">space_dashboard</span>
                 <span class="rail-label">Tổng quan &amp; Thống kê</span>
             </a>
-            <a href="books.html" class="sidebar-rail-link active" title="Quản lý Đầu sách &amp; Bản sao">
+            <a href="books.html" class="sidebar-rail-link active" data-tooltip="Quản lý Đầu sách &amp; Bản sao">
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
             </a>
-            <a href="loan_management.html" class="sidebar-rail-link" title="Quản lý Phiếu mượn">
-                <span class="material-symbols-outlined">receipt_long</span>
-                <span class="rail-label">Quản lý Phiếu mượn</span>
+            <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+                <span class="material-symbols-outlined">category</span>
+                <span class="rail-label">Thể loại, Tác giả, NXB</span>
             </a>
-            <a href="borrow_on_site.html" class="sidebar-rail-link" title="Mượn sách tại quầy">
+            <a href="loan_management.html" class="sidebar-rail-link" data-tooltip="Duyệt mượn trực tuyến">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span class="rail-label">Quản lý phiếu mượn</span>
+            </a>
+            <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
                 <span class="material-symbols-outlined">library_add</span>
                 <span class="rail-label">Mượn sách tại quầy</span>
             </a>
-            <a href="returns.html" class="sidebar-rail-link" title="Trả sách tại quầy">
+            <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
                 <span class="material-symbols-outlined">assignment_return</span>
                 <span class="rail-label">Trả sách tại quầy</span>
             </a>
@@ -97,25 +115,15 @@
                 <span class="material-symbols-outlined">payments</span>
                 <span class="rail-label">Xử lý tiền phạt</span>
             </a>
-            <a href="readers.html" class="sidebar-rail-link" title="Quản lý Độc giả &amp; Thẻ">
+            <a href="readers.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
                 <span class="material-symbols-outlined">badge</span>
-                <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+                <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
             </a>
-            <a href="admin-users.html" class="sidebar-rail-link" title="Cài đặt hệ thống">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="rail-label">Cài đặt hệ thống</span>
+            <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="rail-label">Nhân sự &amp; Phân quyền</span>
             </a>
         </nav>
-        <div class="sidebar-rail-footer">
-            <div style="display: flex; align-items: center;">
-                <span class="status-dot-pulse"></span>
-                <div class="sidebar-status-details">
-                    <strong>Máy chủ K1</strong>
-                    <small>Online</small>
-                </div>
-            </div>
-            <span class="material-symbols-outlined" style="color: var(--color-text-muted); font-size: 18px;">dns</span>
-        </div>
     </aside>
 
     <!-- 3. KHU VỰC THAO TÁC NGHIỆP VỤ CHÍNH -->
@@ -209,32 +217,24 @@
                     <span class="material-symbols-outlined">search</span>
                     <input type="text" id="filter-search-input" placeholder="Tìm theo tên sách, tác giả, ISBN...">
                 </div>
-                <div>
-                    <select id="filter-category" class="filter-select">
-                        <option value="">Tất cả thể loại chuyên ngành</option>
-                        <option value="cntt">Công nghệ thông tin &amp; Phần mềm</option>
-                        <option value="kinhte">Kinh tế &amp; Quản trị kinh doanh</option>
-                        <option value="dientu">Kỹ thuật Điện tử - Viễn thông</option>
-                        <option value="toan">Khoa học Cơ bản &amp; Toán ứng dụng</option>
-                        <option value="ngoaingu">Ngoại ngữ &amp; Kỹ năng mềm</option>
-                    </select>
-                </div>
-                <div>
-                    <select id="filter-status" class="filter-select">
-                        <option value="">Trạng thái kho</option>
-                        <option value="available">AVAILABLE (Còn sẵn)</option>
-                        <option value="borrowed">BORROWED (Đang mượn)</option>
-                        <option value="reserved">RESERVED (Đã đặt trước)</option>
-                        <option value="lost">LOST/DAMAGED (Mất/Hỏng)</option>
-                    </select>
-                </div>
+                <select id="filter-category" class="filter-select">
+                    <option value="">Tất cả thể loại chuyên ngành</option>
+                    <option value="cntt">Công nghệ thông tin (IT · Phần mềm)</option>
+                    <option value="kinhte">Kinh tế &amp; Quản trị (ECO · Kinh doanh)</option>
+                    <option value="dientu">Kỹ thuật Điện tử (ECE · Viễn thông)</option>
+                    <option value="toan">Khoa học Cơ bản (SCI · Toán ứng dụng)</option>
+                    <option value="ngoaingu">Ngoại ngữ (LANG · Kỹ năng mềm)</option>
+                </select>
+                <select id="filter-status" class="filter-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="available">Sẵn sàng (AVAILABLE · Còn sách)</option>
+                    <option value="borrowed">Đang mượn (BORROWED · Lưu thông)</option>
+                    <option value="reserved">Đã đặt trước (RESERVED · Giữ chỗ)</option>
+                    <option value="lost">Hư hỏng / Báo mất (LOST/DAMAGED · Kiểm kê)</option>
+                </select>
                 <div class="filter-actions">
                     <button id="btn-reset-filter" type="button" class="btn-filter-reset" title="Xóa bộ lọc">
                         <span class="material-symbols-outlined">refresh</span>
-                    </button>
-                    <button id="btn-apply-filter" type="button" class="btn-filter-apply">
-                        <span class="material-symbols-outlined">tune</span>
-                        <span>Áp dụng lọc</span>
                     </button>
                 </div>
             </section>
@@ -275,16 +275,17 @@
 
         </main>
 
-        <!-- FOOTER HỆ THỐNG -->
-        <footer class="librarian-footer">
-            <div class="librarian-footer-inner">
-                <div>&copy; 2026 UniLib KS25 MVP - Phân hệ Quản trị Thư viện. Thực hiện: Ngô Việt Dũng (B25DTCN162).
-                </div>
-                <div class="librarian-footer-links">
-                    <a href="#">Trung tâm trợ giúp</a>
-                    <a href="#">Quy định thư viện</a>
-                    <a href="#">Tài liệu API</a>
-                </div>
+        <!-- FOOTER TRANG WEB -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                © 2025 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền.
+            </div>
+            <div class="footer-right">
+                <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+                <span class="footer-dot">•</span>
+                <a href="#" class="footer-link">Quy định mượn trả</a>
+                <span class="footer-dot">•</span>
+                <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
             </div>
         </footer>
     </div>
@@ -411,8 +412,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="bookShelf">Kệ lưu trữ mặc định</label>
-                                <input type="text" id="bookShelf" class="form-input" placeholder="VD: Kệ A3 - Ngăn 2"
-                                    value="Kệ A3 - Ngăn 2">
+                                <select id="bookShelf" class="form-select">
+                                    <option value="Khu A - Kệ A1 (Kho CNTT)">Khu A - Kệ A1 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A2 (Kho CNTT)">Khu A - Kệ A2 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A3 (Kho CNTT)" selected>Khu A - Kệ A3 (Kho CNTT)</option>
+                                    <option value="Khu A - Kệ A4 (Kho CNTT)">Khu A - Kệ A4 (Kho CNTT)</option>
+                                    <option value="Khu B - Kệ B1 (Kho Điện tử)">Khu B - Kệ B1 (Kho Điện tử)</option>
+                                    <option value="Khu B - Kệ B2 (Kho Điện tử)">Khu B - Kệ B2 (Kho Điện tử)</option>
+                                    <option value="Khu C - Kệ C1 (Kho Kinh tế)">Khu C - Kệ C1 (Kho Kinh tế)</option>
+                                    <option value="Khu C - Kệ C2 (Kho Kinh tế)">Khu C - Kệ C2 (Kho Kinh tế)</option>
+                                    <option value="Khu D - Kệ D1 (Kho Ngoại ngữ)">Khu D - Kệ D1 (Kho Ngoại ngữ)</option>
+                                    <option value="Khu D - Kệ D2 (Kho Ngoại ngữ)">Khu D - Kệ D2 (Kho Ngoại ngữ)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -577,7 +588,7 @@
                             <span class="dot dot-danger"></span> <span id="stat-count-damaged">1</span> Hư hỏng
                         </span>
                         <span id="pill-stat-maintenance" class="status-pill pill-maintenance">
-                            <span class="dot dot-warning"></span> <span id="stat-count-maintenance">1</span> Bảo trì
+                            <span class="dot dot-warning"></span> <span id="stat-count-maintenance">1</span> Mất / Thanh lý
                         </span>
                     </div>
                     <div class="copies-shelf-badge">
@@ -613,7 +624,7 @@
                                     id="filterCountAvailable">8</span>)</button>
                             <button id="filterBtnBorrowed" class="filter-pill-btn" type="button">Đang mượn (<span
                                     id="filterCountBorrowed">2</span>)</button>
-                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Bảo trì (<span
+                            <button id="filterBtnIssues" class="filter-pill-btn" type="button">Hỏng / Mất / Thanh lý (<span
                                     id="filterCountIssues">2</span>)</button>
                         </div>
                         <div class="copies-actions-cluster">
@@ -655,13 +666,25 @@
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyShelf">Vị trí kệ (*)</label>
-                                    <input type="text" id="newCopyShelf" class="form-control"
-                                        placeholder="VD: Kệ A3-02-T1" required />
+                                    <select id="newCopyShelf" class="form-control" required>
+                                        <option value="Kệ A3-02-T1 (Khu CNTT)" selected>Kệ A3-02-T1 (Khu CNTT)</option>
+                                        <option value="Kệ A3-02-T2 (Khu CNTT)">Kệ A3-02-T2 (Khu CNTT)</option>
+                                        <option value="Kệ A2-01-T1 (Khu CNTT)">Kệ A2-01-T1 (Khu CNTT)</option>
+                                        <option value="Kệ B1-03-T1 (Khu Điện tử)">Kệ B1-03-T1 (Khu Điện tử)</option>
+                                        <option value="Khu C-01-T1 (Kho Kinh tế)">Khu C-01-T1 (Kho Kinh tế)</option>
+                                        <option value="Khu D-02-T1 (Kho Ngoại ngữ)">Khu D-02-T1 (Kho Ngoại ngữ)</option>
+                                        <option value="Kho Lưu trữ Trung tâm">Kho Lưu trữ Trung tâm</option>
+                                    </select>
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyCondition">Tình trạng thực tế</label>
-                                    <input type="text" id="newCopyCondition" class="form-control"
-                                        value="Mới 100% • Đã dán bọc" />
+                                    <select id="newCopyCondition" class="form-control">
+                                        <option value="Mới 100% • Đã dán bọc" selected>Mới 100% (Nguyên bản - Đã dán bọc)</option>
+                                        <option value="Tốt 95% • Đã qua sử dụng">Tốt 95% (Đã qua sử dụng)</option>
+                                        <option value="Khá 80% • Hơi cũ / ố vàng">Khá 80% (Hơi cũ / ố vàng nhẹ)</option>
+                                        <option value="Cũ 60% • Sờn gáy / quăn mép">Cũ 60% (Sờn gáy / quăn mép)</option>
+                                        <option value="Hỏng nhẹ • Cần tu sửa">Hỏng nhẹ (Cần tu sửa)</option>
+                                    </select>
                                 </div>
                                 <div class="form-field">
                                     <label for="newCopyPolicy">Chính sách</label>
@@ -724,18 +747,27 @@
                             <div class="status-form-col status-select-col">
                                 <label for="quickStatusSelect">Trạng thái mới <span class="req">*</span></label>
                                 <select id="quickStatusSelect" class="form-control">
-                                    <option value="DAMAGED">Hư hỏng / Chờ phục hồi (DAMAGED)</option>
                                     <option value="AVAILABLE">Khả dụng - Đưa lại giá (AVAILABLE)</option>
-                                    <option value="MAINTENANCE">Bảo dưỡng - Dán gáy (MAINTENANCE)</option>
+                                    <option value="BORROWED">Đang cho mượn (BORROWED)</option>
+                                    <option value="RESERVED">Đã đặt trước / Giữ chỗ (RESERVED)</option>
+                                    <option value="DAMAGED">Hư hỏng / Chờ phục hồi (DAMAGED)</option>
                                     <option value="LOST">Báo mất - Lập biên bản (LOST)</option>
-                                    <option value="LIQUIDATION">Đề nghị thanh lý (LIQUIDATED)</option>
+                                    <option value="DISPOSED">Đã thanh lý (DISPOSED)</option>
                                 </select>
                             </div>
                             <div class="status-form-col status-reason-col">
                                 <label for="quickStatusReason">Lý do &amp; Ghi chú nghiệp vụ <span
                                         class="req">*</span></label>
-                                <input id="quickStatusReason" type="text" class="form-control"
-                                    placeholder="Nhập lý do chi tiết..." required />
+                                <select id="quickStatusReason" class="form-control" required>
+                                    <option value="Kiểm kê định kỳ - Xác nhận trạng thái" selected>Kiểm kê định kỳ - Xác nhận trạng thái</option>
+                                    <option value="Độc giả trả sách - Đưa lại lên giá">Độc giả trả sách - Đưa lại lên giá</option>
+                                    <option value="Bàn giao mượn sách cho bạn đọc">Bàn giao mượn sách cho bạn đọc</option>
+                                    <option value="Phát hiện hư hỏng - Chuyển tu sửa">Phát hiện hư hỏng - Chuyển tu sửa</option>
+                                    <option value="Độc giả báo mất - Chờ xử lý bồi thường">Độc giả báo mất - Chờ xử lý bồi thường</option>
+                                    <option value="Hết niên hạn - Đề xuất thanh lý">Hết niên hạn - Đề xuất thanh lý</option>
+                                    <option value="Điều chuyển vị trí lưu kho">Điều chuyển vị trí lưu kho</option>
+                                    <option value="Lý do nghiệp vụ khác">Lý do nghiệp vụ khác</option>
+                                </select>
                             </div>
                             <div class="status-form-col status-actions-col">
                                 <div class="librarian-mini-badge">
@@ -768,10 +800,6 @@
 
             <!-- Modal Footer: Clean & Essential Actions -->
             <div class="copies-hfd-footer">
-                <div class="footer-api-spec">
-                    <span class="material-symbols-outlined">terminal</span>
-                    <span>API: PATCH /api/v1/book-copies/status</span>
-                </div>
                 <div class="footer-actions">
                     <button id="closeCopiesModalFooterBtn" type="button" class="btn-action-outline">Đóng</button>
                     <button id="exportCopiesCsvBtn" type="button" class="btn-action-outline">
@@ -790,7 +818,8 @@
     <!-- ==========================================================================
        MODAL 3: XÁC NHẬN XÓA / ẨN ĐẦU SÁCH (ACADEMIC MINIMALIST CONFIRMATION MODAL)
        ========================================================================== -->
-    <div id="deleteModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div id="deleteModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="deleteModalTitle">
         <div class="delete-modal-box">
             <!-- Modal Header -->
             <div class="delete-modal-header">
@@ -809,7 +838,8 @@
             <!-- Modal Body: Card tóm tắt sách cần xóa -->
             <div class="delete-modal-body">
                 <div class="delete-book-card">
-                    <img id="deleteModalCover" src="" alt="Bìa sách" class="delete-book-cover" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
+                    <img id="deleteModalCover" src="" alt="Bìa sách" class="delete-book-cover"
+                        onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
                     <div class="delete-book-info">
                         <h3 id="deleteModalBookTitle" class="delete-book-heading">Tên đầu sách</h3>
                         <div class="delete-book-meta">
@@ -825,7 +855,8 @@
                 <div class="delete-modal-warning">
                     <span class="material-symbols-outlined delete-warning-icon">info</span>
                     <div class="delete-warning-text">
-                        <strong>Lưu ý:</strong> Hệ thống áp dụng cơ chế <em>Soft Delete (Ẩn đầu sách)</em> để bảo toàn lịch sử mượn trả và dữ liệu thống kê của thư viện.
+                        <strong>Lưu ý:</strong> Hệ thống áp dụng cơ chế <em>Soft Delete (Ẩn đầu sách)</em> để bảo toàn
+                        lịch sử mượn trả và dữ liệu thống kê của thư viện.
                     </div>
                 </div>
             </div>
@@ -837,6 +868,213 @@
                     <span class="material-symbols-outlined">delete</span>
                     <span>Xác nhận xóa</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       MODAL 4: CHI TIẾT ĐẦU SÁCH & QUẢN TRỊ BẢN SAO (HIGH-FIDELITY MODAL)
+       ========================================================================== -->
+    <div id="detailModalBackdrop" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="detailHeaderTitle">
+        <div class="book-detail-modal-box">
+            <!-- Modal Header -->
+            <div class="book-detail-header">
+                <div class="book-detail-header-left">
+                    <div class="book-detail-icon-box">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                    </div>
+                    <div>
+                        <div class="book-detail-meta-row">
+                            <span id="detailCategoryBadge" class="book-detail-category-badge">CNTT &amp; Phần mềm</span>
+                            <span id="detailDdc" class="book-detail-ddc font-mono">DDC: 005.133</span>
+                            <span class="book-detail-dot">•</span>
+                            <span id="detailIsbn" class="book-detail-isbn font-mono">ISBN: 978-604-0-12834-5</span>
+                        </div>
+                        <h2 id="detailHeaderTitle" class="book-detail-header-title">Chi tiết Đầu sách &amp; Quản trị Bản
+                            sao</h2>
+                    </div>
+                </div>
+                <button type="button" id="closeDetailModalBtn" class="btn-icon-close" title="Đóng cửa sổ">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Scrollable Body (2 columns) -->
+            <div class="book-detail-body">
+                <div class="book-detail-grid">
+                    <!-- Cột trái (Thông tin vị trí & Tình trạng bản sao) -->
+                    <div class="book-detail-col-left">
+                        <!-- Card 1: Bìa & Vị trí kho -->
+                        <div class="book-detail-side-card">
+                            <div class="book-detail-cover-wrap">
+                                <img id="detailCoverImg"
+                                    src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80"
+                                    alt="Bìa sách" class="book-detail-cover-img"
+                                    onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'">
+                            </div>
+                            <div class="book-detail-code-badge font-mono" id="detailBookCode">Mã: BK-IT-2024-001</div>
+                            <div class="book-detail-shelf-info">
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Vị trí lưu kho:</span>
+                                    <span class="shelf-info-val" id="detailShelfLocation">Tầng 1 - Kệ A3</span>
+                                </div>
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Ngăn phân bổ:</span>
+                                    <span class="shelf-info-val" id="detailShelfSection">Ngăn 02 (Kho CNTT)</span>
+                                </div>
+                                <div class="shelf-info-row">
+                                    <span class="shelf-info-label">Ngày nhập mục lục:</span>
+                                    <span class="shelf-info-val font-mono" id="detailCreatedAt">15/01/2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Thống kê tình trạng bản sao -->
+                        <div class="book-detail-side-card">
+                            <h4 class="book-detail-card-title">
+                                <span class="material-symbols-outlined">pie_chart</span>
+                                <span id="detailCopiesTotalLabel">Tình trạng 12 bản sao</span>
+                            </h4>
+                            <div class="book-detail-stat-list">
+                                <div class="detail-stat-item stat-avail">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-avail"></span>
+                                        Khả dụng tại kệ
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesAvail">8 bản</strong>
+                                </div>
+                                <div class="detail-stat-item stat-borrowed">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-borrowed"></span>
+                                        Đang được mượn
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesBorrowed">3 bản</strong>
+                                </div>
+                                <div class="detail-stat-item stat-reserved">
+                                    <span class="stat-item-label">
+                                        <span class="stat-dot dot-reserved"></span>
+                                        Đã đặt trước (Hold)
+                                    </span>
+                                    <strong class="font-mono" id="detailCopiesReserved">1 bản</strong>
+                                </div>
+                            </div>
+                            <div class="book-detail-stat-action">
+                                <button type="button" id="btnDetailPrintSpine" class="btn-detail-spine">
+                                    <span class="material-symbols-outlined">print</span>
+                                    <span>In nhãn gáy sách (Spine Label)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải (Thông tin chi tiết & Danh mục bản sao mẫu) -->
+                    <div class="book-detail-col-right">
+                        <!-- Tiêu đề đầu sách -->
+                        <div>
+                            <h1 id="detailBookTitle" class="book-detail-main-title">Lập trình Web Hiện đại với Python
+                                &amp; FastAPI</h1>
+                        </div>
+
+                        <!-- 4 ô thông số thư mục -->
+                        <div class="book-detail-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-item-label">Tác giả</span>
+                                <strong class="meta-item-value" id="detailAuthor">TS. Lê Hoàng Nam</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Nhà xuất bản</span>
+                                <strong class="meta-item-value" id="detailPublisher">NXB ĐHQG (2024)</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Số trang &amp; Khổ</span>
+                                <strong class="meta-item-value" id="detailPages">420 trang (16x24cm)</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">Ngôn ngữ</span>
+                                <strong class="meta-item-value" id="detailLanguage">Tiếng Việt</strong>
+                            </div>
+                        </div>
+
+                        <!-- Tóm tắt nội dung -->
+                        <div class="book-detail-summary-section">
+                            <h4 class="book-detail-section-title">
+                                <span class="material-symbols-outlined">description</span>
+                                <span>Tóm tắt nội dung</span>
+                            </h4>
+                            <p id="detailSummary" class="book-detail-summary-text">
+                                Tài liệu cung cấp nền tảng vững chắc về kiến trúc Backend bất đồng bộ (Asynchronous)
+                                trên nền tảng Python 3.11+, tối ưu hoá hiệu năng RESTful API với FastAPI, Pydantic V2,
+                                ORM SQLAlchemy và bảo mật OAuth2/JWT.
+                            </p>
+                        </div>
+
+                        <!-- Bảng bản sao vật lý mẫu -->
+                        <div class="book-detail-copies-section">
+                            <div class="book-detail-copies-header">
+                                <h4 class="book-detail-section-title">
+                                    <span class="material-symbols-outlined">qr_code_2</span>
+                                    <span id="detailCopiesTableTitle">Bản sao vật lý mẫu (5/12 bản)</span>
+                                </h4>
+                                <span id="detailBarcodePrefix" class="book-detail-prefix-tag font-mono">Prefix:
+                                    BK-IT-2024</span>
+                            </div>
+                            <div class="book-detail-table-wrap">
+                                <table class="book-detail-mini-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã vạch Barcode</th>
+                                            <th>Vị trí kệ</th>
+                                            <th>Tình trạng</th>
+                                            <th>Trạng thái</th>
+                                            <th style="text-align: right;">Ngày nhập</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detailCopiesTableBody">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="book-detail-footer">
+                <div id="detailFooterInfo" class="book-detail-footer-info">
+                    <span>Đơn giá: <strong id="detailPrice">145.000 đ</strong></span>
+                </div>
+                <div class="book-detail-footer-actions">
+                    <button type="button" id="closeDetailModalFooterBtn" class="btn-action-outline">Đóng</button>
+                    <button type="button" id="detailManageCopiesBtn" class="btn-action-outline-brand">
+                        <span class="material-symbols-outlined">qr_code_2</span>
+                        <span id="detailManageCopiesBtnText">Quản lý bản sao</span>
+                    </button>
+                    <button type="button" id="detailEditBookBtn" class="btn-action-primary">
+                        <span class="material-symbols-outlined">edit_square</span>
+                        <span>Sửa thông tin đầu sách</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
+         ========================================================================= -->
+    <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-confirm">
+            <div class="confirm-content-wrap">
+                <div class="confirm-icon-circle" id="confirm-icon-box">
+                    <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+                </div>
+                <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+                <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+                <div class="confirm-actions-row">
+                    <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+                    <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+                </div>
             </div>
         </div>
     </div>

@@ -47,80 +47,20 @@
       <!-- Navigation Menu -->
       <nav class="topbar-nav" id="navMenu">
         <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
-        <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
-        <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans">Phiếu mượn của tôi</a>
-        <a href="staff-dashboard.html" class="topbar-nav-link active" data-page="admin">Quản trị thư viện</a>
       </nav>
     </div>
 
     <!-- Header Right Area -->
     <div class="topbar-right">
-      <!-- Chuông thông báo in-app (Task T3CFF48) -->
-      <div class="notif-dropdown-container" id="notifDropdownContainer">
-        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="notif-badge" id="notifBadge">2</span>
-        </button>
-        <!-- BẢNG NOTIFICATION IN-APP -->
-        <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
-          <div class="notif-header">
-            <div class="notif-title-group">
-              <span class="notif-title">Thông báo mượn trả</span>
-              <span class="notif-badge-pill">2 mới</span>
-            </div>
-            <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
-          </div>
-          <div class="notif-list">
-            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
-              <div class="notif-icon-box overdue">
-                <span class="material-symbols-outlined">error</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
-                <span class="notif-time">10 phút trước • Quá hạn</span>
-              </div>
-            </a>
-            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
-              <div class="notif-icon-box due-soon">
-                <span class="material-symbols-outlined">alarm</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
-                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
-              </div>
-            </a>
-          </div>
-          <div class="notif-footer">
-            <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Giỏ mượn sách -->
-      <a href="loan_basket.html" class="topbar-icon-btn" data-page="cart" title="Giỏ mượn sách" id="btn-topbar-basket">
-        <span class="material-symbols-outlined">shopping_bag</span>
-        <span class="cart-badge-count" id="cartBadge" aria-live="polite">3</span>
-      </a>
-
-      <div class="topbar-divider"></div>
 
       <!-- User Account Dropdown -->
       <div class="user-dropdown-container" id="userDropdownContainer">
-        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
-          <div class="librarian-avatar">A</div>
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar"></div>
           <div class="librarian-info">
-            <span class="librarian-name">Nguyễn Văn An</span>
-            <span class="librarian-role">Sinh viên</span>
+            <span class="librarian-name" id="userName"></span>
+            <span class="librarian-role" id="userRole"></span>
           </div>
           <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
         </button>
@@ -128,10 +68,6 @@
           <a href="auth.html" class="dropdown-item">
             <span class="material-symbols-outlined">account_circle</span>
             <span>Thông tin cá nhân</span>
-          </a>
-          <a href="loan_slip.html" class="dropdown-item">
-            <span class="material-symbols-outlined">receipt_long</span>
-            <span>Lịch sử phiếu mượn</span>
           </a>
           <div class="dropdown-divider"></div>
           <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
@@ -149,7 +85,6 @@
   <aside id="app-sidebar" class="sidebar-rail">
     <div class="sidebar-rail-header">
       <span>PHÂN HỆ THỦ THƯ</span>
-      <span class="version-pill">v1.2</span>
     </div>
     <nav class="sidebar-rail-nav">
       <a href="staff-dashboard.html" class="sidebar-rail-link" data-tooltip="Tổng quan &amp; Thống kê">
@@ -160,37 +95,35 @@
         <span class="material-symbols-outlined">menu_book</span>
         <span class="rail-label">Quản lý Đầu sách &amp; Bản sao</span>
       </a>
+      <a href="taxonomy.html" class="sidebar-rail-link" title="Thể loại, Tác giả, NXB">
+        <span class="material-symbols-outlined">category</span>
+        <span class="rail-label">Thể loại, Tác giả, NXB</span>
+      </a>
       <a href="loan_management.html" class="sidebar-rail-link active" data-tooltip="Duyệt mượn trực tuyến">
         <span class="material-symbols-outlined">receipt_long</span>
         <span class="rail-label">Quản lý phiếu mượn</span>
-      </a>
-      <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
-        <span class="material-symbols-outlined">assignment_return</span>
-        <span class="rail-label">Trả sách tại quầy</span>
       </a>
       <a href="borrow_on_site.html" class="sidebar-rail-link" data-tooltip="Mượn sách tại quầy">
         <span class="material-symbols-outlined">library_add</span>
         <span class="rail-label">Mượn sách tại quầy</span>
       </a>
-      <a href="admin-users.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
-        <span class="material-symbols-outlined">badge</span>
-        <span class="rail-label">Quản lý Độc giả &amp; Thẻ</span>
+      <a href="returns.html" class="sidebar-rail-link" data-tooltip="Trả sách tại quầy">
+        <span class="material-symbols-outlined">assignment_return</span>
+        <span class="rail-label">Trả sách tại quầy</span>
       </a>
-      <a href="#" class="sidebar-rail-link" data-tooltip="Cài đặt hệ thống">
-        <span class="material-symbols-outlined">settings</span>
-        <span class="rail-label">Cài đặt hệ thống</span>
+      <a href="fines.html" class="sidebar-rail-link" title="Xử lý tiền phạt &amp; Miễn phạt">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="rail-label">Xử lý tiền phạt</span>
+      </a>
+      <a href="readers.html" class="sidebar-rail-link" data-tooltip="Quản lý Độc giả &amp; Thẻ">
+        <span class="material-symbols-outlined">badge</span>
+        <span class="rail-label">Quản lý độc giả &amp; Thẻ</span>
+      </a>
+      <a href="admin-users.html" class="sidebar-rail-link" title="Nhân sự &amp; Phân quyền">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="rail-label">Nhân sự &amp; Phân quyền</span>
       </a>
     </nav>
-    <div class="sidebar-rail-footer">
-      <div class="server-status-wrap">
-        <span class="status-dot-pulse"></span>
-        <div class="sidebar-status-details">
-          <strong>Máy chủ: K1-Online</strong>
-          <small>Hệ thống sẵn sàng</small>
-        </div>
-      </div>
-      <span class="material-symbols-outlined server-icon">dns</span>
-    </div>
   </aside>
 
   <!-- =========================================================================
@@ -203,8 +136,6 @@
       <div class="page-header-row">
         <div class="page-header-text">
           <h1 class="page-title font-headline">Duyệt yêu cầu mượn sách</h1>
-          <p class="page-subtitle">Kiểm tra trạng thái bản sao trên giá, xử lý phê duyệt đơn đặt trước từ Cổng bạn đọc
-            OPAC và chuẩn bị sách sẵn sàng tại quầy tiếp đón.</p>
         </div>
         <div class="header-action-group">
           <button type="button" class="btn-action-outline" id="btn-refresh">
@@ -347,24 +278,36 @@
         </div>
 
         <div class="filter-controls-group">
+          <!-- Lọc trạng thái (Phong cách độc giả - Reader) -->
+          <div class="filter-select-wrapper">
+            <select id="filter-status" class="filter-select" aria-label="Lọc theo trạng thái">
+              <option value="all" selected>Tất cả trạng thái</option>
+              <option value="pending">Chờ duyệt (PENDING · Đăng ký)</option>
+              <option value="approved">Chờ nhận sách (APPROVED · Tại quầy)</option>
+              <option value="borrowed">Đang mượn (BORROWED · Lưu thông)</option>
+              <option value="overdue">Quá hạn (OVERDUE · Cần trả)</option>
+              <option value="rejected">Đã từ chối (REJECTED · Hủy phiếu)</option>
+            </select>
+          </div>
+
           <!-- Lọc thời gian -->
           <div class="filter-select-wrapper">
-            <select id="filter-time" aria-label="Lọc theo thời gian">
-              <option value="today">Hôm nay (28/10)</option>
-              <option value="3days">3 ngày qua</option>
+            <select id="filter-time" class="filter-select" aria-label="Lọc theo thời gian">
               <option value="all" selected>Tất cả thời gian</option>
+              <option value="today">Hôm nay (TODAY · 28/10)</option>
+              <option value="3days">3 ngày qua (3DAYS · Gần đây)</option>
             </select>
           </div>
 
           <!-- Lọc khoa / viện -->
           <div class="filter-select-wrapper">
-            <select id="filter-department" aria-label="Lọc theo khoa viện">
+            <select id="filter-department" class="filter-select" aria-label="Lọc theo khoa viện">
               <option value="all" selected>Tất cả khoa / viện</option>
-              <option value="CNTT & TT">CNTT &amp; TT</option>
-              <option value="Kinh tế">Kinh tế</option>
-              <option value="Điện tử">Điện tử</option>
-              <option value="Ngoại ngữ">Ngoại ngữ</option>
-              <option value="Cơ khí">Cơ khí</option>
+              <option value="CNTT & TT">Khoa CNTT &amp; TT (CNTT · Công nghệ)</option>
+              <option value="Kinh tế">Khoa Kinh tế (KT · Quản trị)</option>
+              <option value="Điện tử">Khoa Điện tử (DT · Viễn thông)</option>
+              <option value="Ngoại ngữ">Khoa Ngoại ngữ (NN · Sư phạm)</option>
+              <option value="Cơ khí">Khoa Cơ khí (CK · Động lực)</option>
             </select>
           </div>
 
@@ -614,15 +557,28 @@
           thông báo lý do đến sinh viên.
         </p>
 
-        <!-- Chọn nhanh lý do -->
+        <!-- Chọn lý do từ chối chuẩn phong cách Reader (Không cho gõ tự do khi chọn chuẩn) -->
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="reject-reason-select" class="input-label">Chọn lý do từ chối chuẩn (*)</label>
+          <select id="reject-reason-select" class="filter-select" style="width: 100%;">
+            <option value="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ</option>
+            <option value="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện của độc giả đã hết hạn hiệu lực</option>
+            <option value="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt giới hạn số lượng sách được phép mượn</option>
+            <option value="Độc giả đang có sách quá hạn lưu thông chưa hoàn trả">Độc giả đang có sách quá hạn lưu thông chưa hoàn trả</option>
+            <option value="Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa">Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa</option>
+            <option value="Khác">Lý do khác (Nhập chi tiết bổ sung bên dưới)</option>
+          </select>
+        </div>
+
+        <!-- Chọn nhanh lý do dạng Pills -->
         <div class="quick-reasons-wrap">
-          <label class="input-label">Chọn nhanh lý do từ chối:</label>
+          <label class="input-label">Hoặc chọn nhanh theo thẻ:</label>
           <div class="quick-reason-pills" id="quick-reason-pills">
-            <button type="button" class="reason-pill" data-reason="Bản sao sách không khả dụng">Bản sao sách không khả
+            <button type="button" class="reason-pill" data-reason="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách không khả
               dụng</button>
-            <button type="button" class="reason-pill" data-reason="Thẻ thư viện đã hết hạn">Thẻ thư viện đã hết
+            <button type="button" class="reason-pill" data-reason="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện đã hết
               hạn</button>
-            <button type="button" class="reason-pill" data-reason="Độc giả vượt giới hạn số sách được mượn">Độc giả vượt
+            <button type="button" class="reason-pill" data-reason="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt
               giới hạn số sách</button>
             <button type="button" class="reason-pill" data-reason="Khác">Khác</button>
           </div>
@@ -658,6 +614,9 @@
   <div id="toast-container" class="toast-stack-container" aria-live="polite"></div>
 
   <!-- Script xử lý trang -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
   <script src="../js/pages/loan_management.js"></script>
 </body>
 

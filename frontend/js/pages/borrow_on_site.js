@@ -13,10 +13,6 @@
 
   // 2. Tham chiếu DOM Elements
   const dom = {
-    // Topbar & Profile
-    librarianNameDisplay: document.getElementById("librarian-name-display"),
-    topbarQuickSearch: document.getElementById("topbar-quick-search"),
-
     // Thẻ độc giả (Bước 1)
     cardReaderSection: document.getElementById("card-reader-section"),
     readerStatusPill: document.getElementById("reader-status-pill"),
@@ -881,22 +877,167 @@
 
     // Reset input file để cho phép chọn lại cùng file
     e.target.value = "";
+  // 9. HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (showConfirm - ĐỒNG BỘ LOAN_MANAGEMENT)
+  // ==============================================================================
+  let activeConfirmCallback = null;
+
+  function showConfirm(options) {
+    // options = { title, message, type: "green"|"red"|"blue", confirmText, cancelText, onConfirm }
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+    // Màu sắc icon & nút xác nhận
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+      if (iconBox) iconBox.classList.add("icon-red");
+      if (btnProceed) btnProceed.classList.add("btn-danger");
+      if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+      if (iconBox) iconBox.classList.add("icon-green");
+      if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+      if (iconBox) iconBox.classList.add("icon-blue");
+      if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.classList.add("active");
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.remove("active");
+    activeConfirmCallback = null;
   }
 
   // ==============================================================================
   // 10. KHỞI TẠO VÀ LẮNG NGHE SỰ KIỆN GIAO DIỆN
   // ==============================================================================
   function init() {
-    // 1. Hiển thị thông tin thủ thư từ auth session
+    // 1. Hiển thị thông tin thủ thư từ auth session (đồng bộ loan_management)
     try {
-      const currentUser = auth.getUser();
-      if (currentUser && currentUser.full_name) {
-        dom.librarianNameDisplay.textContent = currentUser.full_name;
-        dom.summaryLibrarianName.textContent = currentUser.full_name;
-        dom.pSigLibrarianName.textContent = currentUser.full_name;
+      const currentUser = (typeof auth !== "undefined" && typeof auth.getUser === "function") ? auth.getUser() : null;
+      if (currentUser) {
+        const displayName = currentUser.full_name || currentUser.email || "Thủ thư";
+        const initialChar = displayName.charAt(0).toUpperCase();
+        const displayRole = currentUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
+
+        const userAvatarEl = document.getElementById("userAvatar");
+        const userNameEl = document.getElementById("userName");
+        const userRoleEl = document.getElementById("userRole");
+
+        if (userAvatarEl) userAvatarEl.textContent = initialChar;
+        if (userNameEl) userNameEl.textContent = displayName;
+        if (userRoleEl) userRoleEl.textContent = displayRole;
+
+        if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = displayName;
+        if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = displayName;
       }
     } catch {
       // Dùng fallback mặc định
+    }
+
+    // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const navMenu = document.getElementById("navMenu");
+    if (mobileMenuToggle && navMenu) {
+      mobileMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle("show");
+      });
+    }
+
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+
+    if (userProfileBtn && userDropdownMenu) {
+      userProfileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle("show");
+        const isShown = userDropdownMenu.classList.contains("show");
+        userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+      });
+    }
+
+    if (logoutMenuBtn) {
+      logoutMenuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        showConfirm({
+          title: "Xác nhận đăng xuất?",
+          message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+          type: "red",
+          confirmText: "Đăng xuất",
+          cancelText: "Hủy",
+          onConfirm: () => {
+            if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+              auth.clearSession();
+            } else {
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("token");
+              localStorage.removeItem("user_info");
+              localStorage.removeItem("library_card");
+              sessionStorage.removeItem("access_token");
+              sessionStorage.removeItem("user_info");
+            }
+            showLocalToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "info");
+            setTimeout(() => {
+              window.location.href = "login.html#login";
+            }, 500);
+          }
+        });
+      });
+    }
+
+    // Đóng dropdown và mobile menu khi click ngoài màn hình
+    document.addEventListener("click", () => {
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
+      if (navMenu && navMenu.classList.contains("show")) {
+        navMenu.classList.remove("show");
+      }
+    });
+
+    // Sự kiện trong Hộp thoại xác nhận chung (Confirm modal)
+    const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+    const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+    const confirmModal = document.getElementById("confirm-modal");
+
+    if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+
+    if (btnConfirmProceed) {
+      btnConfirmProceed.addEventListener("click", () => {
+        const callback = activeConfirmCallback;
+        closeConfirmModal();
+        if (typeof callback === "function") {
+          callback();
+        }
+      });
+    }
+
+    if (confirmModal) {
+      confirmModal.addEventListener("click", (e) => {
+        if (e.target === confirmModal) closeConfirmModal();
+      });
     }
 
     // 2. Đặt ngày hẹn trả mặc định 14 ngày
@@ -957,6 +1098,19 @@
     dom.cameraDeviceSelect.addEventListener("change", function () {
       if (this.value && html5QrScanner) {
         startScannerWithCamera(this.value);
+        if (confirmModal && confirmModal.classList.contains("active")) {
+          closeConfirmModal();
+        }
+        if (dom.receiptModal && !dom.receiptModal.classList.contains("hidden")) {
+          dom.receiptModal.classList.add("hidden");
+        }
+        if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+          userDropdownMenu.classList.remove("show");
+          if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        }
+        if (navMenu && navMenu.classList.contains("show")) {
+          navMenu.classList.remove("show");
+        }
       }
     });
 
@@ -977,6 +1131,12 @@
     // Khởi tạo trạng thái ban đầu
     validateBorrowConditions();
   }
+
+  // Export các hàm modal tiện ích
+  window.borrowOnSiteApp = {
+    showConfirm,
+    closeConfirmModal,
+  };
 
   // Chạy sau khi nạp xong DOM
   if (document.readyState === "loading") {

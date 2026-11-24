@@ -133,12 +133,6 @@ body.loan-mgmt-body {
   overflow: hidden;
 }
 
-.brand-logo-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
 .brand-text {
   display: flex;
   flex-direction: column;
@@ -210,88 +204,6 @@ body.loan-mgmt-body {
   gap: 14px;
 }
 
-.topbar-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 6px 12px;
-  border-radius: 10px;
-  width: 220px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.topbar-search:focus-within {
-  border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
-}
-
-.topbar-search .material-symbols-outlined {
-  font-size: 18px;
-  color: var(--color-text-muted);
-}
-
-.topbar-search input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 12px;
-  width: 100%;
-  color: var(--color-text-primary);
-  font-family: inherit;
-}
-
-.topbar-icon-btn {
-  position: relative;
-  background: transparent;
-  border: 1px solid transparent;
-  padding: 7px;
-  border-radius: var(--radius-btn);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, border-color 0.15s;
-}
-
-.topbar-icon-btn:hover {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  color: var(--color-brand);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(27, 67, 50, 0.1);
-}
-
-.topbar-icon-btn:active {
-  transform: scale(0.96);
-}
-
-.topbar-icon-badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: var(--color-brand);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--color-paper);
-}
-
-.topbar-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--color-border);
-}
-
 .librarian-profile {
   display: flex;
   align-items: center;
@@ -305,14 +217,6 @@ body.loan-mgmt-body {
 .librarian-profile:hover {
   transform: translateY(-1px);
   background: rgba(27, 67, 50, 0.05);
-}
-
-.librarian-avatar-img {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid var(--color-brand);
 }
 
 .librarian-avatar {
@@ -382,212 +286,14 @@ body.loan-mgmt-body {
   }
 }
 
-/* Cart Badge Count (đồng bộ loan_basket) */
-.cart-badge-count {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: var(--color-brand);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono, monospace);
-}
-
-/* Notification Dropdown (Task T3CFF48 / loan_basket sync) */
-.notif-dropdown-container,
+/* User Account Dropdown */
 .user-dropdown-container {
   position: relative;
-}
-
-.notif-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: #D9381E;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(217, 56, 30, 0.35);
-  font-family: var(--font-mono, monospace);
-}
-
-.notif-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: -60px;
-  width: 380px;
-  max-width: calc(100vw - 32px);
-  background: #ffffff;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
-  z-index: 1000;
-  overflow: hidden;
-  animation: notifSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes notifSlideDown {
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.notif-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: #FAF8F5;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.notif-title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.notif-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-brand);
-}
-
-.notif-badge-pill {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #FEE2E2;
-  color: #DC2626;
-}
-
-.notif-mark-read {
-  font-size: 12px;
-  color: var(--color-brand);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  padding: 4px;
-  transition: color 0.15s;
-}
-
-.notif-mark-read:hover {
-  text-decoration: underline;
-}
-
-.notif-list {
-  max-height: 380px;
-  overflow-y: auto;
-}
-
-.notif-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #F3F1EC;
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.15s;
-}
-
-.notif-item:hover {
-  background: #FAF8F5;
-  text-decoration: none;
-}
-
-.notif-item.is-unread {
-  background: #FDFBF7;
-}
-
-.notif-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.notif-icon-box.overdue {
-  background: #FEE2E2;
-  color: #DC2626;
-}
-
-.notif-icon-box.due-soon {
-  background: #FEF3C7;
-  color: #D97706;
-}
-
-.notif-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notif-item-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  line-height: 1.3;
-}
-
-.notif-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #D9381E;
-  flex-shrink: 0;
-}
-
-.notif-item-desc {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 4px 0 6px;
-  line-height: 1.4;
-}
-
-.notif-time {
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-
-.notif-footer {
-  padding: 10px 16px;
-  background: #FAF8F5;
-  border-top: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.notif-view-all {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-brand);
-  text-decoration: none;
-  display: inline-block;
-}
-
-.notif-view-all:hover {
-  text-decoration: underline;
 }
 
 /* User Account Dropdown (đồng bộ loan_basket) */
@@ -716,20 +422,7 @@ body.loan-mgmt-body {
   transition: opacity 0.2s ease;
 }
 
-.sidebar-rail-header .version-pill {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: var(--color-text-primary);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.sidebar-rail:hover .sidebar-rail-header span,
-.sidebar-rail:hover .sidebar-rail-header .version-pill {
+.sidebar-rail:hover .sidebar-rail-header span {
   opacity: 1;
 }
 
@@ -752,18 +445,16 @@ body.loan-mgmt-body {
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s, transform 0.15s;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s, color 0.15s;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
 .sidebar-rail-link:hover {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  transform: translateX(3px);
+  background: var(--color-brand-subtle);
+  color: var(--color-brand);
   text-decoration: none;
-}
-
-.sidebar-rail-link:active {
-  transform: scale(0.97);
 }
 
 .sidebar-rail-link.active {
@@ -774,7 +465,12 @@ body.loan-mgmt-body {
 }
 
 .sidebar-rail-link.active:hover {
-  background: var(--color-brand-hover);
+  background: var(--color-brand);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.sidebar-rail-link.active .material-symbols-outlined {
   color: #ffffff;
 }
 
@@ -799,77 +495,23 @@ body.loan-mgmt-body {
 .sidebar-rail:not(:hover) .sidebar-rail-link:hover::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: 76px;
+  left: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%);
-  background: #1A202C;
+  background: #1B4332;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   white-space: nowrap;
-  z-index: 100;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.15s ease forwards;
 }
 
-.sidebar-rail-footer {
-  margin-top: auto;
-  padding: 8px 10px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  white-space: nowrap;
-  height: 44px;
-}
 
-.server-status-wrap {
-  display: flex;
-  align-items: center;
-}
-
-.status-dot-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10B981;
-  flex-shrink: 0;
-  margin-right: 8px;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
-  animation: pulseDot 2s infinite;
-}
-
-.sidebar-status-details {
-  display: flex;
-  flex-direction: column;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  overflow: hidden;
-}
-
-.sidebar-rail:hover .sidebar-status-details {
-  opacity: 1;
-}
-
-.sidebar-status-details strong {
-  font-size: 11px;
-  color: var(--color-text-primary);
-}
-
-.sidebar-status-details small {
-  font-size: 9px;
-  color: var(--color-success);
-}
-
-.server-icon {
-  color: var(--color-text-muted);
-  font-size: 18px;
-}
 
 /* ==============================================================================
    3. KHU VỰC NỘI DUNG CHÍNH (MAIN WORKSPACE)
@@ -908,16 +550,8 @@ body.loan-mgmt-body {
   font-size: 30px;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0 0 6px 0;
-  line-height: 1.2;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: var(--color-text-secondary);
   margin: 0;
-  max-width: 820px;
-  line-height: 1.5;
+  line-height: 1.2;
 }
 
 .header-action-group {
@@ -1220,22 +854,56 @@ body.loan-mgmt-body {
   flex-wrap: wrap;
 }
 
+.filter-select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.filter-select:hover {
+  border-color: var(--color-brand);
+  background: #ffffff;
+}
+
+.filter-select:focus {
+  border-color: var(--color-brand);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
+}
+
 .filter-select-wrapper select {
-  padding: 8px 14px;
+  height: 40px;
+  padding: 0 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-btn);
-  font-size: 13px;
+  border-radius: 9px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--color-text-primary);
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
+  box-sizing: border-box;
+}
+
+.filter-select-wrapper select:hover {
+  border-color: var(--color-brand);
+  background: #ffffff;
 }
 
 .filter-select-wrapper select:focus {
   border-color: var(--color-brand);
+  background: #ffffff;
   box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
 }
 
@@ -1715,41 +1383,6 @@ body.loan-mgmt-body {
   color: #9CA3AF;
   border-color: #E5E7EB;
 }
-
-.badge-renewal-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #BFDBFE;
-  margin-top: 4px;
-}
-
-.badge-renewal-item.renewed {
-  background: #F3F4F6;
-  color: #4B5563;
-  border-color: #D1D5DB;
-}
-
-.badge-reservation-warn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #FFFBEB;
-  color: #B45309;
-  border: 1px solid #FDE68A;
-  margin-top: 4px;
-}
-
 
 .btn-icon-delete {
   display: inline-flex;
@@ -2772,9 +2405,6 @@ body.loan-mgmt-body {
     margin-left: 0;
   }
   .sidebar-rail {
-    display: none;
-  }
-  .topbar-search {
     display: none;
   }
   .pagination-footer {

@@ -198,25 +198,23 @@
               </button>
             </div>
 
-            <!-- Bộ lọc trạng thái -->
-            <div class="select-group">
-              <label for="filter-status">Trạng thái:</label>
-              <select id="filter-status">
+            <!-- Bộ lọc trạng thái (Phong cách độc giả - Reader) -->
+            <div class="filter-select-wrapper">
+              <select id="filter-status" class="filter-select" aria-label="Lọc theo trạng thái phạt">
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="UNPAID" selected>Chưa thanh toán (UNPAID)</option>
-                <option value="PAID">Đã thanh toán (PAID)</option>
-                <option value="WAIVED">Đã miễn phạt (WAIVED)</option>
+                <option value="UNPAID" selected>Chưa thanh toán (UNPAID · Tạm khóa thẻ)</option>
+                <option value="PAID">Đã thanh toán (PAID · Đã nộp)</option>
+                <option value="WAIVED">Đã miễn phạt (WAIVED · Admin duyệt)</option>
               </select>
             </div>
 
             <!-- Bộ lọc loại phạt -->
-            <div class="select-group">
-              <label for="filter-type">Loại vi phạm:</label>
-              <select id="filter-type">
+            <div class="filter-select-wrapper">
+              <select id="filter-type" class="filter-select" aria-label="Lọc theo loại vi phạm">
                 <option value="ALL">Tất cả loại vi phạm</option>
-                <option value="QUÁ HẠN">Quá hạn (2.000đ/ngày)</option>
-                <option value="HỎNG">Hỏng sách (50% giá bìa)</option>
-                <option value="MẤT">Mất sách (100% giá bìa)</option>
+                <option value="QUÁ HẠN">Quá hạn trả (OVERDUE · 2.000đ/ngày)</option>
+                <option value="HỎNG">Hỏng ấn bản (DAMAGED · 50% giá bìa)</option>
+                <option value="MẤT">Mất ấn phẩm (LOST · 100% giá bìa)</option>
               </select>
             </div>
           </div>
@@ -225,7 +223,6 @@
           <div class="filter-actions">
             <button type="button" class="btn btn-secondary" id="btn-refresh" title="Tải lại danh sách">
               <span class="material-symbols-outlined">refresh</span>
-              <span>Làm mới</span>
             </button>
             <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Xuất báo cáo Excel / CSV">
               <span class="material-symbols-outlined">download</span>

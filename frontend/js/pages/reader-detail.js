@@ -26,17 +26,141 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  document.getElementById("top-staff-avatar").textContent = (staffUser.full_name || "T").charAt(0).toUpperCase();
-  document.getElementById("top-staff-name").textContent = staffUser.full_name || staffUser.email;
-  document.getElementById("top-staff-role").textContent = staffUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư trực quầy";
+  // Đồng bộ Topbar & User Info (Đồng bộ loan_management)
+  const userAvatar = document.getElementById("userAvatar");
+  const userName = document.getElementById("userName");
+  const userRole = document.getElementById("userRole");
+  if (userAvatar) userAvatar.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
+  if (userName) userName.textContent = staffUser.full_name || staffUser.email;
+  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư trực quầy";
 
-  document.getElementById("btn-top-logout")?.addEventListener("click", () => {
-    auth.clearSession();
-    window.location.href = "login.html#login";
+  // Mobile Menu Toggle
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const navMenu = document.getElementById("navMenu");
+  if (mobileMenuToggle && navMenu) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle("show");
+    });
+  }
+
+  // User Account Dropdown
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
+  const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+
+  if (userProfileBtn && userDropdownMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("show");
+      const isShown = userDropdownMenu.classList.contains("show");
+      userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+    });
+  }
+
+  // Confirm Modal Helper (Đồng bộ loan_management)
+  let activeConfirmCallback = null;
+
+  function showConfirm(options) {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+      if (iconBox) iconBox.classList.add("icon-red");
+      if (btnProceed) btnProceed.classList.add("btn-danger");
+      if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+      if (iconBox) iconBox.classList.add("icon-green");
+      if (btnProceed) btnProceed.classList.add("btn-green");
+      if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+      if (iconBox) iconBox.classList.add("icon-blue");
+      if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+    }
+    activeConfirmCallback = null;
+  }
+
+  function triggerLogoutConfirm(e) {
+    if (e) e.stopPropagation();
+    if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+    if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    showConfirm({
+      title: "Xác nhận đăng xuất?",
+      message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+      type: "red",
+      confirmText: "Đăng xuất",
+      cancelText: "Hủy",
+      onConfirm: () => {
+        if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+          auth.clearSession();
+        } else {
+          localStorage.clear();
+          sessionStorage.clear();
+        }
+        window.location.href = "login.html#login";
+      }
+    });
+  }
+
+  if (logoutMenuBtn) logoutMenuBtn.addEventListener("click", triggerLogoutConfirm);
+
+  // Đóng dropdown và mobile menu khi click ngoài màn hình
+  document.addEventListener("click", () => {
+    if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+      userDropdownMenu.classList.remove("show");
+      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+    }
+    if (navMenu && navMenu.classList.contains("show")) {
+      navMenu.classList.remove("show");
+    }
   });
-  document.getElementById("btn-mobile-sidebar")?.addEventListener("click", () => {
-    document.getElementById("ul-sidebar")?.classList.toggle("open");
-  });
+
+  // Sự kiện trong Confirm Modal
+  const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+  const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+  const confirmModal = document.getElementById("confirm-modal");
+
+  if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+  if (btnConfirmProceed) {
+    btnConfirmProceed.addEventListener("click", () => {
+      const callback = activeConfirmCallback;
+      closeConfirmModal();
+      if (typeof callback === "function") callback();
+    });
+  }
+  if (confirmModal) {
+    confirmModal.addEventListener("click", (e) => {
+      if (e.target === confirmModal) closeConfirmModal();
+    });
+  }
 
   const urlParams = new URLSearchParams(window.location.search);
   const readerIdParam = urlParams.get("id");
@@ -192,83 +316,175 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ---------- 3. LẤY LỊCH SỬ MƯỢN TRẢ TỪ MODULE MƯỢN (GET /api/loans?user_id=...) ----------
+  let allUserLoanRows = [];
+  let currentLoanSearchKeyword = "";
+
+  function updateLoanTabCounts(rows) {
+    const total = rows.length;
+    let borrowed = 0;
+    let pending = 0;
+    let returned = 0;
+
+    rows.forEach(({ ln, it }) => {
+      const s = (ln.status || "").toUpperCase();
+      if (it.return_date || s === "RETURNED") {
+        returned++;
+      } else if (s === "PENDING") {
+        pending++;
+      } else if (s === "BORROWED") {
+        borrowed++;
+      }
+    });
+
+    const elAll = document.getElementById("count-loan-all");
+    const elBorrowed = document.getElementById("count-loan-borrowed");
+    const elPending = document.getElementById("count-loan-pending");
+    const elReturned = document.getElementById("count-loan-returned");
+
+    if (elAll) elAll.textContent = total;
+    if (elBorrowed) elBorrowed.textContent = borrowed;
+    if (elPending) elPending.textContent = pending;
+    if (elReturned) elReturned.textContent = returned;
+  }
+
+  function renderFilteredLoans() {
+    const tbody = document.getElementById("detail-loans-tbody");
+    if (!tbody) return;
+
+    const filtered = allUserLoanRows.filter(({ ln, it }) => {
+      // 1. Lọc theo trạng thái
+      if (currentLoanStatusFilter) {
+        const s = (ln.status || "").toUpperCase();
+        if (currentLoanStatusFilter === "RETURNED") {
+          if (!it.return_date && s !== "RETURNED") return false;
+        } else if (currentLoanStatusFilter === "BORROWED") {
+          if (s !== "BORROWED" || it.return_date) return false;
+        } else if (currentLoanStatusFilter === "PENDING") {
+          if (s !== "PENDING") return false;
+        }
+      }
+
+      // 2. Lọc theo từ khóa tìm kiếm
+      if (currentLoanSearchKeyword) {
+        const kw = currentLoanSearchKeyword.toLowerCase();
+        const matchCode = String(ln.id || "").toLowerCase().includes(kw);
+        const matchTitle = (it.book_title || "").toLowerCase().includes(kw);
+        const matchIsbn = (it.book_isbn || "").toLowerCase().includes(kw);
+        const matchCopy = (it.copy_code || "").toLowerCase().includes(kw);
+        if (!matchCode && !matchTitle && !matchIsbn && !matchCopy) return false;
+      }
+
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:26px; color:var(--muted);">Chưa có phiếu mượn trả nào khớp bộ lọc.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered
+      .map(({ ln, it }) => {
+        let pill = `<span class="status-pill status-info">${escapeHtml(ln.status)}</span>`;
+        if (it.return_date) {
+          pill = it.is_overdue
+            ? `<span class="status-pill status-locked">Trả trễ ${it.overdue_days} ngày</span>`
+            : `<span class="status-pill status-active">Đã trả đúng hạn</span>`;
+        } else if (ln.status === "BORROWED") {
+          pill = it.is_overdue
+            ? `<span class="status-pill status-locked">Quá hạn ${it.overdue_days} ngày</span>`
+            : `<span class="status-pill status-info">Đang mượn</span>`;
+        } else if (ln.status === "PENDING") {
+          pill = `<span class="status-pill status-expired">Chờ duyệt</span>`;
+        } else if (ln.status === "CANCELLED" || ln.status === "REJECTED") {
+          pill = `<span class="status-pill status-locked">${escapeHtml(ln.status)}</span>`;
+        }
+
+        return `
+          <tr>
+            <td>
+              <span class="code-chip">#PM-${ln.id}</span>
+              <div style="font-size:11px; color:var(--muted); margin-top:3px;">${escapeHtml(ln.borrow_type)}</div>
+            </td>
+            <td>
+              <strong>${escapeHtml(it.book_title)}</strong>
+              <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--muted);">
+                ISBN: ${escapeHtml(it.book_isbn)} ${it.copy_code ? `· Bản sao: ${escapeHtml(it.copy_code)}` : ""}
+              </div>
+            </td>
+            <td>${formatDateVN(ln.borrowed_at || ln.created_at)}</td>
+            <td>
+              <div>Hạn: <span class="code-chip">${formatDateVN(it.due_date || ln.due_date)}</span></div>
+              ${
+                it.return_date
+                  ? `<div style="font-size:12px; color:var(--success); margin-top:3px;">Đã trả: ${formatDateVN(it.return_date)}</div>`
+                  : it.estimated_fine > 0
+                  ? `<div style="font-size:12px; color:var(--danger); margin-top:3px;">Phạt ước tính: ${formatMoney(it.estimated_fine)}</div>`
+                  : ""
+              }
+            </td>
+            <td>${pill}</td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
   async function loadLoanHistoryFromLoanModule(readerId) {
     const tbody = document.getElementById("detail-loans-tbody");
     if (!tbody) return;
     try {
-      const params = { user_id: readerId, limit: 100 };
-      if (currentLoanStatusFilter) params.status = currentLoanStatusFilter;
-
-      const loans = await api.get("/loans", params);
+      const loans = await api.get("/loans", { user_id: readerId, limit: 100 });
       const rows = [];
       (loans || []).forEach((ln) => {
         (ln.loan_items || []).forEach((it) => {
           rows.push({ ln, it });
         });
       });
-
-      if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:26px; color:var(--muted);">Chưa có phiếu mượn trả nào khớp bộ lọc.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = rows
-        .map(({ ln, it }) => {
-          let pill = `<span class="status-pill status-info">${escapeHtml(ln.status)}</span>`;
-          if (it.return_date) {
-            pill = it.is_overdue
-              ? `<span class="status-pill status-locked">Trả trễ ${it.overdue_days} ngày</span>`
-              : `<span class="status-pill status-active">Đã trả đúng hạn</span>`;
-          } else if (ln.status === "BORROWED") {
-            pill = it.is_overdue
-              ? `<span class="status-pill status-locked">Quá hạn ${it.overdue_days} ngày</span>`
-              : `<span class="status-pill status-info">Đang mượn</span>`;
-          } else if (ln.status === "PENDING") {
-            pill = `<span class="status-pill status-expired">Chờ duyệt</span>`;
-          } else if (ln.status === "CANCELLED" || ln.status === "REJECTED") {
-            pill = `<span class="status-pill status-locked">${escapeHtml(ln.status)}</span>`;
-          }
-
-          return `
-            <tr>
-              <td>
-                <span class="code-chip">#PM-${ln.id}</span>
-                <div style="font-size:11px; color:var(--muted); margin-top:3px;">${escapeHtml(ln.borrow_type)}</div>
-              </td>
-              <td>
-                <strong>${escapeHtml(it.book_title)}</strong>
-                <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--muted);">
-                  ISBN: ${escapeHtml(it.book_isbn)} ${it.copy_code ? `· Bản sao: ${escapeHtml(it.copy_code)}` : ""}
-                </div>
-              </td>
-              <td>${formatDateVN(ln.borrowed_at || ln.created_at)}</td>
-              <td>
-                <div>Hạn: <span class="code-chip">${formatDateVN(it.due_date || ln.due_date)}</span></div>
-                ${
-                  it.return_date
-                    ? `<div style="font-size:12px; color:var(--success); margin-top:3px;">Đã trả: ${formatDateVN(it.return_date)}</div>`
-                    : it.estimated_fine > 0
-                    ? `<div style="font-size:12px; color:var(--danger); margin-top:3px;">Phạt ước tính: ${formatMoney(it.estimated_fine)}</div>`
-                    : ""
-                }
-              </td>
-              <td>${pill}</td>
-            </tr>
-          `;
-        })
-        .join("");
+      allUserLoanRows = rows;
+      updateLoanTabCounts(allUserLoanRows);
+      renderFilteredLoans();
     } catch (err) {
       tbody.innerHTML = `<tr><td colspan="5" style="color:var(--danger); padding:18px;">${escapeHtml(err.message)}</td></tr>`;
     }
   }
 
-  // Filter Tabs lịch sử mượn
-  document.getElementById("loan-status-tabs")?.addEventListener("click", (e) => {
+  // Đồng bộ Filter Tabs và Select trạng thái (chuẩn loan_management)
+  const loanStatusTabs = document.getElementById("loan-status-tabs");
+  const loanFilterStatus = document.getElementById("loan-filter-status");
+  const loanSearchInput = document.getElementById("loan-search-keyword");
+  const btnResetLoanFilter = document.getElementById("btn-reset-loan-filter");
+
+  function syncLoanStatusFilter(statusVal) {
+    currentLoanStatusFilter = statusVal;
+    if (loanFilterStatus) loanFilterStatus.value = statusVal;
+    if (loanStatusTabs) {
+      loanStatusTabs.querySelectorAll(".tab-btn").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-loan-status") === statusVal);
+      });
+    }
+    renderFilteredLoans();
+  }
+
+  loanStatusTabs?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-loan-status]");
-    if (!btn || !currentDetail) return;
-    currentLoanStatusFilter = btn.getAttribute("data-loan-status");
-    document.querySelectorAll(".detail-tab-btn").forEach((b) => b.classList.toggle("active", b === btn));
-    loadLoanHistoryFromLoanModule(currentDetail.reader_id);
+    if (!btn) return;
+    const val = btn.getAttribute("data-loan-status");
+    syncLoanStatusFilter(val);
+  });
+
+  loanFilterStatus?.addEventListener("change", () => {
+    syncLoanStatusFilter(loanFilterStatus.value);
+  });
+
+  loanSearchInput?.addEventListener("input", () => {
+    currentLoanSearchKeyword = loanSearchInput.value.trim();
+    renderFilteredLoans();
+  });
+
+  btnResetLoanFilter?.addEventListener("click", () => {
+    if (loanSearchInput) loanSearchInput.value = "";
+    currentLoanSearchKeyword = "";
+    syncLoanStatusFilter("");
   });
 
   // ---------- 4. IN THẺ (WINDOW.PRINT), GIA HẠN, KHÓA/MỞ THẺ ----------

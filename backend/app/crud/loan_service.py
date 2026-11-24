@@ -18,7 +18,7 @@ from app.crud.copy_status_log import change_copy_status
 from app.crud.fine import has_unpaid_fines
 
 MAX_BORROW_BOOKS = 5       
-MAX_COUNTER_BORROW_BOOKS = 3   # Giới hạn tối đa khi mượn tại quầy
+MAX_COUNTER_BORROW_BOOKS = 5   # Giới hạn tối đa khi mượn tại quầy
 BORROW_DAYS = 14               # Thời hạn mượn 14 ngày
 MAX_RENEWALS = 1           
 RENEWAL_DAYS = 7          
@@ -577,8 +577,25 @@ def get_loans_history(
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 6) Nghiệp vụ mượn sách trực tiếp tại quầy (Counter Borrowing)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def check_librarian_permission(db: Session, user_id: int):
+    librarian = db.query(User).filter(User.id == user_id).first()
 
-def get_reader_by_card(db: Session, card_code: str) -> dict:
+    if not librarian:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy người thực hiện"
+        )
+
+    if librarian.role not in (UserRole.LIBRARIAN, UserRole.ADMIN):
+        raise HTTPException(
+            status_code=403,
+            detail="Chỉ thủ thư hoặc admin mới được thực hiện nghiệp vụ này"
+        )
+
+    return librarian
+
+def get_reader_by_card(db: Session, card_code: str, librarian_id: int) -> dict:
+    check_librarian_permission(db, librarian_id)
     """Tra cứu thông tin độc giả theo mã thẻ thư viện (chuẩn hóa trim, in hoa)."""
     code = card_code.strip().upper() if card_code else ""
     if not code:
@@ -631,7 +648,8 @@ def get_reader_by_card(db: Session, card_code: str) -> dict:
     }
 
 
-def get_copy_by_barcode(db: Session, copycode: str) -> dict:
+def get_copy_by_barcode(db: Session, copycode: str, librarian_id: int) -> dict:
+    check_librarian_permission(db, librarian_id)
     """Tra cứu bản sao sách theo mã vạch / copy_code."""
     bc = copycode.strip() if copycode else ""
     if not bc:
@@ -665,7 +683,9 @@ def validate_counter_borrow(
     db: Session,
     card_code: str,
     barcodes: list[str],
+    librarian_id: int,
 ) -> dict:
+    check_librarian_permission(db, librarian_id)
     """
     Kiểm tra 7 điều kiện mượn sách tại quầy (Nguồn duy nhất - Single Source of Truth).
     Mỗi điều kiện trả về: { code, label, passed, mandatory, message }.
@@ -864,7 +884,7 @@ def create_counter_loan(
     db: Session,
     card_code: str,
     barcodes: list[str],
-    librarian_id: int | None = None,
+    librarian_id: int,
 ) -> dict:
     """
     Tạo phiếu mượn tại quầy trực tiếp trong 1 transaction an toàn (all-or-nothing):
@@ -874,7 +894,9 @@ def create_counter_loan(
     4. Trả về payload đầy đủ để in biên lai mượn sách.
     """
     try:
-        val = validate_counter_borrow(db, card_code, barcodes)
+        librarian = check_librarian_permission(db, librarian_id)
+
+        val = validate_counter_borrow(db, card_code, barcodes, librarian_id)
         if not val["can_borrow"]:
             err_details = [c["message"] for c in val["conditions"] if not c["passed"] and c["mandatory"]]
             raise HTTPException(
@@ -915,15 +937,15 @@ def create_counter_loan(
                 )
 
         # Xác định thủ thư phụ trách
-        librarian = None
-        if librarian_id:
-            librarian = db.query(User).filter(User.id == librarian_id).first()
-        if not librarian:
-            librarian = (
-                db.query(User)
-                .filter(User.role.in_([UserRole.LIBRARIAN, UserRole.ADMIN]))
-                .first()
-            )
+        # librarian = None
+        # if librarian_id:
+        #     librarian = db.query(User).filter(User.id == librarian_id).first()
+        # if not librarian:
+        #     librarian = (
+        #         db.query(User)
+        #         .filter(User.role.in_([UserRole.LIBRARIAN, UserRole.ADMIN]))
+        #         .first()
+        #     )
 
         now = datetime.now()
         due = now + timedelta(days=BORROW_DAYS)

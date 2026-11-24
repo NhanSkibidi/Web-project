@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chi tiết Độc giả &amp; Lịch sử mượn trả | UniLib KS25</title>
   <link rel="icon" href="../assets/images/logo.svg">
+
+  <!-- Phông chữ Google Fonts chuẩn theo DESIGN.md: Newsreader, Plus Jakarta Sans, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -17,9 +19,12 @@
 </head>
 <body data-root="../" class="readers-body readers-app">
 
-  <!-- 1. TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (ĐỒNG BỘ READERS.HTML) -->
+  <!-- =========================================================================
+       1. THANH TOPBAR CỐ ĐỊNH PHÂN HỆ THỦ THƯ (HEADER) - ĐỒNG BỘ READERS.HTML
+       ========================================================================= -->
   <header class="librarian-topbar site-header">
     <div class="topbar-left">
+      <!-- Logo -->
       <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
@@ -30,18 +35,23 @@
         </div>
       </a>
 
+      <!-- Mobile Menu Toggle Button -->
       <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
         <span class="material-symbols-outlined">menu</span>
       </button>
 
+      <!-- Navigation Menu -->
       <nav class="topbar-nav" id="navMenu">
         <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
       </nav>
     </div>
 
+    <!-- Header Right Area -->
     <div class="topbar-right">
+      <!-- User Account Dropdown -->
       <div class="user-dropdown-container" id="userDropdownContainer">
-        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
           <div class="librarian-avatar" id="userAvatar">T</div>
           <div class="librarian-info">
             <span class="librarian-name" id="userName">Thủ thư</span>
@@ -64,7 +74,9 @@
     </div>
   </header>
 
-  <!-- 2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL -->
+  <!-- =========================================================================
+       2. THANH ĐIỀU HƯỚNG BÊN TRÁI DẠNG RAIL (SIDEBAR THU GỌN / MỞ RỘNG)
+       ========================================================================= -->
   <aside id="app-sidebar" class="sidebar-rail">
     <div class="sidebar-rail-header">
       <span>PHÂN HỆ THỦ THƯ</span>
@@ -109,172 +121,229 @@
     </nav>
   </aside>
 
-  <!-- 3. KHU VỰC NỘI DUNG CHÍNH -->
-  <div class="readers-workspace-wrapper">
-    <main id="detail-main-content" class="readers-main-container">
-        <!-- Breadcrumb & Back -->
-        <div class="page-head-row">
-          <div>
-            <a href="readers.html" style="font-size:13px; font-weight:600; color:var(--primary); text-decoration:none; display:inline-block; margin-bottom:6px;">
-              ← Quay lại Danh sách Độc giả
-            </a>
-            <h1 id="detail-reader-heading" class="page-title">Hồ sơ chi tiết Độc giả</h1>
-            <p id="detail-reader-sub" class="page-subtitle">Đang tải dữ liệu độc giả và lịch sử mượn trả từ module Mượn...</p>
-          </div>
-          <div class="page-head-actions">
-            <button id="btn-detail-print" type="button" class="btn">🖨️ In thẻ thư viện</button>
-            <button id="btn-detail-extend" type="button" class="btn btn-soft-blue">🔄 Gia hạn thẻ</button>
-            <button id="btn-detail-lock" type="button" class="btn btn-soft-danger">🔒 Khóa thẻ</button>
-          </div>
+  <!-- =========================================================================
+       3. KHU VỰC NỘI DUNG CHÍNH (MAIN WORKSPACE)
+       ========================================================================= -->
+  <div class="main-workspace-wrapper readers-workspace-wrapper">
+    <main id="detail-main-content" class="readers-main-container page-container">
+      
+      <!-- BREADCRUMB & CONTEXT INDICATOR: ĐANG Ở QUẢN LÝ ĐỘC GIẢ NHƯNG XEM CHI TIẾT THẺ -->
+      <div class="reader-detail-context-bar">
+        <div class="context-breadcrumb">
+          <a href="readers.html" class="context-parent-link" title="Quay lại phân hệ Quản lý Độc giả">
+            <span class="material-symbols-outlined">badge</span>
+            <span>Quản lý Độc giả &amp; Thẻ</span>
+          </a>
+          <span class="material-symbols-outlined context-sep">chevron_right</span>
+          <span class="context-current-badge">
+            <span class="material-symbols-outlined">contact_page</span>
+            <span>Chi tiết thẻ độc giả</span>
+          </span>
+        </div>
+        <div class="context-status-indicator">
+          <span class="pulse-indicator"></span>
+          <span>Đang xem chi tiết hồ sơ &amp; thẻ độc giả</span>
+        </div>
+      </div>
+
+      <!-- Breadcrumb & Back -->
+      <div class="page-head-row">
+        <div>
+          <a href="readers.html" style="font-size:13px; font-weight:600; color:var(--primary); text-decoration:none; display:inline-block; margin-bottom:6px;">
+            ← Quay lại Danh sách Độc giả
+          </a>
+          <h1 id="detail-reader-heading" class="page-title">Hồ sơ chi tiết Độc giả</h1>
+          <p id="detail-reader-sub" class="page-subtitle">Đang tải dữ liệu độc giả và lịch sử mượn trả từ module Mượn...</p>
+        </div>
+        <div class="page-head-actions">
+          <button id="btn-detail-print" type="button" class="btn">🖨️ In thẻ thư viện</button>
+          <button id="btn-detail-extend" type="button" class="btn btn-soft-blue">🔄 Gia hạn thẻ</button>
+          <button id="btn-detail-lock" type="button" class="btn btn-soft-danger">🔒 Khóa thẻ</button>
+        </div>
+      </div>
+
+      <!-- 2-Column Detail Grid -->
+      <div class="readers-split">
+        <!-- Left Column: Hồ sơ + Lịch sử mượn trả (Module Mượn) + Lịch sử thẻ -->
+        <div>
+          <!-- Hồ sơ cá nhân & Tiền phạt -->
+          <section class="panel-card">
+            <div class="panel-head">
+              <h2 class="panel-title">👤 Thông tin hồ sơ độc giả</h2>
+              <span id="detail-account-pill" class="status-pill status-active">ACTIVE</span>
+            </div>
+            <div class="panel-body">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; font-size:13.5px;">
+                <div><div style="font-size:11.5px; color:var(--muted);">Họ và tên</div><strong id="info-fullname">—</strong></div>
+                <div><div style="font-size:11.5px; color:var(--muted);">Email trường cấp</div><strong id="info-email">—</strong></div>
+                <div><div style="font-size:11.5px; color:var(--muted);">Số điện thoại</div><strong id="info-phone" style="font-family:var(--font-mono);">—</strong></div>
+                <div><div style="font-size:11.5px; color:var(--muted);">Đang mượn / Quá hạn</div><strong id="info-borrow-stat">—</strong></div>
+                <div><div style="font-size:11.5px; color:var(--muted);">Tiền phạt chưa nộp</div><strong id="info-fine-stat">—</strong></div>
+                <div><div style="font-size:11.5px; color:var(--muted);">Lý do khóa/mở gần nhất</div><span id="info-lock-reason">—</span></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Lịch sử mượn trả đầy đủ (Lấy trực tiếp từ Module Mượn: GET /api/loans?user_id=...) -->
+          <section class="panel-card">
+            <div class="panel-head" style="flex-wrap:wrap;">
+              <h2 class="panel-title">📚 Lịch sử mượn trả (Module Mượn)</h2>
+              <div class="filter-tabs-group" id="loan-status-tabs" role="tablist">
+                <button type="button" class="tab-btn active" data-loan-status="">
+                  <span>Tất cả</span>
+                  <span class="tab-count" id="count-loan-all">0</span>
+                </button>
+                <button type="button" class="tab-btn" data-loan-status="BORROWED">
+                  <span>Đang mượn</span>
+                  <span class="tab-count" id="count-loan-borrowed">0</span>
+                </button>
+                <button type="button" class="tab-btn" data-loan-status="PENDING">
+                  <span>Chờ duyệt</span>
+                  <span class="tab-count" id="count-loan-pending">0</span>
+                </button>
+                <button type="button" class="tab-btn" data-loan-status="RETURNED">
+                  <span>Đã trả</span>
+                  <span class="tab-count" id="count-loan-returned">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- THANH TÌM KIẾM VÀ BỘ LỌC TỔNG HỢP (FORM CHUẨN ĐỒNG BỘ LOAN_MANAGEMENT) -->
+            <div class="filter-toolbar-card">
+              <div class="filter-search-box">
+                <span class="material-symbols-outlined filter-icon">search</span>
+                <input type="text" id="loan-search-keyword" placeholder="Tìm theo mã phiếu, tựa sách, ISBN, bản sao..." autocomplete="off">
+              </div>
+
+              <div class="filter-controls-group">
+                <div class="filter-select-wrapper">
+                  <select id="loan-filter-status" class="filter-select" aria-label="Lọc theo trạng thái mượn">
+                    <option value="" selected>Tất cả trạng thái</option>
+                    <option value="BORROWED">Đang mượn (BORROWED · Lưu thông)</option>
+                    <option value="PENDING">Chờ duyệt (PENDING · Đăng ký)</option>
+                    <option value="RETURNED">Đã trả (RETURNED · Hoàn tất)</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-filter-reset" id="btn-reset-loan-filter" title="Đặt lại bộ lọc">
+                  <span class="material-symbols-outlined">restart_alt</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table class="readers-table">
+                <thead>
+                  <tr>
+                    <th>Mã phiếu</th>
+                    <th>Đầu sách &amp; Bản sao</th>
+                    <th>Ngày mượn</th>
+                    <th>Hạn trả / Ngày trả</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="detail-loans-tbody">
+                  <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--muted);">Đang tải lịch sử mượn trả...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Lịch sử thao tác trên thẻ (Gia hạn / Khoá / Mở / Tự động EXPIRED) -->
+          <section class="panel-card">
+            <div class="panel-head">
+              <h2 class="panel-title">📜 Lịch sử Gia hạn &amp; Khóa/Mở thẻ</h2>
+            </div>
+            <div class="table-scroll">
+              <table class="readers-table">
+                <thead>
+                  <tr>
+                    <th>Hành động</th>
+                    <th>Chuyển trạng thái</th>
+                    <th>Lý do / Ghi chú</th>
+                    <th>Người thực hiện</th>
+                    <th>Thời gian</th>
+                  </tr>
+                </thead>
+                <tbody id="detail-card-logs-tbody">
+                  <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">Đang tải lịch sử thẻ...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
-        <!-- 2-Column Detail Grid -->
-        <div class="readers-split">
-          <!-- Left Column: Hồ sơ + Lịch sử mượn trả (Module Mượn) + Lịch sử thẻ -->
-          <div>
-            <!-- Hồ sơ cá nhân & Tiền phạt -->
-            <section class="panel-card">
-              <div class="panel-head">
-                <h2 class="panel-title">👤 Thông tin hồ sơ độc giả</h2>
-                <span id="detail-account-pill" class="status-pill status-active">ACTIVE</span>
-              </div>
-              <div class="panel-body">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; font-size:13.5px;">
-                  <div><div style="font-size:11.5px; color:var(--muted);">Họ và tên</div><strong id="info-fullname">—</strong></div>
-                  <div><div style="font-size:11.5px; color:var(--muted);">Email trường cấp</div><strong id="info-email">—</strong></div>
-                  <div><div style="font-size:11.5px; color:var(--muted);">Số điện thoại</div><strong id="info-phone" style="font-family:var(--font-mono);">—</strong></div>
-                  <div><div style="font-size:11.5px; color:var(--muted);">Đang mượn / Quá hạn</div><strong id="info-borrow-stat">—</strong></div>
-                  <div><div style="font-size:11.5px; color:var(--muted);">Tiền phạt chưa nộp</div><strong id="info-fine-stat">—</strong></div>
-                  <div><div style="font-size:11.5px; color:var(--muted);">Lý do khóa/mở gần nhất</div><span id="info-lock-reason">—</span></div>
-                </div>
-              </div>
-            </section>
-
-            <!-- Lịch sử mượn trả đầy đủ (Lấy trực tiếp từ Module Mượn: GET /api/loans?user_id=...) -->
-            <section class="panel-card">
-              <div class="panel-head" style="flex-wrap:wrap;">
-                <h2 class="panel-title">📚 Lịch sử mượn trả (Module Mượn)</h2>
-                <div class="detail-tabs" id="loan-status-tabs">
-                  <button type="button" class="detail-tab-btn active" data-loan-status="">Tất cả</button>
-                  <button type="button" class="detail-tab-btn" data-loan-status="BORROWED">Đang mượn</button>
-                  <button type="button" class="detail-tab-btn" data-loan-status="PENDING">Chờ duyệt</button>
-                  <button type="button" class="detail-tab-btn" data-loan-status="RETURNED">Đã trả</button>
-                </div>
-              </div>
-
-              <div class="table-scroll">
-                <table class="readers-table">
-                  <thead>
-                    <tr>
-                      <th>Mã phiếu</th>
-                      <th>Đầu sách &amp; Bản sao</th>
-                      <th>Ngày mượn</th>
-                      <th>Hạn trả / Ngày trả</th>
-                      <th>Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody id="detail-loans-tbody">
-                    <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--muted);">Đang tải lịch sử mượn trả...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <!-- Lịch sử thao tác trên thẻ (Gia hạn / Khoá / Mở / Tự động EXPIRED) -->
-            <section class="panel-card">
-              <div class="panel-head">
-                <h2 class="panel-title">📜 Lịch sử Gia hạn &amp; Khóa/Mở thẻ</h2>
-              </div>
-              <div class="table-scroll">
-                <table class="readers-table">
-                  <thead>
-                    <tr>
-                      <th>Hành động</th>
-                      <th>Chuyển trạng thái</th>
-                      <th>Lý do / Ghi chú</th>
-                      <th>Người thực hiện</th>
-                      <th>Thời gian</th>
-                    </tr>
-                  </thead>
-                  <tbody id="detail-card-logs-tbody">
-                    <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">Đang tải lịch sử thẻ...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-
-          <!-- Right Column: Phôi Thẻ Thư Viện (Hỗ trợ window.print) -->
-          <div>
-            <section class="panel-card" style="position:sticky; top:84px;">
-              <div class="panel-head">
-                <h2 class="panel-title">🪪 Phôi Thẻ Thư Viện</h2>
-                <span id="detail-ready-badge" class="card-ready-pill">Sẵn sàng in</span>
-              </div>
-              <div class="panel-body">
-                <div id="printable-library-card" class="library-id-card">
-                  <div class="id-card-top">
-                    <div class="id-card-org">
-                      <div class="id-card-u">U</div>
-                      <div>
-                        <span class="id-card-org-sub">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ</span>
-                        <span class="id-card-org-main">THƯ VIỆN SỐ UNILIB</span>
-                      </div>
-                    </div>
-                    <div class="id-card-rfid">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div class="id-card-mid">
-                    <div id="card-preview-avatar" class="id-card-photo">A</div>
-                    <div class="id-card-fields">
-                      <span class="id-field-lbl">Họ và tên</span>
-                      <div id="card-preview-name" class="id-field-name">—</div>
-                      <div class="id-field-grid">
-                        <div>
-                          <span class="id-field-lbl">Mã thẻ</span>
-                          <div id="card-preview-code" class="id-field-val">—</div>
-                        </div>
-                        <div>
-                          <span class="id-field-lbl">Hạng thẻ</span>
-                          <div id="card-preview-type" class="id-field-val">—</div>
-                        </div>
-                      </div>
-                      <div>
-                        <span class="id-field-lbl">Hạn sử dụng</span>
-                        <div id="card-preview-expiry" class="id-field-val">--/--/----</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="id-card-bottom">
+        <!-- Right Column: Phôi Thẻ Thư Viện (Hỗ trợ window.print) -->
+        <div>
+          <section class="panel-card" style="position:sticky; top:84px;">
+            <div class="panel-head">
+              <h2 class="panel-title">🪪 Phôi Thẻ Thư Viện</h2>
+              <span id="detail-ready-badge" class="card-ready-pill">Sẵn sàng in</span>
+            </div>
+            <div class="panel-body">
+              <div id="printable-library-card" class="library-id-card">
+                <div class="id-card-top">
+                  <div class="id-card-org">
+                    <div class="id-card-u">U</div>
                     <div>
-                      <div id="card-preview-barcode" class="id-barcode-box"></div>
-                      <div id="card-preview-barcode-text" class="id-barcode-text">LIB-LC-0000</div>
+                      <span class="id-card-org-sub">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ</span>
+                      <span class="id-card-org-main">THƯ VIỆN SỐ UNILIB</span>
                     </div>
-                    <div class="id-status-right">
-                      <span class="id-field-lbl">Trạng thái</span>
-                      <div id="card-preview-status" class="id-status-text id-status-active">—</div>
+                  </div>
+                  <div class="id-card-rfid">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                      <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="id-card-mid">
+                  <div id="card-preview-avatar" class="id-card-photo">A</div>
+                  <div class="id-card-fields">
+                    <span class="id-field-lbl">Họ và tên</span>
+                    <div id="card-preview-name" class="id-field-name">—</div>
+                    <div class="id-field-grid">
+                      <div>
+                        <span class="id-field-lbl">Mã thẻ</span>
+                        <div id="card-preview-code" class="id-field-val">—</div>
+                      </div>
+                      <div>
+                        <span class="id-field-lbl">Hạng thẻ</span>
+                        <div id="card-preview-type" class="id-field-val">—</div>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="id-field-lbl">Hạn sử dụng</span>
+                      <div id="card-preview-expiry" class="id-field-val">--/--/----</div>
                     </div>
                   </div>
                 </div>
 
-                <div class="card-action-bar">
-                  <button id="btn-card-print" type="button" class="btn btn-sm">🖨️ In thẻ</button>
-                  <button id="btn-card-extend" type="button" class="btn btn-soft-blue btn-sm">🔄 Gia hạn</button>
-                  <button id="btn-card-lock" type="button" class="btn btn-soft-danger btn-sm">🔒 Khóa thẻ</button>
+                <div class="id-card-bottom">
+                  <div>
+                    <div id="card-preview-barcode" class="id-barcode-box"></div>
+                    <div id="card-preview-barcode-text" class="id-barcode-text">LIB-LC-0000</div>
+                  </div>
+                  <div class="id-status-right">
+                    <span class="id-field-lbl">Trạng thái</span>
+                    <div id="card-preview-status" class="id-status-text id-status-active">—</div>
+                  </div>
                 </div>
               </div>
-            </section>
-          </div>
-        </div>
-      </main>
 
+              <div class="card-action-bar">
+                <button id="btn-card-print" type="button" class="btn btn-sm">🖨️ In thẻ</button>
+                <button id="btn-card-extend" type="button" class="btn btn-soft-blue btn-sm">🔄 Gia hạn</button>
+                <button id="btn-card-lock" type="button" class="btn btn-soft-danger btn-sm">🔒 Khóa thẻ</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER TRANG WEB -->
     <footer class="app-footer">
       <div class="footer-left">
         © 2026 KS25 Library System - Phân hệ Quản lý Độc giả &amp; Thẻ thư viện. Bảo lưu mọi quyền.
@@ -348,6 +417,28 @@
       </form>
     </div>
   </div>
+
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">help_outline</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Nội dung xác nhận sẽ xuất hiện tại đây.</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toast-container" class="toast-stack-container" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>

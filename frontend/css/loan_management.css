@@ -808,17 +808,17 @@ body.loan-mgmt-body {
 }
 
 /* ==============================================================================
-   6. THANH TÌM KIẾM VÀ BỘ LỌC
+   6. THANH TÌM KIẾM VÀ BỘ LỌC (Chuẩn phong cách Reader: Viền kem xám, nền giấy ấm #FAF8F5, không đổi viền xanh khi chọn)
    ============================================================================== */
 .filter-toolbar-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  padding: 12px 18px;
+  border-radius: 13px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
   flex-wrap: wrap;
@@ -827,9 +827,15 @@ body.loan-mgmt-body {
 .filter-search-box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  padding: 0 12px;
+  height: 40px;
   flex: 1;
-  min-width: 260px;
+  min-width: 240px;
+  box-sizing: border-box;
 }
 
 .filter-search-box .filter-icon {
@@ -841,7 +847,7 @@ body.loan-mgmt-body {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--color-text-primary);
   width: 100%;
   font-family: inherit;
@@ -850,77 +856,65 @@ body.loan-mgmt-body {
 .filter-controls-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.filter-select {
+.filter-select-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Phần chọn bộ lọc chuẩn 100% theo Reader (Nền Warm Paper #FAF8F5, viền #E6E2D8 tự nhiên, không viền xanh hay bóng đổ khi click/focus) */
+.filter-select,
+.filter-select-wrapper select,
+#filter-status,
+#filter-time,
+#filter-department,
+#reject-reason-select {
   height: 40px;
   padding: 0 12px;
   border-radius: 9px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-paper);
   font-family: inherit;
-  font-size: 13.5px;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-sizing: border-box;
-}
-
-.filter-select:hover {
-  border-color: var(--color-brand);
-  background: #ffffff;
-}
-
-.filter-select:focus {
-  border-color: var(--color-brand);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
-}
-
-.filter-select-wrapper select {
-  height: 40px;
-  padding: 0 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 9px;
   font-size: 13.5px;
   font-weight: 500;
   color: var(--color-text-primary);
-  outline: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: inherit;
+  outline: none;
   box-sizing: border-box;
+  transition: none;
 }
 
-.filter-select-wrapper select:hover {
-  border-color: var(--color-brand);
-  background: #ffffff;
-}
-
-.filter-select-wrapper select:focus {
-  border-color: var(--color-brand);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
+.filter-select:focus,
+.filter-select-wrapper select:focus,
+#filter-status:focus,
+#filter-time:focus,
+#filter-department:focus,
+#reject-reason-select:focus {
+  border-color: var(--color-border);
+  background: var(--color-paper);
+  outline: none;
+  box-shadow: none;
 }
 
 .btn-filter-apply {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  height: 40px;
+  padding: 0 16px;
   background: var(--color-brand);
   color: #ffffff;
   border: 1px solid var(--color-brand);
-  border-radius: var(--radius-btn);
-  font-size: 13px;
+  border-radius: 9px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, background 0.15s, box-shadow 0.2s;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .btn-filter-apply:hover {
@@ -938,18 +932,19 @@ body.loan-mgmt-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: var(--color-surface);
+  width: 40px;
+  height: 40px;
+  background: var(--color-paper);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-btn);
+  border-radius: 9px;
   color: var(--color-text-secondary);
   cursor: pointer;
+  box-sizing: border-box;
   transition: transform 0.2s, background 0.15s, color 0.15s;
 }
 
 .btn-filter-reset:hover {
-  background: #FAF8F5;
+  background: #F5F3EF;
   color: var(--color-brand);
   transform: rotate(45deg);
 }
@@ -1444,21 +1439,40 @@ body.loan-mgmt-body {
 .page-size-selector {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-secondary);
 }
 
-.page-size-selector select {
-  padding: 4px 8px;
+.page-size-selector select,
+#page-size-select {
+  height: 36px;
+  padding: 0 10px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface);
-  font-size: 12px;
+  border-radius: 9px;
+  background: var(--color-paper);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-primary);
   outline: none;
   cursor: pointer;
   font-family: inherit;
+  box-sizing: border-box;
+  transition: none;
+}
+
+.page-size-selector select:hover,
+#page-size-select:hover {
+  background: #F5F3EF;
+}
+
+.page-size-selector select:focus,
+#page-size-select:focus {
+  border-color: var(--color-border);
+  background: var(--color-paper);
+  outline: none;
+  box-shadow: none;
 }
 
 .pagination-buttons {

@@ -119,8 +119,16 @@ def list_loans_by_user(
 
 
 @router.get("/readers/by-card/{card_code}", response_model=ReaderLookupResponse)
-def lookup_reader_by_card_alias(card_code: str, db: Session = Depends(get_db)):
-    return get_reader_by_card(db, card_code)
+def lookup_reader_by_card_alias(
+    card_code: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_librarian)
+):
+    return get_reader_by_card(
+        db,
+        card_code,
+        current_user.id
+    )
 
 # @copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
 # def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
@@ -128,27 +136,42 @@ def lookup_reader_by_card_alias(card_code: str, db: Session = Depends(get_db)):
 
 
 @router.get("/copies/by-barcode/{copycode}", response_model=CopyLookupResponse)
-def lookup_copy_by_barcode_alias(copycode: str, db: Session = Depends(get_db)):
-    return get_copy_by_barcode(db=db, copycode=copycode)
+def lookup_copy_by_barcode_alias(
+    copycode: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_librarian)
+):
+    return get_copy_by_barcode(
+        db=db,
+        copycode=copycode,
+        librarian_id=current_user.id
+    )
 
 @router.post("/counter/validate", response_model=CounterBorrowValidateResponse)
 def validate_counter(
     data: CounterBorrowValidateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_librarian)
 ):
-    return validate_counter_borrow(db, data.card_code, data.barcodes)
+    return validate_counter_borrow(
+        db,
+        data.card_code,
+        data.barcodes,
+        current_user.id
+    )
 
 
 @router.post("/counter", response_model=CounterBorrowReceiptResponse, status_code=201)
 def create_counter(
     data: CounterBorrowCreateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_librarian)
 ):
     return create_counter_loan(
         db,
         card_code=data.card_code,
         barcodes=data.barcodes,
-        librarian_id=data.librarian_id,
+        librarian_id=current_user.id,
     )
 
 @router.post("/online", response_model=LoanResponse, status_code=201)

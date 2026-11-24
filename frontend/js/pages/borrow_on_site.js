@@ -69,6 +69,23 @@
 
     // Toast
     toastContainer: document.getElementById("toast-container"),
+
+    // Camera scanner modal (html5-qrcode)
+    cameraScannerModal: document.getElementById("camera-scanner-modal"),
+    btnScanCardCamera: document.getElementById("btn-scan-card-camera"),
+    btnScanBarcodeCamera: document.getElementById("btn-scan-barcode-camera"),
+    btnCameraClose: document.getElementById("btn-camera-close"),
+    btnCameraStop: document.getElementById("btn-camera-stop"),
+    cameraTargetLabel: document.getElementById("camera-target-label"),
+    cameraScannerReader: document.getElementById("camera-scanner-reader"),
+    cameraDeviceSelect: document.getElementById("camera-device-select"),
+    btnCameraTorch: document.getElementById("btn-camera-torch"),
+    cameraFileInput: document.getElementById("camera-file-input"),
+    cameraFeedbackCard: document.getElementById("camera-feedback-card"),
+    cameraFeedbackIcon: document.getElementById("camera-feedback-icon"),
+    cameraFeedbackTitle: document.getElementById("camera-feedback-title"),
+    cameraFeedbackDesc: document.getElementById("camera-feedback-desc"),
+    cameraSessionCount: document.getElementById("camera-session-count"),
   };
 
   // 3. Hàm hiển thị Toast thông báo nội bộ
@@ -653,6 +670,213 @@
   }
 
   // ==============================================================================
+  // 6.5. QUÉT MÃ BẰNG CAMERA - html5-qrcode (HOẠT ĐỘNG OFFLINE QUA STATIC FILES)
+  // ==============================================================================
+
+  // Biến trạng thái camera scanner
+  var html5QrScanner = null;         // Instance của Html5Qrcode
+  var cameraTarget = "book";         // "book" hoặc "card" - đang quét cho mục nào
+  var cameraSessionScanned = 0;      // Đếm số mã đã quét trong phiên
+  var lastScannedCode = "";          // Mã vừa quét (chống trùng liên tục)
+  var lastScannedTime = 0;           // Thời điểm quét cuối (ms)
+
+  // Mở modal camera và bắt đầu quét
+  function openCameraModal(target) {
+    cameraTarget = target;
+    cameraSessionScanned = 0;
+    lastScannedCode = "";
+    lastScannedTime = 0;
+
+    // Cập nhật nhãn hiển thị
+    if (target === "card") {
+      dom.cameraTargetLabel.textContent = "Đang quét: Mã thẻ thư viện";
+    } else {
+      dom.cameraTargetLabel.textContent = "Đang quét: Mã vạch sách";
+    }
+
+    dom.cameraSessionCount.textContent = "0";
+    dom.cameraFeedbackCard.classList.add("hidden");
+    dom.cameraFeedbackCard.className = "camera-feedback-card hidden";
+    dom.cameraScannerModal.classList.remove("hidden");
+
+    // Lấy danh sách camera có sẵn
+    Html5Qrcode.getCameras().then(function (devices) {
+      dom.cameraDeviceSelect.innerHTML = "";
+      if (devices.length === 0) {
+        var opt = document.createElement("option");
+        opt.textContent = "Không tìm thấy camera nào";
+        dom.cameraDeviceSelect.appendChild(opt);
+        showLocalToast("Không tìm thấy camera trên thiết bị", "error");
+        return;
+      }
+      devices.forEach(function (cam) {
+        var opt = document.createElement("option");
+        opt.value = cam.id;
+        opt.textContent = cam.label || ("Camera " + cam.id.slice(0, 8));
+        dom.cameraDeviceSelect.appendChild(opt);
+      });
+
+      // Ưu tiên camera sau (rear/back/environment)
+      var rearCam = devices.find(function (d) {
+        return /back|rear|environment/i.test(d.label);
+      });
+      if (rearCam) {
+        dom.cameraDeviceSelect.value = rearCam.id;
+      }
+
+      // Bắt đầu quét với camera được chọn
+      startScannerWithCamera(dom.cameraDeviceSelect.value);
+    }).catch(function (err) {
+      console.error("Lỗi lấy danh sách camera:", err);
+      showLocalToast("Không thể truy cập camera. Hãy cấp quyền camera!", "error");
+    });
+  }
+
+  // Khởi chạy html5-qrcode với camera cụ thể
+  function startScannerWithCamera(cameraId) {
+    // Dừng scanner cũ nếu đang chạy
+    if (html5QrScanner) {
+      try { html5QrScanner.stop(); } catch (e) { /* bỏ qua */ }
+    }
+
+    html5QrScanner = new Html5Qrcode("camera-scanner-reader");
+
+    // Cấu hình tối ưu cho mã vạch sách
+    var config = {
+      fps: 15,
+      qrbox: function (vw, vh) {
+        var w = Math.min(vw * 0.85, 340);
+        var h = Math.min(vh * 0.5, 180);
+        return { width: Math.floor(w), height: Math.floor(h) };
+      },
+      aspectRatio: 1.333333,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.ITF,
+      ],
+    };
+
+    html5QrScanner.start(
+      cameraId,
+      config,
+      onCameraCodeDetected,
+      function () { /* Lỗi quét liên tục - không xử lý */ }
+    ).catch(function (err) {
+      console.error("Không thể khởi động camera:", err);
+      showLocalToast("Không thể khởi động camera: " + (err.message || err), "error");
+    });
+  }
+
+  // Dừng camera scanner và đóng modal
+  function stopCameraScanner() {
+    if (html5QrScanner) {
+      html5QrScanner.stop().then(function () {
+        html5QrScanner.clear();
+        html5QrScanner = null;
+      }).catch(function () {
+        html5QrScanner = null;
+      });
+    }
+    dom.cameraScannerModal.classList.add("hidden");
+  }
+
+  // Xử lý khi camera đọc được mã (gọi lại mỗi lần phát hiện mã)
+  function onCameraCodeDetected(decodedText) {
+    var now = Date.now();
+    var code = decodedText.trim().toUpperCase();
+
+    // Chống quét trùng liên tục trong 2.5 giây
+    if (code === lastScannedCode && (now - lastScannedTime) < 2500) {
+      return;
+    }
+    lastScannedCode = code;
+    lastScannedTime = now;
+
+    // Phát âm thanh beep xác nhận
+    playScannerBeep();
+
+    cameraSessionScanned++;
+    dom.cameraSessionCount.textContent = String(cameraSessionScanned);
+
+    if (cameraTarget === "card") {
+      // Quét thẻ: điền vào ô mã thẻ và tự động tra cứu
+      dom.inputCardCode.value = code;
+      updateCameraFeedback("Đã quét thẻ: " + code, "Đang tra cứu thông tin độc giả...", "success");
+      stopCameraScanner();
+      lookupReader();
+    } else {
+      // Quét sách: kiểm tra trùng rồi thêm vào danh sách
+      var alreadyExists = state.copies.some(function (c) {
+        return c.copy_code.toUpperCase() === code;
+      });
+
+      if (alreadyExists) {
+        updateCameraFeedback("Mã trùng: " + code, "Cuốn sách này đã có trong danh mục mượn!", "warning");
+        return;
+      }
+
+      updateCameraFeedback("Đã quét: " + code, "Đang tra cứu bản sao trong kho...", "success");
+
+      // Gọi API tra cứu bản sao
+      dom.inputBarcode.value = code;
+      addBarcode();
+    }
+  }
+
+  // Phát âm beep xác nhận quét thành công qua Web Audio API
+  function playScannerBeep() {
+    try {
+      var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+      // Trình duyệt không hỗ trợ Web Audio - bỏ qua
+    }
+  }
+
+  // Cập nhật khung phản hồi quét trong modal camera
+  function updateCameraFeedback(title, desc, status) {
+    dom.cameraFeedbackCard.classList.remove("hidden", "feedback-success", "feedback-warning", "feedback-error");
+    dom.cameraFeedbackCard.classList.add("feedback-" + status);
+
+    var iconMap = { success: "check_circle", warning: "warning", error: "error" };
+    dom.cameraFeedbackIcon.textContent = iconMap[status] || "info";
+    dom.cameraFeedbackTitle.textContent = title;
+    dom.cameraFeedbackDesc.textContent = desc;
+  }
+
+  // Quét mã từ ảnh tải lên (file upload)
+  function handleCameraFileUpload(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    if (!html5QrScanner) {
+      html5QrScanner = new Html5Qrcode("camera-scanner-reader");
+    }
+
+    html5QrScanner.scanFile(file, true)
+      .then(function (decoded) {
+        onCameraCodeDetected(decoded);
+      })
+      .catch(function () {
+        updateCameraFeedback("Không tìm thấy mã", "Ảnh không chứa mã vạch/QR hợp lệ. Thử ảnh khác.", "error");
+      });
+
+    // Reset input file để cho phép chọn lại cùng file
+    e.target.value = "";
   // 9. HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (showConfirm - ĐỒNG BỘ LOAN_MANAGEMENT)
   // ==============================================================================
   let activeConfirmCallback = null;
@@ -852,6 +1076,28 @@
     // 8. Đóng modal bằng phím Escape
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        if (!dom.cameraScannerModal.classList.contains("hidden")) {
+          stopCameraScanner();
+        } else if (!dom.receiptModal.classList.contains("hidden")) {
+          dom.receiptModal.classList.add("hidden");
+        }
+      }
+    });
+
+    // 9. Sự kiện camera scanner
+    dom.btnScanCardCamera.addEventListener("click", function () {
+      openCameraModal("card");
+    });
+    dom.btnScanBarcodeCamera.addEventListener("click", function () {
+      openCameraModal("book");
+    });
+    dom.btnCameraClose.addEventListener("click", stopCameraScanner);
+    dom.btnCameraStop.addEventListener("click", stopCameraScanner);
+
+    // Chuyển camera khi thay đổi dropdown
+    dom.cameraDeviceSelect.addEventListener("change", function () {
+      if (this.value && html5QrScanner) {
+        startScannerWithCamera(this.value);
         if (confirmModal && confirmModal.classList.contains("active")) {
           closeConfirmModal();
         }
@@ -867,6 +1113,20 @@
         }
       }
     });
+
+    // Bật/tắt đèn flash (torch)
+    dom.btnCameraTorch.addEventListener("click", function () {
+      if (html5QrScanner) {
+        html5QrScanner.applyVideoConstraints({
+          advanced: [{ torch: true }]
+        }).catch(function () {
+          showLocalToast("Thiết bị không hỗ trợ đèn flash", "warning");
+        });
+      }
+    });
+
+    // Quét từ ảnh tải lên
+    dom.cameraFileInput.addEventListener("change", handleCameraFileUpload);
 
     // Khởi tạo trạng thái ban đầu
     validateBorrowConditions();

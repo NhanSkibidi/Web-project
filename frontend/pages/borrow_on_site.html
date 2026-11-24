@@ -171,10 +171,16 @@
                 <span class="material-symbols-outlined scanner-icon">badge</span>
                 <input id="input-card-code" type="text" class="font-mono scanner-input"
                   placeholder="Quét hoặc nhập mã thẻ (VD: LC-0001)..." autocomplete="off" autofocus>
-                <button id="btn-lookup-card" type="button" class="scanner-action-btn">
-                  <span class="material-symbols-outlined">search</span>
-                  <span>Tra cứu</span>
-                </button>
+                <div class="scanner-btns-group">
+                  <button id="btn-scan-card-camera" type="button" class="scanner-camera-btn"
+                    title="Quét thẻ bằng camera">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                  </button>
+                  <button id="btn-lookup-card" type="button" class="scanner-action-btn">
+                    <span class="material-symbols-outlined">search</span>
+                    <span>Tra cứu</span>
+                  </button>
+                </div>
               </div>
             </form>
 
@@ -211,10 +217,16 @@
                 <span class="material-symbols-outlined scanner-icon">barcode_scanner</span>
                 <input id="input-barcode" type="text" class="font-mono scanner-input"
                   placeholder="Quét mã vạch bản sao (VD: BC-9786040000019-01)..." autocomplete="off">
-                <button id="btn-add-barcode" type="button" class="scanner-action-btn">
-                  <span class="material-symbols-outlined">add_circle</span>
-                  <span>Thêm sách</span>
-                </button>
+                <div class="scanner-btns-group">
+                  <button id="btn-scan-barcode-camera" type="button" class="scanner-camera-btn"
+                    title="Quét mã sách bằng camera">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                  </button>
+                  <button id="btn-add-barcode" type="button" class="scanner-action-btn">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Thêm sách</span>
+                  </button>
+                </div>
               </div>
               <div class="scanner-tip-text">
                 <span class="material-symbols-outlined" style="font-size: 14px;">lightbulb</span>
@@ -533,6 +545,67 @@
     </div>
   </div>
 
+  <!-- 7. MODAL QUÉT MÃ BẰNG CAMERA (html5-qrcode) -->
+  <div id="camera-scanner-modal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="camera-scanner-card">
+      <!-- Header modal camera -->
+      <div class="camera-modal-header">
+        <div>
+          <h3 class="camera-modal-title font-headline">
+            <span class="material-symbols-outlined" style="font-size: 22px; vertical-align: middle;">photo_camera</span>
+            Quét mã bằng Camera
+          </h3>
+          <p id="camera-target-label" class="camera-modal-sub">Đang quét: Mã vạch sách</p>
+        </div>
+        <button id="btn-camera-close" type="button" class="btn-close-modal" title="Đóng camera">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Khung hình camera và laser -->
+      <div class="camera-viewport-container">
+        <div id="camera-scanner-reader" class="camera-scanner-reader"></div>
+        <div class="scanner-laser-line"></div>
+      </div>
+
+      <!-- Thanh công cụ camera -->
+      <div class="camera-controls-toolbar">
+        <div class="camera-select-group">
+          <label for="camera-device-select">
+            <span class="material-symbols-outlined" style="font-size: 16px;">videocam</span>
+          </label>
+          <select id="camera-device-select" class="camera-device-selector">
+            <option value="">Đang tải danh sách camera...</option>
+          </select>
+        </div>
+        <button id="btn-camera-torch" type="button" class="topbar-icon-btn" title="Bật/tắt đèn flash">
+          <span class="material-symbols-outlined">flashlight_on</span>
+        </button>
+        <label class="topbar-icon-btn" title="Quét từ ảnh chụp" style="cursor: pointer;">
+          <span class="material-symbols-outlined">image</span>
+          <input id="camera-file-input" type="file" accept="image/*" style="display: none;">
+        </label>
+      </div>
+
+      <!-- Phản hồi quét realtime -->
+      <div id="camera-feedback-card" class="camera-feedback-card hidden">
+        <span id="camera-feedback-icon" class="material-symbols-outlined" style="font-size: 20px;">info</span>
+        <div>
+          <div id="camera-feedback-title" class="camera-feedback-title"></div>
+          <div id="camera-feedback-desc" class="camera-feedback-desc"></div>
+        </div>
+      </div>
+
+      <!-- Footer thống kê phiên quét -->
+      <div class="camera-modal-footer">
+        <div class="camera-stats-row">
+          <span>Đã quét trong phiên:</span>
+          <strong id="camera-session-count" class="font-mono">0</strong>
+        </div>
+        <button id="btn-camera-stop" type="button" class="btn-camera-close-action">
+          <span class="material-symbols-outlined" style="font-size: 16px;">stop_circle</span>
+          Dừng quét & Đóng
+        </button>
   <!-- =========================================================================
        HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ LOAN_MANAGEMENT)
        ========================================================================= -->
@@ -552,14 +625,16 @@
     </div>
   </div>
 
+  <!-- 8. HỘP THÔNG BÁO TOAST TOÀN CỤC -->
   <!-- 7. HỘP THÔNG BÁO TOAST TOÀN CỤC -->
   <div id="toast-container" class="toast-box"></div>
 
-  <!-- 8. CÁC FILE SCRIPT THEO THỨ TỰ CHUẨN CỦA PROJECT -->
+  <!-- 9. CÁC FILE SCRIPT THEO THỨ TỰ CHUẨN CỦA PROJECT -->
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/libs/html5-qrcode.min.js"></script>
   <script src="../js/pages/borrow_on_site.js"></script>
 </body>
 

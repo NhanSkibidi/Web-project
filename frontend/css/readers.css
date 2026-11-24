@@ -757,6 +757,16 @@ body.readers-app {
   font-size: 13.5px;
   color: var(--text);
   cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: none;
+}
+
+.filter-select:focus {
+  border-color: var(--border);
+  background: var(--bg);
+  outline: none;
+  box-shadow: none;
 }
 
 /* Nút làm mới / tải lại tìm kiếm với hiệu ứng xoay tròn */
@@ -800,6 +810,278 @@ body.readers-app {
 @keyframes reloadSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* ==============================================================================
+   CONTEXT BAR: XÁC ĐỊNH VỊ TRÍ PHÂN HỆ QUẢN LÝ ĐỘC GIẢ > XEM CHI TIẾT THẺ
+   ============================================================================== */
+.reader-detail-context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #E6E2D8);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.04);
+  flex-wrap: wrap;
+}
+
+.context-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.context-parent-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-brand, #1B4332);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 7px;
+  background: rgba(27, 67, 50, 0.07);
+  transition: all 0.2s ease;
+}
+
+.context-parent-link:hover {
+  background: var(--color-brand, #1B4332);
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.context-parent-link .material-symbols-outlined {
+  font-size: 17px;
+}
+
+.context-sep {
+  font-size: 16px;
+  color: var(--muted, #718096);
+}
+
+.context-current-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text, #1C1917);
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 7px;
+  background: var(--bg, #FAF8F5);
+  border: 1px solid var(--border, #E6E2D8);
+}
+
+.context-current-badge .material-symbols-outlined {
+  font-size: 17px;
+  color: var(--color-brand, #1B4332);
+}
+
+.context-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #718096);
+  background: var(--bg, #FAF8F5);
+  border: 1px solid var(--border, #E6E2D8);
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* ==============================================================================
+   THANH TÌM KIẾM VÀ BỘ LỌC LỊCH SỬ MƯỢN TRẢ (ĐỒNG BỘ LOAN_MANAGEMENT)
+   ============================================================================== */
+.filter-tabs-group,
+.detail-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EFECE6;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #E6E2D8);
+  flex-wrap: wrap;
+}
+
+.tab-btn,
+.detail-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, #4A5568);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover,
+.detail-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary, #1A202C);
+}
+
+.tab-btn.active,
+.detail-tab-btn.active {
+  background: var(--color-brand, #1B4332);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.25);
+}
+
+.tab-count {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+}
+
+.tab-btn.active .tab-count,
+.detail-tab-btn.active .tab-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* ==============================================================================
+   THANH TÌM KIẾM VÀ BỘ LỌC LỊCH SỬ MƯỢN TRẢ (ĐỒNG BỘ 100% THEO LOAN_MANAGEMENT)
+   ============================================================================== */
+.panel-card .filter-toolbar-card {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border, #E6E2D8);
+  border-radius: 13px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 16px;
+  box-shadow: var(--shadow-xs, 0 1px 3px rgba(0, 0, 0, 0.04));
+  flex-wrap: wrap;
+}
+
+.panel-card .filter-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg, #FAF8F5);
+  border: 1px solid var(--border, #E6E2D8);
+  border-radius: 9px;
+  padding: 0 12px;
+  height: 40px;
+  flex: 1;
+  min-width: 240px;
+  box-sizing: border-box;
+}
+
+.panel-card .filter-search-box .filter-icon {
+  font-size: 20px;
+  color: var(--muted, #718096);
+}
+
+.panel-card .filter-search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--text, #1A202C);
+  width: 100%;
+  font-family: inherit;
+}
+
+.panel-card .filter-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel-card .filter-select-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Phần chọn bộ lọc chuẩn 100% theo Reader & Loan_Management (Nền Warm Paper #FAF8F5, viền #E6E2D8 tự nhiên, height 40px, radius 9px, font 13.5px, không viền xanh hay bóng đổ khi click/focus) */
+.panel-card .filter-select-wrapper select,
+.panel-card .filter-select,
+#loan-filter-status {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border, #E6E2D8);
+  background: var(--bg, #FAF8F5);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text, #1A202C);
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: none;
+}
+
+.panel-card .filter-select-wrapper select:focus,
+.panel-card .filter-select:focus,
+#loan-filter-status:focus {
+  border-color: var(--border, #E6E2D8);
+  background: var(--bg, #FAF8F5);
+  outline: none;
+  box-shadow: none;
+}
+
+.panel-card .btn-filter-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg, #FAF8F5);
+  border: 1px solid var(--border, #E6E2D8);
+  border-radius: 9px;
+  color: var(--muted, #718096);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.2s, background 0.15s, color 0.15s;
+}
+
+.panel-card .btn-filter-reset:hover {
+  background: #F5F3EF;
+  color: var(--primary, #1B4332);
+  transform: rotate(45deg);
 }
 
 /* ---------- 6. TWO-COLUMN SPLIT (TABLE LEFT + CARD PREVIEW & LOANS RIGHT) ---------- */
@@ -1616,6 +1898,7 @@ table.readers-table tbody tr.is-selected {
   .sidebar-rail,
   .app-footer,
   .page-head-row,
+  .reader-detail-context-bar,
   .kpi-grid,
   .filter-card,
   .modal-backdrop {

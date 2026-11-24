@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 class LoanCreate(BaseModel):
-    book_isbns: list[str] = Field(min_length=1, max_length=5)
+    book_isbns: list[str] = Field(min_length=1)
 
 
 class LoanUpdate(BaseModel):

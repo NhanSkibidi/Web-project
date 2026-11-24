@@ -1545,6 +1545,26 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Lắng nghe thay đổi thời gian lọc tức thì (Phong cách Reader)
+  var timeSelect = document.getElementById("filter-time");
+  if (timeSelect) {
+    timeSelect.addEventListener("change", function () {
+      currentTimeFilter = timeSelect.value;
+      currentPage = 1;
+      renderLoanTable();
+    });
+  }
+
+  // Lắng nghe thay đổi khoa/viện lọc tức thì (Phong cách Reader)
+  var deptSelect = document.getElementById("filter-department");
+  if (deptSelect) {
+    deptSelect.addEventListener("change", function () {
+      currentDeptFilter = deptSelect.value;
+      currentPage = 1;
+      renderLoanTable();
+    });
+  }
+
   // 4. Sự kiện Tìm kiếm ngay khi gõ
   var searchInput = document.getElementById("filter-keyword");
   if (searchInput) {
@@ -1824,7 +1844,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         var token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
         if (token) {
-          var baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+          var baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://127.0.0.1:8000/api";
           var res = await fetch(baseUrl + "/auth/me", {
             headers: {
               "Authorization": "Bearer " + token,

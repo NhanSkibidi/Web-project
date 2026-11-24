@@ -56,41 +56,21 @@
     }
     try {
       const stored = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
-      return stored ? JSON.parse(stored) : { id: 1, full_name: "Nguyễn Nhật Anh", email: "sinhvien@ks25.edu.vn", role: "READER" };
+      return stored ? JSON.parse(stored) : null;
     } catch {
-      return { id: 1, full_name: "Nguyễn Nhật Anh", email: "sinhvien@ks25.edu.vn", role: "READER" };
+      return null;
     }
   }
 
   // Khởi tạo và tải danh sách đặt trước
   async function loadReservations() {
     const user = getCurrentUser();
-
-    // Cập nhật Header User Info
-    const userNameEl = document.getElementById("headerUserName");
-    const userRoleEl = document.getElementById("headerUserRole");
-    const userAvatarEl = document.getElementById("headerUserAvatar");
-    if (userNameEl) userNameEl.textContent = user.full_name || user.email || "Độc giả";
-    if (userRoleEl) userRoleEl.textContent = user.role === "ADMIN" ? "Quản trị viên" : (user.role === "LIBRARIAN" ? "Thủ thư" : "Sinh viên");
-    if (userAvatarEl) {
-      const initial = (user.full_name || user.email || "U").charAt(0).toUpperCase();
-      userAvatarEl.textContent = initial;
-    }
-
-    // Cập nhật số lượng giỏ mượn
-    try {
-      const cart = JSON.parse(localStorage.getItem("ks25_cart") || "[]");
-      const badge = document.getElementById("headerCartBadge");
-      if (badge) {
-        badge.textContent = cart.length;
-        badge.style.display = cart.length > 0 ? "flex" : "none";
-      }
-    } catch {}
+    if (!user) return;
 
     // Gọi API Backend lấy danh sách
     try {
-      if (typeof api !== "undefined" && typeof api.getMyReservations === "function") {
-        const res = await api.getMyReservations(user.id);
+      if (typeof api !== "undefined" && typeof auth !== "undefined" && auth.getToken()) {
+        const res = await api.get("/reservations/my");
         if (Array.isArray(res)) {
           reservationsData = res;
         } else {
@@ -286,11 +266,10 @@
   // Xác nhận huỷ đặt trước
   window.confirmCancelAction = async function () {
     if (!targetCancelId) return;
-    const user = getCurrentUser();
 
     try {
-      if (typeof api !== "undefined" && typeof api.cancelReservation === "function") {
-        await api.cancelReservation(targetCancelId, user.id);
+      if (typeof api !== "undefined" && typeof auth !== "undefined" && auth.getToken()) {
+        await api.post(`/reservations/${targetCancelId}/cancel`);
       }
     } catch (e) {
       console.warn("API Cancel thất bại hoặc offline, xử lý cục bộ:", e);

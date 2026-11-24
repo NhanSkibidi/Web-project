@@ -65,7 +65,7 @@
           <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
         </button>
         <div class="user-dropdown-menu" id="userDropdownMenu">
-          <a href="auth.html" class="dropdown-item">
+          <a href="profile.html" class="dropdown-item">
             <span class="material-symbols-outlined">account_circle</span>
             <span>Thông tin cá nhân</span>
           </a>
@@ -362,10 +362,10 @@
           <div class="pagination-controls">
             <div class="page-size-selector">
               <span>Hiển thị:</span>
-              <select id="page-size-select">
-                <option value="5">5 dòng</option>
-                <option value="10" selected>10 dòng</option>
-                <option value="20">20 dòng</option>
+              <select id="page-size-select" class="filter-select">
+                <option value="5">5 dòng/trang</option>
+                <option value="10" selected>10 dòng/trang</option>
+                <option value="20">20 dòng/trang</option>
               </select>
             </div>
             <div class="pagination-buttons" id="pagination-buttons-wrap">
@@ -561,12 +561,17 @@
         <div class="form-group" style="margin-bottom: 12px;">
           <label for="reject-reason-select" class="input-label">Chọn lý do từ chối chuẩn (*)</label>
           <select id="reject-reason-select" class="filter-select" style="width: 100%;">
-            <option value="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ</option>
-            <option value="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện của độc giả đã hết hạn hiệu lực</option>
-            <option value="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt giới hạn số lượng sách được phép mượn</option>
-            <option value="Độc giả đang có sách quá hạn lưu thông chưa hoàn trả">Độc giả đang có sách quá hạn lưu thông chưa hoàn trả</option>
-            <option value="Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa">Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa</option>
-            <option value="Khác">Lý do khác (Nhập chi tiết bổ sung bên dưới)</option>
+            <option value="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách không khả dụng
+              (OUT_OF_STOCK · Hết bản in)</option>
+            <option value="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện hết hạn (CARD_EXPIRED · Cần gia
+              hạn)</option>
+            <option value="Độc giả vượt giới hạn số lượng sách được phép mượn">Vượt giới hạn mượn (LIMIT_EXCEEDED · Đã
+              đủ số lượng)</option>
+            <option value="Độc giả đang có sách quá hạn lưu thông chưa hoàn trả">Đang có sách quá hạn (OVERDUE_DEBT ·
+              Cần trả sách cũ)</option>
+            <option value="Ấn phẩm đang được kiểm kê hoặc bảo trì tu sửa">Sách đang bảo trì (MAINTENANCE · Đang kiểm
+              kê/tu sửa)</option>
+            <option value="Khác">Lý do khác (OTHER · Tự nhập chi tiết)</option>
           </select>
         </div>
 
@@ -574,11 +579,14 @@
         <div class="quick-reasons-wrap">
           <label class="input-label">Hoặc chọn nhanh theo thẻ:</label>
           <div class="quick-reason-pills" id="quick-reason-pills">
-            <button type="button" class="reason-pill" data-reason="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách không khả
+            <button type="button" class="reason-pill"
+              data-reason="Bản sao sách hiện tại không còn khả dụng trên giá lưu trữ">Bản sao sách không khả
               dụng</button>
-            <button type="button" class="reason-pill" data-reason="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư viện đã hết
+            <button type="button" class="reason-pill" data-reason="Thẻ thư viện của độc giả đã hết hạn hiệu lực">Thẻ thư
+              viện đã hết
               hạn</button>
-            <button type="button" class="reason-pill" data-reason="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt
+            <button type="button" class="reason-pill"
+              data-reason="Độc giả vượt giới hạn số lượng sách được phép mượn">Độc giả vượt
               giới hạn số sách</button>
             <button type="button" class="reason-pill" data-reason="Khác">Khác</button>
           </div>
@@ -617,6 +625,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
   <script src="../js/pages/loan_management.js"></script>
 </body>
 

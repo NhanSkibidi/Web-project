@@ -801,22 +801,28 @@ body.books-body {
 }
 
 /* ==========================================================================
-   5. BỘ LỌC & TÌM KIẾM (FILTER TOOLBAR)
+   5. BỘ LỌC & TÌM KIẾM (FILTER TOOLBAR) - ĐỒNG BỘ THEO READER
    ========================================================================== */
 .filter-toolbar {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    padding: 14px 18px;
+    border-radius: 13px;
+    padding: 14px 16px;
     margin-bottom: 24px;
     box-shadow: var(--shadow-card);
     display: grid;
-    grid-template-columns: 2fr 1.4fr 1.1fr auto;
-    gap: 12px;
+    grid-template-columns: 1.8fr 1fr 1fr auto;
+    gap: 10px;
     align-items: center;
 }
 
 @media (max-width: 900px) {
+    .filter-toolbar {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 540px) {
     .filter-toolbar {
         grid-template-columns: 1fr;
     }
@@ -842,43 +848,35 @@ body.books-body {
     padding: 0 12px 0 38px;
     background: var(--color-paper);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-btn);
-    font-size: 13px;
+    border-radius: 9px;
+    font-size: 13.5px;
     color: var(--color-text-primary);
     outline: none;
-    transition: all 0.15s;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
 .filter-search-wrap input:focus {
     border-color: var(--color-brand);
     background: #ffffff;
-    box-shadow: 0 0 0 2px var(--color-brand-subtle);
 }
 
-.filter-select {
+/* Phần chọn chuyên ngành và trạng thái chuẩn 100% theo Reader (Không đổi viền xanh, giữ viền kem xám tự nhiên) */
+.filter-select,
+#filter-category,
+#filter-status {
     height: 40px;
     padding: 0 12px;
-    background: var(--color-paper, #FAF8F5);
-    border: 1px solid var(--color-border);
     border-radius: 9px;
+    border: 1px solid var(--color-border);
+    background: var(--color-paper);
     font-family: inherit;
     font-size: 13.5px;
     color: var(--color-text-primary);
-    outline: none;
     cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
     width: 100%;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.filter-select:hover {
-    border-color: var(--color-brand);
-    background: #ffffff;
-}
-
-.filter-select:focus {
-    border-color: var(--color-brand);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.1);
 }
 
 .filter-actions {

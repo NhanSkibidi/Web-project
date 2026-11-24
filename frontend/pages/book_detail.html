@@ -33,8 +33,10 @@
       <nav class="topbar-nav" id="main-nav">
         <a href="home.html" class="topbar-nav-link">Trang chủ</a>
         <a href="search.html" class="topbar-nav-link active">Tra cứu sách</a>
-        <a href="loan_slip.html" class="topbar-nav-link">Phiếu mượn của tôi</a>
-        <a href="staff-dashboard.html" class="topbar-nav-link">Quản trị thư viện</a>
+        <a href="loan_slip.html" class="topbar-nav-link" data-auth-required="true">Phiếu mượn của tôi</a>
+        <a href="reservations.html" class="topbar-nav-link" data-auth-required="true">Đặt trước</a>
+        <a href="fines.html" class="topbar-nav-link" data-role-allow="READER">Tiền phạt</a>
+        <a href="staff-dashboard.html" class="topbar-nav-link" data-role-allow="ADMIN,LIBRARIAN">Quản trị thư viện</a>
       </nav>
     </div>
 
@@ -44,46 +46,21 @@
       <div class="notif-dropdown-container" id="notifDropdownContainer">
         <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
-          <span class="notif-badge" id="notifBadge">2</span>
+          <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
         </button>
         <!-- BẢNG NOTIFICATION IN-APP -->
         <div class="notif-dropdown-menu" id="notifDropdownMenu" hidden>
           <div class="notif-header">
             <div class="notif-title-group">
               <span class="notif-title">Thông báo mượn trả</span>
-              <span class="notif-badge-pill">2 mới</span>
+              <span class="notif-badge-pill">0 mới</span>
             </div>
             <button type="button" class="notif-mark-read" id="notifMarkReadBtn">Đã đọc tất cả</button>
           </div>
           <div class="notif-list">
-            <!-- Thông báo 1: Quá hạn trả sách (Báo động đỏ) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-overdue">
-              <div class="notif-icon-box overdue">
-                <span class="material-symbols-outlined">error</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Quá hạn trả: Cấu trúc Dữ liệu &amp; Giải thuật</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Phiếu <strong>#PM-2024-0082</strong> đã quá hạn 19 ngày. Tiền phạt dự kiến: <strong>38.000 đ</strong>. Vui lòng mang sách tới quầy để trả.</p>
-                <span class="notif-time">10 phút trước • Quá hạn</span>
-              </div>
-            </a>
-            <!-- Thông báo 2: Sắp đến hạn trả trong 2 ngày (Cảnh báo vàng) -->
-            <a href="loan_slip.html" class="notif-item is-unread is-due-soon">
-              <div class="notif-icon-box due-soon">
-                <span class="material-symbols-outlined">alarm</span>
-              </div>
-              <div class="notif-content">
-                <div class="notif-item-title">
-                  <span>Sắp đến hạn trả sách (còn 2 ngày)</span>
-                  <span class="notif-dot"></span>
-                </div>
-                <p class="notif-item-desc">Ấn phẩm <strong>Hệ thống Cơ sở Dữ liệu hiện đại</strong> đến hạn vào ngày <strong>28/10/2024</strong>. Bạn có thể gia hạn online hoặc trả tại quầy.</p>
-                <span class="notif-time">2 giờ trước • Nhắc hạn</span>
-              </div>
-            </a>
+            <div style="padding: 24px 16px; text-align: center; color: #64748b; font-size: 13px;">
+              Đang tải thông báo...
+            </div>
           </div>
           <div class="notif-footer">
             <a href="loan_slip.html" class="notif-view-all">Xem tất cả phiếu mượn &amp; Lịch sử →</a>
@@ -207,22 +184,22 @@
           </button>
 
           <!-- Nút đặt mượn trực tiếp -->
-          <button type="button" class="btn-reserve-direct" onclick="alert('Tính năng mượn nhanh trực tiếp: Đã gửi yêu cầu giữ sách tại Quầy thủ thư tầng 1!')">
+          <button type="button" class="btn-reserve-direct" onclick="showToast('Đã gửi yêu cầu giữ sách tại Quầy thủ thư tầng 1!', 'success')">
             <span>📱</span>
             <span>Đặt mượn trực tiếp</span>
           </button>
 
           <!-- Nút tiện ích: Lưu, Chia sẻ, Báo lỗi -->
           <div class="action-buttons-row">
-            <button type="button" class="btn-util-icon" onclick="alert('Đã lưu tài liệu vào danh sách yêu thích!')">
+            <button type="button" class="btn-util-icon" onclick="showToast('Đã lưu tài liệu vào danh sách yêu thích!', 'success')">
               <span>🔖</span>
               <span>Lưu tài liệu</span>
             </button>
-            <button type="button" class="btn-util-icon" onclick="navigator.clipboard.writeText(window.location.href); alert('Đã sao chép liên kết chia sẻ!');">
+            <button type="button" class="btn-util-icon" onclick="navigator.clipboard?.writeText(window.location.href); showToast('Đã sao chép liên kết chia sẻ!', 'success');">
               <span>🔗</span>
               <span>Chia sẻ</span>
             </button>
-            <button type="button" class="btn-util-icon" onclick="alert('Đã mở biểu mẫu phản hồi về thông tin tài liệu!')">
+            <button type="button" class="btn-util-icon" onclick="showToast('Đã ghi nhận phản hồi về thông tin tài liệu!', 'success')">
               <span>🚩</span>
               <span>Báo lỗi</span>
             </button>
@@ -508,7 +485,7 @@
                   <td>Đọc tại chỗ</td>
                   <td><span class="status-badge-avail">● Khả dụng</span></td>
                   <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-onsite" onclick="alert('Đã đăng ký chỗ ngồi đọc bản in BS-IT-003 tại Phòng Nghiên cứu Tầng 2!')">
+                    <button type="button" class="btn-copy-action btn-copy-onsite" onclick="showToast('Đã đăng ký chỗ ngồi đọc bản in BS-IT-003 tại Phòng Nghiên cứu Tầng 2!', 'success')">
                       Đọc tại chỗ
                     </button>
                   </td>
@@ -532,7 +509,7 @@
                     </div>
                   </td>
                   <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-reserve" onclick="alert('Đã xếp bạn vào hàng đợi đặt trước bản sao BS-IT-004 khi có người trả sách!')">
+                    <button type="button" class="btn-copy-action btn-copy-reserve" onclick="showToast('Đã xếp bạn vào hàng đợi đặt trước bản sao BS-IT-004 khi có người trả sách!', 'success')">
                       Đặt trước
                     </button>
                   </td>
@@ -563,7 +540,7 @@
           <!-- Nhắc nhở quy định -->
           <div class="copies-footer-notice">
             <div>ⓘ Sinh viên được mượn tối đa <strong>3 bản in</strong> cùng lúc trong thời hạn <strong>14 ngày</strong>.</div>
-            <a href="javascript:void(0)" onclick="alert('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.')">
+            <a href="javascript:void(0)" onclick="showToast('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.', 'success')">
               Xem nội quy mượn trả →
             </a>
           </div>
@@ -595,9 +572,9 @@
     <div class="container footer-inner">
       <div>© 2026 Thư viện số KS25. Bảo lưu mọi quyền.</div>
       <div class="footer-links">
-        <a href="javascript:void(0)" onclick="alert('Trung tâm trợ giúp: Liên hệ thuvien@ks25.edu.vn hoặc Hotline: 024.1234.5678')">Trung tâm trợ giúp</a>
-        <a href="javascript:void(0)" onclick="alert('Quy chế mượn trả: Mượn tối đa 5 cuốn trong 14 ngày. Trễ hạn phạt 2.000đ/ngày.')">Quy định mượn trả</a>
-        <a href="javascript:void(0)" onclick="alert('Hỗ trợ sinh viên: Phòng tự học tầng 2, mở cửa 07:30 - 20:30 từ Thứ Hai - Thứ Bảy.')">Hỗ trợ sinh viên</a>
+        <a href="javascript:void(0)" onclick="showToast('Trung tâm trợ giúp: Liên hệ thuvien@ks25.edu.vn hoặc Hotline: 024.1234.5678', 'success')">Trung tâm trợ giúp</a>
+        <a href="javascript:void(0)" onclick="showToast('Quy chế mượn trả: Mượn tối đa 5 cuốn trong 14 ngày. Trễ hạn phạt 2.000đ/ngày.', 'success')">Quy định mượn trả</a>
+        <a href="javascript:void(0)" onclick="showToast('Hỗ trợ sinh viên: Phòng tự học tầng 2, mở cửa 07:30 - 20:30 từ Thứ Hai - Thứ Bảy.', 'success')">Hỗ trợ sinh viên</a>
       </div>
     </div>
   </footer>

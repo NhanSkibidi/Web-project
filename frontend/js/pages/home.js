@@ -546,7 +546,28 @@ function clearSearchFilter() {
 }
 
 function borrowBook(bookTitle) {
-  alert(`✓ Đã thêm cuốn "${bookTitle}" vào danh sách mượn!`);
+  showConfirm({
+    title: "Thêm vào danh sách mượn",
+    message: `Bạn muốn thêm cuốn "${bookTitle}" vào danh sách chuẩn bị mượn sách?`,
+    type: "green",
+    confirmText: "Thêm vào giỏ",
+    cancelText: "Đóng",
+    onConfirm: () => {
+      if (typeof showToast === "function") {
+        showToast(`Đã thêm "${bookTitle}" vào danh sách mượn!`, "success");
+      }
+    },
+  });
+}
+
+function showLibraryRules() {
+  showConfirm({
+    title: "Quy chế mượn trả thư viện KS25",
+    message: "Mượn tối đa 05 cuốn / 14 ngày. Gia hạn online trước hạn trả 2 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn; hỏng sách 50% giá bìa; mất sách 100% giá bìa.",
+    type: "green",
+    confirmText: "Đã hiểu",
+    cancelText: "Đóng",
+  });
 }
 
 function quickAdd(bookTitle) {
@@ -664,13 +685,17 @@ function initTopBar() {
         : "";
 
       userDropdownMenu.innerHTML = `
-        <a href="auth.html" class="dropdown-item">
+        <a href="profile.html" class="dropdown-item">
           <span class="material-symbols-outlined">account_circle</span>
           <span>Thông tin cá nhân</span>
         </a>
         <a href="loan_slip.html" class="dropdown-item">
           <span class="material-symbols-outlined">receipt_long</span>
           <span>Phiếu mượn của tôi</span>
+        </a>
+        <a href="reservations.html" class="dropdown-item">
+          <span class="material-symbols-outlined">bookmark_added</span>
+          <span>Sách đặt trước</span>
         </a>
         ${adminLink}
         <div class="dropdown-divider"></div>
@@ -808,6 +833,7 @@ window.toggleCategories = toggleCategories;
 window.handleCategoryFilter = handleCategoryFilter;
 window.clearSearchFilter = clearSearchFilter;
 window.borrowBook = borrowBook;
+window.showLibraryRules = showLibraryRules;
 window.quickAdd = quickAdd;
 window.prevCarousel = prevCarousel;
 window.nextCarousel = nextCarousel;

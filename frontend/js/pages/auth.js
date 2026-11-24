@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
       forgotLink.textContent = t.forgotPass;
       forgotLink.onclick = (e) => {
         e.preventDefault();
-        alert(t.forgotAlert);
+        showAlert(loginAlert, t.forgotAlert, "info");
       };
     }
     if (loginPasswordInput) loginPasswordInput.placeholder = t.loginPassPlaceholder;
@@ -484,7 +484,11 @@ document.addEventListener("DOMContentLoaded", () => {
       footerLinks.forEach((link, idx) => {
         link.onclick = (e) => {
           e.preventDefault();
-          alert(footerAlerts[idx]);
+          if (typeof showToast === "function") {
+            showToast(footerAlerts[idx], "success");
+          } else {
+            showAlert(loginAlert, footerAlerts[idx], "info");
+          }
         };
       });
     }

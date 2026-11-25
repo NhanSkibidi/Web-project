@@ -324,7 +324,48 @@ function setupEventListeners() {
     if (logoutMenuBtn) {
         logoutMenuBtn.addEventListener('click', () => {
             if (userDropdownMenu) userDropdownMenu.classList.remove('show');
-            openLogoutModal();
+            if (userProfileBtn) userProfileBtn.setAttribute('aria-expanded', 'false');
+            showConfirm({
+                title: "Xác nhận đăng xuất?",
+                message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+                type: "red",
+                confirmText: "Đăng xuất",
+                cancelText: "Hủy",
+                onConfirm: () => {
+                    if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+                        auth.clearSession();
+                    } else {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user_info");
+                        localStorage.removeItem("library_card");
+                        sessionStorage.removeItem("access_token");
+                        sessionStorage.removeItem("user_info");
+                    }
+                    showToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "Hẹn gặp lại bạn lần sau.", "info");
+                    setTimeout(() => {
+                        window.location.href = "login.html#login";
+                    }, 500);
+                }
+            });
+        });
+    }
+
+    const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+    const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+    const confirmModalEl = document.getElementById("confirm-modal");
+
+    if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", closeConfirmModal);
+    if (btnConfirmProceed) {
+        btnConfirmProceed.addEventListener("click", () => {
+            const cb = activeConfirmCallback;
+            closeConfirmModal();
+            if (typeof cb === "function") cb();
+        });
+    }
+    if (confirmModalEl) {
+        confirmModalEl.addEventListener("click", (e) => {
+            if (e.target === confirmModalEl) closeConfirmModal();
         });
     }
 
@@ -454,6 +495,7 @@ function setupEventListeners() {
             closeDeleteModal();
             closeDeleteAllModal();
             closeSubmitModal();
+            closeConfirmModal();
             closeLogoutModal();
             closeCustomDropdown();
             if (userDropdownMenu) userDropdownMenu.classList.remove('show');
@@ -569,12 +611,78 @@ function closeDeleteAllModal() {
     if (deleteAllModal) deleteAllModal.style.display = 'none';
 }
 
+let activeConfirmCallback = null;
+
+function showConfirm(options) {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+        if (iconBox) iconBox.classList.add("icon-red");
+        if (btnProceed) btnProceed.classList.add("btn-danger");
+        if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+        if (iconBox) iconBox.classList.add("icon-green");
+        if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+        if (iconBox) iconBox.classList.add("icon-blue");
+        if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.classList.add("active");
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) modal.classList.remove("active");
+    activeConfirmCallback = null;
+}
+
 function openLogoutModal() {
-    if (logoutModal) logoutModal.style.display = 'flex';
+    showConfirm({
+        title: "Xác nhận đăng xuất?",
+        message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+        type: "red",
+        confirmText: "Đăng xuất",
+        cancelText: "Hủy",
+        onConfirm: () => {
+            if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+                auth.clearSession();
+            } else {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user_info");
+                localStorage.removeItem("library_card");
+                sessionStorage.removeItem("access_token");
+                sessionStorage.removeItem("user_info");
+            }
+            showToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "Hẹn gặp lại bạn lần sau.", "info");
+            setTimeout(() => {
+                window.location.href = "login.html#login";
+            }, 500);
+        }
+    });
 }
 
 function closeLogoutModal() {
-    if (logoutModal) logoutModal.style.display = 'none';
+    closeConfirmModal();
 }
 
 function openSubmitModal(selectedBooks) {

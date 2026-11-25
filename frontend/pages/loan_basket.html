@@ -390,17 +390,21 @@
         </div>
     </div>
 
-    <!-- MODAL: LOGOUT -->
-    <div class="modal-backdrop" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle" style="display: none;">
-        <div class="modal-card">
-            <div class="modal-icon-box warning-bg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </div>
-            <h3 class="modal-title" id="logoutModalTitle">Đăng xuất khỏi UniLib?</h3>
-            <p class="modal-desc">Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng các dịch vụ mượn sách.</p>
-            <div class="modal-actions">
-                <button class="secondary-btn bounce-hover" id="cancelLogoutBtn">Ở lại</button>
-                <button class="danger-btn bounce-hover" id="confirmLogoutBtn">Đăng xuất</button>
+    <!-- =========================================================================
+         HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ TOÀN HỆ THỐNG)
+         ========================================================================= -->
+    <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-confirm">
+            <div class="confirm-content-wrap">
+                <div class="confirm-icon-circle icon-red" id="confirm-icon-box">
+                    <span class="material-symbols-outlined" id="confirm-icon">warning</span>
+                </div>
+                <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận đăng xuất?</h3>
+                <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?</p>
+                <div class="confirm-actions-row">
+                    <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+                    <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng xuất</button>
+                </div>
             </div>
         </div>
     </div>

@@ -395,6 +395,17 @@
     if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
       userDropdownMenu.classList.remove("show");
       if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+  // Menu tài khoản
+  const btn = $('#accountBtn'), menu = $('#accountMenu');
+  const setMenu = o => { menu.hidden = !o; btn.setAttribute('aria-expanded', o); };
+  btn.addEventListener('click', e => { e.stopPropagation(); setMenu(menu.hidden); });
+  document.addEventListener('click', () => setMenu(false));
+  menu.addEventListener('click', async e => {
+    if (!e.target.closest('[data-act="logout"]')) return;
+    setMenu(false);
+    if (await dialog({ type: 'info', title: 'Đăng xuất?', msg: 'Bạn sẽ thoát khỏi phiên làm việc hiện tại.', ok: 'Đăng xuất' })) {
+      if (typeof auth !== 'undefined' && typeof auth.clearSession === 'function') auth.clearSession();
+      window.location.href = 'login.html#login';
     }
   });
 

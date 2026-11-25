@@ -299,8 +299,24 @@
             state.authorsList = Array.isArray(authors) ? authors : [];
 
             if (dom.filterCategory && state.categoriesList.length > 0) {
+                const catCodeMap = {
+                    "Công nghệ thông tin": "CNTT · Phần mềm",
+                    "Kinh tế": "ECO · Quản trị",
+                    "Khoa học": "SCI · Tự nhiên",
+                    "Giáo dục": "EDU · Sư phạm",
+                    "Ngoại ngữ": "LANG · Kỹ năng",
+                    "Kỹ thuật": "ENG · Điện tử",
+                    "Kỹ năng sống": "SKILL · Phát triển",
+                    "Lịch sử": "HIST · Xã hội",
+                    "Tâm lý học": "PSY · Hành vi",
+                    "Thiếu nhi": "KIDS · Truyện tranh",
+                    "Văn học": "LIT · Tiểu thuyết"
+                };
                 dom.filterCategory.innerHTML = `<option value="">Tất cả thể loại chuyên ngành</option>` +
-                    state.categoriesList.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+                    state.categoriesList.map(c => {
+                        const tag = catCodeMap[c.name] || (c.code ? c.code.toUpperCase() : "CHUYÊN NGÀNH");
+                        return `<option value="${c.id}">${escapeHtml(c.name)} (${tag})</option>`;
+                    }).join("");
             }
 
             if (dom.bookCategory && state.categoriesList.length > 0) {
@@ -1986,7 +2002,7 @@
             } else {
                 const token = localStorage.getItem("access_token") || localStorage.getItem("token") || sessionStorage.getItem("access_token");
                 if (token) {
-                    const baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://localhost:8000/api";
+                    const baseUrl = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : "http://127.0.0.1:8000/api";
                     const res = await fetch(baseUrl + "/auth/me", {
                         headers: {
                             "Authorization": "Bearer " + token,

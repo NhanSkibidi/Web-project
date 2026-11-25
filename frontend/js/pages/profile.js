@@ -65,17 +65,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     let homeHref = "home.html";
 
     if (role === "ADMIN") {
-      homeHref = "admin-users.html";
+      homeHref = "staff-dashboard.html";
       items = [
         { href: "admin-users.html", label: "🛡️ Quản lý tài khoản Thủ thư" },
-        { href: "readers.html", label: "🪪 Quản lý Độc giả & Thẻ thư viện" },
         { href: "staff-dashboard.html", label: "📊 Bàn làm việc Quản trị" },
+        { href: "readers.html", label: "🪪 Quản lý Độc giả & Thẻ thư viện" },
+        { href: "fines.html", label: "💰 Xử lý & Miễn giảm tiền phạt" },
       ];
       if (navEl) {
         navEl.innerHTML = `
+          <a href="home.html">Trang chủ</a>
           <a href="staff-dashboard.html">Bàn làm việc</a>
+          <a href="books.html">Đầu sách</a>
+          <a href="loan_management.html">Phiếu mượn</a>
           <a href="readers.html">Độc giả &amp; Thẻ</a>
-          <a href="admin-users.html">Quản lý Thủ thư</a>
+          <a href="admin-users.html">Nhân sự</a>
           <a href="profile.html" class="active">Hồ sơ cá nhân</a>
         `;
       }
@@ -83,15 +87,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       homeHref = "staff-dashboard.html";
       items = [
         { href: "staff-dashboard.html", label: "📊 Bàn làm việc Thủ thư" },
+        { href: "books.html", label: "📚 Quản lý Đầu sách & Bản sao" },
         { href: "readers.html", label: "🪪 Quản lý Độc giả & Thẻ thư viện" },
         { href: "borrow_on_site.html", label: "📖 Mượn sách tại quầy" },
         { href: "returns.html", label: "↩ Trả sách tại quầy" },
       ];
       if (navEl) {
         navEl.innerHTML = `
+          <a href="home.html">Trang chủ</a>
           <a href="staff-dashboard.html">Bàn làm việc</a>
-          <a href="readers.html">Độc giả &amp; Thẻ</a>
+          <a href="books.html">Đầu sách</a>
+          <a href="loan_management.html">Phiếu mượn</a>
           <a href="returns.html">Trả sách</a>
+          <a href="readers.html">Độc giả &amp; Thẻ</a>
           <a href="profile.html" class="active">Hồ sơ cá nhân</a>
         `;
       }
@@ -99,11 +107,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       homeHref = "home.html";
       items = [
         { href: "home.html", label: "🏠 Trang chủ Thư viện" },
-        { href: "catalog.html", label: "🔎 Tra cứu Danh mục Ấn bản" },
+        { href: "search.html", label: "🔎 Tra cứu Danh mục Ấn bản" },
         { href: "loan_slip.html", label: "📋 Phiếu mượn của tôi" },
+        { href: "reservations.html", label: "📌 Sách đặt trước của tôi" },
         { href: "fines.html", label: "💰 Tiền phạt của tôi" },
         { href: "loan_basket.html", label: "🛒 Giỏ mượn sách" },
       ];
+      if (navEl) {
+        navEl.innerHTML = `
+          <a href="home.html">Trang chủ</a>
+          <a href="search.html">Tra cứu sách</a>
+          <a href="loan_slip.html">Phiếu mượn</a>
+          <a href="reservations.html">Đặt trước</a>
+          <a href="fines.html">Tiền phạt</a>
+          <a href="profile.html" class="active">Hồ sơ cá nhân</a>
+        `;
+      }
     }
 
     if (backBtn) backBtn.href = homeHref;

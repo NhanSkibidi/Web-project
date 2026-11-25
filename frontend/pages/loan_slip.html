@@ -29,9 +29,11 @@
       </button>
       <nav class="topbar-nav" id="navMenu" aria-label="Điều hướng chính">
         <a class="topbar-nav-link" href="home.html">Trang chủ</a>
-        <a class="topbar-nav-link" href="catalog.html">Tra cứu sách</a>
-        <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page">Phiếu mượn của tôi</a>
-        <a class="topbar-nav-link" href="fines.html">Tiền phạt</a>
+        <a class="topbar-nav-link" href="search.html">Tra cứu sách</a>
+        <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page" data-auth-required="true">Phiếu mượn của tôi</a>
+        <a class="topbar-nav-link" href="reservations.html" data-auth-required="true">Đặt trước</a>
+        <a class="topbar-nav-link" href="fines.html" data-role-allow="READER">Tiền phạt</a>
+        <a class="topbar-nav-link" href="staff-dashboard.html" data-role-allow="ADMIN,LIBRARIAN">Quản trị thư viện</a>
       </nav>
     </div>
     <div class="topbar-right">
@@ -93,6 +95,10 @@
             <span class="material-symbols-outlined">logout</span>
             <span>Đăng xuất</span>
           </button>
+        <div class="account__menu" id="accountMenu" hidden>
+          <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
+          <a href="profile.html" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:inherit;text-decoration:none;font-size:13px;font-weight:500;">Hồ sơ cá nhân</a>
+          <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
         </div>
       </div>
     </div>
@@ -125,7 +131,7 @@
 
   <footer class="footer">
     <div class="footer__inner">
-      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ thống Quản lý Học thuật UniLib 2025</p>
+      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ thống Quản lý Học thuật UniLib 2026</p>
       <nav class="footer__links" aria-label="Liên kết chân trang">
         <a href="#">Quy chế thư viện</a><a href="#">Hỗ trợ nghiên cứu</a><a href="#">Liên hệ thủ thư</a>
       </nav>
@@ -157,6 +163,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
   <script src="../js/notifications.js" defer></script>
   <script src="../js/pages/loan_slip.js"></script>
 </body>

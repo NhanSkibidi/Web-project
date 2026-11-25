@@ -152,13 +152,14 @@
       try {
         res = await api.get(`/loans/readers/by-card/${encodeURIComponent(cardCode)}`);
       } catch (e) {
+        if (e && e.status === 401) throw e;
         // Fallback endpoint nếu router prefix khác
         res = await api.get(`/library-cards/by-code/${encodeURIComponent(cardCode)}`);
       }
 
       state.reader = res;
       renderReaderInfo();
-      showLocalToast(`Đã nhận diện độc giả: ${res.full_name}`);
+      showLocalToast(`Đã nhận diện độc giả: ${res.full_name || res.card_code}`);
 
       // Tự động chuyển tiêu điểm sang ô quét mã sách để thao tác nhanh
       dom.inputBarcode.focus();
@@ -166,10 +167,14 @@
       // Thẩm định lại điều kiện mượn
       await validateBorrowConditions();
     } catch (err) {
-      showLocalToast(err.message || "Không tìm thấy thông tin thẻ thư viện!", "error");
       state.reader = null;
       renderReaderInfo();
       await validateBorrowConditions();
+      const msg = err && err.status === 401
+        ? "Phiên làm việc hết hạn hoặc chưa đăng nhập Thủ thư (401). Vui lòng đăng nhập lại!"
+        : (err.message || "Không tìm thấy thông tin thẻ thư viện!");
+      showLocalToast(msg, "error");
+      dom.inputCardCode.select();
     } finally {
       dom.btnLookupCard.disabled = false;
       dom.btnLookupCard.innerHTML = `<span class="material-symbols-outlined">search</span><span>Tra cứu</span>`;
@@ -328,12 +333,27 @@
       try {
         copyData = await api.get(`/loans/copies/by-barcode/${encodeURIComponent(barcode)}`);
       } catch (e) {
+        if (e && e.status === 401) throw e;
         copyData = await api.get(`/book_copies/code/${encodeURIComponent(barcode)}`);
+        if (copyData && !copyData.title && copyData.book_isbn) {
+          try {
+            const b = await api.get(`/books/${encodeURIComponent(copyData.book_isbn)}`);
+            copyData.title = b.title || copyData.copy_code;
+            copyData.author = b.author || "Tác giả thư viện";
+          } catch {
+            copyData.title = copyData.copy_code;
+            copyData.author = "Chưa cập nhật";
+          }
+        }
+      }
+
+      if (!copyData || !copyData.copy_code) {
+        throw new Error(`Không tìm thấy bản sao '${barcode}' trong kho!`);
       }
 
       state.copies.push(copyData);
       renderScannedCopies();
-      showLocalToast(`Đã thêm: "${copyData.title}"`);
+      showLocalToast(`Đã thêm: "${copyData.title || copyData.copy_code}"`);
 
       // Xóa ô nhập và giữ focus để quét cuốn tiếp theo ngay lập tức
       dom.inputBarcode.value = "";
@@ -342,7 +362,10 @@
       // Thẩm định lại 7 điều kiện
       await validateBorrowConditions();
     } catch (err) {
-      showLocalToast(err.message || `Không tìm thấy bản sao '${barcode}' trong kho!`, "error");
+      const msg = err && err.status === 401
+        ? "Phiên làm việc hết hạn hoặc chưa đăng nhập Thủ thư (401). Vui lòng đăng nhập lại!"
+        : (err.message || `Không tìm thấy bản sao '${barcode}' trong kho!`);
+      showLocalToast(msg, "error");
       dom.inputBarcode.select();
     } finally {
       dom.btnAddBarcode.disabled = false;
@@ -928,6 +951,133 @@
     activeConfirmCallback = null;
   }
 
+  // ----------------------------------------------------------------------------
+  // ĐỒNG BỘ THÔNG TIN NGƯỜI DÙNG & SỰ KIỆN TẠI AVATAR (LOGIN / LOGOUT / PROFILE)
+  // ----------------------------------------------------------------------------
+  async function loadUserProfile() {
+    const avatarEl = document.getElementById("userAvatar");
+    const nameEl = document.getElementById("userName");
+    const roleEl = document.getElementById("userRole");
+    const dropdownMenu = document.getElementById("userDropdownMenu");
+
+    function mapRoleLabel(role) {
+      if (!role) return "Độc giả";
+      const r = String(role).toUpperCase();
+      if (r === "ADMIN") return "Quản trị viên";
+      if (r === "LIBRARIAN") return "Thủ thư trực quầy";
+      if (r === "READER") return "Sinh viên / Độc giả";
+      return role;
+    }
+
+    function renderUser(user) {
+      if (!user) {
+        if (avatarEl) avatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
+        if (nameEl) nameEl.textContent = "Chưa đăng nhập";
+        if (roleEl) roleEl.textContent = "Bấm để đăng nhập";
+        if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = "Chưa đăng nhập";
+        if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = "—";
+
+        if (dropdownMenu) {
+          dropdownMenu.innerHTML = `
+            <a href="login.html#login" class="dropdown-item">
+              <span class="material-symbols-outlined">login</span>
+              <span>Đăng nhập</span>
+            </a>
+            <a href="login.html#register" class="dropdown-item">
+              <span class="material-symbols-outlined">person_add</span>
+              <span>Đăng ký thẻ mới</span>
+            </a>
+          `;
+        }
+        return;
+      }
+
+      const displayName = user.full_name || user.name || user.email || "Thủ thư";
+      const initialChar = (displayName.trim().charAt(0) || "T").toUpperCase();
+      const displayRole = mapRoleLabel(user.role);
+
+      if (avatarEl) avatarEl.textContent = initialChar;
+      if (nameEl) nameEl.textContent = displayName;
+      if (roleEl) roleEl.textContent = displayRole;
+
+      if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = displayName;
+      if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = displayName;
+
+      if (dropdownMenu) {
+        dropdownMenu.innerHTML = `
+          <a href="auth.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        `;
+      }
+    }
+
+    // 1. Lấy thông tin từ cache (hiển thị ngay)
+    let currentUser = null;
+    if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
+      currentUser = auth.getUser();
+    } else {
+      try {
+        const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+        if (raw) currentUser = JSON.parse(raw);
+      } catch (e) { /* ignore */ }
+    }
+    renderUser(currentUser);
+
+    // 2. Đồng bộ session mới nhất từ database nếu có token
+    if (typeof auth !== "undefined" && typeof auth.getToken === "function" && auth.getToken()) {
+      try {
+        if (typeof auth.syncSession === "function") {
+          const freshUser = await auth.syncSession();
+          if (freshUser) renderUser(freshUser);
+        }
+      } catch (err) {
+        console.warn("Không thể đồng bộ session user:", err);
+      }
+    }
+  }
+
+  function handleLogoutClick(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+    if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+
+    showConfirm({
+      title: "Xác nhận đăng xuất?",
+      message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+      type: "red",
+      confirmText: "Đăng xuất",
+      cancelText: "Hủy",
+      onConfirm: () => {
+        if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+          auth.clearSession();
+        } else {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_info");
+          localStorage.removeItem("library_card");
+          sessionStorage.removeItem("access_token");
+          sessionStorage.removeItem("user_info");
+        }
+        showLocalToast("Phiên làm việc đã kết thúc. Đang chuyển hướng...", "info");
+        setTimeout(() => {
+          window.location.href = "login.html#login";
+        }, 500);
+      }
+    });
+  }
+
   // ==============================================================================
   // 10. KHỞI TẠO VÀ LẮNG NGHE SỰ KIỆN GIAO DIỆN
   // ==============================================================================
@@ -954,6 +1104,8 @@
       } catch {
         // Dùng fallback mặc định
       }
+    // 1. Tải và đồng bộ thông tin tài khoản
+    loadUserProfile();
 
       // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
       const mobileMenuToggle = document.getElementById("mobileMenuToggle");
@@ -968,6 +1120,8 @@
       const userProfileBtn = document.getElementById("userProfileBtn");
       const userDropdownMenu = document.getElementById("userDropdownMenu");
       const logoutMenuBtn = document.getElementById("logoutMenuBtn");
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
 
       if (userProfileBtn && userDropdownMenu) {
         userProfileBtn.addEventListener("click", (e) => {
@@ -1007,6 +1161,19 @@
             }
           });
         });
+    // Bắt sự kiện đăng xuất qua delegation trên document
+    document.addEventListener("click", (e) => {
+      const logoutBtn = e.target.closest("#logoutMenuBtn");
+      if (logoutBtn) {
+        handleLogoutClick(e);
+      }
+    });
+
+    // Đóng dropdown và mobile menu khi click ngoài màn hình
+    document.addEventListener("click", () => {
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
       }
 
       // Đóng dropdown và mobile menu khi click ngoài màn hình
@@ -1042,6 +1209,30 @@
           if (e.target === confirmModal) closeConfirmModal();
         });
       }
+    });
+    const readerSearchForm = document.getElementById("reader-search-form");
+    if (readerSearchForm) {
+      readerSearchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        lookupReader();
+      });
+    }
+
+    // 4. Sự kiện quét mã sách (hỗ trợ cả máy quét mã vạch barcode scanner gun và nhập tay)
+    dom.btnAddBarcode.addEventListener("click", addBarcode);
+    dom.inputBarcode.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addBarcode();
+      }
+    });
+    const barcodeScanForm = document.getElementById("barcode-scan-form");
+    if (barcodeScanForm) {
+      barcodeScanForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        addBarcode();
+      });
+    }
 
       // 2. Đặt ngày hẹn trả mặc định 14 ngày
       dom.summaryDueDate.textContent = getStandardDueDate();

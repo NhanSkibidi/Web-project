@@ -424,8 +424,11 @@ function setupEventListeners() {
     if (confirmLogoutBtn) {
         confirmLogoutBtn.addEventListener('click', () => {
             closeLogoutModal();
+            if (typeof auth !== 'undefined' && typeof auth.clearSession === 'function') {
+                auth.clearSession();
+            }
             showToast("Đăng xuất thành công", "Hẹn gặp lại bạn lần sau.", "success");
-            setTimeout(() => { location.href = "login.html"; }, 1000);
+            setTimeout(() => { location.href = "login.html#login"; }, 700);
         });
     }
 

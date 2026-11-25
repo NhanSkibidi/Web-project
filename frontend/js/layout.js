@@ -15,13 +15,6 @@
 //      <body data-root="../" data-layout="reader" data-roles="READER">
 // ==============================================================================
 
-// Danh sách menu cho Cổng Độc giả (Header ngang)
-const READER_MENU = [
-  { href: "pages/home.html", label: "Trang chủ & Tra cứu" },
-  { href: "pages/items.html", label: "Items (CRUD mẫu)" },
-  { href: "pages/auth.html", label: "Tài khoản & Thẻ" },
-];
-
 // Danh sách menu Sidebar cho Admin & Thủ thư (Cả nhóm thêm trang mới vào đây)
 const STAFF_SIDEBAR_GROUPS = [
   {
@@ -33,7 +26,7 @@ const STAFF_SIDEBAR_GROUPS = [
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`,
       },
       {
-        href: "pages/staff-dashboard.html#returns",
+        href: "pages/returns.html",
         label: "Tiếp nhận trả sách",
         badge: "Scan",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>`,
@@ -45,7 +38,7 @@ const STAFF_SIDEBAR_GROUPS = [
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><line x1="12" y1="7" x2="12" y2="13"></line><line x1="9" y1="10" x2="15" y2="10"></line></svg>`,
       },
       {
-        href: "pages/staff-dashboard.html#loans",
+        href: "pages/loan_management.html",
         label: "Duyệt mượn Online",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
       },
@@ -56,18 +49,13 @@ const STAFF_SIDEBAR_GROUPS = [
     items: [
       {
         href: "pages/books.html",
-        label: "Danh mục đầu sách",
+        label: "Danh mục đầu sách & Bản sao",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
       },
       {
         href: "pages/taxonomy.html",
         label: "Thể loại, Tác giả, NXB",
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"></path></svg>`,
-      },
-      {
-        href: "pages/staff-dashboard.html#copies",
-        label: "Bản sao (copy_code)",
-        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="7" y2="16"></line><line x1="11" y1="8" x2="11" y2="16"></line><line x1="15" y1="8" x2="15" y2="16"></line></svg>`,
       },
     ],
   },
@@ -95,11 +83,6 @@ const STAFF_SIDEBAR_GROUPS = [
         badge: "ADMIN",
         roles: ["ADMIN"],
         icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
-      },
-      {
-        href: "pages/items.html",
-        label: "Items (CRUD mẫu)",
-        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`,
       },
     ],
   },
@@ -244,6 +227,7 @@ function renderReaderLayout() {
     const isHome = currentPath.endsWith("/index.html") || currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
     const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/catalog.html") || currentPath.endsWith("/books.html");
     const isLoanSlip = currentPath.endsWith("/loan_slip.html");
+    const isReservations = currentPath.endsWith("/reservations.html");
     const isFines = currentPath.endsWith("/fines.html");
 
     // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
@@ -257,6 +241,11 @@ function renderReaderLayout() {
       user && user.role === "READER"
         ? `<a href="${root}pages/fines.html" class="topbar-nav-link ${isFines ? "active" : ""}">Tiền phạt</a>`
         : "";
+
+    const readerAuthLinksHtml = user
+      ? `<a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
+         <a href="${root}pages/reservations.html" class="topbar-nav-link ${isReservations ? "active" : ""}">Đặt trước</a>`
+      : "";
 
     const notifHtml = `
       <div class="notif-dropdown-container" id="notifDropdownContainer">
@@ -336,7 +325,7 @@ function renderReaderLayout() {
         <nav class="topbar-nav">
           <a href="${root}pages/home.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
           <a href="${root}pages/search.html" class="topbar-nav-link ${isSearch ? "active" : ""}">Tra cứu sách</a>
-          <a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
+          ${readerAuthLinksHtml}
           ${readerFinesLinkHtml}
           ${staffShortcutHtml}
         </nav>
@@ -362,7 +351,7 @@ function renderReaderLayout() {
         <div class="footer-links">
           <a href="${root}pages/home.html">Cổng Độc giả</a>
           <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
-          <a href="${root}pages/auth.html">Tài khoản & Thẻ</a>
+          <a href="${user ? `${root}pages/profile.html` : `${root}pages/login.html`}">Tài khoản & Thẻ</a>
           <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>
         </div>
       </div>
@@ -394,9 +383,8 @@ function renderStaffLayout() {
   // Render các nhóm menu trong Sidebar
   const sidebarGroupsHtml = STAFF_SIDEBAR_GROUPS.map((grp) => {
     const links = grp.items
+      .filter((item) => !item.roles || (user && item.roles.includes(user.role)))
       .map((item) => {
-        // Nếu mục chỉ dành cho ADMIN mà user hiện tại là LIBRARIAN -> gắn nhãn khoá nhẹ
-        const isRestricted = item.roles && user && !item.roles.includes(user.role);
         const isActive =
           currentPath.endsWith("/" + item.href) ||
           (item.href.includes("#") &&
@@ -405,9 +393,7 @@ function renderStaffLayout() {
 
         const badgeHtml = item.badge
           ? `<span class="sidebar-badge">${getSafeText(item.badge)}</span>`
-          : isRestricted
-            ? `<span class="sidebar-badge">🔒</span>`
-            : "";
+          : "";
 
         return `
           <a href="${root}${item.href}" class="sidebar-link ${isActive ? "active" : ""}">
@@ -420,6 +406,8 @@ function renderStaffLayout() {
         `;
       })
       .join("");
+
+    if (!links) return "";
 
     return `
       <div class="sidebar-group">

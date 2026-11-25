@@ -319,7 +319,11 @@ def get_reader_card_detail(
             )
         reader = db.query(User).filter(User.id == card.reader_id).first()
     elif reader_id is not None:
-        reader = db.query(User).filter(User.id == reader_id).first()
+        reader = (
+            db.query(User)
+            .filter(User.id == reader_id, User.role == UserRole.READER)
+            .first()
+        )
         if not reader:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy độc giả")
         card = (

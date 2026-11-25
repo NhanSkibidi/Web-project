@@ -1,8 +1,9 @@
 """Schema cho User. Lưu ý: UserOut KHÔNG có mật khẩu -> không bao giờ trả mật khẩu cho FE."""
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.core.security import validate_password_bytes
 from app.models.user import UserRole, UserStatus
 from app.schemas.library_card import LibraryCardOut
 
@@ -20,6 +21,11 @@ class UserCreate(UserBase):
 
     password: str = Field(min_length=6, max_length=72, examples=["Docgia@123"])
 
+    @field_validator("password")
+    @classmethod
+    def check_password_bytes(cls, value: str) -> str:
+        return validate_password_bytes(value)
+
 
 class UserUpdate(BaseModel):
     """Dữ liệu FE gửi lên khi SỬA. Trường nào không gửi thì giữ nguyên."""
@@ -30,6 +36,11 @@ class UserUpdate(BaseModel):
     phone: str | None = Field(default=None, max_length=20)
     role: UserRole | None = None
     status: UserStatus | None = None
+
+    @field_validator("password")
+    @classmethod
+    def check_password_bytes(cls, value: str | None) -> str | None:
+        return validate_password_bytes(value) if value is not None else None
 
 
 class UserOut(UserBase):
@@ -66,6 +77,16 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(min_length=8, max_length=72, description="Mật khẩu mới (tối thiểu 8 ký tự)")
     confirm_password: str | None = Field(default=None, max_length=72, description="Xác nhận mật khẩu mới (tuỳ chọn)")
 
+    @field_validator("old_password", "new_password")
+    @classmethod
+    def check_password_bytes(cls, value: str) -> str:
+        return validate_password_bytes(value)
+
+    @field_validator("confirm_password")
+    @classmethod
+    def check_confirm_password_bytes(cls, value: str | None) -> str | None:
+        return validate_password_bytes(value) if value is not None else None
+
 
 class ChangePasswordResponse(BaseModel):
     message: str
@@ -82,6 +103,11 @@ class LibrarianCreateRequest(BaseModel):
     phone: str | None = Field(default=None, max_length=20, examples=["0901234567"])
     password: str = Field(min_length=8, max_length=72, examples=["Thuthu@123"])
 
+    @field_validator("password")
+    @classmethod
+    def check_password_bytes(cls, value: str) -> str:
+        return validate_password_bytes(value)
+
 
 class LibrarianUpdateRequest(BaseModel):
     """Admin sửa thông tin tài khoản Thủ thư (mật khẩu là tuỳ chọn để đặt lại)."""
@@ -91,6 +117,11 @@ class LibrarianUpdateRequest(BaseModel):
     phone: str | None = Field(default=None, max_length=20)
     password: str | None = Field(default=None, min_length=8, max_length=72)
     status: UserStatus | None = None
+
+    @field_validator("password")
+    @classmethod
+    def check_password_bytes(cls, value: str | None) -> str | None:
+        return validate_password_bytes(value) if value is not None else None
 
 
 class LibrarianListResponse(BaseModel):

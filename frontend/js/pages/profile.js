@@ -120,6 +120,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const brandLink = document.getElementById("pf-brand-link");
     const navEl = document.getElementById("pf-top-nav");
 
+    const footerLeft = document.querySelector(".app-footer .footer-left");
+    if (footerLeft) {
+      footerLeft.textContent =
+        role === "ADMIN" || role === "LIBRARIAN"
+          ? "© 2026 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền."
+          : "© 2026 KS25 Library System - Cổng Tra Cứu & Độc Giả Sinh Viên. Bảo lưu mọi quyền.";
+    }
+
     let items = [];
     let homeHref = "home.html";
 

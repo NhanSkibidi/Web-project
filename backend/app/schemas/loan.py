@@ -309,21 +309,33 @@ class LoanHistoryItemOut(BaseModel):
     loan_id: int
     book_isbn: str
     book_title: str
+    author_name: str | None = None
+    cover_image: str | None = None
     copy_id: int | None = None
     copy_code: str | None = None
+    copy_status: str | None = None
+    shelf_location: str | None = None
     due_date: datetime | None = None
     renewal_count: int = 0
     return_date: datetime | None = None
     is_overdue: bool = False
     overdue_days: int = 0
     estimated_fine: float = 0.0
+    has_waiting_reservation: bool = False
 
 
 class LoanHistoryOut(BaseModel):
     """Chi tiết phiếu mượn kèm lịch sử mượn trả cho trang chi tiết độc giả."""
     id: int
+    code: str | None = None
     user_id: int
     reader_name: str | None = None
+    reader_email: str | None = None
+    reader_phone: str | None = None
+    card_code: str | None = None
+    card_status: str | None = None
+    reader_holding_count: int = 0
+    reader_max_borrow: int = 5
     processed_by: int | None = None
     borrow_type: str
     status: str

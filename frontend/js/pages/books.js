@@ -20,6 +20,8 @@
         selectedCategory: "",
         selectedStatus: "",
         editingIsbn: null,
+        editingOriginalCopies: 0,
+        returnToDetailIsbn: null,
         authorTags: [],
         selectedCoverFile: null,
 
@@ -88,6 +90,7 @@
         btnLookupIsbn: document.getElementById("btnLookupIsbn"),
         isbnLookupStatus: document.getElementById("isbnLookupStatus"),
         bookCategory: document.getElementById("bookCategory"),
+        authorSelectDropdown: document.getElementById("authorSelectDropdown"),
         authorChipsContainer: document.getElementById("authorChipsContainer"),
         tagAuthorInput: document.getElementById("tagAuthorInput"),
         bookPublisher: document.getElementById("bookPublisher"),
@@ -325,6 +328,12 @@
 
             if (dom.bookPublisher && state.publishersList.length > 0) {
                 dom.bookPublisher.innerHTML = state.publishersList.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+            }
+
+            if (dom.authorSelectDropdown) {
+                dom.authorSelectDropdown.innerHTML =
+                    `<option value="">+ Chọn nhanh tác giả có sẵn...</option>` +
+                    state.authorsList.map(a => `<option value="${escapeHtml(a.name)}">${escapeHtml(a.name)}</option>`).join("");
             }
         } catch (err) {
             console.warn("Lỗi tải danh mục taxonomy:", err);
@@ -592,16 +601,26 @@
     // ============================================================================
     function renderAuthorChips() {
         if (!dom.authorChipsContainer) return;
-        let html = "";
+        const rawInput = dom.tagAuthorInput;
+        dom.authorChipsContainer.querySelectorAll(".author-chip").forEach(el => el.remove());
+
         state.authorTags.forEach((name, idx) => {
-            html += `
-                <span class="author-chip">
-                    <span>${escapeHtml(name)}</span>
-                    <button type="button" class="chip-remove" onclick="window.booksApp.removeAuthorTag(${idx})">&times;</button>
-                </span>
+            const chip = document.createElement("span");
+            chip.className = "author-chip";
+            chip.innerHTML = `
+                <span>${escapeHtml(name)}</span>
+                <button type="button" class="chip-remove" onclick="window.booksApp.removeAuthorTag(${idx})">&times;</button>
             `;
+            if (rawInput && rawInput.parentNode === dom.authorChipsContainer) {
+                dom.authorChipsContainer.insertBefore(chip, rawInput);
+            } else {
+                dom.authorChipsContainer.appendChild(chip);
+            }
         });
-        dom.authorChipsContainer.innerHTML = html;
+
+        if (rawInput && rawInput.parentNode !== dom.authorChipsContainer) {
+            dom.authorChipsContainer.appendChild(rawInput);
+        }
     }
 
     function addAuthorTag(name) {
@@ -897,7 +916,7 @@
             renderAuthorChips();
 
             if (dom.bookYear) dom.bookYear.value = book.publish_year || new Date().getFullYear();
-            if (dom.bookPageCount) dom.bookPageCount.value = book.page_count || 300;
+            if (dom.bookPageCount) dom.bookPageCount.value = book.page_count || "";
             if (dom.bookShelf) {
                 const shelfVal = book.shelf_location || "Khu A - Kệ A3 (Kho CNTT)";
                 const hasOpt = Array.from(dom.bookShelf.options).some(o => o.value === shelfVal);
@@ -907,7 +926,9 @@
                 dom.bookShelf.value = shelfVal;
             }
             if (dom.bookDescription) dom.bookDescription.value = book.description || "";
-            if (dom.copiesCount) dom.copiesCount.value = book.total_copies || 1;
+            state.editingOriginalCopies = Number(book.total_copies || 0);
+            if (dom.copiesCount) dom.copiesCount.value = state.editingOriginalCopies;
+            if (dom.authorSelectDropdown) dom.authorSelectDropdown.value = "";
 
             if (dom.coverPreviewImg) {
                 dom.coverPreviewImg.src = formatCoverUrl(book.cover_image);
@@ -922,9 +943,13 @@
         }
     }
 
-    function closeBookModal() {
+    function closeBookModal(preserveReturnTarget = false) {
         if (dom.bookModalBackdrop) dom.bookModalBackdrop.classList.add("hidden");
         state.editingIsbn = null;
+        state.editingOriginalCopies = 0;
+        if (!preserveReturnTarget) {
+            state.returnToDetailIsbn = null;
+        }
         state.selectedCoverFile = null;
     }
 
@@ -981,10 +1006,16 @@
         const pageCount = parseInt(dom.bookPageCount ? dom.bookPageCount.value : 0, 10) || 0;
         const shelfLocation = dom.bookShelf ? dom.bookShelf.value.trim() : "Kệ A1";
         const description = dom.bookDescription ? dom.bookDescription.value.trim() : "";
+
+        if (dom.tagAuthorInput && dom.tagAuthorInput.value.trim()) {
+            addAuthorTag(dom.tagAuthorInput.value);
+        }
         const authorIds = await resolveAuthorIds();
+        const returnDetailIsbn = state.returnToDetailIsbn;
 
         try {
             if (state.editingIsbn) {
+                const editedIsbn = state.editingIsbn;
                 const updatePayload = {
                     title: title,
                     category_id: categoryId,
@@ -995,13 +1026,39 @@
                     author_ids: authorIds
                 };
 
-                await api.put(`/books/${encodeURIComponent(state.editingIsbn)}`, updatePayload);
+                const updatedBook = await api.put(`/books/${encodeURIComponent(editedIsbn)}`, updatePayload);
 
                 if (state.selectedCoverFile) {
                     try {
-                        await uploadCoverFile(state.editingIsbn, state.selectedCoverFile);
+                        await uploadCoverFile(editedIsbn, state.selectedCoverFile);
                     } catch (coverErr) {
                         console.warn("Upload ảnh bìa thất bại:", coverErr);
+                    }
+                }
+
+                const newCount = parseInt(dom.copiesCount ? dom.copiesCount.value : state.editingOriginalCopies, 10);
+                const extraCopies = !isNaN(newCount) ? Math.max(0, newCount - Number(state.editingOriginalCopies || 0)) : 0;
+                if (extraCopies > 0) {
+                    try {
+                        await api.post("/book_copies", {
+                            book_isbn: editedIsbn,
+                            copies: Array.from({ length: extraCopies }, () => ({
+                                copy_code: "",
+                                shelf_location: shelfLocation || "Kệ A1",
+                                condition: "MỚI",
+                                status: "AVAILABLE"
+                            }))
+                        });
+                    } catch (copyErr) {
+                        console.warn("Lỗi khi bổ sung bản sao:", copyErr);
+                    }
+                }
+
+                if (updatedBook && updatedBook.isbn) {
+                    const idx = state.books.findIndex(b => b.isbn === editedIsbn);
+                    if (idx !== -1) state.books[idx] = updatedBook;
+                    if (state.activeDetailIsbn === editedIsbn) {
+                        state.activeDetailBook = updatedBook;
                     }
                 }
 
@@ -1050,8 +1107,12 @@
                 showNotification(`Đã thêm mới đầu sách "${title}" với ${count} bản sao!`, "success");
             }
 
-            closeBookModal();
+            closeBookModal(Boolean(returnDetailIsbn));
             await loadBooks();
+            if (returnDetailIsbn) {
+                state.returnToDetailIsbn = null;
+                await openBookDetailModal(returnDetailIsbn);
+            }
 
         } catch (err) {
             console.error("Lỗi khi lưu đầu sách:", err);
@@ -2225,6 +2286,17 @@
         if (dom.cancelQuickStatusBtn) dom.cancelQuickStatusBtn.addEventListener("click", closeQuickStatusDrawer);
         if (dom.saveQuickStatusBtn) dom.saveQuickStatusBtn.addEventListener("click", saveQuickStatus);
 
+        // Chọn nhanh tác giả từ dropdown
+        if (dom.authorSelectDropdown) {
+            dom.authorSelectDropdown.addEventListener("change", (e) => {
+                const selectedName = (e.target.value || "").trim();
+                if (selectedName) {
+                    addAuthorTag(selectedName);
+                    e.target.value = "";
+                }
+            });
+        }
+
         // Thay đổi số lượng bản sao
         if (dom.copiesCount) {
             dom.copiesCount.addEventListener("input", updateBarcodeRange);
@@ -2318,7 +2390,10 @@
             dom.detailEditBookBtn.addEventListener("click", () => {
                 const isbn = state.activeDetailIsbn;
                 closeBookDetailModal();
-                if (isbn) openEditModal(isbn);
+                if (isbn) {
+                    state.returnToDetailIsbn = isbn;
+                    openEditModal(isbn);
+                }
             });
         }
 

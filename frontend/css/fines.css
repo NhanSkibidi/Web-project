@@ -756,6 +756,21 @@ body.fines-body {
   flex: 1;
 }
 
+/* Đồng bộ khung nội dung & lề hai bên chế độ Độc giả theo mẫu loan_slip */
+body.reader-mode .fines-main-container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 40px 48px;
+}
+
+@media (max-width: 1024px) {
+  body.reader-mode .fines-main-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
 @media (max-width: 900px) {
   .sidebar-rail {
     display: none;
@@ -765,6 +780,13 @@ body.fines-body {
   }
   .fines-main-container {
     padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  body.reader-mode .fines-main-container {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }
 
@@ -2108,6 +2130,39 @@ body.fines-body {
 .footer-dot {
   font-size: 10px;
   opacity: 0.6;
+}
+
+/* Đồng bộ chân trang chế độ Độc giả theo trang chủ */
+body.reader-mode .app-footer {
+  padding: 24px 32px;
+  background: var(--color-surface);
+  font-size: 13px;
+  color: #78716C;
+  gap: 16px;
+}
+
+body.reader-mode .footer-left {
+  font-weight: 500;
+  color: #78716C;
+}
+
+body.reader-mode .footer-right {
+  gap: 12px;
+}
+
+body.reader-mode .footer-link {
+  color: #78716C;
+}
+
+body.reader-mode .footer-link:hover {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+body.reader-mode .footer-dot {
+  color: var(--color-border);
+  font-size: inherit;
+  opacity: 1;
 }
 
 /* ==========================================================================

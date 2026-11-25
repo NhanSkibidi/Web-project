@@ -152,7 +152,7 @@
       try {
         res = await api.get(`/loans/readers/by-card/${encodeURIComponent(cardCode)}`);
       } catch (e) {
-        if (e && e.status === 401) throw e;
+        if (e && (e.status === 401 || e.status === 403 || e.status === 404)) throw e;
         // Fallback endpoint nếu router prefix khác
         res = await api.get(`/library-cards/by-code/${encodeURIComponent(cardCode)}`);
       }
@@ -244,6 +244,7 @@
     statsGrid.className = "reader-stats-grid";
 
     // 1. Trạng thái thẻ
+    const cardStatusVal = String(r.card_status || r.status || "").toUpperCase();
     const stat1 = document.createElement("div");
     stat1.className = "reader-stat-item";
     const l1 = document.createElement("div");
@@ -251,8 +252,12 @@
     l1.textContent = "Hạn thẻ thư viện";
     const v1 = document.createElement("div");
     v1.className = "reader-stat-val";
-    v1.style.color = r.status === "ACTIVE" ? "var(--color-success)" : "var(--color-danger)";
-    v1.textContent = r.status === "ACTIVE" ? `Còn hạn (${r.expiry_date || "Hợp lệ"})` : "Đã hết hạn/Khóa";
+    v1.style.color = cardStatusVal === "ACTIVE" ? "var(--color-success)" : "var(--color-danger)";
+    v1.textContent = cardStatusVal === "ACTIVE"
+      ? `Còn hạn (${r.expiry_date || "Hợp lệ"})`
+      : cardStatusVal === "LOCKED"
+      ? "Thẻ đang bị khóa"
+      : "Đã hết hạn/Không hợp lệ";
     stat1.appendChild(l1);
     stat1.appendChild(v1);
 
@@ -291,7 +296,6 @@
     dom.readerInfoDisplay.appendChild(statsGrid);
 
     // Cập nhật Pill trạng thái
-    const cardStatusVal = r.card_status || r.status;
     if (cardStatusVal === "ACTIVE") {
       dom.readerStatusPill.className = "status-pill status-pill-success";
       dom.readerStatusPill.textContent = "Thẻ hợp lệ";
@@ -333,7 +337,7 @@
       try {
         copyData = await api.get(`/loans/copies/by-barcode/${encodeURIComponent(barcode)}`);
       } catch (e) {
-        if (e && e.status === 401) throw e;
+        if (e && (e.status === 401 || e.status === 403 || e.status === 404)) throw e;
         copyData = await api.get(`/book_copies/code/${encodeURIComponent(barcode)}`);
         if (copyData && !copyData.title && copyData.book_isbn) {
           try {
@@ -605,7 +609,7 @@
   function openReceiptModal(receipt) {
     dom.modalLoanCode.textContent = receipt.code;
     dom.modalReaderName.textContent = receipt.reader_name;
-    dom.modalReaderId.textContent = `${receipt.reader_card_code} · MSSV: ${receipt.reader_student_id || "23010412"}`;
+    dom.modalReaderId.textContent = `${receipt.reader_card_code} · Mã ĐG: ${receipt.reader_student_id || "—"}`;
     dom.modalBookCount.textContent = `${receipt.books.length} cuốn`;
     dom.modalBorrowedAt.textContent = receipt.borrowed_at;
     dom.modalDueDate.textContent = receipt.due_date;
@@ -643,10 +647,10 @@
     dom.pDueDate.textContent = receipt.due_date;
     dom.pReaderName.textContent = receipt.reader_name;
     dom.pCardCode.textContent = receipt.reader_card_code;
-    dom.pStudentId.textContent = receipt.reader_student_id || "23010412";
-    dom.pFaculty.textContent = receipt.reader_faculty || "Khoa CNTT (K1)";
+    dom.pStudentId.textContent = receipt.reader_student_id || "—";
+    dom.pFaculty.textContent = receipt.reader_faculty || "—";
     dom.pSigReaderName.textContent = receipt.reader_name;
-    dom.pSigLibrarianName.textContent = receipt.librarian_name || "Trịnh Huy Đại";
+    dom.pSigLibrarianName.textContent = receipt.librarian_name || "Thủ thư trực quầy";
 
     dom.pBooksBody.replaceChildren();
     receipt.books.forEach((b, i) => {

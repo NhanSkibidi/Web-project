@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css?v=10.2">
-  <link rel="stylesheet" href="../css/reservations.css?v=1.2">
+  <link rel="stylesheet" href="../css/style.css?v=10.4">
+  <link rel="stylesheet" href="../css/reservations.css?v=1.8">
 </head>
 
 <body data-root="../" data-roles="READER,LIBRARIAN,ADMIN">
@@ -22,17 +22,10 @@
   <!-- NỘI DUNG CHÍNH -->
   <main class="container reservations-main">
 
-    <!-- BREADCRUMB -->
+    <!-- THANH HÀNH ĐỘNG NHANH -->
     <div class="breadcrumb-bar">
-      <div class="breadcrumb-links">
-        <a href="home.html">🏠 Trang chủ</a>
-        <span>/</span>
-        <a href="profile.html">Tài khoản cá nhân</a>
-        <span>/</span>
-        <span class="breadcrumb-current">Sách đặt trước của tôi</span>
-      </div>
       <a href="search.html" class="btn-back-catalog">
-        <span>🔍</span>
+        <span class="material-symbols-outlined">search</span>
         <span>Tra cứu thêm sách</span>
       </a>
     </div>
@@ -41,8 +34,8 @@
     <section class="res-hero-banner">
       <div class="res-hero-content">
         <div class="res-pill-tag">
-          <span>📋</span>
-          <span>Tác vụ độc giả · Module Đặt trước (T3CFCAC)</span>
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Tác vụ độc giả · Module Đặt trước</span>
         </div>
         <h1 class="res-hero-title">Sách Đặt Trước Của Tôi</h1>
         <p class="res-hero-desc">
@@ -53,10 +46,10 @@
         <div class="res-quota-box">
           <div class="quota-info">
             <span>Hạn mức đặt trước:</span>
-            <strong id="quotaText">Đang dùng 2 / 3 lượt</strong>
+            <strong id="quotaText">Đang tải...</strong>
           </div>
           <div class="quota-bar-track">
-            <div class="quota-bar-fill" id="quotaBarFill" style="width: 66%;"></div>
+            <div class="quota-bar-fill" id="quotaBarFill" style="width: 0%;"></div>
           </div>
         </div>
       </div>
@@ -66,15 +59,17 @@
     <div class="res-tabs-bar">
       <button type="button" class="res-tab-btn active" data-tab="all" onclick="filterReservations('all', this)">
         <span>Tất cả</span>
-        <span class="tab-count-badge" id="countAll">2</span>
+        <span class="tab-count-badge" id="countAll">0</span>
       </button>
       <button type="button" class="res-tab-btn" data-tab="READY" onclick="filterReservations('READY', this)">
-        <span>🔔 Đã có sách (READY)</span>
-        <span class="tab-count-badge badge-ready" id="countReady">1</span>
+        <span class="material-symbols-outlined">notifications_active</span>
+        <span>Đã có sách (READY)</span>
+        <span class="tab-count-badge badge-ready" id="countReady">0</span>
       </button>
       <button type="button" class="res-tab-btn" data-tab="WAITING" onclick="filterReservations('WAITING', this)">
-        <span>⏳ Đang chờ lượt (WAITING)</span>
-        <span class="tab-count-badge badge-waiting" id="countWaiting">1</span>
+        <span class="material-symbols-outlined">hourglass_top</span>
+        <span>Đang chờ lượt (WAITING)</span>
+        <span class="tab-count-badge badge-waiting" id="countWaiting">0</span>
       </button>
       <button type="button" class="res-tab-btn" data-tab="history" onclick="filterReservations('history', this)">
         <span>Lịch sử (Đã nhận / Đã huỷ)</span>
@@ -89,7 +84,9 @@
 
     <!-- KHUNG RỖNG KHI CHƯA ĐẶT SÁCH -->
     <div class="res-empty-state" id="emptyState" style="display: none;">
-      <div class="empty-icon-circle">📚</div>
+      <div class="empty-icon-circle">
+        <span class="material-symbols-outlined">library_books</span>
+      </div>
       <h3 class="empty-title">Bạn chưa có lượt đặt trước nào</h3>
       <p class="empty-sub">Khi các đầu sách chuyên ngành bạn cần bị mượn hết, hãy chọn nút "Đặt trước" trên trang chi tiết để được xếp hàng nhận sách đầu tiên.</p>
       <a href="search.html" class="btn btn-primary" style="margin-top: 14px; text-decoration: none;">Khám phá kho sách ngay →</a>
@@ -103,7 +100,9 @@
   <!-- MODAL XÁC NHẬN HUỶ ĐẶT TRƯỚC -->
   <div class="modal-overlay" id="cancelModalOverlay" style="display: none;">
     <div class="modal-box">
-      <div class="modal-icon-circle">⚠️</div>
+      <div class="modal-icon-circle">
+        <span class="material-symbols-outlined">warning</span>
+      </div>
       <h3 class="modal-title">Xác nhận huỷ đặt trước?</h3>
       <p class="modal-desc" id="cancelModalDesc">
         Bạn có chắc muốn huỷ lượt đặt trước này không? Lượt giữ sách sẽ được chuyển cho người tiếp theo trong hàng chờ.
@@ -120,8 +119,8 @@
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.5"></script>
-  <script src="../js/layout.js?v=10.2"></script>
-  <script src="../js/pages/reservations.js?v=1.2"></script>
+  <script src="../js/layout.js?v=10.4"></script>
+  <script src="../js/pages/reservations.js?v=1.4"></script>
 </body>
 
 </html>

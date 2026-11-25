@@ -77,6 +77,67 @@ function getBookDetailUrl(isbn) {
   return `book_detail.html?isbn=${encodeURIComponent(isbn || "")}`;
 }
 
+function getHomeSession() {
+  let user = null;
+  let token = null;
+  if (typeof auth !== "undefined") {
+    token = typeof auth.getToken === "function" ? auth.getToken() : null;
+    user = typeof auth.getUser === "function" ? auth.getUser() : null;
+  } else {
+    token =
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("access_token") ||
+      null;
+    try {
+      const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+      if (raw) user = JSON.parse(raw);
+    } catch {
+      user = null;
+    }
+  }
+  return { user, token, isLoggedIn: Boolean(token && user) };
+}
+
+function openAuthGuardModal(redirectUrl = "") {
+  const overlay = document.getElementById("authGuardOverlay");
+  if (!overlay) {
+    window.location.href = "login.html#login";
+    return;
+  }
+  const loginBtn = document.getElementById("authGuardLoginBtn");
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      try {
+        const target = redirectUrl
+          ? new URL(redirectUrl, window.location.href).href
+          : window.location.href;
+        sessionStorage.setItem("redirect_after_login", target);
+      } catch {
+        // ignore
+      }
+    };
+  }
+  overlay.style.display = "flex";
+}
+
+function closeAuthGuardModal() {
+  const overlay = document.getElementById("authGuardOverlay");
+  if (overlay) {
+    overlay.style.display = "none";
+  }
+}
+
+function handleDetailLinkClick(event, el) {
+  if (!getHomeSession().isLoggedIn) {
+    if (event) event.preventDefault();
+    const targetUrl = el && el.getAttribute ? el.getAttribute("href") : "";
+    openAuthGuardModal(targetUrl);
+    return false;
+  }
+  return true;
+}
+
 function isStaffUser() {
   if (typeof auth === "undefined") return false;
   const token = auth.getToken ? auth.getToken() : null;
@@ -136,75 +197,109 @@ function getCategoryIcon(name) {
   return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`;
 }
 
+const HOME_CACHE_KEY = "unilib_home_cache_v1";
+
+function readHomeCache() {
+  try {
+    const raw = sessionStorage.getItem(HOME_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeHomeCache(patch) {
+  try {
+    const prev = readHomeCache() || {};
+    sessionStorage.setItem(HOME_CACHE_KEY, JSON.stringify({ ...prev, ...patch }));
+  } catch {
+    // ignore
+  }
+}
+
+function applyCategoriesData(items, total) {
+  const grid = document.getElementById("category-grid");
+  const select = document.getElementById("search-category");
+  const statCatsEl = document.getElementById("stat-categories-count");
+
+  homeState.categories = items;
+
+  if (statCatsEl) {
+    statCatsEl.textContent = formatNumber(total);
+  }
+
+  if (select) {
+    select.innerHTML =
+      `<option value="">Tất cả ngành học</option>` +
+      items
+        .map(
+          (cat) =>
+            `<option value="${Number(cat.id)}">${safeEscape(cat.name)}</option>`
+        )
+        .join("");
+    if (homeState.selectedCategoryId) {
+      select.value = String(homeState.selectedCategoryId);
+    }
+  }
+
+  if (grid) {
+    if (items.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 32px; color: var(--color-muted);">
+          Chưa có chuyên ngành đào tạo nào trong cơ sở dữ liệu.
+        </div>
+      `;
+    } else {
+      grid.innerHTML = items
+        .map((cat, idx) => {
+          const extraClass = idx >= 5 ? " category-card-extra" : "";
+          const booksCount = Number(cat.books_count || 0);
+          return `
+            <div class="category-card${extraClass}" data-category-id="${Number(cat.id)}" onclick="handleCategoryFilter(this.dataset.categoryId)">
+              <div class="category-icon">${getCategoryIcon(cat.name)}</div>
+              <div class="category-name">${safeEscape(cat.name)}</div>
+              <div class="category-count">${formatNumber(booksCount)} sách</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+  }
+
+  syncCategoryToggleUI();
+}
+
 // ==============================================================================
 // 1. TẢI DỮ LIỆU CHUYÊN NGÀNH TỪ DATABASE
 // ==============================================================================
-async function loadCategories() {
+async function loadCategories(options = {}) {
+  const { prevSignature = "" } = options;
   const grid = document.getElementById("category-grid");
-  const select = document.getElementById("search-category");
   const statCatsEl = document.getElementById("stat-categories-count");
 
   try {
     const res = await api.get("/categories", { page: 1, page_size: 100 });
     const items = Array.isArray(res?.items) ? res.items : [];
     const total = Number(res?.total ?? items.length);
+    const sig = JSON.stringify({ items, total });
+    writeHomeCache({ categories: { items, total } });
 
-    homeState.categories = items;
-
-    if (statCatsEl) {
-      statCatsEl.textContent = formatNumber(total);
+    if (!prevSignature || sig !== prevSignature) {
+      applyCategoriesData(items, total);
     }
-
-    if (select) {
-      select.innerHTML =
-        `<option value="">Tất cả ngành học</option>` +
-        items
-          .map(
-            (cat) =>
-              `<option value="${Number(cat.id)}">${safeEscape(cat.name)}</option>`
-          )
-          .join("");
-      if (homeState.selectedCategoryId) {
-        select.value = String(homeState.selectedCategoryId);
-      }
-    }
-
-    if (grid) {
-      if (items.length === 0) {
-        grid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 32px; color: var(--color-muted);">
-            Chưa có chuyên ngành đào tạo nào trong cơ sở dữ liệu.
-          </div>
-        `;
-      } else {
-        grid.innerHTML = items
-          .map((cat, idx) => {
-            const extraClass = idx >= 5 ? " category-card-extra" : "";
-            const booksCount = Number(cat.books_count || 0);
-            return `
-              <div class="category-card${extraClass}" data-category-id="${Number(cat.id)}" onclick="handleCategoryFilter(this.dataset.categoryId)">
-                <div class="category-icon">${getCategoryIcon(cat.name)}</div>
-                <div class="category-name">${safeEscape(cat.name)}</div>
-                <div class="category-count">${formatNumber(booksCount)} sách</div>
-              </div>
-            `;
-          })
-          .join("");
-      }
-    }
-
-    syncCategoryToggleUI();
   } catch (err) {
     console.error("Không thể tải danh mục chuyên ngành:", err);
-    if (statCatsEl) statCatsEl.textContent = "0";
-    if (grid) {
-      grid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 28px; color: var(--color-muted);">
-          Không thể tải danh mục chuyên ngành từ máy chủ.
-        </div>
-      `;
+    if (!prevSignature) {
+      if (statCatsEl) statCatsEl.textContent = "0";
+      if (grid) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 28px; color: var(--color-muted);">
+            Không thể tải danh mục chuyên ngành từ máy chủ.
+          </div>
+        `;
+      }
+      syncCategoryToggleUI();
     }
-    syncCategoryToggleUI();
   }
 }
 
@@ -255,12 +350,33 @@ function syncCategoryToggleUI() {
   }
 }
 
+function applyBooksData(items, total, totalPages) {
+  homeState.totalBooks = total;
+  homeState.totalPages = totalPages;
+  if (homeState.currentPage > totalPages) {
+    homeState.currentPage = totalPages;
+  }
+  if (!homeState.keyword && !homeState.selectedCategoryId) {
+    homeState.totalCatalogBooks = total;
+  }
+
+  items.forEach((book) => {
+    if (book && book.isbn) {
+      homeState.booksByIsbn.set(String(book.isbn), book);
+    }
+  });
+
+  updateFilterBannerAndTitle();
+  renderBooksView(items);
+}
+
 // ==============================================================================
 // 2. TẢI DANH SÁCH SÁCH & PHÂN TRANG TỪ DATABASE (/api/books/search)
 // ==============================================================================
-async function fetchBooksPage() {
+async function fetchBooksPage(options = {}) {
+  const { silent = false, prevSignature = "" } = options;
   const grid = document.getElementById("new-books-grid");
-  if (grid && grid.querySelector(".book-card")) {
+  if (!silent && grid && grid.querySelector(".book-card")) {
     grid.style.opacity = "0.6";
   }
 
@@ -279,27 +395,18 @@ async function fetchBooksPage() {
     const items = Array.isArray(res?.items) ? res.items : [];
     const total = Number(res?.total ?? items.length);
     const totalPages = Math.max(1, Number(res?.total_pages ?? (Math.ceil(total / pageSize) || 1)));
+    const sig = JSON.stringify({ items, total, totalPages });
 
-    homeState.totalBooks = total;
-    homeState.totalPages = totalPages;
-    if (homeState.currentPage > totalPages) {
-      homeState.currentPage = totalPages;
-    }
-    if (!homeState.keyword && !homeState.selectedCategoryId) {
-      homeState.totalCatalogBooks = total;
+    if (!homeState.keyword && !homeState.selectedCategoryId && homeState.currentPage === 1 && !homeState.isAllBooksView) {
+      writeHomeCache({ defaultBooks: { items, total, totalPages } });
     }
 
-    items.forEach((book) => {
-      if (book && book.isbn) {
-        homeState.booksByIsbn.set(String(book.isbn), book);
-      }
-    });
-
-    updateFilterBannerAndTitle();
-    renderBooksView(items);
+    if (!prevSignature || sig !== prevSignature) {
+      applyBooksData(items, total, totalPages);
+    }
   } catch (err) {
     console.error("Không thể tải danh sách sách:", err);
-    if (grid) {
+    if (!prevSignature && grid) {
       grid.style.opacity = "1";
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #fff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg);">
@@ -465,7 +572,7 @@ function renderBooksView(pageBooks) {
 
       return `
         <div class="book-card">
-          <a href="${detailUrl}" style="display:block;text-decoration:none;">
+          <a href="${detailUrl}" style="display:block;text-decoration:none;" onclick="return handleDetailLinkClick(event, this)">
             <div class="book-cover" style="background: ${gradient}; cursor: pointer;">
               <span class="shelf-badge">${safeShelf}</span>
               ${
@@ -485,15 +592,17 @@ function renderBooksView(pageBooks) {
             <span class="badge-status ${available > 0 ? "status-available" : "status-out"}">${statusText}</span>
           </div>
           <h3 class="book-title" title="${title}">
-            <a href="${detailUrl}" style="color:inherit;text-decoration:none;">${title}</a>
+            <a href="${detailUrl}" style="color:inherit;text-decoration:none;" onclick="return handleDetailLinkClick(event, this)">${title}</a>
           </h3>
           <div class="book-author" title="${safeAuthor}">${safeAuthor}</div>
           <div class="book-actions">
-            <a href="${detailUrl}" class="btn-detail">Chi tiết</a>
+            <a href="${detailUrl}" class="btn-detail" onclick="return handleDetailLinkClick(event, this)">Chi tiết</a>
             ${
               available > 0
                 ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="borrowBook(this.dataset.isbn)">🛒 Mượn</button>`
-                : `<button type="button" class="btn-borrow" disabled>Hết sách</button>`
+                : totalCopies > 0
+                  ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="reserveBookFromHome(this.dataset.isbn)" style="background:#D97706;">⏳ Đặt trước</button>`
+                  : `<button type="button" class="btn-borrow" disabled>Chưa có bản sao</button>`
             }
           </div>
         </div>
@@ -509,9 +618,11 @@ function renderBooksView(pageBooks) {
 // ==============================================================================
 // 3. TẢI THỐNG KÊ HERO & SÁCH MƯỢN NHIỀU TỪ DATABASE
 // ==============================================================================
-async function loadHeroStatsAndTrending() {
+async function loadHeroStatsAndTrending(options = {}) {
+  const { prevSignature = "" } = options;
   const staff = isStaffUser();
   let statsLoadedFromDashboard = false;
+  let heroStatsPayload = null;
   let trendingItems = [];
   let trendingMode = "weekly";
 
@@ -523,13 +634,13 @@ async function loadHeroStatsAndTrending() {
 
     if (dashRes.status === "fulfilled" && dashRes.value?.summary) {
       const s = dashRes.value.summary;
-      updateHeroNumbers({
+      heroStatsPayload = {
         totalBooks: s.total_books,
         totalCopies: s.total_copies,
         thirdIcon: "👥",
         thirdCount: s.active_readers,
         thirdLabel: "Độc giả đang hoạt động",
-      });
+      };
       statsLoadedFromDashboard = true;
 
       if (
@@ -577,13 +688,13 @@ async function loadHeroStatsAndTrending() {
         const availableCopies = allItems.reduce((sum, b) => sum + Number(b.available_copies || 0), 0);
         const suffix = totalBooks > 100 ? "+" : "";
 
-        updateHeroNumbers({
+        heroStatsPayload = {
           totalBooks,
           totalCopiesText: `${formatNumber(totalCopies)}${suffix}`,
           thirdIcon: "📚",
           thirdCountText: `${formatNumber(availableCopies)}${suffix}`,
           thirdLabel: "Bản sẵn sàng mượn",
-        });
+        };
       }
 
       if (trendingItems.length === 0 && allItems.length > 0) {
@@ -605,19 +716,27 @@ async function loadHeroStatsAndTrending() {
       }
     } catch (err) {
       console.error("Không thể tải dữ liệu thống kê công khai:", err);
-      if (!statsLoadedFromDashboard) {
-        updateHeroNumbers({
+      if (!statsLoadedFromDashboard && !prevSignature) {
+        heroStatsPayload = {
           totalBooks: 0,
           totalCopies: 0,
           thirdIcon: "📚",
           thirdCount: 0,
           thirdLabel: "Bản sẵn sàng mượn",
-        });
+        };
       }
     }
   }
 
-  renderTrendingList(trendingItems, trendingMode);
+  const nextPayload = { heroStatsPayload, trendingItems, trendingMode };
+  const sig = JSON.stringify(nextPayload);
+  if (heroStatsPayload) {
+    writeHomeCache({ statsAndTrending: nextPayload });
+  }
+  if (!prevSignature || sig !== prevSignature) {
+    if (heroStatsPayload) updateHeroNumbers(heroStatsPayload);
+    renderTrendingList(trendingItems, trendingMode);
+  }
 }
 
 function updateHeroNumbers({
@@ -713,7 +832,7 @@ function renderTrendingList(items, mode) {
           <div class="trending-left">
             <span class="trending-rank">${rank}</span>
             <div class="trending-info">
-              <h5><a href="${detailUrl}">${title}</a></h5>
+              <h5><a href="${detailUrl}" onclick="return handleDetailLinkClick(event, this)">${title}</a></h5>
               <p>${safeEscape(metaParts.join(" • "))}</p>
             </div>
           </div>
@@ -723,9 +842,9 @@ function renderTrendingList(items, mode) {
               type="button"
               class="trending-add-btn"
               data-isbn="${safeIsbn}"
-              title="${available > 0 ? "Thêm vào giỏ mượn" : "Tạm hết bản sẵn sàng"}"
-              ${available <= 0 ? "disabled" : ""}
-              onclick="quickAdd(this.dataset.isbn)">+</button>
+              title="${available > 0 ? "Thêm vào giỏ mượn" : (totalCopies > 0 ? "Đặt trước sách (Xếp hàng)" : "Chưa có bản sao")}"
+              ${available <= 0 && totalCopies <= 0 ? "disabled" : ""}
+              onclick="${available > 0 ? "quickAdd(this.dataset.isbn)" : "reserveBookFromHome(this.dataset.isbn)"}">${available > 0 ? "+" : (totalCopies > 0 ? "⏳" : "+")}</button>
           </div>
         </div>
       `;
@@ -900,6 +1019,11 @@ function addBookToLocalBasket(book) {
 }
 
 function borrowBook(isbnOrTitle) {
+  if (!getHomeSession().isLoggedIn) {
+    openAuthGuardModal();
+    return;
+  }
+
   const key = String(isbnOrTitle ?? "").trim();
   let book = homeState.booksByIsbn.get(key);
   if (!book) {
@@ -931,32 +1055,118 @@ function borrowBook(isbnOrTitle) {
 }
 
 function showLibraryRules() {
-  showConfirm({
-    title: "Quy chế mượn trả thư viện KS25",
-    message:
-      "Mượn tối đa 05 cuốn / 14 ngày. Gia hạn online trước hạn trả 2 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn; hỏng sách 50% giá bìa; mất sách 100% giá bìa.",
-    type: "green",
-    confirmText: "Đã hiểu",
-    cancelText: "Đóng",
-  });
+  const modal = document.getElementById("rules-modal");
+  if (!modal) {
+    showConfirm({
+      title: "Quy chế mượn trả thư viện KS25",
+      message:
+        "Mượn tối đa 05 cuốn / 14 ngày. Gia hạn online trước hạn trả 2 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn; hỏng sách 50% giá bìa; mất sách 100% giá bìa.",
+      type: "green",
+      confirmText: "Đã hiểu",
+      cancelText: "Đóng",
+    });
+    return;
+  }
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeRulesModal() {
+  const modal = document.getElementById("rules-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
+  document.body.style.overflow = "";
 }
 
 function quickAdd(isbnOrTitle) {
   borrowBook(isbnOrTitle);
 }
 
+function reserveBookFromHome(isbn) {
+  if (!getHomeSession().isLoggedIn) {
+    openAuthGuardModal();
+    return;
+  }
+
+  const key = String(isbn ?? "").trim();
+  const book = homeState.booksByIsbn.get(key);
+  const bookTitle = book ? book.title : key || "Tài liệu thư viện";
+
+  showConfirm({
+    title: "Xác nhận đặt trước sách?",
+    message: `Cuốn "${bookTitle}" hiện đã hết bản trống trên kệ. Bạn muốn đặt trước để vào hàng chờ ưu tiên (giữ 48 giờ khi có sách trả về)?`,
+    type: "blue",
+    confirmText: "Đặt trước ngay",
+    cancelText: "Hủy",
+    onConfirm: async () => {
+      try {
+        const res = await api.post("/reservations", { book_isbn: key });
+        const pos = res?.queue_position ? ` (Vị trí hàng chờ: #${res.queue_position})` : "";
+        notifyUser(`Đã đặt trước "${bookTitle}" thành công${pos}!`, "success");
+        fetchBooksPage({ silent: true });
+      } catch (err) {
+        notifyUser(err?.message || "Không thể đặt trước đầu sách này.", "error");
+      }
+    },
+  });
+}
+
 function viewBookDetail(isbnOrTitle) {
   const key = String(isbnOrTitle ?? "").trim();
   const book = homeState.booksByIsbn.get(key);
   const isbn = book ? book.isbn : key;
-  window.location.href = getBookDetailUrl(isbn);
+  const detailUrl = getBookDetailUrl(isbn);
+  if (!getHomeSession().isLoggedIn) {
+    openAuthGuardModal(detailUrl);
+    return;
+  }
+  window.location.href = detailUrl;
 }
 
 async function loadHomeData() {
+  const cache = readHomeCache();
+  let catSig = "";
+  let booksSig = "";
+  let statsSig = "";
+
+  if (cache?.categories) {
+    try {
+      catSig = JSON.stringify(cache.categories);
+      applyCategoriesData(cache.categories.items || [], Number(cache.categories.total || 0));
+    } catch {
+      catSig = "";
+    }
+  }
+
+  if (cache?.defaultBooks && !homeState.keyword && !homeState.selectedCategoryId && homeState.currentPage === 1 && !homeState.isAllBooksView) {
+    try {
+      booksSig = JSON.stringify(cache.defaultBooks);
+      const { items = [], total = 0, totalPages = 1 } = cache.defaultBooks;
+      applyBooksData(items, total, totalPages);
+    } catch {
+      booksSig = "";
+    }
+  }
+
+  if (cache?.statsAndTrending) {
+    try {
+      statsSig = JSON.stringify(cache.statsAndTrending);
+      if (cache.statsAndTrending.heroStatsPayload) {
+        updateHeroNumbers(cache.statsAndTrending.heroStatsPayload);
+      }
+      renderTrendingList(cache.statsAndTrending.trendingItems || [], cache.statsAndTrending.trendingMode || "weekly");
+    } catch {
+      statsSig = "";
+    }
+  }
+
   await Promise.allSettled([
-    loadCategories(),
-    fetchBooksPage(),
-    loadHeroStatsAndTrending(),
+    loadCategories({ prevSignature: catSig }),
+    fetchBooksPage({ silent: Boolean(booksSig), prevSignature: booksSig }),
+    loadHeroStatsAndTrending({ prevSignature: statsSig }),
   ]);
 }
 
@@ -1017,20 +1227,19 @@ function initTopBar() {
   const nameEl = document.getElementById("userName");
   const roleEl = document.getElementById("userRole");
   const userDropdownMenu = document.getElementById("userDropdownMenu");
+  const notifContainer = document.getElementById("notifDropdownContainer");
+  const loanBasketBtn = document.getElementById("loanBasketBtn");
 
-  let user = null;
-  if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
-    user = auth.getUser();
-  } else {
-    try {
-      const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
-      if (raw) user = JSON.parse(raw);
-    } catch (e) {
-      /* ignore */
-    }
+  const { user, isLoggedIn } = getHomeSession();
+
+  if (notifContainer) {
+    notifContainer.style.display = isLoggedIn ? "" : "none";
+  }
+  if (loanBasketBtn) {
+    loanBasketBtn.style.display = isLoggedIn ? "" : "none";
   }
 
-  if (user) {
+  if (isLoggedIn) {
     const fullName = user.full_name || user.name || user.email || "Độc giả";
     const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
     const role = String(user.role || "").toUpperCase();
@@ -1169,6 +1378,30 @@ function initTopBar() {
       }
     });
   }
+
+  const authGuardOverlay = document.getElementById("authGuardOverlay");
+  if (authGuardOverlay) {
+    authGuardOverlay.addEventListener("click", (e) => {
+      if (e.target === authGuardOverlay) {
+        closeAuthGuardModal();
+      }
+    });
+  }
+  const rulesModal = document.getElementById("rules-modal");
+  if (rulesModal) {
+    rulesModal.addEventListener("click", (e) => {
+      if (e.target === rulesModal) {
+        closeRulesModal();
+      }
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeConfirmModal();
+      closeRulesModal();
+      closeAuthGuardModal();
+    }
+  });
 }
 
 // Khởi chạy
@@ -1186,13 +1419,18 @@ window.toggleAllCategories = toggleCategories;
 window.handleCategoryFilter = handleCategoryFilter;
 window.clearSearchFilter = clearSearchFilter;
 window.borrowBook = borrowBook;
+window.reserveBookFromHome = reserveBookFromHome;
 window.showLibraryRules = showLibraryRules;
+window.closeRulesModal = closeRulesModal;
 window.quickAdd = quickAdd;
 window.prevCarousel = prevCarousel;
 window.nextCarousel = nextCarousel;
 window.goToCarouselPage = goToCarouselPage;
 window.toggleAllBooksView = toggleAllBooksView;
 window.viewBookDetail = viewBookDetail;
+window.handleDetailLinkClick = handleDetailLinkClick;
+window.openAuthGuardModal = openAuthGuardModal;
+window.closeAuthGuardModal = closeAuthGuardModal;
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
 window.fetchBooksPage = fetchBooksPage;

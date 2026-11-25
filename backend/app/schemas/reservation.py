@@ -43,5 +43,7 @@ class ReservationResponse(BaseModel):
     copy_barcode: Optional[str] = None
     copy_code: Optional[str] = None
     shelf_location: Optional[str] = None
+    loan_id: Optional[int] = None
+    loan_code: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -95,11 +95,12 @@ def _resolve_user_id(
 def list_loans(
     user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
     status: Literal["PENDING", "APPROVED", "BORROWED", "RETURNED", "REJECTED", "CANCELLED"] | None = Query(None, description="Lọc theo trạng thái phiếu"),
+    borrow_type: Literal["ONLINE", "COUNTER"] | None = Query(None, description="Lọc theo hình thức mượn"),
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
 ):
     """Lấy danh sách & lịch sử mượn trả sách từ module Mượn."""
-    return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
+    return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit, borrow_type=borrow_type)
 
 "Lọc "
 @router.get("/user/{user_id}", response_model=list[LoanHistoryOut])

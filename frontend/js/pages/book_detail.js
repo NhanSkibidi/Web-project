@@ -68,36 +68,52 @@
     const userNameEl = document.getElementById("headerUserName");
     const userRoleEl = document.getElementById("headerUserRole");
     const userAvatarEl = document.getElementById("headerUserAvatar");
-    const profileEl = document.getElementById("headerUserProfile");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
 
     if (!user) {
       if (overlay) overlay.style.display = "flex";
-      if (userNameEl) userNameEl.textContent = "Đăng nhập";
-      if (userRoleEl) userRoleEl.textContent = "Khách tham quan";
-      if (userAvatarEl) userAvatarEl.textContent = "?";
-      if (profileEl) {
-        profileEl.setAttribute("onclick", "window.location.href='login.html#login'");
-        profileEl.title = "Đăng nhập tài khoản";
+      if (userNameEl) userNameEl.textContent = "Tài khoản";
+      if (userRoleEl) userRoleEl.textContent = "Chưa đăng nhập";
+      if (userAvatarEl) userAvatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
+      if (userDropdownMenu) {
+        userDropdownMenu.innerHTML = `
+          <a href="login.html#login" class="dropdown-item">
+            <span class="material-symbols-outlined">login</span>
+            <span>Đăng nhập</span>
+          </a>
+          <a href="login.html#register" class="dropdown-item">
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Đăng ký thẻ mới</span>
+          </a>
+        `;
       }
       return false;
     } else {
       if (overlay) overlay.style.display = "none";
-      if (profileEl) {
-        profileEl.setAttribute("onclick", "window.location.href='profile.html'");
-        profileEl.title = "Hồ sơ cá nhân & Đổi mật khẩu";
-      }
-      if (userNameEl) userNameEl.textContent = user.full_name || user.email || "Bạn đọc";
-      if (userRoleEl) {
-        const roleMap = {
-          ADMIN: "Quản trị viên",
-          LIBRARIAN: "Thủ thư",
-          READER: "Sinh viên / Độc giả"
-        };
-        userRoleEl.textContent = roleMap[user.role] || user.role;
-      }
+      const displayName = user.full_name || user.email || "Độc giả";
+      const role = String(user.role || "").toUpperCase();
+      const roleMap = {
+        ADMIN: "Quản trị viên",
+        LIBRARIAN: "Thủ thư",
+        READER: "Độc giả"
+      };
+      if (userNameEl) userNameEl.textContent = displayName;
+      if (userRoleEl) userRoleEl.textContent = roleMap[role] || "Độc giả";
       if (userAvatarEl) {
-        const initial = (user.full_name || user.email || "U").charAt(0).toUpperCase();
-        userAvatarEl.textContent = initial;
+        userAvatarEl.textContent = (displayName.trim().charAt(0) || "U").toUpperCase();
+      }
+      if (userDropdownMenu) {
+        userDropdownMenu.innerHTML = `
+          <a href="profile.html" class="dropdown-item" id="userProfileLink">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        `;
       }
       return true;
     }
@@ -168,13 +184,10 @@
   function renderBookDetails(book) {
     if (!book) return;
 
-    // Tiêu đề trang & Breadcrumb
+    // Tiêu đề trang
     const pageTitleEl = document.getElementById("pageTitle");
     if (pageTitleEl) pageTitleEl.textContent = `${book.title} | Thư viện số KS25`;
     document.title = `${book.title} | Thư viện số KS25`;
-
-    const breadcrumbEl = document.getElementById("breadcrumbBookTitle");
-    if (breadcrumbEl) breadcrumbEl.textContent = book.title;
 
     // Khung bìa sách
     const coverWrap = document.getElementById("mainBookCoverWrap");
@@ -464,20 +477,48 @@
     const cartIcon = document.getElementById("headerCartBtn");
     const bookTitle = currentBook ? currentBook.title : "Tài liệu thư viện";
 
-    // Thêm vào giỏ sách lưu trong localStorage
-    try {
-      const cartKey = "library_basket";
-      let basket = JSON.parse(localStorage.getItem(cartKey) || "[]");
-      const item = {
-        isbn: currentBook ? currentBook.isbn : "000",
+    // Thêm vào giỏ sách lưu trong localStorage (không trùng ISBN)
+    const targetIsbn = currentBook ? String(currentBook.isbn || "").trim() : "";
+    if (!targetIsbn) {
+      showToast("Không xác định được mã ISBN của sách để thêm vào giỏ.");
+      return;
+    }
+
+    let addStatus = "added";
+    if (typeof addBookToLibraryBasket === "function") {
+      const result = addBookToLibraryBasket({
+        isbn: targetIsbn,
         title: bookTitle,
         copy_code: copyCode || "",
-        added_at: new Date().toISOString()
-      };
-      basket.push(item);
-      localStorage.setItem(cartKey, JSON.stringify(basket));
-      updateCartBadge();
-    } catch {}
+      });
+      if (!result.ok && result.reason === "duplicate") {
+        addStatus = "duplicate";
+      }
+    } else {
+      try {
+        const cartKey = "library_basket";
+        const basket = JSON.parse(localStorage.getItem(cartKey) || "[]");
+        if (Array.isArray(basket) && basket.some((item) => String(item.isbn) === targetIsbn)) {
+          addStatus = "duplicate";
+        } else {
+          const next = Array.isArray(basket) ? basket : [];
+          next.push({
+            isbn: targetIsbn,
+            title: bookTitle,
+            copy_code: copyCode || "",
+            selected: true,
+            added_at: new Date().toISOString(),
+          });
+          localStorage.setItem(cartKey, JSON.stringify(next));
+        }
+      } catch {}
+    }
+    updateCartBadge();
+
+    if (addStatus === "duplicate") {
+      showToast(`"${bookTitle}" đã có trong giỏ mượn của bạn!`);
+      return;
+    }
 
     const btnRect = btn.getBoundingClientRect();
     const cartRect = cartIcon ? cartIcon.getBoundingClientRect() : { left: window.innerWidth - 60, top: 20 };
@@ -510,13 +551,20 @@
   };
 
   function updateCartBadge() {
+    if (typeof syncCartBadges === "function") {
+      syncCartBadges();
+      return;
+    }
     const badge = document.getElementById("headerCartBadge");
     if (!badge) return;
     try {
       const basket = JSON.parse(localStorage.getItem("library_basket") || "[]");
-      badge.textContent = basket.length;
+      const count = Array.isArray(basket) ? basket.length : 0;
+      badge.textContent = count > 9 ? "9+" : count;
+      badge.style.display = count === 0 ? "none" : "flex";
     } catch {
       badge.textContent = 0;
+      badge.style.display = "none";
     }
   }
 
@@ -574,8 +622,184 @@
     });
   };
 
+  function isSameOriginReferrer(ref) {
+    if (!ref) return false;
+    try {
+      const refUrl = new URL(ref, window.location.href);
+      return (
+        refUrl.origin === window.location.origin ||
+        (window.location.protocol === "file:" && refUrl.protocol === "file:")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function initBackButton() {
+    const backBtn = document.getElementById("btnBackPrevious");
+    const ref = document.referrer;
+    const sameOrigin = isSameOriginReferrer(ref);
+    if (backBtn) {
+      backBtn.href = sameOrigin && ref !== window.location.href ? ref : "home.html";
+    }
+    if (sameOrigin) {
+      document.querySelectorAll("#navMenu .topbar-nav-link").forEach((link) => {
+        const href = link.getAttribute("href");
+        if (href && ref.includes(href)) {
+          link.classList.add("active");
+        }
+      });
+    }
+  }
+
+  let activeConfirmCallback = null;
+
+  function showConfirm(options) {
+    const modal = document.getElementById("confirm-modal");
+    const titleEl = document.getElementById("confirm-title");
+    const msgEl = document.getElementById("confirm-message");
+    const iconBox = document.getElementById("confirm-icon-box");
+    const iconEl = document.getElementById("confirm-icon");
+    const btnProceed = document.getElementById("btn-confirm-proceed");
+    const btnCancel = document.getElementById("btn-confirm-cancel");
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+    if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+    if (iconBox) iconBox.className = "confirm-icon-circle";
+    if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+    if (options.type === "red") {
+      if (iconBox) iconBox.classList.add("icon-red");
+      if (btnProceed) btnProceed.classList.add("btn-danger");
+      if (iconEl) iconEl.textContent = "warning";
+    } else if (options.type === "green") {
+      if (iconBox) iconBox.classList.add("icon-green");
+      if (iconEl) iconEl.textContent = "check_circle";
+    } else {
+      if (iconBox) iconBox.classList.add("icon-blue");
+      if (iconEl) iconEl.textContent = "help_outline";
+    }
+
+    if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+    if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+    activeConfirmCallback = options.onConfirm || null;
+    modal.setAttribute("aria-hidden", "false");
+    modal.classList.add("active");
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById("confirm-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+    }
+    activeConfirmCallback = null;
+  }
+
+  function initTopbarControls() {
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const navMenu = document.getElementById("navMenu");
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+
+    if (mobileMenuToggle && navMenu) {
+      mobileMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle("show");
+      });
+    }
+
+    if (userProfileBtn && userDropdownMenu) {
+      userProfileBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle("show");
+        const isShown = userDropdownMenu.classList.contains("show");
+        userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (userDropdownMenu && userDropdownMenu.classList.contains("show") && !e.target.closest("#userDropdownContainer")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
+      if (navMenu && navMenu.classList.contains("show") && !e.target.closest("#navMenu") && !e.target.closest("#mobileMenuToggle")) {
+        navMenu.classList.remove("show");
+      }
+
+      if (e.target.closest("#logoutMenuBtn")) {
+        e.preventDefault();
+        if (userDropdownMenu) userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        showConfirm({
+          title: "Xác nhận đăng xuất?",
+          message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+          type: "red",
+          confirmText: "Đăng xuất",
+          cancelText: "Hủy",
+          onConfirm: () => {
+            if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+              auth.clearSession();
+            } else {
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("token");
+              localStorage.removeItem("user_info");
+              localStorage.removeItem("library_card");
+              sessionStorage.removeItem("access_token");
+              sessionStorage.removeItem("user_info");
+            }
+            window.location.href = "login.html#login";
+          }
+        });
+      }
+    });
+
+    document.getElementById("btn-confirm-cancel")?.addEventListener("click", closeConfirmModal);
+    document.getElementById("btn-confirm-proceed")?.addEventListener("click", () => {
+      const cb = activeConfirmCallback;
+      closeConfirmModal();
+      if (typeof cb === "function") cb();
+    });
+    document.getElementById("confirm-modal")?.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "confirm-modal") closeConfirmModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeConfirmModal();
+        if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+          userDropdownMenu.classList.remove("show");
+          if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        }
+        if (navMenu && navMenu.classList.contains("show")) {
+          navMenu.classList.remove("show");
+        }
+      }
+    });
+  }
+
+  window.goBackToPreviousPage = function (event) {
+    if (event) event.preventDefault();
+    const ref = document.referrer;
+    const sameOrigin = isSameOriginReferrer(ref);
+
+    if (window.history.length > 1 && (!ref || sameOrigin)) {
+      window.history.back();
+      return false;
+    }
+    if (sameOrigin && ref !== window.location.href) {
+      window.location.href = ref;
+      return false;
+    }
+    window.location.href = "home.html";
+    return false;
+  };
+
   // KHỞI CHẠY KHI TẢI TRANG
   document.addEventListener("DOMContentLoaded", () => {
+    initBackButton();
+    initTopbarControls();
     checkAuth();
     loadBookData();
     updateCartBadge();

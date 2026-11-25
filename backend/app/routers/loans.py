@@ -296,14 +296,14 @@ def get_due_soon(
 @router.get("/notifications/my", response_model=InAppNotificationListResponse)
 @notifications_router.get("/my", response_model=InAppNotificationListResponse)
 def get_my_notifications(
-    user_id: int | None = Query(default=None, description="ID độc giả (chỉ Thủ thư/Admin mới truyền để xem của độc giả khác)"),
+    user_id: int | None = Query(default=None, description="ID độc giả (tự mặc định là tài khoản đang đăng nhập)"),
     limit: int = Query(default=30, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Lấy danh sách thông báo in-app cho chuông thông báo trên topbar header.
-    Tự động đồng bộ và sinh thông báo nhắc nhở cho các sách quá hạn và sắp đến hạn.
+    Mặc định chỉ lấy thông báo cá nhân của tài khoản đang đăng nhập (kể cả Admin/Thủ thư).
     """
     if current_user.role == UserRole.READER:
         if user_id is not None and user_id != current_user.id:
@@ -313,7 +313,7 @@ def get_my_notifications(
             )
         target_user_id = current_user.id
     else:
-        target_user_id = user_id
+        target_user_id = user_id if user_id is not None else current_user.id
 
     return sync_and_get_notifications(db, user_id=target_user_id, limit=limit)
 
@@ -326,8 +326,12 @@ def read_notification(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Đánh dấu một thông báo là đã đọc."""
-    target_user_id = current_user.id if current_user.role == UserRole.READER else user_id
+    """Đánh dấu một thông báo cá nhân là đã đọc."""
+    target_user_id = (
+        current_user.id
+        if current_user.role == UserRole.READER or user_id is None
+        else user_id
+    )
     success = mark_notification_read(db, notification_id, user_id=target_user_id)
     return {"success": success, "notification_id": notification_id}
 
@@ -339,8 +343,12 @@ def mark_all_read(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Đánh dấu toàn bộ thông báo in-app là đã đọc."""
-    target_user_id = current_user.id if current_user.role == UserRole.READER else user_id
+    """Đánh dấu toàn bộ thông báo cá nhân là đã đọc."""
+    target_user_id = (
+        current_user.id
+        if current_user.role == UserRole.READER or user_id is None
+        else user_id
+    )
     count = mark_all_notifications_read(db, user_id=target_user_id)
     return {"success": True, "updated_count": count}
 

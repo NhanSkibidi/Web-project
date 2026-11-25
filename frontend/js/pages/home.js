@@ -1,396 +1,763 @@
 // ==========================================================
-// KS25 Library - Logic Trang Chủ Thư Viện
-// Thiết kế chuẩn xác 100% theo giao diện người dùng yêu cầu
+// KS25 Library - Logic Trang Chủ Thư Viện (Đọc dữ liệu thực từ Database API)
 // ==========================================================
 
-// Kho sách chuẩn hóa - Bìa phủ toàn ô (Full-cover), màu sắc gradient sang trọng
-const ALL_BOOKS = [
-  // --- TRANG 1: 4 cuốn mẫu y hệt thiết kế chuẩn ---
-  {
-    id: 1,
-    title: "Kiến Trúc Mã Sạch (Clean Code)",
-    author: "Robert C. Martin",
-    category: "CNTT",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: A1-12",
-    isbn: "9786040000325",
-    copies: "Còn 4 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #1e3a8a, #0f172a)",
-    coverTag: "CLEAN CODE",
-    coverTitle: "Kiến Trúc Mã Sạch"
-  },
-  {
-    id: 2,
-    title: "Trí Tuệ Nhân Tạo Hiện Đại",
-    author: "Stuart Russell & Peter Norvig",
-    category: "Trí tuệ nhân tạo",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: B1-06",
-    isbn: "9786040000451",
-    copies: "Còn 7 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #0284c7, #0369a1)",
-    coverTag: "ARTIFICIAL INTELLIGENCE",
-    coverTitle: "Trí Tuệ Nhân Tạo Hiện Đại"
-  },
-  {
-    id: 3,
-    title: "Nguyên Lý Hệ Cơ Sở Dữ Liệu",
-    author: "Abraham Silberschatz",
-    category: "Cơ sở dữ liệu",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: A2-09",
-    isbn: "9786040000888",
-    copies: "Đang hết",
-    available: false,
-    coverBg: "linear-gradient(135deg, #334155, #1e293b)",
-    coverTag: "DATABASE SYSTEMS",
-    coverTitle: "Nguyên Lý Hệ CSDL"
-  },
-  {
-    id: 4,
-    title: "Kinh Tế Vi Mô Ứng Dụng",
-    author: "N. Gregory Mankiw",
-    category: "Kinh tế học",
-    categoryKey: "Kinh tế",
-    shelf: "Kệ: C2-01",
-    isbn: "9786040000122",
-    copies: "Còn 12 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #b45309, #78350f)",
-    coverTag: "MICROECONOMICS",
-    coverTitle: "Kinh Tế Vi Mô Ứng Dụng"
-  },
-
-  // --- TRANG 2 ---
-  {
-    id: 5,
-    title: "Python Crash Course",
-    author: "Eric Matthes",
-    category: "CNTT",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: A1-15",
-    isbn: "9786040000349",
-    copies: "Còn 4 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #0f766e, #115e59)",
-    coverTag: "PYTHON",
-    coverTitle: "Python Crash Course"
-  },
-  {
-    id: 6,
-    title: "Giải thuật & Cấu trúc Dữ liệu",
-    author: "Robert Sedgewick",
-    category: "CNTT",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: A1-18",
-    isbn: "9786040000172",
-    copies: "Còn 5 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #1b4332, #2d6a4f)",
-    coverTag: "ALGORITHMS",
-    coverTitle: "Giải Thuật & Cấu Trúc Dữ Liệu"
-  },
-  {
-    id: 7,
-    title: "Quản trị Tài chính Doanh nghiệp",
-    author: "Stephen Ross",
-    category: "Kinh tế học",
-    categoryKey: "Kinh tế",
-    shelf: "Kệ: B2-04",
-    isbn: "9786040000417",
-    copies: "Còn 3 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #854d0e, #533107)",
-    coverTag: "FINANCE",
-    coverTitle: "Quản Trị Tài Chính"
-  },
-  {
-    id: 8,
-    title: "Hệ Điều Hành Hiện Đại",
-    author: "Andrew S. Tanenbaum",
-    category: "CNTT",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: A3-02",
-    isbn: "9786040000431",
-    copies: "Đang hết",
-    available: false,
-    coverBg: "linear-gradient(135deg, #4338ca, #312e81)",
-    coverTag: "OPERATING SYSTEMS",
-    coverTitle: "Hệ Điều Hành Hiện Đại"
-  },
-
-  // --- TRANG 3 ---
-  {
-    id: 9,
-    title: "Đắc Nhân Tâm",
-    author: "Dale Carnegie",
-    category: "Kỹ năng sống",
-    categoryKey: "Kỹ năng sống",
-    shelf: "Kệ: KN-01",
-    isbn: "9786040000099",
-    copies: "Còn 10 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #c2410c, #9a3412)",
-    coverTag: "SELF-HELP",
-    coverTitle: "Đắc Nhân Tâm"
-  },
-  {
-    id: 10,
-    title: "Tôi Tài Giỏi Bạn Cũng Thế",
-    author: "Adam Khoo",
-    category: "Giáo dục",
-    categoryKey: "Giáo dục",
-    shelf: "Kệ: GD-02",
-    isbn: "9786040000523",
-    copies: "Còn 5 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #0d9488, #115e59)",
-    coverTag: "EDUCATION",
-    coverTitle: "Tôi Tài Giỏi Bạn Cũng Thế"
-  },
-  {
-    id: 11,
-    title: "Dế Mèn Phiêu Lưu Ký",
-    author: "Tô Hoài",
-    category: "Thiếu nhi",
-    categoryKey: "Thiếu nhi",
-    shelf: "Kệ: TN-01",
-    isbn: "9786040000011",
-    copies: "Còn 12 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #15803d, #14532d)",
-    coverTag: "LITERATURE",
-    coverTitle: "Dế Mèn Phiêu Lưu Ký"
-  },
-  {
-    id: 12,
-    title: "English Grammar In Use",
-    author: "Raymond Murphy",
-    category: "Ngoại ngữ",
-    categoryKey: "Ngoại ngữ",
-    shelf: "Kệ: NN-01",
-    isbn: "9786040000547",
-    copies: "Còn 9 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #be123c, #881337)",
-    coverTag: "LANGUAGES",
-    coverTitle: "English Grammar In Use"
-  },
-
-  // --- TRANG 4 ---
-  {
-    id: 13,
-    title: "The Pragmatic Programmer",
-    author: "Andrew Hunt & David Thomas",
-    category: "CNTT",
-    categoryKey: "Công nghệ thông tin",
-    shelf: "Kệ: CNTT-02",
-    isbn: "9786040000332",
-    copies: "Còn 3 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #1e293b, #0f172a)",
-    coverTag: "PROGRAMMING",
-    coverTitle: "The Pragmatic Programmer"
-  },
-  {
-    id: 14,
-    title: "Atomic Habits (Thói Quen Nguyên Tử)",
-    author: "James Clear",
-    category: "Kỹ năng sống",
-    categoryKey: "Kỹ năng sống",
-    shelf: "Kệ: KN-03",
-    isbn: "9786040000318",
-    copies: "Còn 6 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #ea580c, #9a3412)",
-    coverTag: "HABITS",
-    coverTitle: "Atomic Habits"
-  },
-  {
-    id: 15,
-    title: "Nhà Đầu Tư Thông Minh",
-    author: "Benjamin Graham",
-    category: "Kinh tế",
-    categoryKey: "Kinh tế",
-    shelf: "Kệ: KT-04",
-    isbn: "9786040000141",
-    copies: "Đang hết",
-    available: false,
-    coverBg: "linear-gradient(135deg, #854d0e, #533107)",
-    coverTag: "INVESTING",
-    coverTitle: "Nhà Đầu Tư Thông Minh"
-  },
-  {
-    id: 16,
-    title: "Đại Việt Sử Ký Toàn Thư",
-    author: "Ngô Sĩ Liên",
-    category: "Lịch sử",
-    categoryKey: "Lịch sử",
-    shelf: "Kệ: LS-01",
-    isbn: "9786040000400",
-    copies: "Còn 4 cuốn",
-    available: true,
-    coverBg: "linear-gradient(135deg, #4338ca, #312e81)",
-    coverTag: "VIET HISTORY",
-    coverTitle: "Đại Việt Sử Ký"
-  }
+const COVER_GRADIENTS = [
+  "linear-gradient(135deg, #1e3a8a, #0f172a)",
+  "linear-gradient(135deg, #0284c7, #0369a1)",
+  "linear-gradient(135deg, #334155, #1e293b)",
+  "linear-gradient(135deg, #b45309, #78350f)",
+  "linear-gradient(135deg, #0f766e, #115e59)",
+  "linear-gradient(135deg, #1b4332, #2d6a4f)",
+  "linear-gradient(135deg, #4338ca, #312e81)",
+  "linear-gradient(135deg, #be123c, #881337)",
 ];
 
-const PAGE_SIZE = 4; // Chia đúng thành 4 trang (mỗi trang 4 cuốn sách = 16 cuốn tất cả)
-let currentCarouselPage = 1;
-let currentFilteredList = null; // null = xem tất cả (carousel), array = kết quả lọc
-let isAllBooksView = false; // Chế độ xem toàn bộ sách không qua phân trang
+const homeState = {
+  PAGE_SIZE: 4,
+  ALL_VIEW_PAGE_SIZE: 48,
+  currentPage: 1,
+  totalPages: 1,
+  totalBooks: 0,
+  totalCatalogBooks: 0,
+  isAllBooksView: false,
+  isCategoriesExpanded: false,
+  keyword: "",
+  selectedCategoryId: "",
+  selectedCategoryName: "",
+  categories: [],
+  booksByIsbn: new Map(),
+};
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderCurrentView();
-});
+function safeEscape(str) {
+  if (typeof escapeHtml === "function") {
+    return escapeHtml(String(str ?? ""));
+  }
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-function renderCurrentView() {
-  const booksToDisplay = currentFilteredList || ALL_BOOKS;
-  const totalBooks = booksToDisplay.length;
-  const totalPages = Math.ceil(totalBooks / PAGE_SIZE) || 1;
+function formatNumber(val) {
+  return Number(val || 0).toLocaleString("vi-VN");
+}
 
-  if (currentCarouselPage > totalPages) currentCarouselPage = totalPages;
-  if (currentCarouselPage < 1) currentCarouselPage = 1;
+function formatCoverUrl(url) {
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (!trimmed) return null;
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("data:") ||
+    trimmed.startsWith("blob:")
+  ) {
+    return trimmed;
+  }
+  const baseOrigin =
+    typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL
+      ? CONFIG.API_BASE_URL.replace(/\/api\/?$/, "")
+      : "";
+  return `${baseOrigin}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`;
+}
 
-  // Cập nhật nhãn phân trang trên header section (Hiển thị dạng 1 / 4 chuẩn Figma)
-  const indicator = document.getElementById("carousel-page-indicator");
-  if (indicator) {
-    if (isAllBooksView) {
-      indicator.textContent = `Tất cả (${totalBooks} cuốn)`;
-    } else {
-      indicator.textContent = `${currentCarouselPage} / ${totalPages}`;
+function getCoverGradient(seed) {
+  const s = String(seed || "");
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return COVER_GRADIENTS[hash % COVER_GRADIENTS.length];
+}
+
+function getBookDetailUrl(isbn) {
+  return `book_detail.html?isbn=${encodeURIComponent(isbn || "")}`;
+}
+
+function isStaffUser() {
+  if (typeof auth === "undefined") return false;
+  const token = auth.getToken ? auth.getToken() : null;
+  const user = auth.getUser ? auth.getUser() : null;
+  if (!token || !user || !user.role) return false;
+  const role = String(user.role).trim().toUpperCase();
+  return role === "ADMIN" || role === "LIBRARIAN";
+}
+
+function notifyUser(message, type = "info") {
+  if (typeof showToast === "function") {
+    showToast(message, type);
+    return;
+  }
+  if (typeof Utils !== "undefined") {
+    if (typeof Utils.showToast === "function") {
+      Utils.showToast(message, type);
+      return;
+    }
+    if (typeof Utils.showNotification === "function") {
+      Utils.showNotification(message, type);
+      return;
     }
   }
+  alert(message);
+}
 
-  // Cập nhật 4 nút số trang bên dưới: [1] [2] [3] [4]
-  const pageNumbersContainer = document.getElementById("page-numbers-container");
-  if (pageNumbersContainer) {
-    if (isAllBooksView || totalPages <= 1) {
-      pageNumbersContainer.innerHTML = `<button class="page-number-btn active">1</button>`;
-    } else {
-      let html = "";
-      for (let i = 1; i <= totalPages; i++) {
-        html += `<button class="page-number-btn ${i === currentCarouselPage ? 'active' : ''}" onclick="goToCarouselPage(${i})">${i}</button>`;
+function getCategoryIcon(name) {
+  const n = String(name || "").toLowerCase();
+  if (n.includes("công nghệ") || n.includes("cntt") || n.includes("tin") || n.includes("phần mềm")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`;
+  }
+  if (n.includes("toán") || n.includes("thống kê")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>`;
+  }
+  if (n.includes("kinh tế") || n.includes("tài chính") || n.includes("quản trị")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`;
+  }
+  if (n.includes("mạng") || n.includes("hệ thống") || n.includes("cơ sở dữ liệu")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>`;
+  }
+  if (n.includes("ngoại ngữ") || n.includes("tiếng") || n.includes("anh")) {
+    return `<span style="font-weight:700; font-size:18px;">文A</span>`;
+  }
+  if (n.includes("kỹ năng") || n.includes("tâm lý")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+  }
+  if (n.includes("lịch sử") || n.includes("luật") || n.includes("triết")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>`;
+  }
+  if (n.includes("khoa học") || n.includes("vật lý") || n.includes("hóa")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`;
+  }
+  if (n.includes("giáo dục")) {
+    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`;
+  }
+  return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`;
+}
+
+// ==============================================================================
+// 1. TẢI DỮ LIỆU CHUYÊN NGÀNH TỪ DATABASE
+// ==============================================================================
+async function loadCategories() {
+  const grid = document.getElementById("category-grid");
+  const select = document.getElementById("search-category");
+  const statCatsEl = document.getElementById("stat-categories-count");
+
+  try {
+    const res = await api.get("/categories", { page: 1, page_size: 100 });
+    const items = Array.isArray(res?.items) ? res.items : [];
+    const total = Number(res?.total ?? items.length);
+
+    homeState.categories = items;
+
+    if (statCatsEl) {
+      statCatsEl.textContent = formatNumber(total);
+    }
+
+    if (select) {
+      select.innerHTML =
+        `<option value="">Tất cả ngành học</option>` +
+        items
+          .map(
+            (cat) =>
+              `<option value="${Number(cat.id)}">${safeEscape(cat.name)}</option>`
+          )
+          .join("");
+      if (homeState.selectedCategoryId) {
+        select.value = String(homeState.selectedCategoryId);
       }
-      pageNumbersContainer.innerHTML = html;
     }
+
+    if (grid) {
+      if (items.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 32px; color: var(--color-muted);">
+            Chưa có chuyên ngành đào tạo nào trong cơ sở dữ liệu.
+          </div>
+        `;
+      } else {
+        grid.innerHTML = items
+          .map((cat, idx) => {
+            const extraClass = idx >= 5 ? " category-card-extra" : "";
+            const booksCount = Number(cat.books_count || 0);
+            return `
+              <div class="category-card${extraClass}" data-category-id="${Number(cat.id)}" onclick="handleCategoryFilter(this.dataset.categoryId)">
+                <div class="category-icon">${getCategoryIcon(cat.name)}</div>
+                <div class="category-name">${safeEscape(cat.name)}</div>
+                <div class="category-count">${formatNumber(booksCount)} sách</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+    }
+
+    syncCategoryToggleUI();
+  } catch (err) {
+    console.error("Không thể tải danh mục chuyên ngành:", err);
+    if (statCatsEl) statCatsEl.textContent = "0";
+    if (grid) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 28px; color: var(--color-muted);">
+          Không thể tải danh mục chuyên ngành từ máy chủ.
+        </div>
+      `;
+    }
+    syncCategoryToggleUI();
+  }
+}
+
+function syncCategoryToggleUI() {
+  const total = homeState.categories.length;
+  const extraCount = Math.max(0, total - 5);
+  const grid = document.getElementById("category-grid");
+  const toggleContainer = document.getElementById("category-toggle-container");
+  const headerToggleBtn = document.getElementById("toggle-category-btn");
+  const headerText = document.getElementById("header-cat-text");
+  const headerArrow = document.getElementById("header-cat-arrow");
+  const bottomText = document.getElementById("toggle-cat-text");
+  const bottomArrow = document.getElementById("toggle-cat-arrow");
+  const extras = document.querySelectorAll(".category-card-extra");
+
+  if (grid) {
+    grid.classList.toggle("expanded", homeState.isCategoriesExpanded);
+  }
+  extras.forEach((el) => {
+    el.style.display = homeState.isCategoriesExpanded ? "flex" : "none";
+  });
+
+  if (extraCount === 0) {
+    if (toggleContainer) toggleContainer.style.display = "none";
+    if (headerToggleBtn) headerToggleBtn.style.display = total === 0 ? "none" : "inline-flex";
+    if (headerText) headerText.textContent = `Tất cả danh mục (${formatNumber(total)} ngành)`;
+    if (headerArrow) headerArrow.textContent = "";
+    return;
   }
 
-  // Cập nhật trạng thái nút Trang trước / Trang tiếp
+  if (toggleContainer) toggleContainer.style.display = "flex";
+  if (headerToggleBtn) headerToggleBtn.style.display = "inline-flex";
+  if (headerText) {
+    headerText.textContent = homeState.isCategoriesExpanded
+      ? "Thu gọn danh mục"
+      : `Xem tất cả danh mục (${formatNumber(total)} ngành)`;
+  }
+  if (headerArrow) {
+    headerArrow.innerHTML = homeState.isCategoriesExpanded ? "&lt;" : "&gt;";
+  }
+  if (bottomText) {
+    bottomText.textContent = homeState.isCategoriesExpanded
+      ? "Thu gọn danh mục"
+      : `Xem thêm ${formatNumber(extraCount)} ngành học khác`;
+  }
+  if (bottomArrow) {
+    bottomArrow.textContent = homeState.isCategoriesExpanded ? "▲" : "▼";
+  }
+}
+
+// ==============================================================================
+// 2. TẢI DANH SÁCH SÁCH & PHÂN TRANG TỪ DATABASE (/api/books/search)
+// ==============================================================================
+async function fetchBooksPage() {
+  const grid = document.getElementById("new-books-grid");
+  if (grid && grid.querySelector(".book-card")) {
+    grid.style.opacity = "0.6";
+  }
+
+  const pageSize = homeState.isAllBooksView ? homeState.ALL_VIEW_PAGE_SIZE : homeState.PAGE_SIZE;
+  const params = {
+    page: homeState.currentPage,
+    page_size: pageSize,
+    sort_by: "created_at",
+    sort_order: "desc",
+  };
+  if (homeState.keyword) params.keyword = homeState.keyword;
+  if (homeState.selectedCategoryId) params.category_id = Number(homeState.selectedCategoryId);
+
+  try {
+    const res = await api.get("/books/search", params);
+    const items = Array.isArray(res?.items) ? res.items : [];
+    const total = Number(res?.total ?? items.length);
+    const totalPages = Math.max(1, Number(res?.total_pages ?? (Math.ceil(total / pageSize) || 1)));
+
+    homeState.totalBooks = total;
+    homeState.totalPages = totalPages;
+    if (homeState.currentPage > totalPages) {
+      homeState.currentPage = totalPages;
+    }
+    if (!homeState.keyword && !homeState.selectedCategoryId) {
+      homeState.totalCatalogBooks = total;
+    }
+
+    items.forEach((book) => {
+      if (book && book.isbn) {
+        homeState.booksByIsbn.set(String(book.isbn), book);
+      }
+    });
+
+    updateFilterBannerAndTitle();
+    renderBooksView(items);
+  } catch (err) {
+    console.error("Không thể tải danh sách sách:", err);
+    if (grid) {
+      grid.style.opacity = "1";
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #fff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg);">
+          <div style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">Không thể tải dữ liệu sách từ máy chủ</h3>
+          <p style="font-size: 13.5px; color: var(--color-muted); max-width: 480px; margin: 0 auto 16px;">
+            Vui lòng kiểm tra kết nối tới hệ thống backend thư viện rồi thử lại.
+          </p>
+          <button onclick="fetchBooksPage()" class="btn-borrow" style="padding: 8px 18px; font-size: 13px;">
+            Thử tải lại
+          </button>
+        </div>
+      `;
+    }
+  }
+}
+
+function updateFilterBannerAndTitle() {
+  const banner = document.getElementById("search-status-banner");
+  const bannerText = document.getElementById("search-status-text");
+  const titleEl = document.getElementById("books-section-title");
+  const hasFilter = Boolean(homeState.keyword || homeState.selectedCategoryId);
+
+  if (!hasFilter) {
+    if (banner) banner.style.display = "none";
+    if (titleEl) titleEl.textContent = "Tài liệu mới nhập học kỳ này";
+    return;
+  }
+
+  if (banner && bannerText) {
+    banner.style.display = "flex";
+    const queryDesc = [];
+    if (homeState.keyword) {
+      queryDesc.push(`từ khóa "<strong>${safeEscape(homeState.keyword)}</strong>"`);
+    }
+    if (homeState.selectedCategoryName) {
+      queryDesc.push(`ngành "<strong>${safeEscape(homeState.selectedCategoryName)}</strong>"`);
+    }
+    bannerText.innerHTML = `Kết quả tra cứu cho ${queryDesc.join(" & ")}: Tìm thấy <strong>${formatNumber(homeState.totalBooks)}</strong> tài liệu phù hợp.`;
+  }
+
+  if (titleEl) {
+    if (homeState.keyword) {
+      titleEl.textContent = `Kết quả tra cứu (${formatNumber(homeState.totalBooks)})`;
+    } else if (homeState.selectedCategoryName) {
+      titleEl.textContent = `Sách chuyên ngành: ${homeState.selectedCategoryName}`;
+    }
+  }
+}
+
+function renderPaginationControls() {
+  const indicator = document.getElementById("carousel-page-indicator");
+  const viewAllBtn = document.getElementById("btn-view-all-books");
+  const pageNumbersContainer = document.getElementById("page-numbers-container");
   const prevBtn = document.getElementById("btn-prev-page");
   const nextBtn = document.getElementById("btn-next-page");
-  if (prevBtn) prevBtn.disabled = (!isAllBooksView && currentCarouselPage <= 1);
-  if (nextBtn) nextBtn.disabled = (!isAllBooksView && currentCarouselPage >= totalPages);
 
-  // Xác định danh sách sách hiển thị
-  let pageBooks;
-  if (isAllBooksView) {
-    pageBooks = booksToDisplay;
-  } else {
-    const startIndex = (currentCarouselPage - 1) * PAGE_SIZE;
-    pageBooks = booksToDisplay.slice(startIndex, startIndex + PAGE_SIZE);
+  const { currentPage, totalPages, totalBooks, isAllBooksView } = homeState;
+
+  if (indicator) {
+    indicator.textContent =
+      isAllBooksView && totalPages <= 1
+        ? `Tất cả (${formatNumber(totalBooks)} cuốn)`
+        : `${currentPage} / ${totalPages}`;
   }
+
+  if (viewAllBtn) {
+    const countForBtn = totalBooks || homeState.totalCatalogBooks;
+    viewAllBtn.textContent = isAllBooksView
+      ? "Thu gọn (4 cuốn/trang)"
+      : `Xem tất cả (${formatNumber(countForBtn)} cuốn)`;
+  }
+
+  if (prevBtn) prevBtn.disabled = currentPage <= 1;
+  if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+
+  if (!pageNumbersContainer) return;
+
+  if (totalPages <= 1) {
+    pageNumbersContainer.innerHTML = `<button class="page-number-btn active" type="button">1</button>`;
+    return;
+  }
+
+  const pagesToShow = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pagesToShow.push(i);
+  } else {
+    pagesToShow.push(1);
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    if (start > 2) pagesToShow.push("...");
+    for (let i = start; i <= end; i++) pagesToShow.push(i);
+    if (end < totalPages - 1) pagesToShow.push("...");
+    pagesToShow.push(totalPages);
+  }
+
+  pageNumbersContainer.innerHTML = pagesToShow
+    .map((p) => {
+      if (p === "...") {
+        return `<span style="padding: 0 6px; color: var(--color-muted); font-weight: 600;">…</span>`;
+      }
+      return `<button type="button" class="page-number-btn ${p === currentPage ? "active" : ""}" onclick="goToCarouselPage(${p})">${p}</button>`;
+    })
+    .join("");
+}
+
+function renderBooksView(pageBooks) {
+  renderPaginationControls();
 
   const grid = document.getElementById("new-books-grid");
   if (!grid) return;
 
-  if (pageBooks.length === 0) {
+  if (!Array.isArray(pageBooks) || pageBooks.length === 0) {
+    const hasFilter = Boolean(homeState.keyword || homeState.selectedCategoryId);
+    grid.style.opacity = "1";
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #fff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg);">
         <div style="font-size: 36px; margin-bottom: 12px;">📚</div>
-        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">Không tìm thấy tài liệu phù hợp</h3>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">
+          ${hasFilter ? "Không tìm thấy tài liệu phù hợp" : "Chưa có tài liệu nào trong cơ sở dữ liệu"}
+        </h3>
         <p style="font-size: 13.5px; color: var(--color-muted); max-width: 480px; margin: 0 auto 16px;">
-          Không có sách nào khớp với từ khóa hoặc chuyên ngành bạn chọn. Vui lòng bấm nút bên dưới để xem lại tất cả sách.
+          ${
+            hasFilter
+              ? "Không có sách nào khớp với từ khóa hoặc chuyên ngành bạn chọn. Vui lòng thử điều kiện khác hoặc xem tất cả tài liệu."
+              : "Kho sách hiện chưa có đầu sách nào được nhập lên hệ thống."
+          }
         </p>
-        <button onclick="clearSearchFilter()" class="btn-borrow" style="padding: 8px 18px; font-size: 13px;">
-          Xem lại tất cả tài liệu
-        </button>
+        ${
+          hasFilter
+            ? `<button onclick="clearSearchFilter()" class="btn-borrow" style="padding: 8px 18px; font-size: 13px;">Xem lại tất cả tài liệu</button>`
+            : ""
+        }
       </div>
     `;
     return;
   }
 
-  grid.style.opacity = "0.6";
-  grid.innerHTML = pageBooks.map((book) => `
-    <div class="book-card">
-      <a href="book_detail.html?book=${getBookDetailKey(book.title)}" style="display:block;text-decoration:none;">
-        <div class="book-cover" style="background: ${book.coverBg}; cursor: pointer;">
-          <span class="shelf-badge">${book.shelf}</span>
-          <div class="book-cover-content">
-            <div class="book-cover-tag">${book.coverTag}</div>
-            <div class="book-cover-title">${book.coverTitle}</div>
-            <div class="book-cover-author">${book.author}</div>
+  grid.innerHTML = pageBooks
+    .map((book) => {
+      const isbn = String(book.isbn || "");
+      const safeIsbn = safeEscape(isbn);
+      const detailUrl = getBookDetailUrl(isbn);
+      const title = safeEscape(book.title || "Tài liệu thư viện");
+      const authorsText =
+        Array.isArray(book.authors) && book.authors.length > 0
+          ? book.authors.map((a) => a.name).filter(Boolean).join(", ")
+          : "Chưa rõ tác giả";
+      const safeAuthor = safeEscape(authorsText);
+      const categoryName = book.category?.name || "Tổng hợp";
+      const safeCat = safeEscape(categoryName);
+      const shelfText = book.shelf_location ? `Kệ: ${book.shelf_location}` : `ISBN: ${isbn}`;
+      const safeShelf = safeEscape(shelfText);
+      const available = Number(book.available_copies || 0);
+      const totalCopies = Number(book.total_copies || 0);
+      const coverUrl = formatCoverUrl(book.cover_image);
+      const gradient = getCoverGradient(isbn || book.title);
+
+      const statusText =
+        available > 0
+          ? `● Còn ${formatNumber(available)}${totalCopies > 0 ? `/${formatNumber(totalCopies)}` : ""} cuốn`
+          : "● Đang hết";
+
+      return `
+        <div class="book-card">
+          <a href="${detailUrl}" style="display:block;text-decoration:none;">
+            <div class="book-cover" style="background: ${gradient}; cursor: pointer;">
+              <span class="shelf-badge">${safeShelf}</span>
+              ${
+                coverUrl
+                  ? `<img class="book-cover-img" src="${safeEscape(coverUrl)}" alt="${title}" loading="lazy" onerror="this.style.display='none'; var fb=this.nextElementSibling; if(fb) fb.style.display='flex';" />`
+                  : ""
+              }
+              <div class="book-cover-content" style="${coverUrl ? "display:none;" : ""}">
+                <div class="book-cover-tag">${safeCat.toUpperCase()}</div>
+                <div class="book-cover-title">${title}</div>
+                <div class="book-cover-author">${safeAuthor}</div>
+              </div>
+            </div>
+          </a>
+          <div class="book-meta">
+            <span class="badge-cat">${safeCat}</span>
+            <span class="badge-status ${available > 0 ? "status-available" : "status-out"}">${statusText}</span>
+          </div>
+          <h3 class="book-title" title="${title}">
+            <a href="${detailUrl}" style="color:inherit;text-decoration:none;">${title}</a>
+          </h3>
+          <div class="book-author" title="${safeAuthor}">${safeAuthor}</div>
+          <div class="book-actions">
+            <a href="${detailUrl}" class="btn-detail">Chi tiết</a>
+            ${
+              available > 0
+                ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="borrowBook(this.dataset.isbn)">🛒 Mượn</button>`
+                : `<button type="button" class="btn-borrow" disabled>Hết sách</button>`
+            }
           </div>
         </div>
-      </a>
-      <div class="book-meta">
-        <span class="badge-cat">${book.category}</span>
-        <span class="badge-status ${book.available ? 'status-available' : 'status-out'}">
-          ● ${book.copies}
-        </span>
-      </div>
-      <h3 class="book-title" title="${book.title}">
-        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" style="color:inherit;text-decoration:none;">${book.title}</a>
-      </h3>
-      <div class="book-author">${book.author}</div>
-      <div class="book-actions">
-        <a href="book_detail.html?book=${getBookDetailKey(book.title)}" class="btn-detail">Chi tiết</a>
-        ${book.available
-      ? `<button class="btn-borrow" onclick="borrowBook('${escapeQuotes(book.title)}')">🛒 Mượn</button>`
-      : `<button class="btn-borrow" disabled>Hết sách</button>`
-    }
-      </div>
-    </div>
-  `).join("");
+      `;
+    })
+    .join("");
 
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     grid.style.opacity = "1";
-  }, 100);
+  });
 }
 
-// Bấm nút chuyển trang lùi (<)
-function prevCarousel() {
-  const booksToDisplay = currentFilteredList || ALL_BOOKS;
-  const totalPages = Math.ceil(booksToDisplay.length / PAGE_SIZE) || 1;
-  isAllBooksView = false;
-  currentCarouselPage = (currentCarouselPage > 1) ? currentCarouselPage - 1 : totalPages;
-  renderCurrentView();
-  scrollToBooks();
-}
+// ==============================================================================
+// 3. TẢI THỐNG KÊ HERO & SÁCH MƯỢN NHIỀU TỪ DATABASE
+// ==============================================================================
+async function loadHeroStatsAndTrending() {
+  const staff = isStaffUser();
+  let statsLoadedFromDashboard = false;
+  let trendingItems = [];
+  let trendingMode = "weekly";
 
-// Bấm nút chuyển trang tiếp (>)
-function nextCarousel() {
-  const booksToDisplay = currentFilteredList || ALL_BOOKS;
-  const totalPages = Math.ceil(booksToDisplay.length / PAGE_SIZE) || 1;
-  isAllBooksView = false;
-  currentCarouselPage = (currentCarouselPage < totalPages) ? currentCarouselPage + 1 : 1;
-  renderCurrentView();
-  scrollToBooks();
-}
+  if (staff) {
+    const [dashRes, topWeekRes] = await Promise.allSettled([
+      api.get("/statistics/dashboard", { period: "month" }),
+      api.get("/statistics/top-books", { period: "week", limit: 4 }),
+    ]);
 
-// Chuyển trang trực tiếp theo số trang (1, 2,...)
-function goToCarouselPage(pageNum) {
-  isAllBooksView = false;
-  currentCarouselPage = pageNum;
-  renderCurrentView();
-  scrollToBooks();
-}
+    if (dashRes.status === "fulfilled" && dashRes.value?.summary) {
+      const s = dashRes.value.summary;
+      updateHeroNumbers({
+        totalBooks: s.total_books,
+        totalCopies: s.total_copies,
+        thirdIcon: "👥",
+        thirdCount: s.active_readers,
+        thirdLabel: "Độc giả đang hoạt động",
+      });
+      statsLoadedFromDashboard = true;
 
-// Bật / tắt chế độ xem toàn bộ sách (16 cuốn cùng lúc)
-function toggleAllBooksView() {
-  isAllBooksView = !isAllBooksView;
-  const topBtn = document.getElementById("btn-view-all-books");
+      if (
+        (!topWeekRes ||
+          topWeekRes.status !== "fulfilled" ||
+          !Array.isArray(topWeekRes.value) ||
+          topWeekRes.value.length === 0) &&
+        Array.isArray(dashRes.value.top_borrowed_books) &&
+        dashRes.value.top_borrowed_books.length > 0
+      ) {
+        trendingItems = dashRes.value.top_borrowed_books.slice(0, 4);
+        trendingMode = "monthly";
+      }
+    }
 
-  if (isAllBooksView) {
-    if (topBtn) topBtn.textContent = "Thu gọn (4 cuốn/trang)";
-  } else {
-    if (topBtn) topBtn.textContent = "Xem tất cả (16 cuốn)";
+    if (
+      topWeekRes.status === "fulfilled" &&
+      Array.isArray(topWeekRes.value) &&
+      topWeekRes.value.length > 0
+    ) {
+      trendingItems = topWeekRes.value.slice(0, 4);
+      trendingMode = "weekly";
+    }
   }
 
-  renderCurrentView();
+  // Fallback công khai từ /books/search cho Độc giả/Khách hoặc khi chưa có giao dịch mượn
+  if (!statsLoadedFromDashboard || trendingItems.length === 0) {
+    try {
+      const publicRes = await api.get("/books/search", {
+        page: 1,
+        page_size: 100,
+        sort_by: "created_at",
+        sort_order: "desc",
+      });
+      const allItems = Array.isArray(publicRes?.items) ? publicRes.items : [];
+      allItems.forEach((b) => {
+        if (b && b.isbn && !homeState.booksByIsbn.has(String(b.isbn))) {
+          homeState.booksByIsbn.set(String(b.isbn), b);
+        }
+      });
+
+      if (!statsLoadedFromDashboard) {
+        const totalBooks = Number(publicRes?.total ?? allItems.length);
+        const totalCopies = allItems.reduce((sum, b) => sum + Number(b.total_copies || 0), 0);
+        const availableCopies = allItems.reduce((sum, b) => sum + Number(b.available_copies || 0), 0);
+        const suffix = totalBooks > 100 ? "+" : "";
+
+        updateHeroNumbers({
+          totalBooks,
+          totalCopiesText: `${formatNumber(totalCopies)}${suffix}`,
+          thirdIcon: "📚",
+          thirdCountText: `${formatNumber(availableCopies)}${suffix}`,
+          thirdLabel: "Bản sẵn sàng mượn",
+        });
+      }
+
+      if (trendingItems.length === 0 && allItems.length > 0) {
+        trendingItems = [...allItems]
+          .sort((a, b) => Number(b.borrowed_copies || 0) - Number(a.borrowed_copies || 0))
+          .slice(0, 4)
+          .map((b, idx) => ({
+            rank: idx + 1,
+            isbn: b.isbn,
+            title: b.title,
+            category_name: b.category?.name || "Tổng hợp",
+            borrow_count: Number(b.borrowed_copies || 0),
+            available_copies: Number(b.available_copies || 0),
+            total_copies: Number(b.total_copies || 0),
+            _authors: Array.isArray(b.authors) ? b.authors.map((a) => a.name).join(", ") : "",
+            _shelf: b.shelf_location || "",
+          }));
+        trendingMode = "catalog";
+      }
+    } catch (err) {
+      console.error("Không thể tải dữ liệu thống kê công khai:", err);
+      if (!statsLoadedFromDashboard) {
+        updateHeroNumbers({
+          totalBooks: 0,
+          totalCopies: 0,
+          thirdIcon: "📚",
+          thirdCount: 0,
+          thirdLabel: "Bản sẵn sàng mượn",
+        });
+      }
+    }
+  }
+
+  renderTrendingList(trendingItems, trendingMode);
+}
+
+function updateHeroNumbers({
+  totalBooks = 0,
+  totalCopies = 0,
+  totalCopiesText = null,
+  thirdIcon = "📚",
+  thirdCount = 0,
+  thirdCountText = null,
+  thirdLabel = "Bản sẵn sàng mượn",
+}) {
+  const booksEl = document.getElementById("stat-books-count");
+  const copiesEl = document.getElementById("stat-copies-count");
+  const thirdIconEl = document.getElementById("stat-third-icon");
+  const thirdCountEl = document.getElementById("stat-third-count");
+  const thirdLabelEl = document.getElementById("stat-third-label");
+
+  if (booksEl) booksEl.textContent = formatNumber(totalBooks);
+  if (copiesEl) copiesEl.textContent = totalCopiesText ?? formatNumber(totalCopies);
+  if (thirdIconEl) thirdIconEl.textContent = thirdIcon;
+  if (thirdCountEl) thirdCountEl.textContent = thirdCountText ?? formatNumber(thirdCount);
+  if (thirdLabelEl) thirdLabelEl.textContent = thirdLabel;
+}
+
+function renderTrendingList(items, mode) {
+  const container = document.getElementById("trending-books-list");
+  const labelEl = document.getElementById("trending-updated-label");
+  if (!container) return;
+
+  if (labelEl) {
+    if (mode === "weekly") labelEl.textContent = "Thống kê tuần này";
+    else if (mode === "monthly") labelEl.textContent = "Thống kê trong tháng";
+    else labelEl.textContent = "Dữ liệu trực tiếp từ kho";
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 24px 0; text-align: center; color: var(--color-muted); font-size: 14px;">
+        Chưa có dữ liệu sách mượn nhiều trong cơ sở dữ liệu.
+      </div>
+    `;
+    return;
+  }
+
+  items.forEach((item) => {
+    const isbn = String(item.isbn || "");
+    if (isbn && !homeState.booksByIsbn.has(isbn)) {
+      homeState.booksByIsbn.set(isbn, {
+        isbn,
+        title: item.title,
+        available_copies: Number(item.available_copies || 0),
+        total_copies: Number(item.total_copies || 0),
+        category: { name: item.category_name || "Tổng hợp" },
+        authors: [],
+        shelf_location: item._shelf || "",
+      });
+    }
+  });
+
+  container.innerHTML = items
+    .map((item, idx) => {
+      const isbn = String(item.isbn || "");
+      const safeIsbn = safeEscape(isbn);
+      const cachedBook = homeState.booksByIsbn.get(isbn);
+      const detailUrl = getBookDetailUrl(isbn);
+      const title = safeEscape(item.title || "Tài liệu thư viện");
+      const rank = item.rank || idx + 1;
+      const available = Number(item.available_copies ?? cachedBook?.available_copies ?? 0);
+      const totalCopies = Number(item.total_copies ?? cachedBook?.total_copies ?? 0);
+      const borrowCount = Number(item.borrow_count || 0);
+
+      const authorStr =
+        item._authors ||
+        (cachedBook && Array.isArray(cachedBook.authors) && cachedBook.authors.length > 0
+          ? cachedBook.authors.map((a) => a.name).join(", ")
+          : "");
+      const shelfStr = item._shelf || cachedBook?.shelf_location || "";
+      const metaParts = [];
+      if (item.category_name) metaParts.push(`Ngành ${item.category_name}`);
+      if (authorStr) metaParts.push(authorStr);
+      if (shelfStr) metaParts.push(`Kệ ${shelfStr}`);
+      if (metaParts.length === 0) metaParts.push(`Còn ${formatNumber(available)}/${formatNumber(totalCopies)} bản`);
+
+      const countText =
+        mode === "catalog"
+          ? borrowCount > 0
+            ? `${formatNumber(borrowCount)} đang mượn`
+            : `Còn ${formatNumber(available)} bản`
+          : `${formatNumber(borrowCount)} lượt`;
+
+      return `
+        <div class="trending-item">
+          <div class="trending-left">
+            <span class="trending-rank">${rank}</span>
+            <div class="trending-info">
+              <h5><a href="${detailUrl}">${title}</a></h5>
+              <p>${safeEscape(metaParts.join(" • "))}</p>
+            </div>
+          </div>
+          <div class="trending-right">
+            <span class="trending-count">${countText}</span>
+            <button
+              type="button"
+              class="trending-add-btn"
+              data-isbn="${safeIsbn}"
+              title="${available > 0 ? "Thêm vào giỏ mượn" : "Tạm hết bản sẵn sàng"}"
+              ${available <= 0 ? "disabled" : ""}
+              onclick="quickAdd(this.dataset.isbn)">+</button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+// ==============================================================================
+// 4. TƯƠNG TÁC NGƯỜI DÙNG (PHÂN TRANG, TÌM KIẾM, LỌC DANH MỤC, GIỎ MƯỢN)
+// ==============================================================================
+function prevCarousel() {
+  homeState.currentPage =
+    homeState.currentPage > 1 ? homeState.currentPage - 1 : homeState.totalPages;
+  fetchBooksPage().then(scrollToBooks);
+}
+
+function nextCarousel() {
+  homeState.currentPage =
+    homeState.currentPage < homeState.totalPages ? homeState.currentPage + 1 : 1;
+  fetchBooksPage().then(scrollToBooks);
+}
+
+function goToCarouselPage(pageNum) {
+  const target = Math.max(1, Math.min(homeState.totalPages, Number(pageNum) || 1));
+  homeState.currentPage = target;
+  fetchBooksPage().then(scrollToBooks);
+}
+
+function toggleAllBooksView() {
+  homeState.isAllBooksView = !homeState.isAllBooksView;
+  homeState.currentPage = 1;
+  fetchBooksPage();
 }
 
 function scrollToBooks() {
@@ -400,152 +767,157 @@ function scrollToBooks() {
   }
 }
 
-// Bật / tắt mở rộng 5 danh mục chuyên ngành còn lại
-let isCategoriesExpanded = false;
-
 function toggleCategories() {
-  isCategoriesExpanded = !isCategoriesExpanded;
-  const grid = document.getElementById("category-grid");
-  const headerText = document.getElementById("header-cat-text");
-  const headerArrow = document.getElementById("header-cat-arrow");
-  const bottomText = document.getElementById("toggle-cat-text");
-  const bottomArrow = document.getElementById("toggle-cat-arrow");
-  const extras = document.querySelectorAll(".category-card-extra");
-
-  if (grid) {
-    if (isCategoriesExpanded) {
-      grid.classList.add("expanded");
-    } else {
-      grid.classList.remove("expanded");
-    }
-  }
-
-  extras.forEach((el) => {
-    el.style.display = isCategoriesExpanded ? "flex" : "none";
-  });
-
-  if (headerText) {
-    headerText.textContent = isCategoriesExpanded ? "Thu gọn danh mục" : "Xem tất cả danh mục (10 ngành)";
-  }
-  if (headerArrow) {
-    headerArrow.innerHTML = isCategoriesExpanded ? "&lt;" : "&gt;";
-  }
-  if (bottomText) {
-    bottomText.textContent = isCategoriesExpanded ? "Thu gọn danh mục" : "Xem thêm 5 ngành học khác";
-  }
-  if (bottomArrow) {
-    bottomArrow.textContent = isCategoriesExpanded ? "▲" : "▼";
-  }
+  homeState.isCategoriesExpanded = !homeState.isCategoriesExpanded;
+  syncCategoryToggleUI();
 }
-window.toggleAllCategories = toggleCategories; // Tương thích ngược
+window.toggleAllCategories = toggleCategories;
 
-// Tìm kiếm động
 function handleSearch(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   const input = document.getElementById("search-input");
   const categorySelect = document.getElementById("search-category");
 
-  const keyword = input.value.trim().toLowerCase();
-  const selectedCat = categorySelect.value;
+  const keyword = input ? input.value.trim() : "";
+  const selectedVal = categorySelect ? categorySelect.value.trim() : "";
 
-  if (!keyword && !selectedCat) {
+  if (!keyword && !selectedVal) {
     clearSearchFilter();
     return;
   }
 
-  currentFilteredList = ALL_BOOKS.filter((book) => {
-    const matchKeyword = !keyword ||
-      book.title.toLowerCase().includes(keyword) ||
-      book.author.toLowerCase().includes(keyword) ||
-      book.isbn.toLowerCase().includes(keyword) ||
-      book.shelf.toLowerCase().includes(keyword) ||
-      book.category.toLowerCase().includes(keyword);
+  const matchedCat = selectedVal
+    ? homeState.categories.find((c) => String(c.id) === selectedVal)
+    : null;
+  homeState.keyword = keyword;
+  homeState.selectedCategoryId = selectedVal;
+  homeState.selectedCategoryName = matchedCat
+    ? matchedCat.name
+    : selectedVal && categorySelect && categorySelect.selectedIndex >= 0
+      ? categorySelect.options[categorySelect.selectedIndex].text
+      : "";
+  homeState.currentPage = 1;
 
-    const matchCategory = !selectedCat || book.category.toLowerCase() === selectedCat.toLowerCase();
-
-    return matchKeyword && matchCategory;
+  fetchBooksPage().then(() => {
+    const section = document.getElementById("books-section");
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-
-  currentCarouselPage = 1;
-
-  const banner = document.getElementById("search-status-banner");
-  const bannerText = document.getElementById("search-status-text");
-  const title = document.getElementById("books-section-title");
-
-  if (banner && bannerText) {
-    banner.style.display = "flex";
-    let queryDesc = [];
-    if (keyword) queryDesc.push(`từ khóa "<strong>${input.value.trim()}</strong>"`);
-    if (selectedCat) queryDesc.push(`ngành "<strong>${selectedCat}</strong>"`);
-
-    bannerText.innerHTML = `Kết quả tìm kiếm cho ${queryDesc.join(" & ")}: Tìm thấy <strong>${currentFilteredList.length}</strong> tài liệu phù hợp.`;
-  }
-
-  if (title) {
-    title.textContent = `Kết quả tra cứu (${currentFilteredList.length})`;
-  }
-
-  renderCurrentView();
-
-  const section = document.getElementById("books-section");
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 }
 
-// Lọc theo 10 ngành trong seed.py
-function handleCategoryFilter(catName) {
-  if (catName === "all" || !catName) {
+function handleCategoryFilter(categoryIdOrName) {
+  const val = String(categoryIdOrName ?? "").trim();
+  if (!val || val === "all") {
     clearSearchFilter();
     return;
   }
 
+  const matchedCat =
+    homeState.categories.find((c) => String(c.id) === val) ||
+    homeState.categories.find((c) => c.name.toLowerCase() === val.toLowerCase());
+
+  if (!matchedCat) {
+    homeState.keyword = val;
+    homeState.selectedCategoryId = "";
+    homeState.selectedCategoryName = "";
+  } else {
+    homeState.selectedCategoryId = String(matchedCat.id);
+    homeState.selectedCategoryName = matchedCat.name;
+    homeState.keyword = "";
+  }
+
+  const input = document.getElementById("search-input");
+  if (input && matchedCat) input.value = "";
   const categorySelect = document.getElementById("search-category");
-  if (categorySelect) categorySelect.value = catName;
-
-  currentFilteredList = ALL_BOOKS.filter((book) => book.category.toLowerCase() === catName.toLowerCase());
-  currentCarouselPage = 1;
-
-  const banner = document.getElementById("search-status-banner");
-  const bannerText = document.getElementById("search-status-text");
-  const title = document.getElementById("books-section-title");
-
-  if (banner && bannerText) {
-    banner.style.display = "flex";
-    bannerText.innerHTML = `Đang lọc theo ngành: <strong>${catName}</strong> (Tìm thấy <strong>${currentFilteredList.length}</strong> tài liệu).`;
+  if (categorySelect && matchedCat) {
+    categorySelect.value = String(matchedCat.id);
   }
 
-  if (title) {
-    title.textContent = `Sách chuyên ngành: ${catName}`;
-  }
-
-  renderCurrentView();
-
-  const section = document.getElementById("books-section");
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  homeState.currentPage = 1;
+  fetchBooksPage().then(() => {
+    const section = document.getElementById("books-section");
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function clearSearchFilter() {
-  currentFilteredList = null;
-  currentCarouselPage = 1;
+  homeState.keyword = "";
+  homeState.selectedCategoryId = "";
+  homeState.selectedCategoryName = "";
+  homeState.currentPage = 1;
 
   const input = document.getElementById("search-input");
   const categorySelect = document.getElementById("search-category");
   if (input) input.value = "";
   if (categorySelect) categorySelect.value = "";
 
-  const banner = document.getElementById("search-status-banner");
-  if (banner) banner.style.display = "none";
-
-  const title = document.getElementById("books-section-title");
-  if (title) title.textContent = "Tài liệu mới nhập học kỳ này";
-
-  renderCurrentView();
+  fetchBooksPage();
 }
 
-function borrowBook(bookTitle) {
+function addBookToLocalBasket(book) {
+  const isbn = String(book?.isbn || "").trim();
+  if (!isbn) {
+    notifyUser("Không xác định được mã ISBN của sách.", "warning");
+    return;
+  }
+
+  if (typeof addBookToLibraryBasket === "function") {
+    const result = addBookToLibraryBasket({
+      isbn,
+      title: book.title || "Tài liệu thư viện",
+      copy_code: "",
+    });
+    if (!result.ok && result.reason === "duplicate") {
+      notifyUser(`"${book.title}" đã có sẵn trong giỏ mượn của bạn.`, "info");
+      return;
+    }
+    notifyUser(`Đã thêm "${book.title}" vào danh sách mượn!`, "success");
+    return;
+  }
+
+  const cartKey = "library_basket";
+  try {
+    const basket = JSON.parse(localStorage.getItem(cartKey) || "[]");
+    const safeBasket = Array.isArray(basket) ? basket : [];
+    const exists = safeBasket.some((item) => String(item.isbn) === isbn);
+    if (exists) {
+      notifyUser(`"${book.title}" đã có sẵn trong giỏ mượn của bạn.`, "info");
+      return;
+    }
+    safeBasket.push({
+      isbn,
+      title: book.title,
+      copy_code: "",
+      selected: true,
+      added_at: new Date().toISOString(),
+    });
+    localStorage.setItem(cartKey, JSON.stringify(safeBasket));
+    if (typeof syncCartBadges === "function") syncCartBadges();
+    notifyUser(`Đã thêm "${book.title}" vào danh sách mượn!`, "success");
+  } catch (err) {
+    console.error("Không thể cập nhật giỏ mượn:", err);
+    notifyUser(`Đã ghi nhận "${book.title}" vào danh sách mượn!`, "success");
+  }
+}
+
+function borrowBook(isbnOrTitle) {
+  const key = String(isbnOrTitle ?? "").trim();
+  let book = homeState.booksByIsbn.get(key);
+  if (!book) {
+    for (const item of homeState.booksByIsbn.values()) {
+      if (item.title === key) {
+        book = item;
+        break;
+      }
+    }
+  }
+  const bookTitle = book ? book.title : key || "Tài liệu thư viện";
+  const available = book ? Number(book.available_copies || 0) : 1;
+
+  if (book && available <= 0) {
+    notifyUser(`Sách "${bookTitle}" hiện đang hết bản sẵn sàng.`, "warning");
+    return;
+  }
+
   showConfirm({
     title: "Thêm vào danh sách mượn",
     message: `Bạn muốn thêm cuốn "${bookTitle}" vào danh sách chuẩn bị mượn sách?`,
@@ -553,9 +925,7 @@ function borrowBook(bookTitle) {
     confirmText: "Thêm vào giỏ",
     cancelText: "Đóng",
     onConfirm: () => {
-      if (typeof showToast === "function") {
-        showToast(`Đã thêm "${bookTitle}" vào danh sách mượn!`, "success");
-      }
+      addBookToLocalBasket(book || { isbn: key, title: bookTitle });
     },
   });
 }
@@ -563,36 +933,31 @@ function borrowBook(bookTitle) {
 function showLibraryRules() {
   showConfirm({
     title: "Quy chế mượn trả thư viện KS25",
-    message: "Mượn tối đa 05 cuốn / 14 ngày. Gia hạn online trước hạn trả 2 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn; hỏng sách 50% giá bìa; mất sách 100% giá bìa.",
+    message:
+      "Mượn tối đa 05 cuốn / 14 ngày. Gia hạn online trước hạn trả 2 ngày. Phạt trễ hạn 2.000đ/ngày/cuốn; hỏng sách 50% giá bìa; mất sách 100% giá bìa.",
     type: "green",
     confirmText: "Đã hiểu",
     cancelText: "Đóng",
   });
 }
 
-function quickAdd(bookTitle) {
-  borrowBook(bookTitle);
+function quickAdd(isbnOrTitle) {
+  borrowBook(isbnOrTitle);
 }
 
-function getBookDetailKey(bookTitle) {
-  const title = (bookTitle || "").toLowerCase();
-  if (title.includes("clean code") || title.includes("mã sạch")) return "cleancode";
-  if (title.includes("cấu trúc dữ liệu") || title.includes("giải thuật") || title.includes("dsa") || title.includes("sedgewick")) return "dsa";
-  if (title.includes("python")) return "python";
-  if (title.includes("cơ sở dữ liệu") || title.includes("csdl") || title.includes("hệ thống") || title.includes("database")) return "hethong";
-  if (title.includes("kiến trúc") || title.includes("máy tính") || title.includes("nhúng")) return "kientruc";
-  if (title.includes("trí tuệ") || title.includes("ai")) return "python";
-  if (title.includes("kinh tế") || title.includes("vi mô")) return "kientruc";
-  return "dsa";
+function viewBookDetail(isbnOrTitle) {
+  const key = String(isbnOrTitle ?? "").trim();
+  const book = homeState.booksByIsbn.get(key);
+  const isbn = book ? book.isbn : key;
+  window.location.href = getBookDetailUrl(isbn);
 }
 
-function viewBookDetail(bookTitle) {
-  const key = getBookDetailKey(bookTitle);
-  window.location.href = `book_detail.html?book=${key}`;
-}
-
-function escapeQuotes(str) {
-  return str.replace(/'/g, "\\'");
+async function loadHomeData() {
+  await Promise.allSettled([
+    loadCategories(),
+    fetchBooksPage(),
+    loadHeroStatsAndTrending(),
+  ]);
 }
 
 // ==============================================================================
@@ -635,14 +1000,12 @@ function showConfirm(options) {
 
   activeConfirmCallback = options.onConfirm || null;
   modal.classList.add("active");
-  modal.style.display = "flex";
 }
 
 function closeConfirmModal() {
   const modal = document.getElementById("confirm-modal");
   if (modal) {
     modal.classList.remove("active");
-    modal.style.display = "none";
   }
   activeConfirmCallback = null;
 }
@@ -670,34 +1033,19 @@ function initTopBar() {
   if (user) {
     const fullName = user.full_name || user.name || user.email || "Độc giả";
     const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
-    const roleText = user.role === "ADMIN" ? "Quản trị viên" : user.role === "LIBRARIAN" ? "Thủ thư" : "Sinh viên / Độc giả";
+    const role = String(user.role || "").toUpperCase();
+    const roleText = role === "ADMIN" ? "Quản trị viên" : role === "LIBRARIAN" ? "Thủ thư" : "Độc giả";
 
     if (avatarEl) avatarEl.textContent = initial;
     if (nameEl) nameEl.textContent = fullName;
     if (roleEl) roleEl.textContent = roleText;
 
     if (userDropdownMenu) {
-      const adminLink = (user.role === "ADMIN" || user.role === "LIBRARIAN")
-        ? `<a href="staff-dashboard.html" class="dropdown-item">
-             <span class="material-symbols-outlined">space_dashboard</span>
-             <span>Bàn làm việc quản trị</span>
-           </a>`
-        : "";
-
       userDropdownMenu.innerHTML = `
-        <a href="profile.html" class="dropdown-item">
+        <a href="profile.html" class="dropdown-item" id="userProfileLink">
           <span class="material-symbols-outlined">account_circle</span>
           <span>Thông tin cá nhân</span>
         </a>
-        <a href="loan_slip.html" class="dropdown-item">
-          <span class="material-symbols-outlined">receipt_long</span>
-          <span>Phiếu mượn của tôi</span>
-        </a>
-        <a href="reservations.html" class="dropdown-item">
-          <span class="material-symbols-outlined">bookmark_added</span>
-          <span>Sách đặt trước</span>
-        </a>
-        ${adminLink}
         <div class="dropdown-divider"></div>
         <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
           <span class="material-symbols-outlined">logout</span>
@@ -824,12 +1172,17 @@ function initTopBar() {
 }
 
 // Khởi chạy
-renderCurrentView();
 initTopBar();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", loadHomeData);
+} else {
+  loadHomeData();
+}
 
 // Đảm bảo các hàm gọi từ thuộc tính onclick trên HTML luôn sẵn sàng
 window.handleSearch = handleSearch;
 window.toggleCategories = toggleCategories;
+window.toggleAllCategories = toggleCategories;
 window.handleCategoryFilter = handleCategoryFilter;
 window.clearSearchFilter = clearSearchFilter;
 window.borrowBook = borrowBook;
@@ -842,3 +1195,5 @@ window.toggleAllBooksView = toggleAllBooksView;
 window.viewBookDetail = viewBookDetail;
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
+window.fetchBooksPage = fetchBooksPage;
+window.loadHomeData = loadHomeData;

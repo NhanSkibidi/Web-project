@@ -308,28 +308,62 @@
     activeConfirmCallback = null;
   }
 
-  // Khởi tạo thông tin người dùng từ auth session (nếu có)
-  try {
-    const currentUser = (typeof auth !== "undefined" && typeof auth.getUser === "function") ? auth.getUser() : null;
-    if (currentUser) {
-      const displayName = currentUser.full_name || currentUser.email || "Độc giả";
-      const initialChar = displayName.charAt(0).toUpperCase();
-      const displayRole = currentUser.role === "ADMIN" ? "Quản trị viên" : (currentUser.role === "LIBRARIAN" ? "Thủ thư" : "Sinh viên");
+  // Menu tài khoản dropdown & Đăng xuất (đồng bộ hoàn toàn với home.js)
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userAvatarEl = document.getElementById("userAvatar");
+  const userNameEl = document.getElementById("userName");
+  const userRoleEl = document.getElementById("userRole");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
 
-      const userAvatarEl = document.getElementById("userAvatar");
-      const userNameEl = document.getElementById("userName");
-      const userRoleEl = document.getElementById("userRole");
+  try {
+    let currentUser = (typeof auth !== "undefined" && typeof auth.getUser === "function") ? auth.getUser() : null;
+    if (!currentUser) {
+      const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+      if (raw) currentUser = JSON.parse(raw);
+    }
+
+    if (currentUser) {
+      const displayName = currentUser.full_name || currentUser.name || currentUser.email || "Độc giả";
+      const initialChar = (displayName.trim().charAt(0) || "U").toUpperCase();
+      const role = String(currentUser.role || "").toUpperCase();
+      const displayRole = role === "ADMIN" ? "Quản trị viên" : role === "LIBRARIAN" ? "Thủ thư" : "Độc giả";
 
       if (userAvatarEl) userAvatarEl.textContent = initialChar;
       if (userNameEl) userNameEl.textContent = displayName;
       if (userRoleEl) userRoleEl.textContent = displayRole;
+
+      if (userDropdownMenu) {
+        userDropdownMenu.innerHTML = `
+          <a href="profile.html" class="dropdown-item" id="userProfileLink">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
+        `;
+      }
+    } else {
+      if (userAvatarEl) userAvatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
+      if (userNameEl) userNameEl.textContent = "Tài khoản";
+      if (userRoleEl) userRoleEl.textContent = "Chưa đăng nhập";
+
+      if (userDropdownMenu) {
+        userDropdownMenu.innerHTML = `
+          <a href="login.html#login" class="dropdown-item">
+            <span class="material-symbols-outlined">login</span>
+            <span>Đăng nhập</span>
+          </a>
+          <a href="login.html#register" class="dropdown-item">
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Đăng ký thẻ mới</span>
+          </a>
+        `;
+      }
     }
   } catch (e) { /* ignore */ }
-
-  // Menu tài khoản dropdown & Đăng xuất (đồng bộ toàn hệ thống)
-  const userProfileBtn = document.getElementById("userProfileBtn");
-  const userDropdownMenu = document.getElementById("userDropdownMenu");
-  const logoutMenuBtn = document.getElementById("logoutMenuBtn");
 
   if (userProfileBtn && userDropdownMenu) {
     userProfileBtn.addEventListener("click", e => {
@@ -340,8 +374,10 @@
     });
   }
 
-  if (logoutMenuBtn) {
-    logoutMenuBtn.addEventListener("click", e => {
+  document.addEventListener("click", e => {
+    const logoutBtn = e.target.closest("#logoutMenuBtn");
+    if (logoutBtn) {
+      e.preventDefault();
       e.stopPropagation();
       if (userDropdownMenu) userDropdownMenu.classList.remove("show");
       if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
@@ -368,8 +404,8 @@
           }, 500);
         }
       });
-    });
-  }
+    }
+  });
 
   // Sự kiện nút Cancel/Proceed của confirm-modal
   const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
@@ -391,21 +427,12 @@
   }
 
   // Đóng dropdown khi click ngoài
-  document.addEventListener("click", () => {
+  document.addEventListener("click", (e) => {
     if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
-      userDropdownMenu.classList.remove("show");
-      if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
-  // Menu tài khoản
-  const btn = $('#accountBtn'), menu = $('#accountMenu');
-  const setMenu = o => { menu.hidden = !o; btn.setAttribute('aria-expanded', o); };
-  btn.addEventListener('click', e => { e.stopPropagation(); setMenu(menu.hidden); });
-  document.addEventListener('click', () => setMenu(false));
-  menu.addEventListener('click', async e => {
-    if (!e.target.closest('[data-act="logout"]')) return;
-    setMenu(false);
-    if (await dialog({ type: 'info', title: 'Đăng xuất?', msg: 'Bạn sẽ thoát khỏi phiên làm việc hiện tại.', ok: 'Đăng xuất' })) {
-      if (typeof auth !== 'undefined' && typeof auth.clearSession === 'function') auth.clearSession();
-      window.location.href = 'login.html#login';
+      if (!e.target.closest("#userDropdownContainer")) {
+        userDropdownMenu.classList.remove("show");
+        if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+      }
     }
   });
 

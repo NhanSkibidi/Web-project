@@ -102,6 +102,9 @@ const auth = {
     try {
       const user = await api.get("/auth/me");
       this.setUser(user);
+      if (typeof window.enforceStaffManagementBoundary === "function") {
+        window.enforceStaffManagementBoundary(user);
+      }
       if (user.role === "READER") {
         try {
           const card = await api.get("/auth/my-card");

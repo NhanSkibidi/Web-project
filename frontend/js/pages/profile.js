@@ -55,9 +55,68 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.textContent = "";
   }
 
+  let profileFallbackHref = "home.html";
+
+  function isSameOriginUrl(url) {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url, window.location.href);
+      return (
+        parsed.origin === window.location.origin ||
+        (window.location.protocol === "file:" && parsed.protocol === "file:")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function isUsablePreviousUrl(url) {
+    if (!isSameOriginUrl(url)) return false;
+    if (url === window.location.href) return false;
+    if (/\/login\.html(?:[?#]|$)/i.test(url)) return false;
+    const role =
+      typeof auth !== "undefined" && typeof auth.getUser === "function" && auth.getUser()?.role
+        ? String(auth.getUser().role).toUpperCase()
+        : "";
+    if ((role === "ADMIN" || role === "LIBRARIAN") && typeof window.isReaderOnlyPath === "function") {
+      try {
+        const parsed = new URL(url, window.location.href);
+        if (window.isReaderOnlyPath(parsed.pathname)) return false;
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function setupBackButton(fallbackHref) {
+    profileFallbackHref = fallbackHref || "home.html";
+    const backBtn = document.getElementById("pf-back-home-btn");
+    if (!backBtn) return;
+
+    const ref = document.referrer;
+    backBtn.href = isUsablePreviousUrl(ref) ? ref : profileFallbackHref;
+
+    if (!backBtn.dataset.backBound) {
+      backBtn.dataset.backBound = "1";
+      backBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const curRef = document.referrer;
+        if (isUsablePreviousUrl(curRef) && window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+        if (isUsablePreviousUrl(curRef)) {
+          window.location.href = curRef;
+          return;
+        }
+        window.location.href = profileFallbackHref;
+      });
+    }
+  }
+
   function renderShortcuts(role) {
     const wrap = document.getElementById("pf-shortcuts");
-    const backBtn = document.getElementById("pf-back-home-btn");
     const brandLink = document.getElementById("pf-brand-link");
     const navEl = document.getElementById("pf-top-nav");
 
@@ -73,15 +132,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         { href: "fines.html", label: "💰 Xử lý & Miễn giảm tiền phạt" },
       ];
       if (navEl) {
-        navEl.innerHTML = `
-          <a href="home.html">Trang chủ</a>
-          <a href="staff-dashboard.html">Bàn làm việc</a>
-          <a href="books.html">Đầu sách</a>
-          <a href="loan_management.html">Phiếu mượn</a>
-          <a href="readers.html">Độc giả &amp; Thẻ</a>
-          <a href="admin-users.html">Nhân sự</a>
-          <a href="profile.html" class="active">Hồ sơ cá nhân</a>
-        `;
+        navEl.innerHTML = "";
+        navEl.style.display = "none";
       }
     } else if (role === "LIBRARIAN") {
       homeHref = "staff-dashboard.html";
@@ -93,15 +145,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         { href: "returns.html", label: "↩ Trả sách tại quầy" },
       ];
       if (navEl) {
-        navEl.innerHTML = `
-          <a href="home.html">Trang chủ</a>
-          <a href="staff-dashboard.html">Bàn làm việc</a>
-          <a href="books.html">Đầu sách</a>
-          <a href="loan_management.html">Phiếu mượn</a>
-          <a href="returns.html">Trả sách</a>
-          <a href="readers.html">Độc giả &amp; Thẻ</a>
-          <a href="profile.html" class="active">Hồ sơ cá nhân</a>
-        `;
+        navEl.innerHTML = "";
+        navEl.style.display = "none";
       }
     } else {
       homeHref = "home.html";
@@ -114,18 +159,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         { href: "loan_basket.html", label: "🛒 Giỏ mượn sách" },
       ];
       if (navEl) {
+        navEl.style.display = "";
         navEl.innerHTML = `
           <a href="home.html">Trang chủ</a>
           <a href="search.html">Tra cứu sách</a>
           <a href="loan_slip.html">Phiếu mượn</a>
           <a href="reservations.html">Đặt trước</a>
           <a href="fines.html">Tiền phạt</a>
-          <a href="profile.html" class="active">Hồ sơ cá nhân</a>
         `;
       }
     }
 
-    if (backBtn) backBtn.href = homeHref;
+    setupBackButton(homeHref);
     if (brandLink) brandLink.href = homeHref;
     if (wrap) {
       wrap.innerHTML = items
@@ -397,6 +442,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     auth.clearSession();
     window.location.href = "login.html#login";
   });
+
+  const cachedUser = typeof auth.getUser === "function" ? auth.getUser() : null;
+  if (cachedUser && cachedUser.role) {
+    renderShortcuts(cachedUser.role);
+  }
 
   loadProfile();
 });

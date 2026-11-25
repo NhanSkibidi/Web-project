@@ -35,9 +35,7 @@ function showToast(message, type = "success") {
 // ==============================================================================
 const READER_ONLY_PORTAL_PAGES = [
   "/home.html",
-  "/index.html",
   "/search.html",
-  "/catalog.html",
   "/book_detail.html",
   "/loan_slip.html",
   "/reservations.html",
@@ -149,7 +147,7 @@ function syncRoleBasedUI() {
   if (enforceStaffManagementBoundary()) return;
 
   const path = window.location.pathname || "";
-  if (path === "/" || path.endsWith("/index.html")) return;
+  if (path === "/") return;
 
   const { user, role } = getCurrentSessionInfo();
   const roleLabelMap = {

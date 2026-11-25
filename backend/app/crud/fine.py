@@ -131,26 +131,6 @@ def has_unpaid_fines(db: Session, user_id: int) -> bool:
     return unpaid is not None
 
 
-def get_unpaid_fines_summary(db: Session, user_id: int) -> dict:
-    """Lấy tổng hợp tiền phạt chưa thanh toán của độc giả."""
-    fines = (
-        db.query(Fine)
-        .filter(
-            Fine.user_id == user_id,
-            Fine.status == "UNPAID",
-            Fine.amount > 0,
-        )
-        .all()
-    )
-    total_amount = sum(float(f.amount or 0) for f in fines)
-    return {
-        "user_id": user_id,
-        "has_unpaid": len(fines) > 0,
-        "unpaid_count": len(fines),
-        "total_unpaid_amount": round(total_amount, 2),
-    }
-
-
 def calculate_overdue_days_and_amount(
     due_date: datetime | None, return_date: datetime | None = None
 ) -> tuple[int, float]:
@@ -419,22 +399,6 @@ def waive_fine(
     db.commit()
     db.refresh(fine)
     return fine
-
-
-def list_fines(
-    db: Session,
-    user_id: int | None = None,
-    status: str | None = None,
-    skip: int = 0,
-    limit: int = 100,
-) -> list[Fine]:
-    """Lấy danh sách các khoản phạt cơ bản (cho router cũ)."""
-    query = db.query(Fine)
-    if user_id is not None:
-        query = query.filter(Fine.user_id == user_id)
-    if status is not None and status.strip().upper() != "ALL":
-        query = query.filter(Fine.status == status.strip().upper())
-    return query.order_by(Fine.id.desc()).offset(skip).limit(limit).all()
 
 
 def list_fines_detailed(

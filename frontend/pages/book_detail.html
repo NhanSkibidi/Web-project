@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../css/book_detail.css?v=1.5">
 </head>
 
-<body data-root="../" data-roles="READER,LIBRARIAN,ADMIN">
+<body data-root="../">
 
   <!-- 1. HEADER CỐ ĐỊNH: ĐỒNG BỘ HOÀN TOÀN VỚI HOME.HTML -->
   <header class="librarian-topbar" id="app-header">
@@ -438,104 +438,9 @@
                 </tr>
               </thead>
               <tbody id="copiesTableBody">
-                <!-- Sẽ được đồng bộ render từ book_detail.js -->
-                <!-- 01 -->
                 <tr>
-                  <td class="stt-cell">01</td>
-                  <td><span class="barcode-badge">BS-IT-001</span></td>
-                  <td>
-                    <div class="location-cell">
-                      <span>📍</span>
-                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
-                    </div>
-                  </td>
-                  <td>Mượn về nhà (14 ngày)</td>
-                  <td><span class="status-badge-avail">● Khả dụng</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-001')">
-                      Mượn
-                    </button>
-                  </td>
-                </tr>
-
-                <!-- 02 -->
-                <tr>
-                  <td class="stt-cell">02</td>
-                  <td><span class="barcode-badge">BS-IT-002</span></td>
-                  <td>
-                    <div class="location-cell">
-                      <span>📍</span>
-                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
-                    </div>
-                  </td>
-                  <td>Mượn về nhà (14 ngày)</td>
-                  <td><span class="status-badge-avail">● Khả dụng</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-002')">
-                      Mượn
-                    </button>
-                  </td>
-                </tr>
-
-                <!-- 03 -->
-                <tr>
-                  <td class="stt-cell">03</td>
-                  <td><span class="barcode-badge">BS-IT-003</span></td>
-                  <td>
-                    <div class="location-cell">
-                      <span>🏛️</span>
-                      <span>Tầng 2 – Phòng Nghiên cứu</span>
-                    </div>
-                  </td>
-                  <td>Đọc tại chỗ</td>
-                  <td><span class="status-badge-avail">● Khả dụng</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-onsite" onclick="showToast('Đã đăng ký chỗ ngồi đọc bản in BS-IT-003 tại Phòng Nghiên cứu Tầng 2!', 'success')">
-                      Đọc tại chỗ
-                    </button>
-                  </td>
-                </tr>
-
-                <!-- 04 -->
-                <tr>
-                  <td class="stt-cell">04</td>
-                  <td><span class="barcode-badge">BS-IT-004</span></td>
-                  <td>
-                    <div class="location-cell">
-                      <span>📍</span>
-                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
-                    </div>
-                  </td>
-                  <td>Mượn về nhà</td>
-                  <td>
-                    <div class="status-badge-borrowed">
-                      <span>Đang mượn</span>
-                      <small>Hạn trả: 28/10/2026</small>
-                    </div>
-                  </td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-reserve" onclick="showToast('Đã xếp bạn vào hàng đợi đặt trước bản sao BS-IT-004 khi có người trả sách!', 'success')">
-                      Đặt trước
-                    </button>
-                  </td>
-                </tr>
-
-                <!-- 05 -->
-                <tr>
-                  <td class="stt-cell">05</td>
-                  <td><span class="barcode-badge">BS-IT-005</span></td>
-                  <td>
-                    <div class="location-cell">
-                      <span>📍</span>
-                      <span>Tầng 1 – Kệ A3 – Ngăn 02</span>
-                    </div>
-                  </td>
-                  <td>Mượn về nhà (14 ngày)</td>
-                  <td><span class="status-badge-avail">● Khả dụng</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, 'BS-IT-005')">
-                      Mượn
-                    </button>
+                  <td colspan="6" style="text-align:center; padding: 24px; color: var(--color-muted);">
+                    Đang tải danh sách bản sao...
                   </td>
                 </tr>
               </tbody>

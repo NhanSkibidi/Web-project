@@ -54,7 +54,6 @@ def edit_my_profile(
 
 
 @router.post("/me/change-password", response_model=ChangePasswordResponse)
-@router.put("/me/password", response_model=ChangePasswordResponse)
 def change_my_password(
     payload: ChangePasswordRequest,
     current_user: User = Depends(get_current_user),

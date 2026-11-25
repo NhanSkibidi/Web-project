@@ -25,6 +25,7 @@ from app.crud.loan_service import (
     reject_loan,
     remind_all_overdue,
     remind_overdue_loan,
+    renew_loan,
     renew_loan_item,
     sync_and_get_notifications,
     validate_counter_borrow,
@@ -51,24 +52,8 @@ from app.schemas.loan import (
     RenewalResponse,
     LoanRenewalResponse,
 )
-from app.crud.loan_service import (
-    create_online_loan,
-    cancel_online_loan,
-    approve_loan,
-    reject_loan,
-    handover_loan,
-    get_reader_by_card,
-    get_copy_by_barcode,
-    validate_counter_borrow,
-    create_counter_loan,
-    renew_loan_item,
-    renew_loan,
-)
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
-# readers_router = APIRouter(prefix="/readers", tags=["Readers"])
-copies_router = APIRouter(prefix="/copies", tags=["Copies"])
-notifications_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
 def _resolve_user_id(
@@ -90,7 +75,6 @@ def _resolve_user_id(
 
 
 # ── API LỊCH SỬ MƯỢN TRẢ (DÙNG CHO TRANG CHI TIẾT ĐỘC GIẢ) ────
-"Lọc lịch sửa mượn sách"
 @router.get("", response_model=list[LoanHistoryOut])
 def list_loans(
     user_id: int | None = Query(None, description="Lọc lịch sử mượn trả theo ID độc giả"),
@@ -101,22 +85,6 @@ def list_loans(
 ):
     """Lấy danh sách & lịch sử mượn trả sách từ module Mượn."""
     return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit, borrow_type=borrow_type)
-
-"Lọc "
-@router.get("/user/{user_id}", response_model=list[LoanHistoryOut])
-def list_loans_by_user(
-    user_id: int,
-    status: str | None = Query(None, description="Lọc theo trạng thái phiếu"),
-    limit: int = Query(50, ge=1, le=200),
-    db: Session = Depends(get_db),
-):
-    """Lấy toàn bộ lịch sử mượn trả của một độc giả cụ thể (dùng cho trang Chi tiết độc giả)."""
-    return get_loans_history(db=db, user_id=user_id, status_filter=status, limit=limit)
-
-# @readers_router.get("/by-card/{card_code}", response_model=ReaderLookupResponse)
-# def lookup_reader_by_card(card_code: str, db: Session = Depends(get_db)):
-#     """Tra cứu độc giả theo mã thẻ thư viện (nhập hoặc quét mã)."""
-#     return get_reader_by_card(db, card_code)
 
 
 @router.get("/readers/by-card/{card_code}", response_model=ReaderLookupResponse)
@@ -130,10 +98,6 @@ def lookup_reader_by_card_alias(
         card_code,
         current_user.id
     )
-
-# @copies_router.get("/by-barcode/{barcode}", response_model=CopyLookupResponse)
-# def lookup_copy_by_barcode(barcode: str, db: Session = Depends(get_db)):
-#     return get_copy_by_barcode(db, barcode)
 
 
 @router.get("/copies/by-barcode/{copycode}", response_model=CopyLookupResponse)
@@ -295,7 +259,6 @@ def get_due_soon(
 
 
 @router.get("/notifications/my", response_model=InAppNotificationListResponse)
-@notifications_router.get("/my", response_model=InAppNotificationListResponse)
 def get_my_notifications(
     user_id: int | None = Query(default=None, description="ID độc giả (tự mặc định là tài khoản đang đăng nhập)"),
     limit: int = Query(default=30, ge=1, le=100),
@@ -320,7 +283,6 @@ def get_my_notifications(
 
 
 @router.patch("/notifications/{notification_id}/read")
-@notifications_router.patch("/{notification_id}/read")
 def read_notification(
     notification_id: int,
     user_id: int | None = Query(default=None),
@@ -338,7 +300,6 @@ def read_notification(
 
 
 @router.post("/notifications/mark-all-read")
-@notifications_router.post("/mark-all-read")
 def mark_all_read(
     user_id: int | None = Query(default=None),
     current_user: User = Depends(get_current_user),

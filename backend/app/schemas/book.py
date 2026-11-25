@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -28,23 +27,6 @@ class BookUpdate(BaseModel):
     cover_image: str | None = None
     price: Decimal | None = None
     author_ids: List[int] | None = None
-
-
-class BookResponse(BaseModel):
-    isbn: str
-    title: str
-    category_id: int
-    publisher_id: int
-    publish_year: int | None
-    page_count: int | None
-    language: str
-    description: str | None
-    cover_image: str | None
-    price: Decimal
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class AuthorSummary(BaseModel):

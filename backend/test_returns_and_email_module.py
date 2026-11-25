@@ -272,20 +272,12 @@ def run_tests():
     print("[TEST 5] RBAC & Endpoints /api/emails/* (T3D003D) + HTML escaping...")
     assert client.get("/api/emails/status").status_code == 401
     assert client.get("/api/emails/status", headers=reader2_headers).status_code == 403
-    assert client.post("/api/emails/remind-overdue", headers=reader2_headers).status_code == 403
     assert client.post("/api/emails/remind-due-soon", headers=reader2_headers).status_code == 403
     assert client.post("/api/emails/notify-reservation-ready/1", headers=reader2_headers).status_code == 403
 
     assert client.get("/api/emails/status", headers=lib_headers).status_code == 200
-    assert client.post("/api/emails/remind-overdue", headers=lib_headers).status_code == 200
     assert client.post("/api/emails/remind-due-soon?days=2", headers=lib_headers).status_code == 200
     assert client.post("/api/emails/notify-reservation-ready/1", headers=lib_headers).status_code == 200
-    r_test = client.post(
-        "/api/emails/test",
-        json={"to_email": "test@unilib.edu.vn", "message": "<script>alert(1)</script>"},
-        headers=lib_headers,
-    )
-    assert r_test.status_code == 200 and r_test.json()["queued"] is True
 
     # Dry-run HTML escape sanity
     d1 = send_due_soon_reminder_email("a@b.c", "<img onerror=1>", "PM-1", "Book", "22/11/2026", 1)

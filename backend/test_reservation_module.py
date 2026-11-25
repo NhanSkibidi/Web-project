@@ -38,7 +38,7 @@ from app.schemas.reservation import ReservationCreate
 from app.schemas.taxonomy import CategoryCreate, CategoryUpdate, AuthorCreate, PublisherCreate
 from app.routers.reservation import (
     api_create_reservation, api_get_my_reservations, api_cancel_reservation,
-    api_get_staff_ready_reservations, api_check_expired_reservations,
+    api_check_expired_reservations,
 )
 from app.routers.taxonomy import (
     create_category, get_categories, update_category, delete_category,
@@ -111,7 +111,8 @@ def test_reservation_module(db, users):
     print("✓ Lấy danh sách đặt trước cá nhân thành công:", len(my_res), "đơn")
 
     # 1.4 Trả sách -> Người đầu chuyển READY, copy chuyển RESERVED giữ 2 ngày
-    crud_res.process_returned_copy_for_reservation(db, users["c1"]); db.commit()
+    users["c1"].status = "AVAILABLE"
+    crud_res.assign_copy_to_next_waiting_reservation_in_tx(db, users["c1"]); db.commit()
     r1_db = db.query(Reservation).filter(Reservation.id == res1["id"]).first()
     db.refresh(r1_db); db.refresh(users["c1"])
     assert r1_db.status == "READY" and users["c1"].status == "RESERVED" and r1_db.pickup_deadline is not None

@@ -24,52 +24,6 @@
   let cachedOverdueItems = [];
   let cachedDueSoonItems = [];
 
-  // Dữ liệu mẫu theo mốc thời gian (Mock data cho các kỳ báo cáo)
-  const TIME_DATA = {
-    today: {
-      totalBooks: "1.240",
-      booksTrend: "+3 tựa sách mới hôm nay",
-      totalCopies: "5.680",
-      availCopies: "4.935 rảnh",
-      borrowedCopies: "695 mượn",
-      damagedCopies: "50 mất/hỏng",
-      activeLoans: "328",
-      overdueLoans: "18 phiếu quá hạn",
-      activeReaders: "2.150",
-      readersBreakdown: "Lượt vào: 142 • Mượn: 68",
-      copyStatus: [4935, 695, 50],
-      categoryCounts: [485, 310, 215, 140, 90],
-    },
-    week: {
-      totalBooks: "1.240",
-      booksTrend: "+24 tựa sách mới tuần qua",
-      totalCopies: "5.680",
-      availCopies: "4.920 rảnh",
-      borrowedCopies: "710 mượn",
-      damagedCopies: "50 mất/hỏng",
-      activeLoans: "342",
-      overdueLoans: "18 phiếu quá hạn cần xử lý",
-      activeReaders: "2.150",
-      readersBreakdown: "Sinh viên: 1.940 • GV: 210",
-      copyStatus: [4920, 710, 50],
-      categoryCounts: [485, 310, 215, 140, 90],
-    },
-    month: {
-      totalBooks: "1.240",
-      booksTrend: "+86 tựa sách mới tháng này",
-      totalCopies: "5.680",
-      availCopies: "4.860 rảnh",
-      borrowedCopies: "770 mượn",
-      damagedCopies: "50 mất/hỏng",
-      activeLoans: "415",
-      overdueLoans: "24 phiếu quá hạn",
-      activeReaders: "2.150",
-      readersBreakdown: "Mượn tích lũy: 1.198 lượt",
-      copyStatus: [4860, 770, 50],
-      categoryCounts: [485, 310, 215, 140, 90],
-    },
-  };
-
   // Toast notification
   function showToast(message, type = "success") {
     const box = document.getElementById("toast-box");

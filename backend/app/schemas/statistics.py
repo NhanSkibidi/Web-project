@@ -45,17 +45,6 @@ class PopularCategoryItem(BaseModel):
     percentage: float
 
 
-class FinesSummaryResponse(BaseModel):
-    start_date: str
-    end_date: str
-    collected_amount: float
-    collected_count: int
-    unpaid_amount: float
-    unpaid_count: int
-    waived_count: int
-    by_type: dict[str, float]
-
-
 class DashboardStatisticsResponse(BaseModel):
     period: str
     group_by: str

@@ -18,10 +18,6 @@ class FineBase(BaseModel):
     waive_reason: str | None = None
 
 
-class FineCreate(FineBase):
-    pass
-
-
 class FineResponse(FineBase):
     id: int
     created_at: datetime
@@ -74,13 +70,6 @@ class FinePayRequest(BaseModel):
 class FineWaiveRequest(BaseModel):
     waive_reason: str = Field(..., min_length=3, description="Lý do miễn phạt bắt buộc (tối thiểu 3 ký tự)")
     waived_by: int | None = None
-
-
-class UnpaidCheckResponse(BaseModel):
-    user_id: int
-    has_unpaid: bool
-    unpaid_count: int
-    total_unpaid_amount: float
 
 
 class FineStatisticsResponse(BaseModel):

@@ -11,16 +11,6 @@ CREATE DATABASE IF NOT EXISTS app_db
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE app_db;
 
--- 1. Bảng items (CRUD mẫu)
-CREATE TABLE IF NOT EXISTS items (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  name        VARCHAR(255) NOT NULL,
-  description TEXT NULL,
-  price       DECIMAL(12, 2) NOT NULL DEFAULT 0,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- 2. Bảng users (Tài khoản người dùng)
 CREATE TABLE IF NOT EXISTS users (
   id            INT AUTO_INCREMENT PRIMARY KEY,
@@ -235,36 +225,3 @@ CREATE TABLE IF NOT EXISTS notifications (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- ==============================================================================
--- Dữ liệu mẫu ban đầu
--- ==============================================================================
-INSERT IGNORE INTO items (id, name, description, price) VALUES
-  (1, 'Cơm rang dưa bò', 'Món mẫu để kiểm tra API', 45000),
-  (2, 'Trà đá', 'Dữ liệu mẫu số 2', 5000);
-
--- ==============================================================================
--- Câu truy vấn kiểm tra tìm sách (JOIN tác giả, thể loại, đếm bản sao AVAILABLE)
--- ==============================================================================
-SELECT
-    b.isbn,
-    b.title,
-    c.name AS category_name,
-    GROUP_CONCAT(DISTINCT a.name ORDER BY a.name ASC SEPARATOR ', ') AS authors,
-    COUNT(DISTINCT bc.id) AS available_copies
-FROM books b
-LEFT JOIN categories c
-    ON b.category_id = c.id
-LEFT JOIN book_authors ba
-    ON b.isbn = ba.book_isbn
-LEFT JOIN authors a
-    ON ba.author_id = a.id
-LEFT JOIN book_copies bc
-    ON b.isbn = bc.book_isbn
-    AND bc.status = 'AVAILABLE'
-WHERE b.is_deleted = FALSE
-GROUP BY
-    b.isbn,
-    b.title,
-    c.name
-ORDER BY b.title ASC;

@@ -226,8 +226,8 @@ function renderReaderLayout() {
   const footerEl = document.getElementById("app-footer");
 
   if (headerEl) {
-    const isHome = currentPath.endsWith("/index.html") || currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
-    const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/catalog.html") || currentPath.endsWith("/books.html");
+    const isHome = currentPath.endsWith("/home.html") || currentPath.endsWith("/") || currentPath === "";
+    const isSearch = currentPath.endsWith("/search.html") || currentPath.endsWith("/books.html");
     const isLoanSlip = currentPath.endsWith("/loan_slip.html");
     const isReservations = currentPath.endsWith("/reservations.html");
     const isFines = currentPath.endsWith("/fines.html");

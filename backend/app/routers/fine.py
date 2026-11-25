@@ -13,14 +13,12 @@ from app.schemas.fine import (
     FineWaiveRequest,
     MyFinesResponse,
     ReportIssueRequest,
-    UnpaidCheckResponse,
 )
 from app.crud.fine import (
     generate_fine_receipt,
     get_fine_detail,
     get_fine_statistics,
     get_my_fines,
-    get_unpaid_fines_summary,
     list_fines_detailed,
     pay_fine,
     report_damage_or_lost,
@@ -86,21 +84,6 @@ def get_reader_my_fines(
         target_user_id = user_id or current_user.id
 
     return get_my_fines(db, user_id=target_user_id)
-
-
-@router.get("/unpaid-check/{user_id}", response_model=UnpaidCheckResponse)
-def check_user_unpaid_fines(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """Kiểm tra độc giả có khoản phạt chưa thanh toán (dùng cho phân hệ Mượn sách)."""
-    if current_user.role == UserRole.READER and current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Độc giả chỉ được kiểm tra trạng thái phạt của chính mình",
-        )
-    return get_unpaid_fines_summary(db, user_id=user_id)
 
 
 @router.get("/{fine_id}", response_model=FineDetailResponse)

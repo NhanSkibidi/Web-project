@@ -2061,3 +2061,150 @@ input:disabled, select:disabled, button:disabled {
         gap: 8px;
     }
 }
+
+/* ==========================================================================
+   HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ TOÀN HỆ THỐNG)
+   ========================================================================== */
+#confirm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#confirm-modal.active {
+    display: flex !important;
+    animation: fadeIn 0.2s ease forwards;
+}
+
+.modal-dialog.modal-confirm {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.confirm-content-wrap {
+    padding: 28px 24px 20px;
+    text-align: center;
+}
+
+.confirm-icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-icon-circle.icon-blue {
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+.confirm-icon-circle.icon-green {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.confirm-icon-circle.icon-red {
+    background: #FEF2F2;
+    color: #DC2626;
+}
+
+.confirm-icon-circle .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.confirm-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text, #1A1A1A);
+    margin: 0 0 8px;
+}
+
+.confirm-message {
+    font-size: 13px;
+    color: var(--color-muted, #6B7280);
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.confirm-actions-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-cancel {
+    flex: 1;
+    padding: 9px 16px;
+    border: 1px solid var(--color-border);
+    background: #FFFFFF;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.btn-confirm-cancel:hover {
+    background: #EFECE6;
+}
+
+.btn-confirm-proceed {
+    flex: 1;
+    padding: 9px 16px;
+    border: none;
+    background: var(--color-primary);
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    font-family: inherit;
+}
+
+.btn-confirm-proceed:hover {
+    background: var(--color-primary-dark, #153427);
+    transform: translateY(-1px);
+}
+
+.btn-confirm-proceed.btn-danger {
+    background: var(--color-danger, #DC2626);
+}
+
+.btn-confirm-proceed.btn-danger:hover {
+    background: #B91C1C;
+}

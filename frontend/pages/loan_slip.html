@@ -69,18 +69,30 @@
 
       <div class="topbar-divider"></div>
 
-      <div class="account">
-        <button class="librarian-profile account__btn" id="accountBtn" aria-haspopup="true" aria-expanded="false" style="border:none; background:none;">
-          <div class="librarian-avatar">A</div>
+      <!-- User Account Dropdown (đồng bộ toàn hệ thống) -->
+      <div class="user-dropdown-container" id="userDropdownContainer">
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar">A</div>
           <div class="librarian-info">
-            <span class="librarian-name">Nguyễn Văn An</span>
-            <span class="librarian-role">Sinh viên</span>
+            <span class="librarian-name" id="userName">Nguyễn Văn An</span>
+            <span class="librarian-role" id="userRole">Sinh viên</span>
           </div>
           <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
         </button>
-        <div class="account__menu" id="accountMenu" hidden>
-          <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
-          <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
+        <div class="user-dropdown-menu" id="userDropdownMenu">
+          <a href="profile.html" class="dropdown-item">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span>Thông tin cá nhân</span>
+          </a>
+          <a href="loan_basket.html" class="dropdown-item">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            <span>Giỏ mượn sách</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+          </button>
         </div>
       </div>
     </div>
@@ -121,6 +133,25 @@
   </footer>
 
   <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <!-- =========================================================================
+       HỘP THOẠI XÁC NHẬN CHUNG / ĐĂNG XUẤT (CONFIRM DIALOG - ĐỒNG BỘ TOÀN HỆ THỐNG)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle icon-red" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">warning</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận đăng xuất?</h3>
+        <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng xuất</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>

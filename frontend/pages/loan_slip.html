@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Phiếu mượn của tôi | UniLib</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Newsreader:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap&subset=vietnamese" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/loan_slip.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Newsreader:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap&subset=vietnamese"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../css/loan_slip.css?v=2.0" />
 </head>
+
 <body>
   <!-- Header đồng bộ theo chuẩn returns & Task T3CFF48 -->
   <header class="librarian-topbar">
@@ -28,18 +34,18 @@
         <span class="material-symbols-outlined">menu</span>
       </button>
       <nav class="topbar-nav" id="navMenu" aria-label="Điều hướng chính">
-        <a class="topbar-nav-link" href="home.html">Trang chủ</a>
-        <a class="topbar-nav-link" href="search.html">Tra cứu sách</a>
-        <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page" data-auth-required="true">Phiếu mượn của tôi</a>
-        <a class="topbar-nav-link" href="reservations.html" data-auth-required="true">Đặt trước</a>
-        <a class="topbar-nav-link" href="fines.html" data-role-allow="READER">Tiền phạt</a>
-        <a class="topbar-nav-link" href="staff-dashboard.html" data-role-allow="ADMIN,LIBRARIAN">Quản trị thư viện</a>
+        <a class="topbar-nav-link" href="home.html" data-page="home">Trang chủ</a>
+        <a class="topbar-nav-link" href="search.html" data-page="search">Tra cứu sách</a>
+        <a class="topbar-nav-link active" href="loan_slip.html" aria-current="page" data-page="loan_slip" data-auth-required="true">Phiếu mượn</a>
+        <a class="topbar-nav-link" href="reservations.html" data-page="reservations" data-auth-required="true">Đặt trước</a>
+        <a class="topbar-nav-link" href="fines.html" data-page="fines" data-role-allow="READER">Tiền phạt</a>
       </nav>
     </div>
     <div class="topbar-right">
       <!-- Chuông thông báo in-app (Task T3CFF48) -->
       <div class="notif-dropdown-container" id="notifDropdownContainer">
-        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
+          aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
           <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
         </button>
@@ -64,41 +70,32 @@
       </div>
 
       <!-- Giỏ mượn sách -->
-      <a class="topbar-icon-btn" href="loan_basket.html" aria-label="Giỏ mượn sách, 3 cuốn" title="Giỏ mượn sách">
+      <a class="topbar-icon-btn" href="loan_basket.html" id="loanBasketBtn" aria-label="Giỏ mượn sách" title="Giỏ mượn sách">
         <span class="material-symbols-outlined">shopping_bag</span>
-        <span class="cart-badge-count">3</span>
+        <span class="cart-badge-count" id="loanBasketBadge" style="display: none;">0</span>
       </a>
-
-      <div class="topbar-divider"></div>
 
       <!-- User Account Dropdown (đồng bộ toàn hệ thống) -->
       <div class="user-dropdown-container" id="userDropdownContainer">
-        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
-          <div class="librarian-avatar" id="userAvatar">A</div>
+        <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+          aria-haspopup="true">
+          <div class="librarian-avatar" id="userAvatar">U</div>
           <div class="librarian-info">
-            <span class="librarian-name" id="userName">Nguyễn Văn An</span>
-            <span class="librarian-role" id="userRole">Sinh viên</span>
+            <span class="librarian-name" id="userName">Độc giả</span>
+            <span class="librarian-role" id="userRole">Độc giả</span>
           </div>
           <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
         </button>
         <div class="user-dropdown-menu" id="userDropdownMenu">
-          <a href="profile.html" class="dropdown-item">
+          <a href="profile.html" class="dropdown-item" id="userProfileLink">
             <span class="material-symbols-outlined">account_circle</span>
             <span>Thông tin cá nhân</span>
-          </a>
-          <a href="loan_basket.html" class="dropdown-item">
-            <span class="material-symbols-outlined">shopping_bag</span>
-            <span>Giỏ mượn sách</span>
           </a>
           <div class="dropdown-divider"></div>
           <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
             <span class="material-symbols-outlined">logout</span>
             <span>Đăng xuất</span>
           </button>
-        <div class="account__menu" id="accountMenu" hidden>
-          <p><strong>Nguyễn Văn An</strong><small>Sinh viên</small></p>
-          <a href="profile.html" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:inherit;text-decoration:none;font-size:13px;font-weight:500;">Hồ sơ cá nhân</a>
-          <button type="button" data-act="logout"><i data-lucide="log-out"></i>Đăng xuất</button>
         </div>
       </div>
     </div>
@@ -116,7 +113,8 @@
       <div class="tabs" id="tabs" role="tablist" aria-label="Lọc theo trạng thái"></div>
       <label class="search">
         <i data-lucide="search"></i>
-        <input id="searchInput" type="search" placeholder="Tìm theo mã phiếu hoặc tên sách..." aria-label="Tìm phiếu mượn" />
+        <input id="searchInput" type="search" placeholder="Tìm theo mã phiếu hoặc tên sách..."
+          aria-label="Tìm phiếu mượn" />
         <kbd>⌘K</kbd>
       </label>
     </section>
@@ -124,14 +122,16 @@
     <section class="slips" id="slips" aria-live="polite"></section>
 
     <section class="foot-bar">
-      <p class="rule"><i data-lucide="info"></i>Mỗi độc giả được mượn tối đa 5 cuốn cùng lúc. Thời hạn mượn chuẩn là 14 ngày.</p>
+      <p class="rule"><i data-lucide="info"></i>Mỗi độc giả được mượn tối đa 5 cuốn cùng lúc. Thời hạn mượn chuẩn là 14
+        ngày.</p>
       <div class="pager" id="pager"></div>
     </section>
   </main>
 
   <footer class="footer">
     <div class="footer__inner">
-      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ thống Quản lý Học thuật UniLib 2026</p>
+      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ
+        thống Quản lý Học thuật UniLib 2026</p>
       <nav class="footer__links" aria-label="Liên kết chân trang">
         <a href="#">Quy chế thư viện</a><a href="#">Hỗ trợ nghiên cứu</a><a href="#">Liên hệ thủ thư</a>
       </nav>
@@ -150,7 +150,8 @@
           <span class="material-symbols-outlined" id="confirm-icon">warning</span>
         </div>
         <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận đăng xuất?</h3>
-        <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?</p>
+        <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?
+        </p>
         <div class="confirm-actions-row">
           <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
           <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng xuất</button>
@@ -162,9 +163,10 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
-  <script src="../js/api.js"></script>
-  <script src="../js/utils.js"></script>
-  <script src="../js/notifications.js" defer></script>
-  <script src="../js/pages/loan_slip.js"></script>
+  <script src="../js/api.js?v=2.2"></script>
+  <script src="../js/utils.js?v=2.5"></script>
+  <script src="../js/notifications.js?v=2.0"></script>
+  <script src="../js/pages/loan_slip.js?v=2.3"></script>
 </body>
+
 </html>

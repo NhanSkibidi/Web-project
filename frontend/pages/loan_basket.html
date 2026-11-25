@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,16 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
     <!-- CSS stylesheet (trang này nằm trong pages/ nên đi ngược lên ../) -->
-    <link rel="stylesheet" href="../css/loan_basket.css">
+    <link rel="stylesheet" href="../css/loan_basket.css?v=2.0">
 </head>
+
 <body data-page="cart">
 
     <!-- HEADER ĐỒNG BỘ THEO CHUẨN RETURNS & TASK T3CFF48 -->
@@ -29,7 +35,8 @@
             </a>
 
             <!-- Mobile Menu Toggle Button -->
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng" aria-expanded="false">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng"
+                aria-expanded="false">
                 <span class="material-symbols-outlined">menu</span>
             </button>
 
@@ -37,11 +44,10 @@
             <nav class="topbar-nav" id="navMenu">
                 <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
                 <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
-                <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans">Phiếu mượn của tôi</a>
-                <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans" data-auth-required="true">Phiếu mượn của tôi</a>
-                <a href="reservations.html" class="topbar-nav-link" data-page="reservations" data-auth-required="true">Đặt trước</a>
+                <a href="loan_slip.html" class="topbar-nav-link" data-page="my-loans" data-auth-required="true">Phiếu mượn</a>
+                <a href="reservations.html" class="topbar-nav-link" data-page="reservations"
+                    data-auth-required="true">Đặt trước</a>
                 <a href="fines.html" class="topbar-nav-link" data-page="fines" data-role-allow="READER">Tiền phạt</a>
-                <a href="staff-dashboard.html" class="topbar-nav-link" data-page="admin" data-role-allow="ADMIN,LIBRARIAN">Quản trị thư viện</a>
             </nav>
         </div>
 
@@ -49,7 +55,8 @@
         <div class="topbar-right">
             <!-- Chuông thông báo in-app (Task T3CFF48) -->
             <div class="notif-dropdown-container" id="notifDropdownContainer">
-                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+                <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
+                    aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
                     <span class="material-symbols-outlined">notifications</span>
                     <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
                 </button>
@@ -74,34 +81,30 @@
             </div>
 
             <!-- Giỏ mượn sách -->
-            <a href="loan_basket.html" class="topbar-icon-btn active" data-page="cart" title="Giỏ mượn sách">
+            <a href="loan_basket.html" class="topbar-icon-btn active" data-page="cart" title="Giỏ mượn sách" aria-label="Giỏ mượn sách (0 cuốn)">
                 <span class="material-symbols-outlined">shopping_bag</span>
-                <span class="cart-badge-count" id="cartBadge" aria-live="polite">3</span>
+                <span class="cart-badge-count" id="cartBadge" aria-live="polite" style="display: none;">0</span>
             </a>
-
-            <div class="topbar-divider"></div>
 
             <!-- User Account Dropdown -->
             <div class="user-dropdown-container" id="userDropdownContainer">
-                <button class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
-                    <div class="librarian-avatar">A</div>
+                <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false"
+                    aria-haspopup="true">
+                    <div class="librarian-avatar" id="userAvatar">U</div>
                     <div class="librarian-info">
-                        <span class="librarian-name">Nguyễn Văn An</span>
-                        <span class="librarian-role">Sinh viên</span>
+                        <span class="librarian-name" id="userName">Độc giả</span>
+                        <span class="librarian-role" id="userRole">Độc giả</span>
                     </div>
-                    <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+                    <span class="material-symbols-outlined"
+                        style="font-size: 16px; margin-left: 2px;">expand_more</span>
                 </button>
                 <div class="user-dropdown-menu" id="userDropdownMenu">
-                    <a href="profile.html" class="dropdown-item">
+                    <a href="profile.html" class="dropdown-item" id="userProfileLink">
                         <span class="material-symbols-outlined">account_circle</span>
                         <span>Thông tin cá nhân</span>
                     </a>
-                    <a href="loan_slip.html" class="dropdown-item">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <span>Lịch sử phiếu mượn</span>
-                    </a>
                     <div class="dropdown-divider"></div>
-                    <button class="dropdown-item text-danger" id="logoutMenuBtn">
+                    <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
                         <span class="material-symbols-outlined">logout</span>
                         <span>Đăng xuất</span>
                     </button>
@@ -121,9 +124,11 @@
             <div class="capacity-pill-wrapper">
                 <div class="capacity-pill" id="capacityPill">
                     <span class="dot"></span>
-                    <span id="capacityText">3 / 5 cuốn được phép mượn</span>
-                    <button class="info-icon-btn bounce-hover" id="infoBtn" aria-label="Xem quy định số lượng sách mượn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <span id="capacityText">0 / 5 cuốn được phép mượn</span>
+                    <button class="info-icon-btn bounce-hover" id="infoBtn"
+                        aria-label="Xem quy định số lượng sách mượn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="16" x2="12" y2="12"></line>
                             <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -143,12 +148,15 @@
                     <label class="checkbox-label select-all-label">
                         <input type="checkbox" id="selectAllCheckbox" checked>
                         <span class="custom-checkbox"></span>
-                        <span id="selectAllText">Chọn tất cả (3 ấn phẩm)</span>
+                        <span id="selectAllText">Chọn tất cả (0 ấn phẩm)</span>
                     </label>
-                    <button class="delete-all-btn bounce-hover" id="deleteAllBtn" aria-label="Xóa tất cả sách trong giỏ">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="delete-all-btn bounce-hover" id="deleteAllBtn"
+                        aria-label="Xóa tất cả sách trong giỏ">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
                             <line x1="10" y1="11" x2="10" y2="17"></line>
                             <line x1="14" y1="11" x2="14" y2="17"></line>
                         </svg>
@@ -164,27 +172,32 @@
                 <!-- Empty State (Hidden by default) -->
                 <div class="empty-state" id="emptyState" style="display: none;">
                     <div class="empty-icon-box">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="8" cy="21" r="1"/>
-                            <circle cx="19" cy="21" r="1"/>
-                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8" cy="21" r="1" />
+                            <circle cx="19" cy="21" r="1" />
+                            <path
+                                d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                         </svg>
                     </div>
                     <h3 class="empty-title">Giỏ mượn đang trống</h3>
-                    <p class="empty-desc">Bạn chưa thêm ấn phẩm nào vào giỏ mượn sách. Hãy tra cứu và chọn tài liệu cần thiết.</p>
-                    <a href="search.html" class="primary-btn bounce-hover">Tra cứu sách ngay</a>
+                    <p class="empty-desc">Bạn chưa thêm ấn phẩm nào vào giỏ mượn sách. Hãy tra cứu và chọn tài liệu cần
+                        thiết.</p>
+                    <a href="home.html" class="primary-btn bounce-hover">Chọn sách ngay</a>
                 </div>
 
                 <!-- Policy Card -->
                 <div class="policy-card">
                     <div class="policy-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
                     </div>
                     <div class="policy-content">
                         <h4 class="policy-title">Chính sách hạn mượn và bảo quản tài liệu</h4>
-                        <p class="policy-desc">Mỗi sinh viên được giữ tối đa 5 đầu sách trong 14 ngày làm việc. Ấn phẩm có thể gia hạn trực tuyến thêm 1 lần nếu không có yêu cầu đặt chỗ từ độc giả khác.</p>
+                        <p class="policy-desc">Mỗi sinh viên được giữ tối đa 5 đầu sách trong 14 ngày làm việc. Ấn phẩm
+                            có thể gia hạn trực tuyến thêm 1 lần nếu không có yêu cầu đặt chỗ từ độc giả khác.</p>
                     </div>
                 </div>
             </div>
@@ -200,13 +213,14 @@
                     <div class="summary-box">
                         <div class="summary-info">
                             <span class="summary-label">Tổng cộng</span>
-                            <div class="summary-count" id="summaryCount">3 cuốn sách</div>
+                            <div class="summary-count" id="summaryCount">0 cuốn sách</div>
                             <p class="summary-desc">Ấn phẩm được xếp sẵn và niêm phong</p>
                         </div>
                         <div class="summary-icon-box">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                                <polyline points="10 2 10 10 13 7 16 10 16 2"/>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                                <polyline points="10 2 10 10 13 7 16 10 16 2" />
                             </svg>
                         </div>
                     </div>
@@ -219,27 +233,59 @@
                         </div>
                         <div class="custom-select-container" id="customSelectContainer">
                             <input type="hidden" id="pickupLocationInput" name="pickupLocation" value="tang1_chinh">
-                            <button type="button" class="custom-select-btn bounce-hover" id="customSelectBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pickupLabel customSelectBtn">
-                                <span class="selected-option-text" id="selectedOptionText">Quầy lưu thông Tầng 1 – Cơ sở chính</span>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="select-arrow">
+                            <button type="button" class="custom-select-btn bounce-hover" id="customSelectBtn"
+                                aria-haspopup="listbox" aria-expanded="false"
+                                aria-labelledby="pickupLabel customSelectBtn">
+                                <span class="selected-option-text" id="selectedOptionText">Quầy lưu thông Tầng 1 – Cơ sở
+                                    chính</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    class="select-arrow">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </button>
                             <ul class="custom-select-dropdown" id="customSelectDropdown" role="listbox" tabindex="-1">
-                                <li class="custom-select-option selected" role="option" aria-selected="true" data-value="tang1_chinh">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                <li class="custom-select-option selected" role="option" aria-selected="true"
+                                    data-value="tang1_chinh">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
                                     <span>Quầy lưu thông Tầng 1 – Cơ sở chính</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
                                 </li>
-                                <li class="custom-select-option" role="option" aria-selected="false" data-value="tang2_kythuat">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                <li class="custom-select-option" role="option" aria-selected="false"
+                                    data-value="tang2_kythuat">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
                                     <span>Quầy mượn Tầng 2 – Kho Kỹ thuật</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
                                 </li>
-                                <li class="custom-select-option" role="option" aria-selected="false" data-value="smart_locker">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                <li class="custom-select-option" role="option" aria-selected="false"
+                                    data-value="smart_locker">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
                                     <span>Tủ mượn tự động Smart Locker K1</span>
-                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <svg class="check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
                                 </li>
                             </ul>
                         </div>
@@ -252,29 +298,34 @@
                             <span class="badge-deadline">Hạn chót</span>
                         </div>
                         <div class="input-icon-wrapper">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
                             </svg>
-                            <input type="text" id="pickupTime" class="form-input readonly-input" value="Hôm nay (14:00 - 17:00)" readonly>
+                            <input type="text" id="pickupTime" class="form-input readonly-input"
+                                value="Hôm nay (14:00 - 17:00)" readonly>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="borrowNote" class="form-label">Ghi chú cho thủ thư (tùy chọn)</label>
-                        <textarea id="borrowNote" class="form-textarea" placeholder="VD: Cần mã đĩa CD đính kèm cuốn Kỹ thuật..."></textarea>
+                        <textarea id="borrowNote" class="form-textarea"
+                            placeholder="VD: Cần mã đĩa CD đính kèm cuốn Kỹ thuật..."></textarea>
                     </div>
 
                     <button id="submitBtn" class="submit-btn bounce-hover">
                         <span>Gửi Yêu Cầu Mượn Ngay</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="22" y1="2" x2="11" y2="13"></line>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                         </svg>
                     </button>
 
                     <div class="conf-footer-note">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
@@ -287,24 +338,25 @@
 
     <!-- FOOTER -->
     <footer class="site-footer">
-    <!-- TODO: thay href="#" bằng trang thật khi có -->
         <div class="footer-container">
             <div class="footer-left">
-                <span>© Hệ thống quản lý học thuật UniLib / Athena 2025</span>
+                <span>© Hệ thống quản lý học thuật UniLib / KS25 Library</span>
             </div>
             <div class="footer-right">
-                <a href="#" class="footer-link bounce-hover">Quy chế thư viện</a>
-                <a href="#" class="footer-link bounce-hover">Hỗ trợ nghiên cứu</a>
-                <a href="#" class="footer-link bounce-hover">Liên hệ thủ thư</a>
+                <a href="home.html" class="footer-link bounce-hover">Trang chủ</a>
+                <a href="loan_slip.html" class="footer-link bounce-hover">Phiếu mượn</a>
+                <a href="reservations.html" class="footer-link bounce-hover">Đặt trước</a>
             </div>
         </div>
     </footer>
 
     <!-- MODAL: DELETE ONE BOOK -->
-    <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle" style="display: none;">
+    <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle"
+        style="display: none;">
         <div class="modal-card">
             <div class="modal-icon-box danger-bg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
@@ -319,10 +371,12 @@
     </div>
 
     <!-- MODAL: DELETE ALL BOOKS -->
-    <div class="modal-backdrop" id="deleteAllModal" role="dialog" aria-modal="true" aria-labelledby="deleteAllModalTitle" style="display: none;">
+    <div class="modal-backdrop" id="deleteAllModal" role="dialog" aria-modal="true"
+        aria-labelledby="deleteAllModalTitle" style="display: none;">
         <div class="modal-card">
             <div class="modal-icon-box danger-bg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -330,7 +384,8 @@
                 </svg>
             </div>
             <h3 class="modal-title" id="deleteAllModalTitle">Xóa toàn bộ giỏ mượn?</h3>
-            <p class="modal-desc" id="deleteAllModalDesc">Tất cả sách sẽ bị xóa khỏi giỏ. Hành động này không thể hoàn tác.</p>
+            <p class="modal-desc" id="deleteAllModalDesc">Tất cả sách sẽ bị xóa khỏi giỏ. Hành động này không thể hoàn
+                tác.</p>
             <div class="modal-actions">
                 <button class="secondary-btn bounce-hover" id="cancelDeleteAllBtn">Hủy</button>
                 <button class="danger-btn bounce-hover" id="confirmDeleteAllBtn">Xóa tất cả</button>
@@ -339,10 +394,12 @@
     </div>
 
     <!-- MODAL: CONFIRM SUBMIT REQUEST -->
-    <div class="modal-backdrop" id="submitModal" role="dialog" aria-modal="true" aria-labelledby="submitModalTitle" style="display: none;">
+    <div class="modal-backdrop" id="submitModal" role="dialog" aria-modal="true" aria-labelledby="submitModalTitle"
+        style="display: none;">
         <div class="modal-card modal-card-large">
             <div class="modal-icon-box success-bg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
@@ -353,28 +410,43 @@
             <div class="modal-review-box">
                 <div class="review-row">
                     <span class="review-label">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                        </svg>
                         Số lượng sách:
                     </span>
-                    <span class="review-value" id="reviewBookCount">3 cuốn</span>
+                    <span class="review-value" id="reviewBookCount">0 cuốn</span>
                 </div>
                 <div class="review-row">
                     <span class="review-label">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                         Địa điểm nhận:
                     </span>
                     <span class="review-value" id="reviewLocation">Quầy lưu thông Tầng 1 – Cơ sở chính</span>
                 </div>
                 <div class="review-row">
                     <span class="review-label">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
                         Thời gian nhận:
                     </span>
                     <span class="review-value">Hôm nay (14:00 - 17:00)</span>
                 </div>
                 <div class="review-row" id="reviewNoteRow" style="display: none;">
                     <span class="review-label">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
                         Ghi chú:
                     </span>
                     <span class="review-value" id="reviewNoteText"></span>
@@ -400,10 +472,12 @@
                     <span class="material-symbols-outlined" id="confirm-icon">warning</span>
                 </div>
                 <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận đăng xuất?</h3>
-                <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?</p>
+                <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại
+                    không?</p>
                 <div class="confirm-actions-row">
                     <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
-                    <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng xuất</button>
+                    <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng
+                        xuất</button>
                 </div>
             </div>
         </div>
@@ -415,9 +489,10 @@
     <!-- Script file -->
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
     <script src="../js/config.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/notifications.js" defer></script>
-    <script src="../js/pages/loan_basket.js" defer></script>
+    <script src="../js/api.js?v=2.2"></script>
+    <script src="../js/utils.js?v=2.5"></script>
+    <script src="../js/notifications.js?v=2.0" defer></script>
+    <script src="../js/pages/loan_basket.js?v=2.1" defer></script>
 </body>
+
 </html>

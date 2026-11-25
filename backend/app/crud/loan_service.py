@@ -126,21 +126,25 @@ def create_online_loan(
         user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
-            raise HTTPException(status_code=404, detail="Không tìm thấy độc giả")
-
-        if user.role != UserRole.READER:
-            raise HTTPException(
-                status_code=403,
-                detail="Chỉ độc giả mới được gửi yêu cầu mượn",
-            )
+            raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng")
 
         if user.status != UserStatus.ACTIVE:
             raise HTTPException(
                 status_code=403,
-                detail="Tài khoản độc giả đã bị khóa",
+                detail="Tài khoản người dùng đã bị khóa",
             )
 
-        card = check_library_card(db, user_id)
+        if user.role == UserRole.READER:
+            card = check_library_card(db, user_id)
+        else:
+            existing_card = (
+                db.query(LibraryCard)
+                .filter(LibraryCard.reader_id == user_id)
+                .order_by(LibraryCard.id.desc())
+                .first()
+            )
+            card = check_library_card(db, user_id) if existing_card else None
+
         check_overdue_books(db, user_id)
         check_unpaid_fines(db, user_id)
         check_borrow_limit(db, user_id, len(book_isbns), card=card)

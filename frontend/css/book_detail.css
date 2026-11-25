@@ -274,33 +274,17 @@ body {
 }
 
 /* ==========================================================
-   2. BREADCRUMB
+   2. THANH NÚT QUAY LẠI
    ========================================================== */
 .breadcrumb-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 18px 0;
+  justify-content: flex-start;
+  padding: 18px 0 14px;
   margin-top: 6px;
   font-size: 13.5px;
   color: var(--color-text-sub);
 }
-
-.breadcrumb-links {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.breadcrumb-links a {
-  color: var(--color-text-sub);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.breadcrumb-links a:hover { color: var(--color-primary); }
-.breadcrumb-current { color: var(--color-text); font-weight: 600; }
 
 .btn-back-catalog {
   display: inline-flex;
@@ -309,13 +293,18 @@ body {
   color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 7px 14px;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E6E2D8);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(27, 67, 50, 0.05);
   transition: all 0.2s ease;
 }
 
 .btn-back-catalog:hover {
   background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 /* ==========================================================
@@ -1334,17 +1323,11 @@ body {
 }
 
 @media (max-width: 768px) {
-  .topbar-nav {
-    display: none;
-  }
   .librarian-info {
     display: none;
   }
   .breadcrumb-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
+    padding: 12px 0;
   }
   .btn-back-catalog {
     align-self: flex-start;

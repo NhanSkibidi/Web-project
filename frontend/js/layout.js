@@ -230,12 +230,6 @@ function renderReaderLayout() {
     const isReservations = currentPath.endsWith("/reservations.html");
     const isFines = currentPath.endsWith("/fines.html");
 
-    // Nếu là Admin hoặc Thủ thư đang ở trang độc giả -> hiện nút vào Bàn làm việc
-    const staffShortcutHtml =
-      user && (user.role === "ADMIN" || user.role === "LIBRARIAN")
-        ? `<a href="${root}pages/staff-dashboard.html" class="topbar-nav-link" title="Bàn làm việc quản trị">⚡ Quản trị</a>`
-        : "";
-
     // Nếu là Độc giả đang đăng nhập -> hiện lối vào Tiền phạt cá nhân (Task T3CFF2C)
     const readerFinesLinkHtml =
       user && user.role === "READER"
@@ -273,42 +267,68 @@ function renderReaderLayout() {
       </div>
     `;
 
-    let userAreaHtml = "";
+    const role = user ? String(user.role || "").toUpperCase() : "";
+    const roleText = role === "ADMIN" ? "Quản trị viên" : role === "LIBRARIAN" ? "Thủ thư" : "Độc giả";
+
+    let dropdownMenuHtml = "";
+    let avatarHtml = "";
+    let userNameText = "Tài khoản";
+    let userRoleText = "Chưa đăng nhập";
+
     if (user) {
-      const initial = (user.full_name || user.email || "U")[0].toUpperCase();
-      userAreaHtml = `
-        <div class="topbar-right">
-          ${notifHtml}
-          <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách">
-            <span class="material-symbols-outlined">shopping_bag</span>
-            <span class="badge-dot"></span>
-          </a>
-          <div class="topbar-divider"></div>
-          <a href="${root}pages/profile.html" class="librarian-profile" title="Hồ sơ cá nhân & Đổi mật khẩu" style="text-decoration:none; color:inherit;">
-            <div class="librarian-avatar">${initial}</div>
-            <div class="librarian-info">
-              <span class="librarian-name">${getSafeText(user.full_name || user.email)}</span>
-              <span class="librarian-role">${getSafeText(ROLE_LABELS[user.role] || user.role)}</span>
-            </div>
-          </a>
-          <button type="button" id="header-logout-btn" class="topbar-icon-btn" title="Đăng xuất">
-            <span class="material-symbols-outlined">logout</span>
-          </button>
-        </div>
+      const fullName = user.full_name || user.name || user.email || "Độc giả";
+      const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
+      avatarHtml = getSafeText(initial);
+      userNameText = getSafeText(fullName);
+      userRoleText = getSafeText(roleText);
+
+      dropdownMenuHtml = `
+        <a href="${root}pages/profile.html" class="dropdown-item" id="userProfileLink">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span>Thông tin cá nhân</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Đăng xuất</span>
+        </button>
       `;
     } else {
-      userAreaHtml = `
-        <div class="topbar-right">
-          ${notifHtml}
-          <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách">
-            <span class="material-symbols-outlined">shopping_bag</span>
-          </a>
-          <div class="topbar-divider"></div>
-          <a href="${root}pages/login.html#login" class="topbar-nav-link">Đăng nhập</a>
-          <a href="${root}pages/login.html#register" class="topbar-nav-link active">Đăng ký thẻ</a>
-        </div>
+      avatarHtml = `<span class="material-symbols-outlined" style="font-size:18px;">person</span>`;
+      dropdownMenuHtml = `
+        <a href="${root}pages/login.html#login" class="dropdown-item">
+          <span class="material-symbols-outlined">login</span>
+          <span>Đăng nhập</span>
+        </a>
+        <a href="${root}pages/login.html#register" class="dropdown-item">
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Đăng ký thẻ mới</span>
+        </a>
       `;
     }
+
+    const userAreaHtml = `
+      <div class="topbar-right">
+        ${notifHtml}
+        <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách" id="loanBasketBtn">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          <span class="cart-badge-count" id="loanBasketBadge" style="display: none;">0</span>
+        </a>
+        <div class="user-dropdown-container" id="userDropdownContainer">
+          <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
+            <div class="librarian-avatar" id="userAvatar">${avatarHtml}</div>
+            <div class="librarian-info">
+              <span class="librarian-name" id="userName">${userNameText}</span>
+              <span class="librarian-role" id="userRole">${userRoleText}</span>
+            </div>
+            <span class="material-symbols-outlined" style="font-size: 16px; margin-left: 2px;">expand_more</span>
+          </button>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            ${dropdownMenuHtml}
+          </div>
+        </div>
+      </div>
+    `;
 
     headerEl.className = "librarian-topbar reader-topbar";
     headerEl.innerHTML = `
@@ -322,25 +342,27 @@ function renderReaderLayout() {
             <span class="brand-sub">Thư viện số KS25</span>
           </div>
         </a>
-        <nav class="topbar-nav">
+        <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <nav class="topbar-nav" id="navMenu">
           <a href="${root}pages/home.html" class="topbar-nav-link ${isHome ? "active" : ""}">Trang chủ</a>
           <a href="${root}pages/search.html" class="topbar-nav-link ${isSearch ? "active" : ""}">Tra cứu sách</a>
           ${readerAuthLinksHtml}
           ${readerFinesLinkHtml}
-          ${staffShortcutHtml}
         </nav>
       </div>
       ${userAreaHtml}
     `;
 
-    document.getElementById("header-logout-btn")?.addEventListener("click", () => {
-      auth.clearSession();
-      window.location.href = `${root}pages/login.html#login`;
-    });
+    bindReaderTopbarActions(root);
 
     // Chuông thông báo được quản lý tập trung bởi notifications.js (tránh gắn 2 lần gây double-toggle)
     if (window.unilibNotifications && typeof window.unilibNotifications.init === "function") {
       window.unilibNotifications.init();
+    }
+    if (typeof window.syncCartBadges === "function") {
+      window.syncCartBadges();
     }
   }
 
@@ -356,6 +378,172 @@ function renderReaderLayout() {
         </div>
       </div>
     `;
+  }
+}
+
+function ensureConfirmModal() {
+  if (document.getElementById("confirm-modal")) return;
+  const modal = document.createElement("div");
+  modal.className = "modal-backdrop";
+  modal.id = "confirm-modal";
+  modal.setAttribute("aria-hidden", "true");
+  modal.setAttribute("role", "dialog");
+  modal.innerHTML = `
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle icon-red" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">warning</span>
+        </div>
+        <h3 class="confirm-title font-headline" id="confirm-title">Xác nhận thao tác</h3>
+        <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+let activeLayoutConfirmCallback = null;
+
+function openLayoutConfirm(options) {
+  ensureConfirmModal();
+  const modal = document.getElementById("confirm-modal");
+  const titleEl = document.getElementById("confirm-title");
+  const msgEl = document.getElementById("confirm-message");
+  const iconBox = document.getElementById("confirm-icon-box");
+  const iconEl = document.getElementById("confirm-icon");
+  const btnProceed = document.getElementById("btn-confirm-proceed");
+  const btnCancel = document.getElementById("btn-confirm-cancel");
+  if (!modal) return;
+
+  if (titleEl) titleEl.textContent = options.title || "Xác nhận";
+  if (msgEl) msgEl.textContent = options.message || "Bạn có chắc chắn muốn thực hiện thao tác này?";
+  if (iconBox) iconBox.className = "confirm-icon-circle";
+  if (btnProceed) btnProceed.className = "btn-confirm-proceed";
+
+  if (options.type === "red") {
+    if (iconBox) iconBox.classList.add("icon-red");
+    if (btnProceed) btnProceed.classList.add("btn-danger");
+    if (iconEl) iconEl.textContent = "warning";
+  } else if (options.type === "green") {
+    if (iconBox) iconBox.classList.add("icon-green");
+    if (iconEl) iconEl.textContent = "check_circle";
+  } else {
+    if (iconBox) iconBox.classList.add("icon-blue");
+    if (iconEl) iconEl.textContent = "help_outline";
+  }
+
+  if (btnProceed) btnProceed.textContent = options.confirmText || "Xác nhận";
+  if (btnCancel) btnCancel.textContent = options.cancelText || "Hủy";
+
+  activeLayoutConfirmCallback = options.onConfirm || null;
+  modal.style.display = "";
+  modal.setAttribute("aria-hidden", "false");
+  modal.classList.add("active");
+}
+
+function closeLayoutConfirm() {
+  const modal = document.getElementById("confirm-modal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
+  activeLayoutConfirmCallback = null;
+}
+
+function bindReaderTopbarActions(root) {
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userDropdownMenu = document.getElementById("userDropdownMenu");
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  const navMenu = document.getElementById("navMenu");
+
+  if (mobileMenuToggle && navMenu) {
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navMenu.classList.toggle("show");
+    });
+  }
+
+  if (userProfileBtn && userDropdownMenu) {
+    userProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("show");
+      const isShown = userDropdownMenu.classList.contains("show");
+      userProfileBtn.setAttribute("aria-expanded", isShown ? "true" : "false");
+    });
+  }
+
+  if (!window.__unilibReaderTopbarBound) {
+    window.__unilibReaderTopbarBound = true;
+
+    document.addEventListener("click", (e) => {
+      const btn = document.getElementById("userProfileBtn");
+      const menu = document.getElementById("userDropdownMenu");
+      const nav = document.getElementById("navMenu");
+      const toggle = document.getElementById("mobileMenuToggle");
+
+      if (menu && menu.classList.contains("show") && !e.target.closest("#userDropdownContainer")) {
+        menu.classList.remove("show");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      }
+      if (nav && nav.classList.contains("show") && !e.target.closest("#navMenu") && !e.target.closest("#mobileMenuToggle")) {
+        nav.classList.remove("show");
+        if (toggle) toggle.setAttribute("aria-expanded", "false");
+      }
+
+      if (e.target.closest("#logoutMenuBtn")) {
+        e.preventDefault();
+        if (menu) menu.classList.remove("show");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+        openLayoutConfirm({
+          title: "Xác nhận đăng xuất?",
+          message: "Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?",
+          type: "red",
+          confirmText: "Đăng xuất",
+          cancelText: "Hủy",
+          onConfirm: () => {
+            if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+              auth.clearSession();
+            } else {
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("token");
+              localStorage.removeItem("user_info");
+              localStorage.removeItem("library_card");
+              sessionStorage.removeItem("access_token");
+              sessionStorage.removeItem("user_info");
+            }
+            window.location.href = `${root}pages/login.html#login`;
+          },
+        });
+      }
+
+      if (e.target.closest("#btn-confirm-cancel") || e.target.id === "confirm-modal") {
+        closeLayoutConfirm();
+      } else if (e.target.closest("#btn-confirm-proceed")) {
+        const cb = activeLayoutConfirmCallback;
+        closeLayoutConfirm();
+        if (typeof cb === "function") cb();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const menu = document.getElementById("userDropdownMenu");
+        const btn = document.getElementById("userProfileBtn");
+        const nav = document.getElementById("navMenu");
+        if (menu && menu.classList.contains("show")) {
+          menu.classList.remove("show");
+          if (btn) btn.setAttribute("aria-expanded", "false");
+        }
+        if (nav && nav.classList.contains("show")) {
+          nav.classList.remove("show");
+        }
+        closeLayoutConfirm();
+      }
+    });
   }
 }
 
@@ -454,7 +642,6 @@ function renderStaffLayout() {
           </div>
         </div>
         <div class="sidebar-actions">
-          <a href="${root}pages/home.html" class="sidebar-btn" title="Mở giao diện Cổng Độc giả">Cổng Độc giả</a>
           <button type="button" id="staff-logout-btn" class="sidebar-btn sidebar-btn-danger">Đăng xuất</button>
         </div>
       </div>
@@ -473,7 +660,7 @@ function renderStaffLayout() {
 
         <div class="topbar-right">
           <form id="topbar-quick-scan-form" class="quick-scan-box" title="Quét hoặc nhập mã bản sao sách để tra cứu nhanh">
-            <span>🔍</span>
+            <span class="material-symbols-outlined" style="font-size:18px; color:var(--color-text-secondary,#718096);">search</span>
             <input id="topbar-copy-code-input" type="text" placeholder="Tra nhanh copy_code (VD: BC-...)" autocomplete="off">
           </form>
           ${user
@@ -533,6 +720,10 @@ function renderStaffLayout() {
 // 4. KHỞI CHẠY LAYOUT & KIỂM TRA QUYỀN TRUY CẬP
 // ==============================================================================
 function initLayout() {
+  if (typeof window.enforceStaffManagementBoundary === "function" && window.enforceStaffManagementBoundary()) {
+    return;
+  }
+
   document.documentElement.removeAttribute("data-theme");
   localStorage.removeItem("ks25_theme");
 
@@ -550,7 +741,7 @@ function initLayout() {
     window.unilibNotifications.load();
   } else if (!document.querySelector('script[src*="notifications.js"]')) {
     const s = document.createElement("script");
-    s.src = `${document.body.dataset.root || ""}js/notifications.js`;
+    s.src = `${document.body.dataset.root || ""}js/notifications.js?v=2.0`;
     s.defer = true;
     document.body.appendChild(s);
   }

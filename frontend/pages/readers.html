@@ -27,7 +27,7 @@
   <header class="librarian-topbar site-header">
     <div class="topbar-left">
       <!-- Logo -->
-      <a href="home.html" class="brand-badge" data-page="home" title="UniLib - Về trang chủ">
+      <a href="staff-dashboard.html" class="brand-badge" title="UniLib - Bàn làm việc quản trị">
         <div class="brand-icon">
           <span class="material-symbols-outlined">local_library</span>
         </div>
@@ -38,14 +38,12 @@
       </a>
 
       <!-- Mobile Menu Toggle Button -->
-      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu điều hướng" style="display: none;">
         <span class="material-symbols-outlined">menu</span>
       </button>
 
       <!-- Navigation Menu -->
-      <nav class="topbar-nav" id="navMenu">
-        <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
-      </nav>
+      <nav class="topbar-nav" id="navMenu" style="display: none;"></nav>
     </div>
 
     <!-- Header Right Area -->
@@ -183,10 +181,7 @@
         <div class="filter-card">
           <form id="readers-filter-form" class="filter-row">
             <div class="search-field-wrap">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+              <span class="material-symbols-outlined" style="font-size:18px; color:#718096; flex-shrink:0;">search</span>
               <input id="filter-keyword" type="search" placeholder="Tìm theo Mã thẻ (LC-0001), Họ tên, SĐT, Email...">
             </div>
 
@@ -494,8 +489,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
-  <script src="../js/api.js"></script>
-  <script src="../js/utils.js"></script>
+  <script src="../js/api.js?v=2.2"></script>
+  <script src="../js/utils.js?v=2.2"></script>
   <script src="../js/pages/readers.js"></script>
 </body>
 </html>

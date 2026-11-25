@@ -657,9 +657,26 @@ document.addEventListener("DOMContentLoaded", () => {
         : "Tài khoản Nhân sự / Quản trị";
     }
 
+    const isStaffUser = user.role === "ADMIN" || user.role === "LIBRARIAN";
+    const headerBrand = document.querySelector(".librarian-topbar .brand-badge");
+    const headerNav = document.querySelector(".librarian-topbar .topbar-nav");
+    if (isStaffUser) {
+      if (headerBrand) {
+        headerBrand.setAttribute("href", "staff-dashboard.html");
+        headerBrand.setAttribute("title", "UniLib - Bàn làm việc quản trị");
+      }
+      if (headerNav) headerNav.style.display = "none";
+    } else {
+      if (headerBrand) {
+        headerBrand.setAttribute("href", "home.html");
+        headerBrand.setAttribute("title", "UniLib - Trở về Trang chủ");
+      }
+      if (headerNav) headerNav.style.display = "";
+    }
+
     const goHomeBtn = document.getElementById("btn-go-dashboard");
     if (goHomeBtn) {
-      if (user.role === "ADMIN" || user.role === "LIBRARIAN") {
+      if (isStaffUser) {
         goHomeBtn.href = "staff-dashboard.html";
         goHomeBtn.textContent =
           currentLang === "en"
@@ -690,6 +707,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Nút Đăng xuất
   document.getElementById("btn-logout")?.addEventListener("click", () => {
     auth.clearSession();
+    const headerBrand = document.querySelector(".librarian-topbar .brand-badge");
+    const headerNav = document.querySelector(".librarian-topbar .topbar-nav");
+    if (headerBrand) {
+      headerBrand.setAttribute("href", "home.html");
+      headerBrand.setAttribute("title", "UniLib - Trở về Trang chủ");
+    }
+    if (headerNav) headerNav.style.display = "";
     userActiveCard.style.display = "none";
     if (authTabsContainer) authTabsContainer.style.display = "flex";
     switchTab("login");
@@ -753,15 +777,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const savedRedirect = sessionStorage.getItem("redirect_after_login");
       sessionStorage.removeItem("redirect_after_login");
 
-      const targetUrl =
+      const isStaff = user.role === "ADMIN" || user.role === "LIBRARIAN";
+      const isReaderTarget = (() => {
+        if (!savedRedirect) return false;
+        if (typeof window.isReaderOnlyPath === "function") {
+          try {
+            return window.isReaderOnlyPath(new URL(savedRedirect, window.location.href).pathname);
+          } catch {
+            return false;
+          }
+        }
+        return /\/(home|index|search|catalog|book_detail|loan_slip|reservations|loan_basket)\.html(?:[?#]|$)/i.test(savedRedirect);
+      })();
+
+      const canUseRedirect =
         savedRedirect &&
         !savedRedirect.includes("login.html") &&
         !savedRedirect.includes("auth.html") &&
-        !savedRedirect.includes("index.html")
-          ? savedRedirect
-          : user.role === "ADMIN" || user.role === "LIBRARIAN"
-          ? "staff-dashboard.html"
-          : "home.html";
+        !savedRedirect.includes("index.html") &&
+        !(isStaff && isReaderTarget);
+
+      const targetUrl = canUseRedirect
+        ? savedRedirect
+        : isStaff
+        ? "staff-dashboard.html"
+        : "home.html";
 
       showAlert(
         loginAlert,

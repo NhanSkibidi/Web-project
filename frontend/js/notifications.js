@@ -88,9 +88,7 @@
       return;
     }
 
-    const user = getCurrentUser();
-    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
-    const targetPage = isStaff ? "loan_management.html" : "loan_slip.html";
+    const targetPage = "loan_slip.html";
     const slipBase = window.location.pathname.includes("/pages/")
       ? targetPage
       : `pages/${targetPage}`;
@@ -173,12 +171,9 @@
     }
 
     const userId = getCurrentUserId();
-    const user = getCurrentUser();
-    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
-    const url =
-      !isStaff && userId
-        ? `${API_BASE}/api/loans/notifications/my?user_id=${userId}&limit=20`
-        : `${API_BASE}/api/loans/notifications/my?limit=20`;
+    const url = userId
+      ? `${API_BASE}/api/loans/notifications/my?user_id=${userId}&limit=20`
+      : `${API_BASE}/api/loans/notifications/my?limit=20`;
 
     try {
       const res = await fetch(url, {
@@ -217,8 +212,13 @@
     const token = getAuthToken();
     if (!token || String(id).startsWith("demo-")) return;
 
+    const userId = getCurrentUserId();
+    const readUrl = userId
+      ? `${API_BASE}/api/loans/notifications/${id}/read?user_id=${userId}`
+      : `${API_BASE}/api/loans/notifications/${id}/read`;
+
     try {
-      await fetch(`${API_BASE}/api/loans/notifications/${id}/read`, {
+      await fetch(readUrl, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -242,12 +242,9 @@
     if (!token) return;
 
     const userId = getCurrentUserId();
-    const user = getCurrentUser();
-    const isStaff = user && (user.role === "ADMIN" || user.role === "LIBRARIAN");
-    const url =
-      !isStaff && userId
-        ? `${API_BASE}/api/loans/notifications/mark-all-read?user_id=${userId}`
-        : `${API_BASE}/api/loans/notifications/mark-all-read`;
+    const url = userId
+      ? `${API_BASE}/api/loans/notifications/mark-all-read?user_id=${userId}`
+      : `${API_BASE}/api/loans/notifications/mark-all-read`;
 
     try {
       await fetch(url, {

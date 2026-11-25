@@ -371,20 +371,6 @@ def get_user_reservations(db: Session, user_id: int) -> List[dict]:
     return [format_reservation_response(db, r) for r in reservations]
 
 
-def get_ready_reservations_for_staff(db: Session) -> List[dict]:
-    """Thủ thư xem danh sách các lượt đặt trước READY cần chuẩn bị sách tại quầy."""
-    # Tự động quét các đơn quá hạn
-    check_and_expire_reservations(db)
-
-    ready_list = (
-        db.query(Reservation)
-        .filter(Reservation.status == "READY")
-        .order_by(Reservation.pickup_deadline.asc())
-        .all()
-    )
-    return [format_reservation_response(db, r) for r in ready_list]
-
-
 def get_active_reservations_for_staff(db: Session) -> List[dict]:
     """Thủ thư xem tất cả lượt đặt trước đang hiệu lực (READY ưu tiên trên đầu, WAITING xếp hàng phía sau)."""
     check_and_expire_reservations(db)
@@ -456,14 +442,6 @@ def cancel_reservation(
     db.commit()
     db.refresh(res)
     return format_reservation_response(db, res)
-
-
-def process_returned_copy_for_reservation(db: Session, copy: BookCopy) -> Optional[Reservation]:
-    """Khi có cuốn sách được trả về kho, kiểm tra người đầu hàng chuyển READY và giữ 2 ngày."""
-    res_info = assign_copy_to_next_waiting_reservation_in_tx(db, copy)
-    if res_info:
-        return db.query(Reservation).filter(Reservation.id == res_info["reservation_id"]).first()
-    return None
 
 
 def check_and_expire_reservations(

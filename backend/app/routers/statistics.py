@@ -5,20 +5,14 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.crud.statistics import (
-    get_borrowing_trend,
     get_dashboard_statistics,
-    get_fines_summary_by_range,
-    get_popular_categories,
     get_top_borrowed_books,
     resolve_date_range,
 )
 from app.core.dependencies import require_librarian
 from app.db.session import get_db
 from app.schemas.statistics import (
-    BorrowingTrendPoint,
     DashboardStatisticsResponse,
-    FinesSummaryResponse,
-    PopularCategoryItem,
     TopBorrowedBookItem,
 )
 
@@ -60,19 +54,6 @@ def dashboard_statistics(
     )
 
 
-@router.get("/borrowing-trend", response_model=list[BorrowingTrendPoint])
-def borrowing_trend(
-    period: str | None = Query(default="month"),
-    start_date: date | None = Query(default=None),
-    end_date: date | None = Query(default=None),
-    group_by: str = Query(default="day", pattern="^(day|month)$"),
-    db: Session = Depends(get_db),
-):
-    """Thống kê lượt mượn / trả sách & tiền phạt đã thu theo ngày hoặc theo tháng."""
-    start_d, end_d, _ = resolve_date_range(period, start_date, end_date)
-    return get_borrowing_trend(db, start_d, end_d, group_by=group_by)
-
-
 @router.get("/top-books", response_model=list[TopBorrowedBookItem])
 def top_books(
     period: str | None = Query(default="month"),
@@ -84,28 +65,3 @@ def top_books(
     """Top sách được mượn nhiều nhất trong khoảng thời gian chọn."""
     start_d, end_d, _ = resolve_date_range(period, start_date, end_date)
     return get_top_borrowed_books(db, start_d, end_d, limit=limit)
-
-
-@router.get("/popular-categories", response_model=list[PopularCategoryItem])
-def popular_categories(
-    period: str | None = Query(default="month"),
-    start_date: date | None = Query(default=None),
-    end_date: date | None = Query(default=None),
-    limit: int = Query(default=6, ge=1, le=30),
-    db: Session = Depends(get_db),
-):
-    """Thể loại phổ biến nhất (số đầu sách & lượt mượn trong kỳ)."""
-    start_d, end_d, _ = resolve_date_range(period, start_date, end_date)
-    return get_popular_categories(db, start_d, end_d, limit=limit)
-
-
-@router.get("/fines-summary", response_model=FinesSummaryResponse)
-def fines_summary(
-    period: str | None = Query(default="month"),
-    start_date: date | None = Query(default=None),
-    end_date: date | None = Query(default=None),
-    db: Session = Depends(get_db),
-):
-    """Tổng hợp tiền phạt đã thu trong khoảng thời gian và nợ chưa thu."""
-    start_d, end_d, _ = resolve_date_range(period, start_date, end_date)
-    return get_fines_summary_by_range(db, start_d, end_d)

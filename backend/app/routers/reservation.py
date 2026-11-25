@@ -13,7 +13,6 @@ from app.services.email_service import send_reservation_ready_email
 from app.crud.reservation import (
     create_reservation,
     get_user_reservations,
-    get_ready_reservations_for_staff,
     get_active_reservations_for_staff,
     cancel_reservation,
     check_and_expire_reservations,
@@ -83,16 +82,6 @@ def api_get_my_reservations(
         )
 
     return get_user_reservations(db, user_id=effective_user_id)
-
-
-@router.get("/staff/ready", response_model=List[ReservationResponse], dependencies=[Depends(require_librarian)])
-def api_get_staff_ready_reservations(
-    db: Session = Depends(get_db),
-):
-    """
-    Dành cho Thủ thư: Xem danh sách các lượt đặt trước trạng thái READY cần chuẩn bị sách tại quầy.
-    """
-    return get_ready_reservations_for_staff(db)
 
 
 @router.get("/staff/active", response_model=List[ReservationResponse], dependencies=[Depends(require_librarian)])

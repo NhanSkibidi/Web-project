@@ -22,7 +22,6 @@ from app.routers import (
     email_reminders,
     fine,
     health,
-    items,
     library_cards,
     loans,
     loans_item,
@@ -62,14 +61,8 @@ app.add_middleware(
 
 # Mọi API đều bắt đầu bằng /api. Thêm router mới thì include ở đây.
 app.include_router(health.router, prefix="/api")
-app.include_router(items.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
-# Đồng thời hỗ trợ gọi trực tiếp /auth (không cần prefix /api) để tương thích linh hoạt
-app.include_router(auth.router)
 app.include_router(loans.router, prefix="/api")
-# app.include_router(loans.readers_router, prefix="/api")
-app.include_router(loans.copies_router, prefix="/api")
-app.include_router(loans.notifications_router, prefix="/api")
 app.include_router(book_copies.router, prefix="/api")
 app.include_router(return_book.router, prefix="/api")
 app.include_router(fine.router, prefix="/api")

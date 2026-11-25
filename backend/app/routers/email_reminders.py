@@ -3,15 +3,13 @@ Router gửi Email nhắc hạn trả sách & thông báo đặt trước sẵn 
 Sử dụng FastAPI BackgroundTasks để gửi SMTP không chặn (non-blocking) phản hồi HTTP.
 """
 from datetime import datetime, timedelta
-import html as html_lib
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.dependencies import require_librarian
-from app.crud.loan_service import get_due_soon_loans, get_overdue_loans
+from app.crud.loan_service import get_due_soon_loans
 from app.db.session import get_db
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
@@ -19,8 +17,6 @@ from app.models.reservation import Reservation
 from app.models.user import User
 from app.services.email_service import (
     send_due_soon_reminder_email,
-    send_email_smtp,
-    send_overdue_reminder_email,
     send_reservation_ready_email,
 )
 
@@ -29,12 +25,6 @@ router = APIRouter(
     tags=["Email Reminders (Bonus)"],
     dependencies=[Depends(require_librarian)],
 )
-
-
-class TestEmailRequest(BaseModel):
-    to_email: EmailStr
-    subject: str = "[UniLib KS25] Kiểm tra kết nối SMTP Gmail"
-    message: str = "Hệ thống gửi email tự động UniLib KS25 qua Gmail SMTP đã hoạt động thành công!"
 
 
 @router.get("/status")
@@ -47,42 +37,6 @@ def get_smtp_status():
         "smtp_port": settings.SMTP_PORT,
         "smtp_user": settings.SMTP_USER or "(chưa cấu hình trong .env)",
         "from_name": settings.SMTP_FROM_NAME,
-    }
-
-
-@router.post("/remind-overdue")
-def trigger_overdue_emails(
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
-    """
-    Quét toàn bộ sách quá hạn và xếp hàng gửi email nhắc trả chạy nền (BackgroundTasks).
-    """
-    overdue_data = get_overdue_loans(db, limit=500)
-    items = overdue_data.get("items", [])
-    queued = 0
-
-    for item in items:
-        email = item.get("reader_email")
-        if not email:
-            continue
-        background_tasks.add_task(
-            send_overdue_reminder_email,
-            to_email=email,
-            reader_name=item["reader_name"],
-            loan_code=item["loan_code"],
-            book_title=item["book_title"],
-            due_date=item["due_date"],
-            days_overdue=item["days_overdue"],
-            estimated_fine=item["estimated_fine"],
-        )
-        queued += 1
-
-    return {
-        "queued_emails": queued,
-        "total_overdue_items": len(items),
-        "mode": "smtp" if settings.smtp_configured else "dry_run",
-        "message": f"Đã xếp hàng gửi {queued} email cảnh báo quá hạn chạy nền bằng BackgroundTasks.",
     }
 
 
@@ -169,27 +123,4 @@ def trigger_reservation_ready_email(
         "pickup_deadline": deadline_str,
         "mode": "smtp" if settings.smtp_configured else "dry_run",
         "message": f"Đã xếp hàng gửi email báo sách đặt trước sẵn sàng tới {reader.email}.",
-    }
-
-
-@router.post("/test")
-def send_test_email(
-    payload: TestEmailRequest,
-    background_tasks: BackgroundTasks,
-):
-    """Gửi 1 email thử nghiệm chạy nền bằng BackgroundTasks để kiểm tra cấu hình Gmail SMTP."""
-    safe_msg = html_lib.escape(payload.message)
-    html = f"<p>{safe_msg}</p><p><em>Thời điểm gửi: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</em></p>"
-    background_tasks.add_task(
-        send_email_smtp,
-        to_email=str(payload.to_email),
-        subject=payload.subject,
-        html_body=html,
-        text_body=payload.message,
-    )
-    return {
-        "queued": True,
-        "to_email": str(payload.to_email),
-        "mode": "smtp" if settings.smtp_configured else "dry_run",
-        "message": "Đã đưa email kiểm tra vào hàng đợi BackgroundTasks.",
     }

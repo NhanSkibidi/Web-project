@@ -16,33 +16,6 @@ class UserBase(BaseModel):
     status: UserStatus = UserStatus.ACTIVE
 
 
-class UserCreate(UserBase):
-    """Dữ liệu FE gửi lên khi TẠO user. Có mật khẩu gốc, server sẽ băm bcrypt rồi mới lưu."""
-
-    password: str = Field(min_length=6, max_length=72, examples=["Docgia@123"])
-
-    @field_validator("password")
-    @classmethod
-    def check_password_bytes(cls, value: str) -> str:
-        return validate_password_bytes(value)
-
-
-class UserUpdate(BaseModel):
-    """Dữ liệu FE gửi lên khi SỬA. Trường nào không gửi thì giữ nguyên."""
-
-    email: EmailStr | None = None
-    password: str | None = Field(default=None, min_length=6, max_length=72)
-    full_name: str | None = Field(default=None, min_length=1, max_length=255)
-    phone: str | None = Field(default=None, max_length=20)
-    role: UserRole | None = None
-    status: UserStatus | None = None
-
-    @field_validator("password")
-    @classmethod
-    def check_password_bytes(cls, value: str | None) -> str | None:
-        return validate_password_bytes(value) if value is not None else None
-
-
 class UserOut(UserBase):
     """Dữ liệu API trả về cho FE (không có password)."""
 

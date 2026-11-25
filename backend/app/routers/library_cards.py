@@ -34,21 +34,6 @@ def _get_card_or_404(db: Session, card_id: int) -> LibraryCard:
     return card
 
 
-def _get_card_by_reader_or_404(db: Session, reader_id: int) -> LibraryCard:
-    card = (
-        db.query(LibraryCard)
-        .filter(LibraryCard.reader_id == reader_id)
-        .order_by(LibraryCard.id.desc())
-        .first()
-    )
-    if not card:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Độc giả id={reader_id} chưa có thẻ thư viện",
-        )
-    return card
-
-
 # ==============================================================================
 # 1. TÌM KIẾM ĐỘC GIẢ THEO TÊN / MÃ THẺ / SĐT & QUÉT THẺ QUÁ HẠN
 # ==============================================================================
@@ -76,7 +61,6 @@ def list_and_search_readers(
 
 
 @router.post("/check-expired")
-@readers_router.post("/check-expired")
 def check_and_expire_cards(
     db: Session = Depends(get_db),
     _staff: User = Depends(require_librarian),
@@ -149,26 +133,6 @@ def extend_card_by_id(
     )
 
 
-@readers_router.post("/{reader_id}/extend-card", response_model=ReaderCardDetailOut)
-def extend_card_by_reader(
-    reader_id: int,
-    payload: CardExtendRequest,
-    db: Session = Depends(get_db),
-    staff: User = Depends(require_librarian),
-):
-    """Thủ thư gia hạn thẻ thư viện theo reader_id."""
-    card = _get_card_by_reader_or_404(db, reader_id)
-    return extend_library_card(
-        db=db,
-        card=card,
-        months=payload.months,
-        new_expiry_date=payload.new_expiry_date,
-        card_type=payload.card_type,
-        reason=payload.reason,
-        performed_by=staff.id,
-    )
-
-
 # ==============================================================================
 # 4. KHOÁ / MỞ KHOÁ THẺ THƯ VIỆN KÈM LÝ DO BẮT BUỘC
 # ==============================================================================
@@ -199,42 +163,6 @@ def unlock_card_by_id(
 ):
     """Thủ thư mở khóa thẻ thư viện kèm lý do (nếu thẻ đã quá hạn sẽ chuyển về EXPIRED)."""
     card = _get_card_or_404(db, card_id)
-    return lock_or_unlock_card(
-        db=db,
-        card=card,
-        action="UNLOCK",
-        reason=payload.reason,
-        performed_by=staff.id,
-    )
-
-
-@readers_router.post("/{reader_id}/lock-card", response_model=ReaderCardDetailOut)
-def lock_card_by_reader(
-    reader_id: int,
-    payload: CardLockUnlockRequest,
-    db: Session = Depends(get_db),
-    staff: User = Depends(require_librarian),
-):
-    """Thủ thư khóa thẻ theo reader_id kèm lý do."""
-    card = _get_card_by_reader_or_404(db, reader_id)
-    return lock_or_unlock_card(
-        db=db,
-        card=card,
-        action="LOCK",
-        reason=payload.reason,
-        performed_by=staff.id,
-    )
-
-
-@readers_router.post("/{reader_id}/unlock-card", response_model=ReaderCardDetailOut)
-def unlock_card_by_reader(
-    reader_id: int,
-    payload: CardLockUnlockRequest,
-    db: Session = Depends(get_db),
-    staff: User = Depends(require_librarian),
-):
-    """Thủ thư mở khóa thẻ theo reader_id kèm lý do."""
-    card = _get_card_by_reader_or_404(db, reader_id)
     return lock_or_unlock_card(
         db=db,
         card=card,

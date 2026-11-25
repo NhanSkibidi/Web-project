@@ -120,7 +120,7 @@ def test_rbac_enforcement():
     print("[TEST 0] RBAC: Chưa đăng nhập -> 401; READER -> 403 ...")
     assert client.get("/api/statistics/dashboard?period=month").status_code == 401
     assert client.get("/api/statistics/dashboard?period=month", headers=READER_HEADERS).status_code == 403
-    assert client.get("/api/statistics/borrowing-trend?period=week", headers=READER_HEADERS).status_code == 403
+    assert client.get("/api/statistics/top-books?period=week", headers=READER_HEADERS).status_code == 403
     print(" -> PASSED (401/403 enforced)!")
 
 
@@ -187,13 +187,8 @@ def test_invalid_date_range():
 
 
 def test_granular_endpoints():
-    print("[TEST 4] Testing /borrowing-trend, /top-books, /popular-categories, /fines-summary ...")
-    assert client.get("/api/statistics/borrowing-trend?period=week", headers=LIB_HEADERS).status_code == 200
+    print("[TEST 4] Testing /top-books ...")
     assert client.get("/api/statistics/top-books?period=month&limit=5", headers=LIB_HEADERS).status_code == 200
-    assert client.get("/api/statistics/popular-categories?period=month", headers=LIB_HEADERS).status_code == 200
-    r_fine = client.get("/api/statistics/fines-summary?period=month", headers=LIB_HEADERS)
-    assert r_fine.status_code == 200
-    assert r_fine.json()["collected_amount"] == 50000.0
     print(" -> PASSED!")
 
 

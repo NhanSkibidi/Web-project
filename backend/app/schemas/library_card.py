@@ -24,20 +24,6 @@ class LibraryCardBase(BaseModel):
         return self
 
 
-class LibraryCardCreate(LibraryCardBase):
-    """Dữ liệu FE gửi lên khi CẤP thẻ mới."""
-
-
-class LibraryCardUpdate(BaseModel):
-    """Dữ liệu FE gửi lên khi SỬA thẻ. Trường nào không gửi thì giữ nguyên."""
-
-    card_type: CardType | None = None
-    issue_date: date | None = None
-    expiry_date: date | None = None
-    max_borrow_books: int | None = Field(default=None, ge=1, le=50)
-    status: CardStatus | None = None
-
-
 class LibraryCardOut(LibraryCardBase):
     model_config = ConfigDict(from_attributes=True)
 

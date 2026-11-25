@@ -164,27 +164,27 @@
             </div>
             <div class="stat-card-footer">
               <span class="material-symbols-outlined stat-footer-icon">schedule</span>
-              <span id="stat-subtext-pending">6 yêu cầu hẹn lấy trong sáng nay</span>
+              <span id="stat-subtext-pending">Yêu cầu mượn trực tuyến chờ xử lý</span>
             </div>
           </div>
         </div>
 
-        <!-- Thẻ 2: Đang nhặt & chuẩn bị sách -->
+        <!-- Thẻ 2: Đang mượn lưu thông -->
         <div class="stat-card stat-preparing">
           <div class="stat-card-body">
             <div class="stat-card-top">
-              <span class="stat-card-title">Đang nhặt &amp; chuẩn bị sách</span>
+              <span class="stat-card-title">Đang mượn lưu thông</span>
               <div class="stat-icon-wrapper preparing-icon">
                 <span class="material-symbols-outlined">inventory_2</span>
               </div>
             </div>
             <div class="stat-card-main">
               <span class="stat-number font-headline" id="stat-count-preparing">0</span>
-              <span class="stat-pill pill-gray">Thủ thư đang gom</span>
+              <span class="stat-pill pill-gray">Đang lưu hành</span>
             </div>
             <div class="stat-card-footer">
               <span class="material-symbols-outlined stat-footer-icon">warehouse</span>
-              <span id="stat-subtext-preparing">Đang điều phối các tầng kho</span>
+              <span id="stat-subtext-preparing">Phiếu trực tuyến đã bàn giao sách</span>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@
             </div>
             <div class="stat-card-footer">
               <span class="material-symbols-outlined stat-footer-icon">alarm</span>
-              <span id="stat-subtext-ready">Giữ tối đa 24 giờ tại quầy</span>
+              <span id="stat-subtext-ready">Đã duyệt, chờ độc giả đến nhận</span>
             </div>
           </div>
         </div>
@@ -220,11 +220,11 @@
             </div>
             <div class="stat-card-main">
               <span class="stat-number font-headline" id="stat-count-rejected">0</span>
-              <span class="stat-pill pill-red">Trong hôm nay</span>
+              <span class="stat-pill pill-red">Từ chối / Đã hủy</span>
             </div>
             <div class="stat-card-footer">
               <span class="material-symbols-outlined stat-footer-icon">event_busy</span>
-              <span id="stat-subtext-rejected">Quá 24h hoặc sách chưa thể đáp ứng</span>
+              <span id="stat-subtext-rejected">Phiếu bị từ chối hoặc độc giả tự hủy</span>
             </div>
           </div>
         </div>
@@ -240,10 +240,6 @@
           <button type="button" class="tab-btn active" data-tab="pending">
             <span>Chờ duyệt</span>
             <span class="tab-count" id="count-tab-pending">0</span>
-          </button>
-          <button type="button" class="tab-btn" data-tab="preparing">
-            <span>Đang chuẩn bị</span>
-            <span class="tab-count" id="count-tab-preparing">0</span>
           </button>
           <button type="button" class="tab-btn" data-tab="ready">
             <span>Sẵn sàng nhận</span>
@@ -261,6 +257,10 @@
             <span>Đã từ chối / Hết hạn nhận</span>
             <span class="tab-count" id="count-tab-rejected">0</span>
           </button>
+          <button type="button" class="tab-btn" data-tab="reservations">
+            <span>Đặt trước chờ nhận</span>
+            <span class="tab-count" id="count-tab-reservations">0</span>
+          </button>
         </div>
         <div class="opac-status-badge">
           <span class="status-pulse-green"></span>
@@ -272,19 +272,20 @@
       <div class="filter-toolbar-card">
         <div class="filter-search-box">
           <span class="material-symbols-outlined filter-icon">search</span>
-          <input type="text" id="filter-keyword" placeholder="PM-2024-01, họ tên độc giả, MSSV..." autocomplete="off">
+          <input type="text" id="filter-keyword" placeholder="Tìm mã phiếu, tên độc giả, mã thẻ, tên sách..." autocomplete="off">
         </div>
 
         <div class="filter-controls-group">
-          <!-- Lọc trạng thái (Phong cách độc giả - Reader) -->
+          <!-- Lọc trạng thái -->
           <div class="filter-select-wrapper">
             <select id="filter-status" class="filter-select" aria-label="Lọc theo trạng thái">
               <option value="all" selected>Tất cả trạng thái</option>
-              <option value="pending">Chờ duyệt (PENDING · Đăng ký)</option>
-              <option value="approved">Chờ nhận sách (APPROVED · Tại quầy)</option>
-              <option value="borrowed">Đang mượn (BORROWED · Lưu thông)</option>
-              <option value="overdue">Quá hạn (OVERDUE · Cần trả)</option>
-              <option value="rejected">Đã từ chối (REJECTED · Hủy phiếu)</option>
+              <option value="pending">Chờ duyệt (PENDING)</option>
+              <option value="approved">Sẵn sàng nhận (APPROVED)</option>
+              <option value="borrowed">Đang mượn (BORROWED)</option>
+              <option value="overdue">Quá hạn (OVERDUE)</option>
+              <option value="returned">Đã trả (RETURNED)</option>
+              <option value="rejected">Đã từ chối / hủy</option>
             </select>
           </div>
 
@@ -292,20 +293,9 @@
           <div class="filter-select-wrapper">
             <select id="filter-time" class="filter-select" aria-label="Lọc theo thời gian">
               <option value="all" selected>Tất cả thời gian</option>
-              <option value="today">Hôm nay (TODAY · 28/10)</option>
-              <option value="3days">3 ngày qua (3DAYS · Gần đây)</option>
-            </select>
-          </div>
-
-          <!-- Lọc khoa / viện -->
-          <div class="filter-select-wrapper">
-            <select id="filter-department" class="filter-select" aria-label="Lọc theo khoa viện">
-              <option value="all" selected>Tất cả khoa / viện</option>
-              <option value="CNTT & TT">Khoa CNTT &amp; TT (CNTT · Công nghệ)</option>
-              <option value="Kinh tế">Khoa Kinh tế (KT · Quản trị)</option>
-              <option value="Điện tử">Khoa Điện tử (DT · Viễn thông)</option>
-              <option value="Ngoại ngữ">Khoa Ngoại ngữ (NN · Sư phạm)</option>
-              <option value="Cơ khí">Khoa Cơ khí (CK · Động lực)</option>
+              <option value="today">Hôm nay</option>
+              <option value="3days">3 ngày qua</option>
+              <option value="7days">7 ngày qua</option>
             </select>
           </div>
 
@@ -329,8 +319,12 @@
             <span class="table-title-badge" id="table-count-badge">0 chờ xử lý</span>
           </div>
           <div class="table-title-right">
-            <span class="material-symbols-outlined">schedule</span>
-            <span>Ưu tiên giờ hẹn sớm nhất</span>
+            <button type="button" class="btn-table-action" id="btn-check-expired-res" style="display: none;" title="Quét các đơn đặt trước đã quá hạn đến lấy">
+              <span class="material-symbols-outlined">event_busy</span>
+              <span>Quét quá hạn giữ</span>
+            </button>
+            <span class="material-symbols-outlined" id="table-sort-icon">schedule</span>
+            <span id="table-sort-text">Ưu tiên giờ hẹn sớm nhất</span>
           </div>
         </div>
 
@@ -355,7 +349,7 @@
         <!-- PHÂN TRANG (PAGINATION) -->
         <div class="pagination-footer">
           <div class="pagination-info" id="pagination-info-text">
-            Hiển thị 1 - 5 trên 18 đơn
+            Đang tải dữ liệu...
           </div>
           <div class="pagination-controls">
             <div class="page-size-selector">
@@ -447,11 +441,11 @@
                 <span><strong>SĐT:</strong> <span id="modal-reader-phone">0987.654.321</span></span>
               </div>
               <div class="reader-info-meta">
-                <span><strong>MSSV:</strong> <span id="modal-reader-mssv">23010412</span></span>
+                <span><strong>Mã thẻ:</strong> <span id="modal-reader-mssv">—</span></span>
                 <span class="contact-divider">•</span>
-                <span><strong>Khoa/Viện:</strong> <span id="modal-reader-dept">CNTT &amp; TT</span></span>
+                <span><strong>Trạng thái thẻ:</strong> <span id="modal-reader-dept">—</span></span>
                 <span class="contact-divider">•</span>
-                <span><strong>Sách đang giữ:</strong> <span id="modal-reader-books-holding">2 / 5 cuốn</span></span>
+                <span><strong>Sách đang giữ:</strong> <span id="modal-reader-books-holding">0 / 5 cuốn</span></span>
               </div>
             </div>
           </div>
@@ -477,16 +471,16 @@
               <strong>Quy định giữ sách tại quầy:</strong>
             </div>
             <div class="mini-card-text" id="modal-shelf-retention-text">
-              Giữ tại kệ nhận tối đa <strong>24 giờ</strong> kể từ thời điểm Duyệt (Hết hạn nhận: 17:00 - 29/10/2024).
+              Sách sau khi duyệt sẽ chuyển sang trạng thái <strong>Sẵn sàng nhận</strong> để độc giả đến quầy làm thủ tục giao nhận.
             </div>
           </div>
           <div class="detail-mini-card">
             <div class="mini-card-header">
               <span class="material-symbols-outlined mini-icon">edit_note</span>
-              <strong>Ghi chú của độc giả:</strong>
+              <strong>Thông tin bổ sung:</strong>
             </div>
             <div class="mini-card-text italic-text" id="modal-reader-note-text">
-              "Em đến lấy sách vào khoảng 16h chiều sau giờ thực hành tại Lab 302."
+              Không có ghi chú thêm.
             </div>
           </div>
         </div>
@@ -495,8 +489,7 @@
         <div class="warning-callout-card" id="modal-warning-callout">
           <span class="material-symbols-outlined warning-icon">info</span>
           <div class="warning-text">
-            Sau khi nhấn <strong>Duyệt &amp; Chuẩn bị</strong>, hệ thống tự động khóa bản sao trên OPAC, gửi thông báo
-            đẩy qua Email/App cho sinh viên và in phiếu nhặt sách cho thủ thư kho.
+            Sau khi nhấn <strong>Duyệt yêu cầu</strong>, hệ thống chuyển phiếu sang trạng thái <strong>Sẵn sàng nhận (APPROVED)</strong> để thủ thư bàn giao sách tại quầy.
           </div>
         </div>
       </div>
@@ -623,8 +616,8 @@
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
-  <script src="../js/utils.js?v=2.2"></script>
-  <script src="../js/pages/loan_management.js"></script>
+  <script src="../js/utils.js?v=2.6"></script>
+  <script src="../js/pages/loan_management.js?v=2.1"></script>
 </body>
 
 </html>

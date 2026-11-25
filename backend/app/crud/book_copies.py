@@ -4,6 +4,7 @@ from app.schemas.book_copy import BookCopiesCreate, BookCopyUpdate
 from app.models.BookCopy import BookCopy
 from app.models.Book import Book
 from app.crud.copy_status_log import change_copy_status
+from app.crud.reservation import assign_copy_to_next_waiting_reservation_in_tx
 from app.models.CopyStatusLog import CopyStatusLog
 
 
@@ -50,6 +51,14 @@ def create_copy(book_copies: BookCopiesCreate, db: Session):
         )
 
     db.add_all(new_copies)
+    db.flush()
+    for copy in new_copies:
+        if copy.status == "AVAILABLE":
+            assign_copy_to_next_waiting_reservation_in_tx(
+                db,
+                copy,
+                reason_prefix="Bản sao mới nhập giữ cho độc giả đặt trước",
+            )
     db.commit()
     for copy in new_copies:
         db.refresh(copy)
@@ -138,6 +147,13 @@ def update_book_copy(db: Session, book_copy_id: int, data: BookCopyUpdate):
         copy.shelf_location = data.shelf_location
     if data.condition is not None:
         copy.condition = data.condition
+    db.flush()
+    if copy.status == "AVAILABLE":
+        assign_copy_to_next_waiting_reservation_in_tx(
+            db,
+            copy,
+            reason_prefix="Bản sao khả dụng trở lại giữ cho độc giả đặt trước",
+        )
     db.commit()
     db.refresh(copy)
     return copy

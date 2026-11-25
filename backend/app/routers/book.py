@@ -17,6 +17,7 @@ from app.crud.book import (
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
 from app.models.Category import Category
+from app.models.reservation import Reservation
 from app.schemas.book import BookCreate, BookPaginationResponse, BookSearchItem, BookUpdate
 
 router = APIRouter(prefix="/books", tags=["Books"])
@@ -96,13 +97,26 @@ def search_books(
         page_size=page_size,
     )
 
+    isbns = [b.isbn for b in books]
+    waiting_map: dict[str, int] = {}
+    if isbns:
+        waiting_rows = (
+            db.query(Reservation.book_isbn, func.count(Reservation.id))
+            .filter(Reservation.book_isbn.in_(isbns), Reservation.status == "WAITING")
+            .group_by(Reservation.book_isbn)
+            .all()
+        )
+        waiting_map = {row[0]: int(row[1]) for row in waiting_rows}
+
     items = []
     for b in books:
         copies = b.copies or []
         total_copies = len(copies)
-        available_copies = sum(1 for c in copies if getattr(c, "status", None) == "AVAILABLE")
+        raw_available = sum(1 for c in copies if getattr(c, "status", None) == "AVAILABLE")
+        waiting_cnt = waiting_map.get(b.isbn, 0)
+        available_copies = max(0, raw_available - waiting_cnt)
         borrowed_copies = sum(1 for c in copies if getattr(c, "status", None) == "BORROWED")
-        reserved_copies = sum(1 for c in copies if getattr(c, "status", None) == "RESERVED")
+        reserved_copies = sum(1 for c in copies if getattr(c, "status", None) == "RESERVED") + min(raw_available, waiting_cnt)
         lost_copies = sum(1 for c in copies if getattr(c, "status", None) == "LOST")
         damage_copies = sum(1 for c in copies if getattr(c, "status", None) == "DAMAGED")
         disposed_copies = sum(1 for c in copies if getattr(c, "status", None) == "DISPOSED")

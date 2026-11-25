@@ -218,6 +218,8 @@ function renderReaderLayout() {
   const root = getRootPrefix();
   const currentPath = window.location.pathname;
   const user = typeof auth !== "undefined" ? auth.getUser() : null;
+  const token = typeof auth !== "undefined" ? auth.getToken() : null;
+  const isLoggedIn = Boolean(token && user);
   const card = typeof auth !== "undefined" ? auth.getCard() : null;
 
   const headerEl = document.getElementById("app-header");
@@ -232,16 +234,17 @@ function renderReaderLayout() {
 
     // Nếu là Độc giả đang đăng nhập -> hiện lối vào Tiền phạt cá nhân (Task T3CFF2C)
     const readerFinesLinkHtml =
-      user && user.role === "READER"
+      isLoggedIn && user.role === "READER"
         ? `<a href="${root}pages/fines.html" class="topbar-nav-link ${isFines ? "active" : ""}">Tiền phạt</a>`
         : "";
 
-    const readerAuthLinksHtml = user
+    const readerAuthLinksHtml = isLoggedIn
       ? `<a href="${root}pages/loan_slip.html" class="topbar-nav-link ${isLoanSlip ? "active" : ""}">Phiếu mượn</a>
          <a href="${root}pages/reservations.html" class="topbar-nav-link ${isReservations ? "active" : ""}">Đặt trước</a>`
       : "";
 
-    const notifHtml = `
+    const notifHtml = isLoggedIn
+      ? `
       <div class="notif-dropdown-container" id="notifDropdownContainer">
         <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
@@ -265,9 +268,19 @@ function renderReaderLayout() {
           </div>
         </div>
       </div>
-    `;
+    `
+      : "";
 
-    const role = user ? String(user.role || "").toUpperCase() : "";
+    const basketHtml = isLoggedIn
+      ? `
+        <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách" id="loanBasketBtn">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          <span class="cart-badge-count" id="loanBasketBadge" style="display: none;">0</span>
+        </a>
+      `
+      : "";
+
+    const role = isLoggedIn ? String(user.role || "").toUpperCase() : "";
     const roleText = role === "ADMIN" ? "Quản trị viên" : role === "LIBRARIAN" ? "Thủ thư" : "Độc giả";
 
     let dropdownMenuHtml = "";
@@ -275,7 +288,7 @@ function renderReaderLayout() {
     let userNameText = "Tài khoản";
     let userRoleText = "Chưa đăng nhập";
 
-    if (user) {
+    if (isLoggedIn) {
       const fullName = user.full_name || user.name || user.email || "Độc giả";
       const initial = (fullName.trim().charAt(0) || "U").toUpperCase();
       avatarHtml = getSafeText(initial);
@@ -310,10 +323,7 @@ function renderReaderLayout() {
     const userAreaHtml = `
       <div class="topbar-right">
         ${notifHtml}
-        <a href="${root}pages/loan_basket.html" class="topbar-icon-btn" title="Giỏ mượn sách" id="loanBasketBtn">
-          <span class="material-symbols-outlined">shopping_bag</span>
-          <span class="cart-badge-count" id="loanBasketBadge" style="display: none;">0</span>
-        </a>
+        ${basketHtml}
         <div class="user-dropdown-container" id="userDropdownContainer">
           <button type="button" class="librarian-profile user-profile-btn" id="userProfileBtn" aria-expanded="false" aria-haspopup="true">
             <div class="librarian-avatar" id="userAvatar">${avatarHtml}</div>
@@ -367,15 +377,17 @@ function renderReaderLayout() {
   }
 
   if (footerEl) {
+    footerEl.className = "app-footer";
     footerEl.innerHTML = `
-      <div class="container footer-inner">
-        <div>© ${new Date().getFullYear()} <strong>KS25 Library System</strong> · Đồ án thực tập CNTT (HN-KS25-CNTT1)</div>
-        <div class="footer-links">
-          <a href="${root}pages/home.html">Cổng Độc giả</a>
-          <a href="${root}pages/staff-dashboard.html">Bàn làm việc Thủ thư</a>
-          <a href="${user ? `${root}pages/profile.html` : `${root}pages/login.html`}">Tài khoản & Thẻ</a>
-          <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">Tài liệu API (/docs)</a>
-        </div>
+      <div class="footer-left">
+        © 2026 KS25 Library System - Cổng Tra Cứu &amp; Độc Giả Sinh Viên. Bảo lưu mọi quyền.
+      </div>
+      <div class="footer-right">
+        <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Quy định mượn trả</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
       </div>
     `;
   }

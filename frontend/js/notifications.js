@@ -69,6 +69,8 @@
         return { cls: "due-soon", icon: "alarm" };
       case "REMINDER":
         return { cls: "reminder", icon: "outgoing_mail" };
+      case "RESERVATION_READY":
+        return { cls: "due-soon", icon: "bookmark_added" };
       default:
         return { cls: "due-soon", icon: "notifications" };
     }
@@ -98,7 +100,12 @@
         const { cls, icon } = getIconByType(item.type);
         const unreadClass = item.is_read ? "" : "is-unread";
         const dotStyle = item.is_read ? 'style="display: none;"' : "";
-        const href = item.loan_id ? `${slipBase}?loan_id=${item.loan_id}` : slipBase;
+        const targetRes = window.location.pathname.includes("/pages/")
+          ? "reservations.html"
+          : "pages/reservations.html";
+        const href = item.type === "RESERVATION_READY"
+          ? targetRes
+          : (item.loan_id ? `${slipBase}?loan_id=${item.loan_id}` : slipBase);
 
         return `
           <a href="${href}" class="notif-item ${unreadClass}" data-id="${item.id}">

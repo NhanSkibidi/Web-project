@@ -136,6 +136,12 @@ def trigger_reservation_ready_email(
     if not reservation:
         raise HTTPException(status_code=404, detail="Không tìm thấy yêu cầu đặt trước")
 
+    if reservation.status != "READY":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Chỉ gửi email thông báo khi đơn đặt trước ở trạng thái READY (hiện tại là '{reservation.status}')",
+        )
+
     reader = db.query(User).filter(User.id == reservation.user_id).first()
     if not reader or not reader.email:
         raise HTTPException(status_code=400, detail="Độc giả không có địa chỉ email hợp lệ")

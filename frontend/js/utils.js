@@ -173,6 +173,12 @@ function syncRoleBasedUI() {
         el.style.display = "none";
       });
     } else if (role === "READER" && path.endsWith("/fines.html")) {
+      document.body.classList.add("reader-mode");
+      const footerLeft = document.querySelector(".app-footer .footer-left");
+      if (footerLeft) {
+        footerLeft.textContent = "© 2026 KS25 Library System - Cổng Tra Cứu & Độc Giả Sinh Viên. Bảo lưu mọi quyền.";
+      }
+
       sidebar.style.display = "none";
       const finesWrap = document.querySelector(".fines-workspace-wrapper");
       if (finesWrap) finesWrap.style.marginLeft = "0";

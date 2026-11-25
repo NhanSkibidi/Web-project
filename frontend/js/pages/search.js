@@ -84,6 +84,65 @@ function generateLoanSlipCode() {
   return `PM-${year}-${num}`;
 }
 
+function isSearchUserLoggedIn() {
+  if (typeof auth !== "undefined" && typeof auth.isLoggedIn === "function") {
+    return auth.isLoggedIn();
+  }
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("access_token");
+  const userRaw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+  return Boolean(token && userRaw);
+}
+
+function openAuthGuardModal(redirectUrl = "") {
+  const overlay = document.getElementById("authGuardOverlay");
+  if (!overlay) {
+    window.location.href = "login.html#login";
+    return;
+  }
+  const loginBtn = document.getElementById("authGuardLoginBtn");
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      try {
+        const target = redirectUrl
+          ? new URL(redirectUrl, window.location.href).href
+          : window.location.href;
+        sessionStorage.setItem("redirect_after_login", target);
+      } catch {
+        // ignore
+      }
+    };
+  }
+  overlay.style.display = "flex";
+}
+
+function closeAuthGuardModal() {
+  const overlay = document.getElementById("authGuardOverlay");
+  if (overlay) {
+    overlay.style.display = "none";
+  }
+}
+
+function openSearchBookDetail(detailUrl) {
+  if (!isSearchUserLoggedIn()) {
+    openAuthGuardModal(detailUrl);
+    return;
+  }
+  window.location.href = detailUrl;
+}
+
+function handleSearchDetailLinkClick(event, el) {
+  if (!isSearchUserLoggedIn()) {
+    if (event) event.preventDefault();
+    const targetUrl = el && el.getAttribute ? el.getAttribute("href") : "";
+    openAuthGuardModal(targetUrl);
+    return false;
+  }
+  return true;
+}
+
 // ---------- Hiển thị trạng thái loading ----------
 function showLoadingState() {
   const container = document.getElementById("books-results-grid");
@@ -137,9 +196,12 @@ function renderSearchResults(books) {
     const availCopies = typeof book.available_copies === "number" ? book.available_copies : (book.copies || 0);
     const totalCopies = typeof book.total_copies === "number" ? book.total_copies : (book.totalCopies || 0);
     const isAvailable = availCopies > 0;
+    const hasPhysicalCopies = totalCopies > 0;
     const statusText = isAvailable
       ? `${availCopies}/${totalCopies} CÓ SẴN`
-      : "ĐÃ MƯỢN HẾT";
+      : hasPhysicalCopies
+      ? "ĐÃ MƯỢN HẾT"
+      : "CHƯA CÓ BẢN SAO";
 
     const coverUrl = formatCoverUrl(book.cover_image || book.coverOnline);
     const fallbackSvg = createSvgCover(title, book.coverColor || "#1E293B");
@@ -151,7 +213,7 @@ function renderSearchResults(books) {
     return `
       <article class="book-search-card" data-isbn="${bookIdAttr}">
         <!-- Ảnh bìa -->
-        <div class="book-card-cover" style="cursor:pointer;" onclick="window.location.href='book_detail.html?isbn=${encodeURIComponent(isbn)}'">
+        <div class="book-card-cover" style="cursor:pointer;" data-detail-url="book_detail.html?isbn=${encodeURIComponent(isbn)}" onclick="openSearchBookDetail(this.dataset.detailUrl)">
           <img 
             src="${escapeHtml(coverSrc)}" 
             alt="${escapeHtml(title)}" 
@@ -168,7 +230,7 @@ function renderSearchResults(books) {
         <!-- Thông tin sách -->
         <div class="book-card-info">
           <h3 class="book-card-title" title="${escapeHtml(title)}">
-            <a href="book_detail.html?isbn=${encodeURIComponent(isbn)}" style="color:inherit;text-decoration:none;">${escapeHtml(title)}</a>
+            <a href="book_detail.html?isbn=${encodeURIComponent(isbn)}" style="color:inherit;text-decoration:none;" onclick="return handleSearchDetailLinkClick(event, this)">${escapeHtml(title)}</a>
           </h3>
           
           <div class="book-card-author">
@@ -182,7 +244,7 @@ function renderSearchResults(books) {
 
           <!-- Nút hành động -->
           <div class="book-card-actions">
-            <a href="book_detail.html?isbn=${encodeURIComponent(isbn)}" class="btn-detail-search" title="Xem chi tiết ấn bản">
+            <a href="book_detail.html?isbn=${encodeURIComponent(isbn)}" class="btn-detail-search" title="Xem chi tiết ấn bản" onclick="return handleSearchDetailLinkClick(event, this)">
               Chi tiết
             </a>
             ${isAvailable ? `
@@ -197,7 +259,7 @@ function renderSearchResults(books) {
                 </svg>
                 <span>Mượn trực tuyến</span>
               </button>
-            ` : `
+            ` : hasPhysicalCopies ? `
               <button 
                 type="button" 
                 class="btn-reserve-online" 
@@ -208,6 +270,16 @@ function renderSearchResults(books) {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <span>Đặt trước</span>
+              </button>
+            ` : `
+              <button
+                type="button"
+                class="btn-reserve-online"
+                disabled
+                style="opacity: 0.55; cursor: not-allowed;"
+                title="Đầu sách hiện chưa có bản sao vật lý nào trong kho"
+              >
+                <span>Chưa có bản sao</span>
               </button>
             `}
 
@@ -279,11 +351,55 @@ function renderPagination(total, totalPages) {
   container.innerHTML = pagesHtml;
 }
 
+const SEARCH_CACHE_KEY = "unilib_search_cache_v1";
+
+function readSearchCache() {
+  try {
+    const raw = sessionStorage.getItem(SEARCH_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSearchCache(patch) {
+  try {
+    const prev = readSearchCache() || {};
+    sessionStorage.setItem(SEARCH_CACHE_KEY, JSON.stringify({ ...prev, ...patch }));
+  } catch {
+    // ignore
+  }
+}
+
+function isDefaultSearchQuery() {
+  return (
+    !searchState.keyword &&
+    searchState.currentPage === 1 &&
+    !searchState.availableOnly &&
+    searchState.sortBy === "created_at" &&
+    searchState.sortOrder === "desc" &&
+    searchState.selectedCategories.length === 0 &&
+    searchState.selectedShelves.length === 0 &&
+    searchState.selectedLanguages.length === 0
+  );
+}
+
+function getBooksSignature(items, total, totalPages) {
+  try {
+    return JSON.stringify({ items, total, totalPages });
+  } catch {
+    return "";
+  }
+}
+
 // ---------- Gọi API lấy sách ----------
-async function fetchBooks() {
+async function fetchBooks(options = {}) {
+  const { silent = false, prevSignature = "" } = options;
   if (searchState.loading) return;
   searchState.loading = true;
-  showLoadingState();
+  if (!silent) {
+    showLoadingState();
+  }
 
   try {
     const params = {
@@ -307,36 +423,49 @@ async function fetchBooks() {
     const total = res.total || res.total_count || items.length;
     const totalPages = res.total_pages || res.pages || Math.ceil(total / searchState.pageSize) || 1;
 
-    renderSearchResults(items);
-    renderPagination(total, totalPages);
+    const nextSig = getBooksSignature(items, total, totalPages);
+    if (isDefaultSearchQuery()) {
+      writeSearchCache({ books: { items, total, totalPages } });
+    }
+
+    if (!silent || !prevSignature || nextSig !== prevSignature) {
+      renderSearchResults(items);
+      renderPagination(total, totalPages);
+    }
   } catch (err) {
     console.error("[search] fetchBooks error:", err);
-    const container = document.getElementById("books-results-grid");
-    if (container) {
-      container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align:center; padding:48px 20px; color:var(--color-danger,#dc2626);">
-          <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:12px;">error_outline</span>
-          <p>Không thể tải dữ liệu. Vui lòng kiểm tra kết nối và thử lại.</p>
-          <button class="search-btn" onclick="fetchBooks()" style="margin-top:12px;">Thử lại</button>
-        </div>
-      `;
+    if (!silent) {
+      const container = document.getElementById("books-results-grid");
+      if (container) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding:48px 20px; color:var(--color-danger,#dc2626);">
+            <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:12px;">error_outline</span>
+            <p>Không thể tải dữ liệu. Vui lòng kiểm tra kết nối và thử lại.</p>
+            <button class="search-btn" onclick="fetchBooks()" style="margin-top:12px;">Thử lại</button>
+          </div>
+        `;
+      }
+      renderPagination(0, 1);
     }
-    renderPagination(0, 1);
   } finally {
     searchState.loading = false;
   }
 }
 
 // ---------- Gọi API lấy facets (thể loại, kệ sách, ngôn ngữ) ----------
-async function loadFacets() {
+async function loadFacets(prevFacetsSig = "") {
   try {
     const data = await api.get("/books/facets");
-    renderFacetCategories(data.categories || []);
-    renderFacetShelves(data.shelves || []);
-    renderFacetLanguages(data.languages || []);
+    const nextSig = JSON.stringify(data || {});
+    writeSearchCache({ facets: data });
+    if (!prevFacetsSig || nextSig !== prevFacetsSig) {
+      renderFacetCategories(data.categories || []);
+      renderFacetShelves(data.shelves || []);
+      renderFacetLanguages(data.languages || []);
+    }
   } catch (err) {
     console.warn("[search] loadFacets error:", err);
-    // Giữ nội dung hardcode nếu API thất bại (không render gì cả)
+    // Giữ nội dung hiện có nếu API thất bại
   }
 }
 
@@ -478,18 +607,12 @@ function setViewMode(mode) {
 
 // ---------- Sắp xếp ----------
 function handleSortChange(sortType) {
-  if (sortType === "newest") {
-    searchState.sortBy = "created_at";
-    searchState.sortOrder = "desc";
-  } else if (sortType === "popular") {
-    searchState.sortBy = "borrow_count";
-    searchState.sortOrder = "desc";
-  } else if (sortType === "available") {
-    searchState.sortBy = "available_copies";
-    searchState.sortOrder = "desc";
-  } else if (sortType === "title") {
+  if (sortType === "title") {
     searchState.sortBy = "title";
     searchState.sortOrder = "asc";
+  } else {
+    searchState.sortBy = "created_at";
+    searchState.sortOrder = "desc";
   }
   searchState.currentPage = 1;
   fetchBooks();
@@ -610,6 +733,11 @@ function closeBorrowModal() {
 }
 
 function handleBorrowOnline(isbn) {
+  if (!isSearchUserLoggedIn()) {
+    openAuthGuardModal();
+    return;
+  }
+
   const book = currentDisplayedBooks.find((b) => (b.isbn || "") === isbn);
   if (!book) return;
 
@@ -701,19 +829,43 @@ async function confirmBorrowOnline() {
   }
 }
 
-function handleReserveBook(isbn) {
+async function handleReserveBook(isbn) {
+  if (!isSearchUserLoggedIn()) {
+    openAuthGuardModal();
+    return;
+  }
+
   const book = currentDisplayedBooks.find((b) => (b.isbn || "") === isbn);
   const bookTitle = book ? `"${book.title}"` : "ấn bản";
-  showSearchToast({
-    type: "warning",
-    title: "Đã đặt giữ chỗ thành công",
-    message: `Cuốn ${bookTitle} đã được đưa vào danh sách chờ. Hệ thống sẽ gửi thông báo qua email ngay khi sách về kho.`,
-    chips: [book ? (book.shelf_location || book.shelfLocation || "") : "", isbn ? `ISBN: ${isbn}` : ""].filter(Boolean),
-    duration: 6500
-  });
+
+  try {
+    const res = await api.post("/reservations", { book_isbn: isbn });
+    const queuePos = res?.queue_position ? `Vị trí hàng chờ: #${res.queue_position}` : "";
+    showSearchToast({
+      type: "success",
+      title: "Đã đặt trước thành công",
+      message: `Cuốn ${bookTitle} đã được lưu vào danh sách đặt trước của bạn. Khi có bản sao trả về, hệ thống sẽ giữ sách 2 ngày tại quầy.`,
+      chips: [queuePos, book ? (book.shelf_location || book.shelfLocation || "") : "", isbn ? `ISBN: ${isbn}` : ""].filter(Boolean),
+      actionText: "Xem sách đặt trước",
+      actionHref: "reservations.html",
+      duration: 7000
+    });
+  } catch (err) {
+    showSearchToast({
+      type: "warning",
+      title: "Không thể đặt trước ấn bản",
+      message: err?.message || err?.data?.detail || "Đã có lỗi xảy ra khi gửi yêu cầu đặt trước.",
+      duration: 6000
+    });
+  }
 }
 
 function toggleBookmark(isbn, buttonEl) {
+  if (!isSearchUserLoggedIn()) {
+    openAuthGuardModal();
+    return;
+  }
+
   const book = currentDisplayedBooks.find((b) => (b.isbn || "") === isbn);
   const bookLabel = book ? `"${book.title}"` : "ấn bản";
 
@@ -731,19 +883,6 @@ function toggleBookmark(isbn, buttonEl) {
     const svg = buttonEl.querySelector("svg");
     if (svg) svg.setAttribute("fill", "currentColor");
     showSearchToast({ type: "info", title: "Đã lưu vào danh sách đọc", message: `Bạn có thể xem lại ${bookLabel} bất cứ lúc nào.`, duration: 2800 });
-  }
-}
-
-// ---------- Gửi đề xuất sách ----------
-function handleBookSuggestion() {
-  const title = prompt("Nhập tên sách/tài liệu bạn muốn đề xuất thư viện bổ sung:", "Deep Learning Specialization");
-  if (title && title.trim()) {
-    showSearchToast({
-      type: "info",
-      title: "Đã tiếp nhận đề xuất bổ sung",
-      message: `Cảm ơn bạn! Đề xuất "${title.trim()}" đã được chuyển tới ban biên mục thư viện.`,
-      duration: 5000
-    });
   }
 }
 
@@ -796,8 +935,19 @@ function initBorrowModalBindings() {
   if (cancelBtn) cancelBtn.addEventListener("click", closeBorrowModal);
   if (confirmBtn) confirmBtn.addEventListener("click", confirmBorrowOnline);
 
+  const authGuardOverlay = document.getElementById("authGuardOverlay");
+  if (authGuardOverlay) {
+    authGuardOverlay.addEventListener("click", (e) => {
+      if (e.target === authGuardOverlay) closeAuthGuardModal();
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    if (authGuardOverlay && authGuardOverlay.style.display === "flex") {
+      closeAuthGuardModal();
+      return;
+    }
     if (borrowBackdrop && borrowBackdrop.classList.contains("is-open")) {
       closeBorrowModal();
       return;
@@ -808,7 +958,12 @@ function initBorrowModalBindings() {
 }
 
 // ---------- Khởi chạy trang ----------
+let searchPageInitialized = false;
+
 function initSearchPage() {
+  if (searchPageInitialized) return;
+  searchPageInitialized = true;
+
   initBorrowModalBindings();
 
   // Đặt URL param keyword nếu có (từ trang khác chuyển sang)
@@ -820,17 +975,34 @@ function initSearchPage() {
     searchState.keyword = urlKeyword;
   }
 
-  // Load facets để populate sidebar
-  loadFacets();
+  const cache = readSearchCache();
+  let facetsSig = "";
+  if (cache?.facets) {
+    try {
+      facetsSig = JSON.stringify(cache.facets);
+      renderFacetCategories(cache.facets.categories || []);
+      renderFacetShelves(cache.facets.shelves || []);
+      renderFacetLanguages(cache.facets.languages || []);
+    } catch {
+      facetsSig = "";
+    }
+  }
 
-  // Load kết quả ban đầu
-  fetchBooks();
+  let booksSig = "";
+  if (!urlKeyword && cache?.books && Array.isArray(cache.books.items)) {
+    const { items, total, totalPages } = cache.books;
+    booksSig = getBooksSignature(items, total, totalPages);
+    renderSearchResults(items);
+    renderPagination(total, totalPages);
+  }
+
+  // Load facets & kết quả từ server (nếu đã có cache thì cập nhật âm thầm không nháy spinner)
+  loadFacets(facetsSig);
+  fetchBooks(booksSig ? { silent: true, prevSignature: booksSig } : {});
 }
 
-// Khởi chạy ban đầu
-document.addEventListener("DOMContentLoaded", initSearchPage);
-
-// Chạy trực tiếp nếu script nạp sau DOMContentLoaded
-if (document.readyState === "complete" || document.readyState === "interactive") {
-  if (typeof initSearchPage === "function") initSearchPage();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initSearchPage);
+} else {
+  initSearchPage();
 }

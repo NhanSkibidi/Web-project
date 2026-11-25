@@ -11,6 +11,7 @@ from app.models.BookCopy import BookCopy
 from app.models.Category import Category
 from app.models.Publisher import Publisher
 from app.models.loan_item import LoanItem
+from app.models.reservation import Reservation
 
 def get_books_paginated(
     db: Session,
@@ -153,6 +154,14 @@ def get_book_by_isbn(db: Session, isbn: str):
         elif copy.status == "RESERVED":
             reserved_copies += 1
 
+    waiting_count = (
+        db.query(func.count(Reservation.id))
+        .filter(Reservation.book_isbn == isbn, Reservation.status == "WAITING")
+        .scalar()
+        or 0
+    )
+    effective_available = max(0, available_copies - int(waiting_count))
+
     authors = []
     for ba in book.book_authors:
         if ba.author:
@@ -161,9 +170,9 @@ def get_book_by_isbn(db: Session, isbn: str):
     return {
         "book": book,
         "total_copies": total_copies,
-        "available_copies": available_copies,
+        "available_copies": effective_available,
         "borrowed_copies": borrowed_copies,
-        "reserved_copies": reserved_copies,
+        "reserved_copies": reserved_copies + min(available_copies, int(waiting_count)),
         "lost_copies": lost_copies,
         "damage_copies": damage_copies,
         "disposed_copies": disposed_copies,
@@ -293,11 +302,18 @@ def update_book(db: Session, isbn: str, book_data):
         if copy.status == "AVAILABLE":
             available_copies += 1
 
+    waiting_count = (
+        db.query(func.count(Reservation.id))
+        .filter(Reservation.book_isbn == isbn, Reservation.status == "WAITING")
+        .scalar()
+        or 0
+    )
+
     return {
         "book": book,
         "authors": authors,
         "total_copies": total_copies,
-        "available_copies": available_copies
+        "available_copies": max(0, available_copies - int(waiting_count)),
     }
 
 def delete_book(db: Session, isbn: str):

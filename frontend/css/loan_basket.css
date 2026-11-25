@@ -48,6 +48,9 @@ body {
     background-color: var(--color-bg);
     color: var(--color-text);
     line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -1667,46 +1670,47 @@ input:disabled, select:disabled, button:disabled {
 }
 
 /* ==========================================================================
-   9. FOOTER
+   9. FOOTER (ĐỒNG BỘ TRANG CHỦ)
    ========================================================================== */
-.site-footer {
-    background-color: var(--color-card);
+.app-footer {
+    margin-top: auto;
+    padding: 24px 32px;
     border-top: 1px solid var(--color-border);
-    padding: 24px 0;
-    margin-top: 60px;
-}
-
-.footer-container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 24px;
+    background: var(--color-card);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
+    font-size: 13px;
+    color: #78716C;
+    box-sizing: border-box;
+    width: 100%;
 }
 
-.footer-left span {
-    font-size: 0.85rem;
-    color: var(--color-muted);
+.footer-left {
+    font-weight: 500;
 }
 
 .footer-right {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 12px;
 }
 
 .footer-link {
-    font-size: 0.85rem;
-    color: var(--color-muted);
+    font-size: 13px;
+    color: #78716C;
     text-decoration: none;
-    transition: color var(--transition);
+    transition: color 0.15s ease;
 }
 
 .footer-link:hover {
-    color: var(--color-tea);
+    color: var(--color-primary);
+}
+
+.footer-dot {
+    color: var(--color-border);
 }
 
 /* ==========================================================================

@@ -1018,6 +1018,12 @@
 
     // Nếu là Độc giả -> chỉ hiện cổng Xem phạt cá nhân (/api/fines/my-fines)
     if (currentUserRole === "READER") {
+      document.body.classList.add("reader-mode");
+      const footerLeft = document.querySelector(".app-footer .footer-left");
+      if (footerLeft) {
+        footerLeft.textContent = "© 2026 KS25 Library System - Cổng Tra Cứu & Độc Giả Sinh Viên. Bảo lưu mọi quyền.";
+      }
+
       const sidebar = document.getElementById("app-sidebar");
       if (sidebar) sidebar.style.display = "none";
       const wrap = document.querySelector(".fines-workspace-wrapper");

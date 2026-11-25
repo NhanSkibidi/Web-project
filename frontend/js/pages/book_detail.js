@@ -55,22 +55,30 @@
   // 1. KIỂM TRA ĐĂNG NHẬP & HEADER PROFILE
   function checkAuth() {
     let user = null;
-    if (typeof auth !== "undefined" && auth.getUser) {
-      user = auth.getUser();
+    let token = null;
+    if (typeof auth !== "undefined") {
+      token = auth.getToken ? auth.getToken() : null;
+      user = auth.getUser ? auth.getUser() : null;
     } else {
+      token =
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("access_token") ||
+        null;
       try {
         const stored = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
         if (stored) user = JSON.parse(stored);
       } catch {}
     }
 
+    const isLoggedIn = Boolean(token && user);
     const overlay = document.getElementById("authGuardOverlay");
     const userNameEl = document.getElementById("headerUserName");
     const userRoleEl = document.getElementById("headerUserRole");
     const userAvatarEl = document.getElementById("headerUserAvatar");
     const userDropdownMenu = document.getElementById("userDropdownMenu");
 
-    if (!user) {
+    if (!isLoggedIn) {
       if (overlay) overlay.style.display = "flex";
       if (userNameEl) userNameEl.textContent = "Tài khoản";
       if (userRoleEl) userRoleEl.textContent = "Chưa đăng nhập";
@@ -119,26 +127,9 @@
     }
   }
 
-  // Demo Login cho bạn đọc nếu chưa đăng nhập
-  window.demoLoginAsStudent = function () {
-    const demoUser = {
-      id: 99,
-      email: "sinhvien@ks25.edu.vn",
-      full_name: "Nguyễn Nhật Anh",
-      role: "READER",
-      student_id: "B25DTCN065"
-    };
-    if (typeof auth !== "undefined") {
-      auth.setToken("demo_token_ks25_student", true);
-      auth.setUser(demoUser);
-    } else {
-      localStorage.setItem("access_token", "demo_token_ks25_student");
-      localStorage.setItem("user_info", JSON.stringify(demoUser));
-    }
+  window.closeAuthGuardModal = function () {
     const overlay = document.getElementById("authGuardOverlay");
     if (overlay) overlay.style.display = "none";
-    checkAuth();
-    showToast("✓ Đăng nhập thành công với tài khoản Sinh viên!");
   };
 
   // 2. TẢI DỮ LIỆU ĐẦU SÁCH TỪ BACKEND API
@@ -232,10 +223,53 @@
     const statDamaged = document.getElementById("statDamagedLostCopies") || document.getElementById("statImportDate");
     if (statDamaged) statDamaged.textContent = lostAndDamaged;
 
-    // Availability Pill
+    // Availability Pill & Action Buttons
+    const availCopies = Number(book.available_copies || 0);
+    const totalCopies = Number(book.total_copies || 0);
     const availText = document.getElementById("bookAvailabilityText");
     if (availText) {
-      availText.textContent = `Còn ${book.available_copies || 0} / ${book.total_copies || 0} bản sao khả dụng`;
+      availText.textContent = `Còn ${availCopies} / ${totalCopies} bản sao khả dụng`;
+    }
+    const availPill = document.getElementById("bookAvailabilityPill");
+    if (availPill) {
+      availPill.style.background = availCopies > 0 ? "" : "#FEE2E2";
+      availPill.style.color = availCopies > 0 ? "" : "#B91C1C";
+    }
+
+    const btnAddCart = document.getElementById("btnMainAddCart");
+    if (btnAddCart) {
+      if (availCopies > 0) {
+        btnAddCart.disabled = false;
+        btnAddCart.style.opacity = "";
+        btnAddCart.style.cursor = "";
+        btnAddCart.innerHTML = `<span style="font-size: 18px;">🛒</span><span>Thêm vào giỏ mượn</span>`;
+      } else {
+        btnAddCart.disabled = true;
+        btnAddCart.style.opacity = "0.55";
+        btnAddCart.style.cursor = "not-allowed";
+        btnAddCart.innerHTML = `<span style="font-size: 18px;">🚫</span><span>${totalCopies > 0 ? "Tạm hết bản sao" : "Chưa có bản sao"}</span>`;
+      }
+    }
+
+    const btnDirect = document.getElementById("btnDirectAction");
+    const btnDirectText = document.getElementById("btnDirectActionText");
+    if (btnDirect && btnDirectText) {
+      if (availCopies > 0) {
+        btnDirect.disabled = false;
+        btnDirect.style.opacity = "";
+        btnDirect.style.cursor = "";
+        btnDirectText.textContent = "Mượn trực tuyến ngay";
+      } else if (totalCopies > 0) {
+        btnDirect.disabled = false;
+        btnDirect.style.opacity = "";
+        btnDirect.style.cursor = "";
+        btnDirectText.textContent = "Đặt trước sách (Xếp hàng)";
+      } else {
+        btnDirect.disabled = true;
+        btnDirect.style.opacity = "0.55";
+        btnDirect.style.cursor = "not-allowed";
+        btnDirectText.textContent = "Chưa có bản sao trong kho";
+      }
     }
 
     // Tóm tắt nội dung
@@ -304,17 +338,24 @@
       return;
     }
 
+    const bookAvailableCount = currentBook ? Number(currentBook.available_copies || 0) : 0;
+
     tbody.innerHTML = copies.map((c, index) => {
       const stt = String(index + 1).padStart(2, "0");
       const isAvail = c.status === "AVAILABLE";
       const isBorrowed = c.status === "BORROWED";
+      const isReserved = c.status === "RESERVED";
       const isDamaged = c.status === "DAMAGED";
       const isLost = c.status === "LOST";
       const isDisposed = c.status === "DISPOSED";
 
       let statusBadge = "";
-      if (isAvail) {
+      if (isAvail && bookAvailableCount > 0) {
         statusBadge = `<span class="status-badge-avail">● Khả dụng</span>`;
+      } else if (isAvail && bookAvailableCount <= 0) {
+        statusBadge = `<span style="color:#d97706; font-weight:600; font-size:12.5px;">● Đang ưu tiên đặt trước</span>`;
+      } else if (isReserved) {
+        statusBadge = `<span style="color:#d97706; font-weight:600; font-size:12.5px;">● Đang giữ chỗ</span>`;
       } else if (isBorrowed) {
         statusBadge = `<div class="status-badge-borrowed"><span>Đang mượn</span></div>`;
       } else if (isDamaged) {
@@ -328,15 +369,15 @@
       }
 
       let actionBtn = "";
-      if (isAvail) {
+      if (isAvail && bookAvailableCount > 0) {
         actionBtn = `
           <button type="button" class="btn-copy-action btn-copy-borrow" onclick="addToCartWithAnimation(event, '${escapeHtml(c.copy_code)}')">
             Mượn
           </button>
         `;
-      } else if (isBorrowed) {
+      } else if (isBorrowed || isReserved || (isAvail && bookAvailableCount <= 0)) {
         actionBtn = `
-          <button type="button" class="btn-copy-action btn-copy-reserve" onclick="showToast('Đã ghi nhận yêu cầu đặt trước bản sao ${escapeHtml(c.copy_code)} khi bạn đọc trả sách!', 'success')">
+          <button type="button" class="btn-copy-action btn-copy-reserve" onclick="reserveCurrentBook()">
             Đặt trước
           </button>
         `;
@@ -473,6 +514,18 @@
   window.addToCartWithAnimation = function (e, copyCode = null) {
     if (!checkAuth()) return;
 
+    const availCopies = currentBook ? Number(currentBook.available_copies || 0) : 0;
+    const totalCopies = currentBook ? Number(currentBook.total_copies || 0) : 0;
+    if (availCopies <= 0) {
+      showToast(
+        totalCopies > 0
+          ? "Sách hiện đã hết bản sao khả dụng, vui lòng dùng nút Đặt trước."
+          : "Đầu sách này hiện chưa có bản sao vật lý nào trong kho.",
+        "error"
+      );
+      return;
+    }
+
     const btn = e.currentTarget;
     const cartIcon = document.getElementById("headerCartBtn");
     const bookTitle = currentBook ? currentBook.title : "Tài liệu thư viện";
@@ -568,14 +621,18 @@
     }
   }
 
-  function showToast(message) {
+  function showToast(message, type = "success") {
     const existing = document.querySelector(".custom-toast");
     if (existing) existing.remove();
 
     const toast = document.createElement("div");
     toast.className = "custom-toast";
+    if (type === "error") {
+      toast.style.background = "#991B1B";
+    }
+    const icon = type === "error" ? "⚠️" : "📌";
     toast.innerHTML = `
-      <span style="font-size: 18px;">🛒</span>
+      <span style="font-size: 18px;">${icon}</span>
       <span>${escapeHtml(message)}</span>
     `;
     document.body.appendChild(toast);
@@ -586,6 +643,61 @@
       setTimeout(() => toast.remove(), 350);
     }, 3200);
   }
+
+  window.reserveCurrentBook = async function () {
+    const token = typeof auth !== "undefined" && typeof auth.getToken === "function" ? auth.getToken() : null;
+    if (!token) {
+      const overlay = document.getElementById("authGuardOverlay");
+      if (overlay) overlay.style.display = "flex";
+      return;
+    }
+    const isbn = currentBook?.isbn;
+    if (!isbn) {
+      showToast("Không xác định được mã ISBN của đầu sách này.", "error");
+      return;
+    }
+    try {
+      const res = await api.post("/reservations", { book_isbn: isbn });
+      const posText = res?.queue_position ? ` (Vị trí hàng chờ: #${res.queue_position})` : "";
+      showToast(`✓ Đã đặt trước "${currentBook.title || isbn}" thành công${posText}!`);
+    } catch (err) {
+      showToast(err?.message || "Không thể đặt trước đầu sách này.", "error");
+    }
+  };
+
+  window.handleDirectBookAction = async function () {
+    if (!checkAuth()) return;
+    if (!currentBook || !currentBook.isbn) {
+      showToast("Không xác định được mã ISBN của đầu sách này.", "error");
+      return;
+    }
+
+    const availCopies = Number(currentBook.available_copies || 0);
+    const totalCopies = Number(currentBook.total_copies || 0);
+
+    if (totalCopies <= 0) {
+      showToast("Đầu sách này hiện chưa có bản sao vật lý nào trong kho.", "error");
+      return;
+    }
+
+    if (availCopies <= 0) {
+      await window.reserveCurrentBook();
+      return;
+    }
+
+    const btnDirect = document.getElementById("btnDirectAction");
+    if (btnDirect) btnDirect.disabled = true;
+    try {
+      const created = await api.post("/loans/online", { book_isbns: [currentBook.isbn] });
+      const code = created?.code ? ` (${created.code})` : "";
+      showToast(`✓ Đã gửi yêu cầu mượn sách${code}, chờ thủ thư duyệt!`);
+      await loadBookPageData();
+    } catch (err) {
+      showToast(err?.message || "Không thể gửi yêu cầu mượn sách.", "error");
+    } finally {
+      if (btnDirect) btnDirect.disabled = false;
+    }
+  };
 
   // 7. CHUYỂN ĐỔI TAB NỘI DUNG
   window.switchDetailTab = function (tabName, btn) {
@@ -765,9 +877,20 @@
     document.getElementById("confirm-modal")?.addEventListener("click", (e) => {
       if (e.target && e.target.id === "confirm-modal") closeConfirmModal();
     });
+    document.getElementById("authGuardOverlay")?.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "authGuardOverlay") window.closeAuthGuardModal();
+    });
+    document.getElementById("authGuardLoginBtn")?.addEventListener("click", () => {
+      try {
+        sessionStorage.setItem("redirect_after_login", window.location.href);
+      } catch {
+        // ignore
+      }
+    });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeConfirmModal();
+        window.closeAuthGuardModal();
         if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
           userDropdownMenu.classList.remove("show");
           if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");

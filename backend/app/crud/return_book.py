@@ -16,6 +16,7 @@ from app.crud.fine import (
     calculate_overdue_days_and_amount,
     create_overdue_fine_if_applicable,
 )
+from app.crud.reservation import assign_copy_to_next_waiting_reservation_in_tx
 
 
 def _promote_next_reservation_in_tx(
@@ -27,45 +28,12 @@ def _promote_next_reservation_in_tx(
     Trong cùng transaction trả sách: nếu có độc giả đang WAITING đặt trước đầu sách này,
     chuyển bản sao sang RESERVED và cập nhật Reservation sang READY (hạn 48h). Không tự commit.
     """
-    if not copy or copy.status != "AVAILABLE":
-        return None
-
-    next_res = (
-        db.query(Reservation)
-        .filter(
-            Reservation.book_isbn == copy.book_isbn,
-            Reservation.status == "WAITING",
-        )
-        .order_by(Reservation.reserved_at.asc())
-        .first()
+    return assign_copy_to_next_waiting_reservation_in_tx(
+        db,
+        copy,
+        reason_prefix="Giữ sách cho độc giả đặt trước",
+        now=now,
     )
-    if not next_res:
-        return None
-
-    deadline = now + timedelta(hours=48)
-    next_res.status = "READY"
-    next_res.copy_id = copy.id
-    next_res.pickup_deadline = deadline
-    copy.status = "RESERVED"
-
-    db.add(
-        CopyStatusLog(
-            book_copy_id=copy.id,
-            old_status="AVAILABLE",
-            new_status="RESERVED",
-            reason=f"Giữ sách cho độc giả đặt trước #{next_res.id}",
-        )
-    )
-
-    reader = db.query(User).filter(User.id == next_res.user_id).first()
-    book = db.query(Book).filter(Book.isbn == copy.book_isbn).first()
-    return {
-        "to_email": reader.email if (reader and reader.email) else None,
-        "reader_name": reader.full_name if reader else f"Độc giả #{next_res.user_id}",
-        "book_title": book.title if book else copy.book_isbn,
-        "copy_code": copy.copy_code,
-        "pickup_deadline": deadline.strftime("%d/%m/%Y %H:%M"),
-    }
 
 
 def lookup_copy_for_return(db: Session, copy_code: str) -> dict:
@@ -278,7 +246,13 @@ def return_single_book_copy(
             db.refresh(fine)
 
         if res_info and res_info.get("to_email") and email_queue is not None:
-            email_queue.append(res_info)
+            email_queue.append({
+                "to_email": res_info["to_email"],
+                "reader_name": res_info["reader_name"],
+                "book_title": res_info["book_title"],
+                "copy_code": res_info["copy_code"],
+                "pickup_deadline": res_info["pickup_deadline"],
+            })
 
         msg = "Trả sách thành công"
         if fine:
@@ -362,7 +336,13 @@ def return_entire_loan(
                 if res_info:
                     promoted_readers.append(res_info["reader_name"])
                     if res_info.get("to_email"):
-                        pending_emails.append(res_info)
+                        pending_emails.append({
+                            "to_email": res_info["to_email"],
+                            "reader_name": res_info["reader_name"],
+                            "book_title": res_info["book_title"],
+                            "copy_code": res_info["copy_code"],
+                            "pickup_deadline": res_info["pickup_deadline"],
+                        })
 
         loan.status = LoanStatus.RETURNED
         db.commit()

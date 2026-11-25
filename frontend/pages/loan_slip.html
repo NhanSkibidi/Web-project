@@ -13,10 +13,10 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     rel="stylesheet" />
-  <link rel="stylesheet" href="../css/loan_slip.css?v=2.0" />
+  <link rel="stylesheet" href="../css/loan_slip.css?v=2.1" />
 </head>
 
-<body>
+<body data-root="../">
   <!-- Header đồng bộ theo chuẩn returns & Task T3CFF48 -->
   <header class="librarian-topbar">
     <div class="topbar-left">
@@ -128,13 +128,17 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="footer__inner">
-      <p class="footer__copy"><img src="../assets/images/Background+Shadow.png" alt="" width="20" height="20" />© Hệ
-        thống Quản lý Học thuật UniLib 2026</p>
-      <nav class="footer__links" aria-label="Liên kết chân trang">
-        <a href="#">Quy chế thư viện</a><a href="#">Hỗ trợ nghiên cứu</a><a href="#">Liên hệ thủ thư</a>
-      </nav>
+  <!-- FOOTER TRANG WEB (ĐỒNG BỘ TRANG CHỦ) -->
+  <footer class="app-footer">
+    <div class="footer-left">
+      © 2026 KS25 Library System - Cổng Tra Cứu &amp; Độc Giả Sinh Viên. Bảo lưu mọi quyền.
+    </div>
+    <div class="footer-right">
+      <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Quy định mượn trả</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
     </div>
   </footer>
 
@@ -166,7 +170,7 @@
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.5"></script>
   <script src="../js/notifications.js?v=2.0"></script>
-  <script src="../js/pages/loan_slip.js?v=2.3"></script>
+  <script src="../js/pages/loan_slip.js?v=2.4"></script>
 </body>
 
 </html>

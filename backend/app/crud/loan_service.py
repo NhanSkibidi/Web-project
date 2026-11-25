@@ -11,11 +11,16 @@ from app.models.loan import Loan, LoanStatus, BorrowType
 from app.models.loan_item import LoanItem
 from app.models.Book import Book
 from app.models.BookCopy import BookCopy
+from app.models.CopyStatusLog import CopyStatusLog
 from app.models.fine import Fine
 from app.models.reservation import Reservation
 from app.models.notification import Notification
 from app.crud.copy_status_log import change_copy_status
 from app.crud.fine import has_unpaid_fines
+from app.crud.reservation import (
+    assign_copy_to_next_waiting_reservation_in_tx,
+    expire_overdue_reservations_in_tx,
+)
 
 MAX_BORROW_BOOKS = 5       
 MAX_COUNTER_BORROW_BOOKS = 5   # Giới hạn tối đa khi mượn tại quầy
@@ -149,7 +154,11 @@ def create_online_loan(
         check_unpaid_fines(db, user_id)
         check_borrow_limit(db, user_id, len(book_isbns), card=card)
 
+        # Tự động giải phóng/chuyển lượt các đơn đặt trước READY quá hạn 48h trong transaction
+        expire_overdue_reservations_in_tx(db)
+
         selected_copies: list[BookCopy] = []
+        reservations_to_fulfill: list[tuple[Reservation, BookCopy]] = []
 
         for isbn in book_isbns:
             book = db.query(Book).filter(Book.isbn == isbn, Book.is_deleted == False).first()  # noqa: E712
@@ -160,21 +169,83 @@ def create_online_loan(
                     detail=f"Không tìm thấy sách ISBN: {isbn}",
                 )
 
-            copy = (
+            ready_for_user = (
+                db.query(Reservation)
+                .filter(
+                    Reservation.book_isbn == isbn,
+                    Reservation.user_id == user_id,
+                    Reservation.status == "READY",
+                )
+                .with_for_update()
+                .first()
+            )
+            if ready_for_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Bạn đã có đơn đặt trước #DT-{ready_for_user.id:04d} cho sách '{book.title}' "
+                        f"đang sẵn sàng nhận tại quầy. Vui lòng đến quầy thủ thư để nhận sách."
+                    ),
+                )
+
+            waiting_list = (
+                db.query(Reservation)
+                .filter(
+                    Reservation.book_isbn == isbn,
+                    Reservation.status == "WAITING",
+                )
+                .order_by(Reservation.reserved_at.asc(), Reservation.id.asc())
+                .with_for_update()
+                .all()
+            )
+
+            available_copies_list = (
                 db.query(BookCopy)
                 .filter(
                     BookCopy.book_isbn == isbn,
                     BookCopy.status == "AVAILABLE",
                 )
+                .order_by(BookCopy.id.asc())
                 .with_for_update()
-                .first()
+                .all()
             )
 
-            if not copy:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Sách '{book.title}' hiện không còn bản sao có thể mượn",
-                )
+            if waiting_list:
+                user_idx = next((idx for idx, r in enumerate(waiting_list) if r.user_id == user_id), None)
+                if user_idx is None or user_idx >= len(available_copies_list):
+                    raise HTTPException(
+                        status_code=409,
+                        detail=(
+                            f"Đầu sách '{book.title}' đang có {len(waiting_list)} độc giả đặt trước ưu tiên "
+                            f"trong hàng chờ. Bạn chưa thể gửi yêu cầu mượn lúc này."
+                        ),
+                    )
+                copy = available_copies_list[user_idx]
+                reservations_to_fulfill.append((waiting_list[user_idx], copy))
+            else:
+                if not available_copies_list:
+                    has_ready_other = (
+                        db.query(Reservation.id)
+                        .filter(
+                            Reservation.book_isbn == isbn,
+                            Reservation.status == "READY",
+                        )
+                        .first()
+                        is not None
+                    )
+                    if has_ready_other:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=(
+                                f"Sách '{book.title}' hiện không còn bản sao trống (đang được giữ cho độc giả đặt trước). "
+                                f"Bạn có thể bấm Đặt trước để xếp hàng."
+                            ),
+                        )
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Sách '{book.title}' hiện không còn bản sao có thể mượn",
+                    )
+                copy = available_copies_list[0]
 
             selected_copies.append(copy)
 
@@ -194,6 +265,18 @@ def create_online_loan(
             )
             db.add(loan_item)
             copy.status = "RESERVED"
+            db.add(
+                CopyStatusLog(
+                    book_copy_id=copy.id,
+                    old_status="AVAILABLE",
+                    new_status="RESERVED",
+                    reason=f"Giữ sách cho phiếu mượn online #{loan.code}",
+                )
+            )
+
+        for res_item, matched_copy in reservations_to_fulfill:
+            res_item.status = "FULFILLED"
+            res_item.copy_id = matched_copy.id
 
         db.commit()
         db.refresh(loan)
@@ -256,6 +339,20 @@ def cancel_online_loan(
                 )
                 if copy and copy.status == "RESERVED":
                     copy.status = "AVAILABLE"
+                    db.add(
+                        CopyStatusLog(
+                            book_copy_id=copy.id,
+                            old_status="RESERVED",
+                            new_status="AVAILABLE",
+                            reason=f"Độc giả hủy phiếu mượn online #{loan.code}",
+                        )
+                    )
+                    db.flush()
+                    assign_copy_to_next_waiting_reservation_in_tx(
+                        db,
+                        copy,
+                        reason_prefix=f"Chuyển sách từ phiếu hủy #{loan.code} cho đặt trước",
+                    )
 
         loan.status = LoanStatus.CANCELLED
 
@@ -365,6 +462,20 @@ def reject_loan(
                 )
                 if copy and copy.status == "RESERVED":
                     copy.status = "AVAILABLE"
+                    db.add(
+                        CopyStatusLog(
+                            book_copy_id=copy.id,
+                            old_status="RESERVED",
+                            new_status="AVAILABLE",
+                            reason=f"Thủ thư từ chối phiếu mượn online #{loan.code}",
+                        )
+                    )
+                    db.flush()
+                    assign_copy_to_next_waiting_reservation_in_tx(
+                        db,
+                        copy,
+                        reason_prefix=f"Chuyển sách từ phiếu từ chối #{loan.code} cho đặt trước",
+                    )
 
         loan.status = LoanStatus.REJECTED
         loan.processed_by = librarian_id
@@ -501,15 +612,23 @@ def get_loans_history(
     user_id: int | None = None,
     status_filter: str | None = None,
     limit: int = 50,
+    borrow_type: str | None = None,
 ) -> list[dict]:
     """
-    Lấy danh sách lịch sử mượn trả từ module Mượn (lọc theo user_id và status).
-    Dùng cho trang Chi tiết độc giả, bảng Độc giả & Phiếu mượn của tôi.
+    Lấy danh sách lịch sử mượn trả từ module Mượn (lọc theo user_id, status, borrow_type).
+    Dùng cho trang Quản lý mượn online, Chi tiết độc giả & Phiếu mượn của tôi.
     """
     query = db.query(Loan).order_by(Loan.id.desc())
 
     if user_id is not None:
         query = query.filter(Loan.user_id == user_id)
+
+    if borrow_type and borrow_type.strip():
+        bt = borrow_type.strip().upper()
+        try:
+            query = query.filter(Loan.borrow_type == BorrowType(bt))
+        except ValueError:
+            return []
 
     if status_filter and status_filter.strip():
         st = status_filter.strip().upper()
@@ -522,13 +641,50 @@ def get_loans_history(
     now = datetime.now()
     results: list[dict] = []
 
+    reader_meta_cache: dict[int, dict] = {}
+    waiting_isbn_cache: dict[str, bool] = {}
+
     for loan in loans:
         reader = db.query(User).filter(User.id == loan.user_id).first()
+        if loan.user_id not in reader_meta_cache:
+            card = (
+                db.query(LibraryCard)
+                .filter(LibraryCard.reader_id == loan.user_id)
+                .order_by(LibraryCard.id.desc())
+                .first()
+            )
+            holding_cnt = (
+                db.query(func.count(LoanItem.id))
+                .join(Loan, LoanItem.loan_id == Loan.id)
+                .filter(
+                    Loan.user_id == loan.user_id,
+                    Loan.status == LoanStatus.BORROWED,
+                    LoanItem.return_date.is_(None),
+                )
+                .scalar()
+            ) or 0
+            reader_meta_cache[loan.user_id] = {
+                "card_code": card.card_code if card else None,
+                "card_status": (
+                    card.status.value if card and hasattr(card.status, "value") else (str(card.status) if card else None)
+                ),
+                "max_borrow": card.max_borrow_books if card else MAX_BORROW_BOOKS,
+                "holding_count": int(holding_cnt),
+            }
+        rmeta = reader_meta_cache[loan.user_id]
         items_out: list[dict] = []
 
         for li in loan.loan_items:
             book = db.query(Book).filter(Book.isbn == li.book_isbn).first()
             copy = db.query(BookCopy).filter(BookCopy.id == li.copy_id).first() if li.copy_id else None
+
+            if li.book_isbn not in waiting_isbn_cache:
+                waiting_isbn_cache[li.book_isbn] = (
+                    db.query(Reservation.id)
+                    .filter(Reservation.book_isbn == li.book_isbn, Reservation.status == "WAITING")
+                    .first()
+                    is not None
+                )
 
             eff_due = li.due_date or loan.due_date
             is_overdue = False
@@ -546,25 +702,46 @@ def get_loans_history(
                     overdue_days = (li.return_date.date() - eff_due.date()).days
                     estimated_fine = float(overdue_days * 2000)
 
+            author_names = (
+                ", ".join(ba.author.name for ba in (book.book_authors or []) if ba.author and ba.author.name)
+                if book
+                else ""
+            )
+            shelf_location = copy.shelf_location if copy else (
+                book.copies[0].shelf_location if book and book.copies else None
+            )
+
             items_out.append({
                 "id": li.id,
                 "loan_id": li.loan_id,
                 "book_isbn": li.book_isbn,
                 "book_title": book.title if book else li.book_isbn,
+                "author_name": author_names or None,
+                "cover_image": book.cover_image if book else None,
                 "copy_id": li.copy_id,
                 "copy_code": copy.copy_code if copy else None,
+                "copy_status": copy.status if copy else None,
+                "shelf_location": shelf_location,
                 "due_date": eff_due,
                 "renewal_count": li.renewal_count or 0,
                 "return_date": li.return_date,
                 "is_overdue": is_overdue,
                 "overdue_days": overdue_days,
                 "estimated_fine": estimated_fine,
+                "has_waiting_reservation": waiting_isbn_cache[li.book_isbn],
             })
 
         results.append({
             "id": loan.id,
+            "code": loan.code,
             "user_id": loan.user_id,
             "reader_name": reader.full_name if reader else None,
+            "reader_email": reader.email if reader else None,
+            "reader_phone": reader.phone if reader else None,
+            "card_code": rmeta["card_code"],
+            "card_status": rmeta["card_status"],
+            "reader_holding_count": rmeta["holding_count"],
+            "reader_max_borrow": rmeta["max_borrow"],
             "processed_by": loan.processed_by,
             "borrow_type": loan.borrow_type.value if hasattr(loan.borrow_type, "value") else str(loan.borrow_type),
             "status": loan.status.value if hasattr(loan.status, "value") else str(loan.status),
@@ -823,12 +1000,47 @@ def validate_counter_borrow(
         "message": exists_msg,
     })
 
-    # 5. COPY_AVAILABLE: mọi bản sao đang AVAILABLE
-    unavailable = [
-        f"{cp.copy_code} ({cp.status})"
-        for cp in found_copies
-        if cp.status != "AVAILABLE"
-    ]
+    # 5. COPY_AVAILABLE: mọi bản sao đang AVAILABLE (không có người khác đặt trước) hoặc giữ READY cho chính độc giả này
+    unavailable = []
+    now = datetime.now()
+    for cp in found_copies:
+        if cp.status == "AVAILABLE":
+            waiting_list = (
+                db.query(Reservation)
+                .filter(
+                    Reservation.book_isbn == cp.book_isbn,
+                    Reservation.status == "WAITING",
+                )
+                .order_by(Reservation.reserved_at.asc(), Reservation.id.asc())
+                .all()
+            )
+            if waiting_list:
+                avail_cnt = (
+                    db.query(func.count(BookCopy.id))
+                    .filter(
+                        BookCopy.book_isbn == cp.book_isbn,
+                        BookCopy.status == "AVAILABLE",
+                    )
+                    .scalar()
+                    or 0
+                )
+                user_idx = next((idx for idx, r in enumerate(waiting_list) if user and r.user_id == user.id), None)
+                if user_idx is None or user_idx >= avail_cnt:
+                    unavailable.append(f"{cp.copy_code} (đang có {len(waiting_list)} người đặt trước)")
+        elif cp.status == "RESERVED":
+            ready_for_reader = (
+                db.query(Reservation)
+                .filter(
+                    Reservation.copy_id == cp.id,
+                    Reservation.status == "READY",
+                    (Reservation.pickup_deadline.is_(None) | (Reservation.pickup_deadline >= now)),
+                )
+                .first()
+            )
+            if not (ready_for_reader and user and ready_for_reader.user_id == user.id):
+                unavailable.append(f"{cp.copy_code} ({cp.status})")
+        else:
+            unavailable.append(f"{cp.copy_code} ({cp.status})")
     pass_avail = len(unique_barcodes) > 0 and len(missing_barcodes) == 0 and len(unavailable) == 0
     if len(unique_barcodes) == 0:
         avail_msg = "Chưa có sách để kiểm tra tính sẵn sàng"
@@ -918,7 +1130,10 @@ def create_counter_loan(
 
         user = card.reader
 
-        # Khóa và kiểm tra lại trạng thái bản sao (chống mượn trùng đồng thời)
+        now = datetime.now()
+        expire_overdue_reservations_in_tx(db, now=now)
+
+        # Khóa và kiểm tra lại trạng thái bản sao (chống mượn trùng đồng thời & tôn trọng hàng chờ đặt trước)
         copies = (
             db.query(BookCopy)
             .filter(BookCopy.copy_code.in_(unique_barcodes))
@@ -932,8 +1147,56 @@ def create_counter_loan(
                 detail="Một số mã vạch sách không tìm thấy trong cơ sở dữ liệu",
             )
 
+        reservations_to_fulfill: list[tuple[Reservation, BookCopy]] = []
         for copy in copies:
-            if copy.status != "AVAILABLE":
+            if copy.status == "AVAILABLE":
+                waiting_list = (
+                    db.query(Reservation)
+                    .filter(
+                        Reservation.book_isbn == copy.book_isbn,
+                        Reservation.status == "WAITING",
+                    )
+                    .order_by(Reservation.reserved_at.asc(), Reservation.id.asc())
+                    .with_for_update()
+                    .all()
+                )
+                if waiting_list:
+                    avail_cnt = (
+                        db.query(func.count(BookCopy.id))
+                        .filter(
+                            BookCopy.book_isbn == copy.book_isbn,
+                            BookCopy.status == "AVAILABLE",
+                        )
+                        .scalar()
+                        or 0
+                    )
+                    user_idx = next((idx for idx, r in enumerate(waiting_list) if r.user_id == user.id), None)
+                    if user_idx is None or user_idx >= avail_cnt:
+                        db.rollback()
+                        raise HTTPException(
+                            status_code=409,
+                            detail=f"Bản sao '{copy.copy_code}' thuộc đầu sách đang có độc giả khác đặt trước ưu tiên",
+                        )
+                    reservations_to_fulfill.append((waiting_list[user_idx], copy))
+            elif copy.status == "RESERVED":
+                ready_for_reader = (
+                    db.query(Reservation)
+                    .filter(
+                        Reservation.copy_id == copy.id,
+                        Reservation.user_id == user.id,
+                        Reservation.status == "READY",
+                    )
+                    .with_for_update()
+                    .first()
+                )
+                if not ready_for_reader:
+                    db.rollback()
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"Bản sao '{copy.copy_code}' đang được giữ cho đơn đặt trước hoặc phiếu mượn khác (COPY_NOT_AVAILABLE)",
+                    )
+                reservations_to_fulfill.append((ready_for_reader, copy))
+            else:
                 db.rollback()
                 raise HTTPException(
                     status_code=409,
@@ -951,7 +1214,6 @@ def create_counter_loan(
         #         .first()
         #     )
 
-        now = datetime.now()
         due = now + timedelta(days=BORROW_DAYS)
 
         # Tạo phiếu mượn BORROWED ngay lập tức
@@ -985,6 +1247,10 @@ def create_counter_loan(
                 "location": copy.shelf_location,
                 "due_date": due.strftime("%d/%m/%Y"),
             })
+
+        for res_item, matched_copy in reservations_to_fulfill:
+            res_item.status = "FULFILLED"
+            res_item.copy_id = matched_copy.id
 
         db.commit()
         db.refresh(loan)

@@ -371,23 +371,55 @@ def get_user_reservations(db: Session, user_id: int) -> List[dict]:
     return [format_reservation_response(db, r) for r in reservations]
 
 
-def get_active_reservations_for_staff(db: Session) -> List[dict]:
-    """Thủ thư xem tất cả lượt đặt trước đang hiệu lực (READY ưu tiên trên đầu, WAITING xếp hàng phía sau)."""
+def get_active_reservations_for_staff(
+    db: Session,
+    status_filter: Optional[ReservationStatus] = None,
+    include_history: bool = False,
+) -> List[dict]:
+    """Thủ thư xem danh sách đặt trước (mặc định READY/WAITING; hỗ trợ lọc theo 5 trạng thái ReservationStatus hoặc lấy kèm lịch sử)."""
     check_and_expire_reservations(db)
+
+    if status_filter is not None:
+        target_status = status_filter.value if isinstance(status_filter, ReservationStatus) else str(status_filter).upper()
+        query = db.query(Reservation).filter(Reservation.status == target_status)
+        if target_status == ReservationStatus.READY.value:
+            rows = query.order_by(Reservation.pickup_deadline.asc(), Reservation.id.asc()).all()
+        elif target_status == ReservationStatus.WAITING.value:
+            rows = query.order_by(Reservation.reserved_at.asc(), Reservation.id.asc()).all()
+        else:
+            rows = query.order_by(Reservation.reserved_at.desc(), Reservation.id.desc()).all()
+        return [format_reservation_response(db, r) for r in rows]
 
     ready_list = (
         db.query(Reservation)
-        .filter(Reservation.status == "READY")
+        .filter(Reservation.status == ReservationStatus.READY.value)
         .order_by(Reservation.pickup_deadline.asc(), Reservation.id.asc())
         .all()
     )
     waiting_list = (
         db.query(Reservation)
-        .filter(Reservation.status == "WAITING")
+        .filter(Reservation.status == ReservationStatus.WAITING.value)
         .order_by(Reservation.reserved_at.asc(), Reservation.id.asc())
         .all()
     )
-    return [format_reservation_response(db, r) for r in (ready_list + waiting_list)]
+    combined = ready_list + waiting_list
+
+    if include_history:
+        history_list = (
+            db.query(Reservation)
+            .filter(
+                Reservation.status.in_([
+                    ReservationStatus.FULFILLED.value,
+                    ReservationStatus.EXPIRED.value,
+                    ReservationStatus.CANCELLED.value,
+                ])
+            )
+            .order_by(Reservation.reserved_at.desc(), Reservation.id.desc())
+            .all()
+        )
+        combined.extend(history_list)
+
+    return [format_reservation_response(db, r) for r in combined]
 
 
 def cancel_reservation(

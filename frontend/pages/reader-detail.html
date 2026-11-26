@@ -15,7 +15,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     rel="stylesheet">
-  <link rel="stylesheet" href="../css/readers.css?v=2.0">
+  <link rel="stylesheet" href="../css/readers.css?v=2.1">
 </head>
 <body data-root="../" class="readers-body readers-app">
 
@@ -147,16 +147,26 @@
       <!-- Breadcrumb & Back -->
       <div class="page-head-row">
         <div>
-          <a href="readers.html" style="font-size:13px; font-weight:600; color:var(--primary); text-decoration:none; display:inline-block; margin-bottom:6px;">
-            ← Quay lại Danh sách Độc giả
+          <a href="readers.html" class="btn-back-readers">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span>Quay lại Danh sách Độc giả</span>
           </a>
           <h1 id="detail-reader-heading" class="page-title">Hồ sơ chi tiết Độc giả</h1>
           <p id="detail-reader-sub" class="page-subtitle">Đang tải dữ liệu độc giả và lịch sử mượn trả từ module Mượn...</p>
         </div>
         <div class="page-head-actions">
-          <button id="btn-detail-print" type="button" class="btn">🖨️ In thẻ thư viện</button>
-          <button id="btn-detail-extend" type="button" class="btn btn-soft-blue">🔄 Gia hạn thẻ</button>
-          <button id="btn-detail-lock" type="button" class="btn btn-soft-danger">🔒 Khóa thẻ</button>
+          <button id="btn-detail-print" type="button" class="btn">
+            <span class="material-symbols-outlined">print</span>
+            <span>In thẻ thư viện</span>
+          </button>
+          <button id="btn-detail-extend" type="button" class="btn btn-soft-blue">
+            <span class="material-symbols-outlined">autorenew</span>
+            <span>Gia hạn thẻ</span>
+          </button>
+          <button id="btn-detail-lock" type="button" class="btn btn-soft-danger">
+            <span class="material-symbols-outlined">lock</span>
+            <span>Khóa thẻ</span>
+          </button>
         </div>
       </div>
 
@@ -167,7 +177,10 @@
           <!-- Hồ sơ cá nhân & Tiền phạt -->
           <section class="panel-card">
             <div class="panel-head">
-              <h2 class="panel-title">👤 Thông tin hồ sơ độc giả</h2>
+              <h2 class="panel-title">
+                <span class="material-symbols-outlined">person</span>
+                <span>Thông tin hồ sơ độc giả</span>
+              </h2>
               <span id="detail-account-pill" class="status-pill status-active">ACTIVE</span>
             </div>
             <div class="panel-body">
@@ -185,7 +198,10 @@
           <!-- Lịch sử mượn trả đầy đủ (Lấy trực tiếp từ Module Mượn: GET /api/loans?user_id=...) -->
           <section class="panel-card">
             <div class="panel-head" style="flex-wrap:wrap;">
-              <h2 class="panel-title">📚 Lịch sử mượn trả (Module Mượn)</h2>
+              <h2 class="panel-title">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span>Lịch sử mượn trả (Module Mượn)</span>
+              </h2>
               <div class="filter-tabs-group" id="loan-status-tabs" role="tablist">
                 <button type="button" class="tab-btn active" data-loan-status="">
                   <span>Tất cả</span>
@@ -249,7 +265,10 @@
           <!-- Lịch sử thao tác trên thẻ (Gia hạn / Khoá / Mở / Tự động EXPIRED) -->
           <section class="panel-card">
             <div class="panel-head">
-              <h2 class="panel-title">📜 Lịch sử Gia hạn &amp; Khóa/Mở thẻ</h2>
+              <h2 class="panel-title">
+                <span class="material-symbols-outlined">history</span>
+                <span>Lịch sử Gia hạn &amp; Khóa/Mở thẻ</span>
+              </h2>
             </div>
             <div class="table-scroll">
               <table class="readers-table">
@@ -274,7 +293,10 @@
         <div>
           <section class="panel-card" style="position:sticky; top:84px;">
             <div class="panel-head">
-              <h2 class="panel-title">🪪 Phôi Thẻ Thư Viện</h2>
+              <h2 class="panel-title">
+                <span class="material-symbols-outlined">badge</span>
+                <span>Phôi Thẻ Thư Viện</span>
+              </h2>
               <span id="detail-ready-badge" class="card-ready-pill">Sẵn sàng in</span>
             </div>
             <div class="panel-body">
@@ -288,11 +310,7 @@
                     </div>
                   </div>
                   <div class="id-card-rfid">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                      <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                      <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                    </svg>
+                    <span class="material-symbols-outlined" style="font-size: 16px;">contactless</span>
                   </div>
                 </div>
 
@@ -331,9 +349,18 @@
               </div>
 
               <div class="card-action-bar">
-                <button id="btn-card-print" type="button" class="btn btn-sm">🖨️ In thẻ</button>
-                <button id="btn-card-extend" type="button" class="btn btn-soft-blue btn-sm">🔄 Gia hạn</button>
-                <button id="btn-card-lock" type="button" class="btn btn-soft-danger btn-sm">🔒 Khóa thẻ</button>
+                <button id="btn-card-print" type="button" class="btn btn-sm">
+                  <span class="material-symbols-outlined">print</span>
+                  <span>In thẻ</span>
+                </button>
+                <button id="btn-card-extend" type="button" class="btn btn-soft-blue btn-sm">
+                  <span class="material-symbols-outlined">autorenew</span>
+                  <span>Gia hạn</span>
+                </button>
+                <button id="btn-card-lock" type="button" class="btn btn-soft-danger btn-sm">
+                  <span class="material-symbols-outlined">lock</span>
+                  <span>Khóa thẻ</span>
+                </button>
               </div>
             </div>
           </section>
@@ -341,13 +368,17 @@
       </div>
     </main>
 
-    <!-- FOOTER TRANG WEB -->
+    <!-- FOOTER TRANG WEB (ĐỒNG BỘ LOAN_MANAGEMENT & READERS) -->
     <footer class="app-footer">
       <div class="footer-left">
-        © 2026 KS25 Library System - Phân hệ Quản lý Độc giả &amp; Thẻ thư viện. Bảo lưu mọi quyền.
+        © 2025 KS25 Library System - Phân hệ Thủ thư Quản trị. Bảo lưu mọi quyền.
       </div>
       <div class="footer-right">
-        <a href="readers.html" class="footer-link">← Danh sách độc giả</a>
+        <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Quy định mượn trả</a>
+        <span class="footer-dot">•</span>
+        <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
       </div>
     </footer>
   </div>
@@ -356,8 +387,13 @@
   <div id="modal-extend" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3>🔄 Gia hạn thẻ thư viện</h3>
-        <button type="button" class="modal-close" data-close="modal-extend">✕</button>
+        <h3>
+          <span class="material-symbols-outlined">autorenew</span>
+          <span>Gia hạn thẻ thư viện</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-extend" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="extend-card-form">
         <div class="form-field">
@@ -388,7 +424,10 @@
         </div>
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
           <button type="button" class="btn" data-close="modal-extend">Huỷ</button>
-          <button id="btn-submit-extend" type="submit" class="btn btn-primary">Xác nhận gia hạn →</button>
+          <button id="btn-submit-extend" type="submit" class="btn btn-primary">
+            <span>Xác nhận gia hạn</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
         </div>
       </form>
     </div>
@@ -398,8 +437,13 @@
   <div id="modal-lock" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3 id="lock-modal-title">🔒 Khóa thẻ thư viện</h3>
-        <button type="button" class="modal-close" data-close="modal-lock">✕</button>
+        <h3 id="lock-modal-title">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Khóa thẻ thư viện</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-lock" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="lock-card-form">
         <input type="hidden" id="lock-action-type">
@@ -442,6 +486,6 @@
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.2"></script>
-  <script src="../js/pages/reader-detail.js?v=2.0"></script>
+  <script src="../js/pages/reader-detail.js?v=2.1"></script>
 </body>
 </html>

@@ -201,7 +201,7 @@ function syncRoleBasedUI() {
         window.unilibNotifications.load();
       } else if (!document.querySelector('script[src*="notifications.js"]')) {
         const s = document.createElement("script");
-        s.src = `${(document.body && document.body.dataset && document.body.dataset.root) || "../"}js/notifications.js?v=2.0`;
+        s.src = `${(document.body && document.body.dataset && document.body.dataset.root) || "../"}js/notifications.js?v=2.1`;
         s.defer = true;
         document.body.appendChild(s);
       }

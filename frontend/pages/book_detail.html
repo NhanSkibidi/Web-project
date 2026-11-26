@@ -8,8 +8,12 @@
   <link rel="icon" href="../assets/images/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css?v=10.4">
   <link rel="stylesheet" href="../css/book_detail.css?v=1.5">
 </head>
@@ -39,7 +43,8 @@
         <a href="home.html" class="topbar-nav-link" data-page="home">Trang chủ</a>
         <a href="search.html" class="topbar-nav-link" data-page="search">Tra cứu sách</a>
         <a href="loan_slip.html" class="topbar-nav-link" data-page="loan_slip" data-auth-required="true">Phiếu mượn</a>
-        <a href="reservations.html" class="topbar-nav-link" data-page="reservations" data-auth-required="true">Đặt trước</a>
+        <a href="reservations.html" class="topbar-nav-link" data-page="reservations" data-auth-required="true">Đặt
+          trước</a>
         <a href="fines.html" class="topbar-nav-link" data-page="fines" data-role-allow="READER">Tiền phạt</a>
       </nav>
     </div>
@@ -48,7 +53,8 @@
     <div class="topbar-right">
       <!-- Chuông thông báo in-app (Task T3CFF48) -->
       <div class="notif-dropdown-container" id="notifDropdownContainer">
-        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn" aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
+        <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
+          aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
           <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
         </button>
@@ -105,12 +111,14 @@
   </header>
 
   <!-- MÀN HÌNH BẢO VỆ XÁC THỰC (BẮT BUỘC ĐĂNG NHẬP MỚI VÀO ĐƯỢC) -->
-  <div id="authGuardOverlay" class="auth-guard-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="authGuardTitle">
+  <div id="authGuardOverlay" class="auth-guard-overlay" style="display: none;" role="dialog" aria-modal="true"
+    aria-labelledby="authGuardTitle">
     <div class="auth-guard-card">
       <div class="auth-guard-icon">🔒</div>
       <h2 class="auth-guard-title" id="authGuardTitle">Yêu cầu đăng nhập</h2>
       <p class="auth-guard-desc">
-        Trang thông tin chi tiết ấn bản và lưu thông bản sao vật lý yêu cầu độc giả xác thực tài khoản sinh viên thư viện KS25.
+        Trang thông tin chi tiết ấn bản và lưu thông bản sao vật lý yêu cầu độc giả xác thực tài khoản sinh viên thư
+        viện KS25.
       </p>
       <div class="auth-guard-actions">
         <a href="login.html#login" class="btn-guard-login" id="authGuardLoginBtn">Đăng nhập</a>
@@ -141,10 +149,14 @@
         <div class="book-cover-showcase">
           <div class="book-3d-wrap" id="mainBookCoverWrap">
             <!-- Bìa sách xanh lục đậm Cấu trúc dữ liệu & Giải thuật -->
-            <div style="width:100%; height:100%; background: linear-gradient(145deg, #16382a, #0d231a); color:#fff; padding:28px 20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: inset 4px 0 10px rgba(0,0,0,0.5);">
+            <div
+              style="width:100%; height:100%; background: linear-gradient(145deg, #16382a, #0d231a); color:#fff; padding:28px 20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: inset 4px 0 10px rgba(0,0,0,0.5);">
               <div>
-                <div style="font-size:11px; letter-spacing:2px; font-weight:700; color:#a7f3d0; text-transform:uppercase;">GIÁO TRÌNH ĐẠI HỌC</div>
-                <h3 style="font-family:var(--font-serif); font-size:23px; font-weight:800; margin:16px 0 8px; line-height:1.2; color:#ffffff;">
+                <div
+                  style="font-size:11px; letter-spacing:2px; font-weight:700; color:#a7f3d0; text-transform:uppercase;">
+                  GIÁO TRÌNH ĐẠI HỌC</div>
+                <h3
+                  style="font-family:var(--font-serif); font-size:23px; font-weight:800; margin:16px 0 8px; line-height:1.2; color:#ffffff;">
                   CẤU TRÚC DỮ LIỆU<br>& GIẢI THUẬT
                 </h3>
                 <div style="font-size:13px; color:#d1fae5; font-weight:600;">TS. LÊ HOÀNG NAM</div>
@@ -169,7 +181,8 @@
                 </svg>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.15); padding-top:10px;">
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.15); padding-top:10px;">
                 <span>NXB ĐẠI HỌC QUỐC GIA</span>
                 <span>TÁI BẢN LẦN 3</span>
               </div>
@@ -196,15 +209,18 @@
 
           <!-- Nút tiện ích: Lưu, Chia sẻ, Báo lỗi -->
           <div class="action-buttons-row">
-            <button type="button" class="btn-util-icon" onclick="showToast('Đã lưu tài liệu vào danh sách yêu thích!', 'success')">
+            <button type="button" class="btn-util-icon"
+              onclick="showToast('Đã lưu tài liệu vào danh sách yêu thích!', 'success')">
               <span>🔖</span>
               <span>Lưu tài liệu</span>
             </button>
-            <button type="button" class="btn-util-icon" onclick="navigator.clipboard?.writeText(window.location.href); showToast('Đã sao chép liên kết chia sẻ!', 'success');">
+            <button type="button" class="btn-util-icon"
+              onclick="navigator.clipboard?.writeText(window.location.href); showToast('Đã sao chép liên kết chia sẻ!', 'success');">
               <span>🔗</span>
               <span>Chia sẻ</span>
             </button>
-            <button type="button" class="btn-util-icon" onclick="showToast('Đã ghi nhận phản hồi về thông tin tài liệu!', 'success')">
+            <button type="button" class="btn-util-icon"
+              onclick="showToast('Đã ghi nhận phản hồi về thông tin tài liệu!', 'success')">
               <span>🚩</span>
               <span>Báo lỗi</span>
             </button>
@@ -348,7 +364,12 @@
               <span>Tóm tắt nội dung học thuật</span>
             </h4>
             <p class="summary-desc-text" id="bookSummaryText">
-              Giáo trình cung cấp các kiến thức cốt lõi và chuyên sâu về cấu trúc dữ liệu tuyến tính, cây nhị phân cân bằng (AVL, Red-Black Trees), đồ thị định hướng và các giải thuật tối ưu hóa phức tạp như Dijkstra, A* Search và Quy hoạch động. Giáo trình được thiết kế chuẩn mực với hệ thống mã nguồn mẫu cụ thể bằng C++20 và Java 17, kèm theo các bài toán thực tiễn phân tích độ phức tạp thời gian O(n log n) và kiểm thử bộ nhớ. Phù hợp cho sinh viên chuyên ngành Kỹ thuật Phần mềm, Khoa học Máy tính và kỹ sư chuẩn bị cho các kỳ thi lập trình quốc tế ACM-ICPC.
+              Giáo trình cung cấp các kiến thức cốt lõi và chuyên sâu về cấu trúc dữ liệu tuyến tính, cây nhị phân cân
+              bằng (AVL, Red-Black Trees), đồ thị định hướng và các giải thuật tối ưu hóa phức tạp như Dijkstra, A*
+              Search và Quy hoạch động. Giáo trình được thiết kế chuẩn mực với hệ thống mã nguồn mẫu cụ thể bằng C++20
+              và Java 17, kèm theo các bài toán thực tiễn phân tích độ phức tạp thời gian O(n log n) và kiểm thử bộ nhớ.
+              Phù hợp cho sinh viên chuyên ngành Kỹ thuật Phần mềm, Khoa học Máy tính và kỹ sư chuẩn bị cho các kỳ thi
+              lập trình quốc tế ACM-ICPC.
             </p>
 
             <div class="summary-highlights-grid" id="bookHighlightsGrid">
@@ -369,7 +390,8 @@
           <div class="summary-card">
             <h4 class="summary-title">Đánh giá từ độc giả sinh viên</h4>
             <p style="color:var(--color-text-sub); font-size:14px; margin-bottom:14px;">
-              "Sách viết rất rõ ràng, ví dụ trực quan về Red-Black Tree và Đồ thị giúp mình qua môn Giải thuật điểm A!" – <em>Trần Hoàng Long (K24 CNTT)</em>
+              "Sách viết rất rõ ràng, ví dụ trực quan về Red-Black Tree và Đồ thị giúp mình qua môn Giải thuật điểm A!"
+              – <em>Trần Hoàng Long (K24 CNTT)</em>
             </p>
           </div>
         </div>
@@ -395,7 +417,10 @@
                   </tr>
                 </thead>
                 <tbody id="loanHistoryTableBody">
-                  <tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--color-muted);">Chưa có lượt mượn nào được ghi nhận.</td></tr>
+                  <tr>
+                    <td colspan="7" style="text-align:center; padding: 20px; color: var(--color-muted);">Chưa có lượt
+                      mượn nào được ghi nhận.</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -449,8 +474,10 @@
 
           <!-- Nhắc nhở quy định -->
           <div class="copies-footer-notice">
-            <div>ⓘ Sinh viên được mượn tối đa <strong>3 bản in</strong> cùng lúc trong thời hạn <strong>14 ngày</strong>.</div>
-            <a href="javascript:void(0)" onclick="showToast('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.', 'success')">
+            <div>ⓘ Sinh viên được mượn tối đa <strong>3 bản in</strong> cùng lúc trong thời hạn <strong>14
+                ngày</strong>.</div>
+            <a href="javascript:void(0)"
+              onclick="showToast('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.', 'success')">
               Xem nội quy mượn trả →
             </a>
           </div>
@@ -467,7 +494,8 @@
           <h3 class="related-title">Tài liệu học tập cùng chuyên ngành</h3>
           <p class="related-subtitle">Các giáo trình và tài liệu nghiên cứu tương thích theo lộ trình ngành CNTT</p>
         </div>
-        <a href="search.html" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">Xem tất cả &gt;</a>
+        <a href="search.html" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">Xem tất cả
+          &gt;</a>
       </div>
 
       <div class="related-grid" id="relatedBooksGrid">
@@ -513,7 +541,7 @@
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.5"></script>
-  <script src="../js/notifications.js?v=2.0" defer></script>
+  <script src="../js/notifications.js?v=2.1" defer></script>
   <script src="../js/pages/book_detail.js?v=1.6"></script>
 </body>
 

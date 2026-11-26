@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import require_librarian
 from app.db.session import get_db
+from app.models.reservation import ReservationStatus
 from app.models.user import User
 from app.schemas.reservation import (
     ReservationCreate,
@@ -86,12 +87,18 @@ def api_get_my_reservations(
 
 @router.get("/staff/active", response_model=List[ReservationResponse], dependencies=[Depends(require_librarian)])
 def api_get_staff_active_reservations(
+    status: Optional[ReservationStatus] = Query(None, description="Lọc theo 1 trong 5 trạng thái ReservationStatus"),
+    include_history: bool = Query(False, description="Bao gồm cả các đơn FULFILLED, CANCELLED, EXPIRED"),
     db: Session = Depends(get_db),
 ):
     """
-    Dành cho Thủ thư: Xem toàn bộ lượt đặt trước đang hiệu lực (cả READY chờ nhận và WAITING đang xếp hàng).
+    Dành cho Thủ thư: Xem các lượt đặt trước (mặc định READY & WAITING; hỗ trợ include_history hoặc lọc 5 trạng thái ReservationStatus).
     """
-    return get_active_reservations_for_staff(db)
+    return get_active_reservations_for_staff(
+        db,
+        status_filter=status,
+        include_history=include_history,
+    )
 
 
 @router.post("/{reservation_id}/cancel", response_model=ReservationResponse)

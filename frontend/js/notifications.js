@@ -125,11 +125,24 @@
       })
       .join("");
 
-    // Gắn sự kiện click đánh dấu đã đọc từng mục
+    // Gắn sự kiện click đánh dấu đã đọc từng mục trước khi chuyển trang
     listEl.querySelectorAll(".notif-item").forEach((el) => {
-      el.addEventListener("click", () => {
+      el.addEventListener("click", async (e) => {
         const id = el.getAttribute("data-id");
-        if (id && el.classList.contains("is-unread")) {
+        if (!id || !el.classList.contains("is-unread")) return;
+
+        const href = el.getAttribute("href");
+        const isPlainLeftClick =
+          e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey;
+
+        if (isPlainLeftClick && href) {
+          e.preventDefault();
+          try {
+            await markSingleAsRead(id, el);
+          } finally {
+            window.location.href = href;
+          }
+        } else {
           markSingleAsRead(id, el);
         }
       });
@@ -205,14 +218,13 @@
     const dot = el.querySelector(".notif-dot");
     if (dot) dot.style.display = "none";
 
-    // Cập nhật số unread trên badge
+    // Cập nhật đồng bộ số unread trên badge & pill
     const notifBadge = document.getElementById("notifBadge");
     if (notifBadge && notifBadge.style.display !== "none") {
-      let current = parseInt(notifBadge.textContent, 10) || 0;
-      if (current > 1) {
-        notifBadge.textContent = current - 1;
-      } else {
-        notifBadge.style.display = "none";
+      const currentText = String(notifBadge.textContent ?? "").trim();
+      const current = parseInt(currentText, 10);
+      if (!isNaN(current) && !currentText.includes("+")) {
+        updateBadge(Math.max(0, current - 1));
       }
     }
 
@@ -227,6 +239,7 @@
     try {
       await fetch(readUrl, {
         method: "PATCH",
+        keepalive: true,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -256,6 +269,7 @@
     try {
       await fetch(url, {
         method: "POST",
+        keepalive: true,
         headers: {
           Authorization: `Bearer ${token}`,
         },

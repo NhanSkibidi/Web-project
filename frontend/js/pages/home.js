@@ -167,34 +167,35 @@ function notifyUser(message, type = "info") {
 
 function getCategoryIcon(name) {
   const n = String(name || "").toLowerCase();
+  const icon = (symbol) => `<span class="material-symbols-outlined" style="font-size: 26px;">${symbol}</span>`;
   if (n.includes("công nghệ") || n.includes("cntt") || n.includes("tin") || n.includes("phần mềm")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`;
+    return icon("computer");
   }
   if (n.includes("toán") || n.includes("thống kê")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>`;
+    return icon("calculate");
   }
   if (n.includes("kinh tế") || n.includes("tài chính") || n.includes("quản trị")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>`;
+    return icon("trending_up");
   }
   if (n.includes("mạng") || n.includes("hệ thống") || n.includes("cơ sở dữ liệu")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>`;
+    return icon("dns");
   }
   if (n.includes("ngoại ngữ") || n.includes("tiếng") || n.includes("anh")) {
-    return `<span style="font-weight:700; font-size:18px;">文A</span>`;
+    return icon("translate");
   }
   if (n.includes("kỹ năng") || n.includes("tâm lý")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+    return icon("psychology");
   }
   if (n.includes("lịch sử") || n.includes("luật") || n.includes("triết")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>`;
+    return icon("account_balance");
   }
   if (n.includes("khoa học") || n.includes("vật lý") || n.includes("hóa")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`;
+    return icon("science");
   }
   if (n.includes("giáo dục")) {
-    return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`;
+    return icon("school");
   }
-  return `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>`;
+  return icon("menu_book");
 }
 
 const HOME_CACHE_KEY = "unilib_home_cache_v1";
@@ -326,7 +327,10 @@ function syncCategoryToggleUI() {
     if (toggleContainer) toggleContainer.style.display = "none";
     if (headerToggleBtn) headerToggleBtn.style.display = total === 0 ? "none" : "inline-flex";
     if (headerText) headerText.textContent = `Tất cả danh mục (${formatNumber(total)} ngành)`;
-    if (headerArrow) headerArrow.textContent = "";
+    if (headerArrow) {
+      headerArrow.textContent = "";
+      headerArrow.style.display = "none";
+    }
     return;
   }
 
@@ -338,7 +342,8 @@ function syncCategoryToggleUI() {
       : `Xem tất cả danh mục (${formatNumber(total)} ngành)`;
   }
   if (headerArrow) {
-    headerArrow.innerHTML = homeState.isCategoriesExpanded ? "&lt;" : "&gt;";
+    headerArrow.style.display = "inline-flex";
+    headerArrow.textContent = homeState.isCategoriesExpanded ? "expand_less" : "chevron_right";
   }
   if (bottomText) {
     bottomText.textContent = homeState.isCategoriesExpanded
@@ -346,7 +351,7 @@ function syncCategoryToggleUI() {
       : `Xem thêm ${formatNumber(extraCount)} ngành học khác`;
   }
   if (bottomArrow) {
-    bottomArrow.textContent = homeState.isCategoriesExpanded ? "▲" : "▼";
+    bottomArrow.textContent = homeState.isCategoriesExpanded ? "expand_less" : "expand_more";
   }
 }
 
@@ -410,7 +415,7 @@ async function fetchBooksPage(options = {}) {
       grid.style.opacity = "1";
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #fff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg);">
-          <div style="font-size: 36px; margin-bottom: 12px;">⚠️</div>
+          <span class="material-symbols-outlined" style="font-size: 40px; color: #D97706; display: block; margin-bottom: 12px;">warning</span>
           <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">Không thể tải dữ liệu sách từ máy chủ</h3>
           <p style="font-size: 13.5px; color: var(--color-muted); max-width: 480px; margin: 0 auto 16px;">
             Vui lòng kiểm tra kết nối tới hệ thống backend thư viện rồi thử lại.
@@ -524,7 +529,7 @@ function renderBooksView(pageBooks) {
     grid.style.opacity = "1";
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #fff; border: 1px dashed var(--color-border); border-radius: var(--radius-lg);">
-        <div style="font-size: 36px; margin-bottom: 12px;">📚</div>
+        <span class="material-symbols-outlined" style="font-size: 40px; color: var(--color-muted); display: block; margin-bottom: 12px;">library_books</span>
         <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text); margin-bottom: 6px;">
           ${hasFilter ? "Không tìm thấy tài liệu phù hợp" : "Chưa có tài liệu nào trong cơ sở dữ liệu"}
         </h3>
@@ -599,9 +604,9 @@ function renderBooksView(pageBooks) {
             <a href="${detailUrl}" class="btn-detail" onclick="return handleDetailLinkClick(event, this)">Chi tiết</a>
             ${
               available > 0
-                ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="borrowBook(this.dataset.isbn)">🛒 Mượn</button>`
+                ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="borrowBook(this.dataset.isbn)"><span class="material-symbols-outlined" style="font-size: 17px;">shopping_bag</span><span>Mượn</span></button>`
                 : totalCopies > 0
-                  ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="reserveBookFromHome(this.dataset.isbn)" style="background:#D97706;">⏳ Đặt trước</button>`
+                  ? `<button type="button" class="btn-borrow" data-isbn="${safeIsbn}" onclick="reserveBookFromHome(this.dataset.isbn)" style="background:#D97706;"><span class="material-symbols-outlined" style="font-size: 17px;">hourglass_top</span><span>Đặt trước</span></button>`
                   : `<button type="button" class="btn-borrow" disabled>Chưa có bản sao</button>`
             }
           </div>
@@ -637,7 +642,7 @@ async function loadHeroStatsAndTrending(options = {}) {
       heroStatsPayload = {
         totalBooks: s.total_books,
         totalCopies: s.total_copies,
-        thirdIcon: "👥",
+        thirdIcon: "groups",
         thirdCount: s.active_readers,
         thirdLabel: "Độc giả đang hoạt động",
       };
@@ -691,7 +696,7 @@ async function loadHeroStatsAndTrending(options = {}) {
         heroStatsPayload = {
           totalBooks,
           totalCopiesText: `${formatNumber(totalCopies)}${suffix}`,
-          thirdIcon: "📚",
+          thirdIcon: "library_books",
           thirdCountText: `${formatNumber(availableCopies)}${suffix}`,
           thirdLabel: "Bản sẵn sàng mượn",
         };
@@ -720,7 +725,7 @@ async function loadHeroStatsAndTrending(options = {}) {
         heroStatsPayload = {
           totalBooks: 0,
           totalCopies: 0,
-          thirdIcon: "📚",
+          thirdIcon: "library_books",
           thirdCount: 0,
           thirdLabel: "Bản sẵn sàng mượn",
         };
@@ -743,7 +748,7 @@ function updateHeroNumbers({
   totalBooks = 0,
   totalCopies = 0,
   totalCopiesText = null,
-  thirdIcon = "📚",
+  thirdIcon = "library_books",
   thirdCount = 0,
   thirdCountText = null,
   thirdLabel = "Bản sẵn sàng mượn",
@@ -754,9 +759,13 @@ function updateHeroNumbers({
   const thirdCountEl = document.getElementById("stat-third-count");
   const thirdLabelEl = document.getElementById("stat-third-label");
 
+  const normalizedThirdIcon = thirdIcon === "👥"
+    ? "groups"
+    : (thirdIcon === "📚" || !thirdIcon ? "library_books" : thirdIcon);
+
   if (booksEl) booksEl.textContent = formatNumber(totalBooks);
   if (copiesEl) copiesEl.textContent = totalCopiesText ?? formatNumber(totalCopies);
-  if (thirdIconEl) thirdIconEl.textContent = thirdIcon;
+  if (thirdIconEl) thirdIconEl.textContent = normalizedThirdIcon;
   if (thirdCountEl) thirdCountEl.textContent = thirdCountText ?? formatNumber(thirdCount);
   if (thirdLabelEl) thirdLabelEl.textContent = thirdLabel;
 }
@@ -844,7 +853,7 @@ function renderTrendingList(items, mode) {
               data-isbn="${safeIsbn}"
               title="${available > 0 ? "Thêm vào giỏ mượn" : (totalCopies > 0 ? "Đặt trước sách (Xếp hàng)" : "Chưa có bản sao")}"
               ${available <= 0 && totalCopies <= 0 ? "disabled" : ""}
-              onclick="${available > 0 ? "quickAdd(this.dataset.isbn)" : "reserveBookFromHome(this.dataset.isbn)"}">${available > 0 ? "+" : (totalCopies > 0 ? "⏳" : "+")}</button>
+              onclick="${available > 0 ? "quickAdd(this.dataset.isbn)" : "reserveBookFromHome(this.dataset.isbn)"}"><span class="material-symbols-outlined" style="font-size: 18px;">${available > 0 ? "add" : (totalCopies > 0 ? "hourglass_top" : "add")}</span></button>
           </div>
         </div>
       `;

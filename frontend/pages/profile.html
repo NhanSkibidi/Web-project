@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  <link rel="stylesheet" href="../css/profile.css?v=2.1">
+  <link rel="stylesheet" href="../css/profile.css?v=2.3">
 </head>
 <body class="profile-page">
 
@@ -30,8 +30,14 @@
     </div>
 
     <div class="pf-topbar-right">
-      <a id="pf-back-home-btn" href="home.html" class="btn">← Quay lại</a>
-      <button id="btn-pf-logout" type="button" class="btn btn-danger-outline">Đăng xuất</button>
+      <a id="pf-back-home-btn" href="home.html" class="btn">
+        <span class="material-symbols-outlined" style="font-size: 17px;">arrow_back</span>
+        <span>Quay lại</span>
+      </a>
+      <button id="btn-pf-logout" type="button" class="btn btn-danger-outline">
+        <span class="material-symbols-outlined" style="font-size: 17px;">logout</span>
+        <span>Đăng xuất</span>
+      </button>
     </div>
   </header>
 
@@ -45,7 +51,7 @@
     </div>
 
     <div class="pf-grid">
-      <!-- LEFT COLUMN: Thông tin tài khoản + Thẻ thư viện (nếu là Độc giả) + Lối tắt -->
+      <!-- LEFT COLUMN: Thông tin tài khoản + Thẻ thư viện (nếu là Độc giả) -->
       <div>
         <section class="pf-card">
           <div class="pf-card-body">
@@ -82,7 +88,10 @@
         <!-- Thẻ thư viện (chỉ hiển thị với tài khoản Độc giả có thẻ) -->
         <section id="pf-card-section" class="pf-card" hidden>
           <div class="pf-card-head">
-            <h3 class="pf-card-title">🪪 Thẻ thư viện của tôi</h3>
+            <h3 class="pf-card-title">
+              <span class="material-symbols-outlined" style="font-size: 19px; color: var(--primary);">badge</span>
+              <span>Thẻ thư viện của tôi</span>
+            </h3>
             <span id="pf-card-status-pill" class="status-pill status-active">ACTIVE</span>
           </div>
           <div class="pf-card-body">
@@ -113,40 +122,6 @@
             </div>
           </div>
         </section>
-
-        <!-- Tóm tắt tiền phạt của độc giả (Task T3CFF2C) -->
-        <section id="pf-fines-section" class="pf-card" hidden>
-          <div class="pf-card-head">
-            <h3 class="pf-card-title">💰 Khoản phạt của tôi</h3>
-            <span id="pf-fines-status-pill" class="status-pill status-active">Đang tải...</span>
-          </div>
-          <div class="pf-card-body">
-            <div class="meta-list">
-              <div class="meta-row">
-                <span class="meta-label">Khoản chưa nộp</span>
-                <span id="pf-fines-unpaid-count" class="meta-value meta-mono">--</span>
-              </div>
-              <div class="meta-row">
-                <span class="meta-label">Tổng tiền chưa nộp</span>
-                <span id="pf-fines-unpaid-amount" class="meta-value meta-mono">--</span>
-              </div>
-            </div>
-            <a href="fines.html" class="shortcut-link" style="margin-top: 12px;">
-              <span>Xem chi tiết &amp; biên lai tiền phạt</span>
-              <span>→</span>
-            </a>
-          </div>
-        </section>
-
-        <!-- Lối tắt nhanh theo vai trò -->
-        <section class="pf-card">
-          <div class="pf-card-head">
-            <h3 class="pf-card-title">🧭 Điều hướng nhanh</h3>
-          </div>
-          <div class="pf-card-body">
-            <div id="pf-shortcuts" class="shortcut-list"></div>
-          </div>
-        </section>
       </div>
 
       <!-- RIGHT COLUMN: Form Sửa hồ sơ + Form Đổi mật khẩu -->
@@ -154,7 +129,10 @@
         <!-- CARD 1: CẬP NHẬT HỒ SƠ CÁ NHÂN -->
         <section class="pf-card">
           <div class="pf-card-head">
-            <h2 class="pf-card-title">✏️ Thông tin hồ sơ cá nhân</h2>
+            <h2 class="pf-card-title">
+              <span class="material-symbols-outlined" style="font-size: 19px; color: var(--primary);">edit_note</span>
+              <span>Thông tin hồ sơ cá nhân</span>
+            </h2>
           </div>
           <div class="pf-card-body">
             <div id="profile-alert" class="inline-alert"></div>
@@ -200,7 +178,10 @@
         <!-- CARD 2: ĐỔI MẬT KHẨU (KIỂM TRA MẬT KHẨU CŨ) -->
         <section class="pf-card">
           <div class="pf-card-head">
-            <h2 class="pf-card-title">🔐 Đổi mật khẩu đăng nhập</h2>
+            <h2 class="pf-card-title">
+              <span class="material-symbols-outlined" style="font-size: 19px; color: var(--primary);">lock</span>
+              <span>Đổi mật khẩu đăng nhập</span>
+            </h2>
           </div>
           <div class="pf-card-body">
             <div id="password-alert" class="inline-alert"></div>
@@ -210,7 +191,9 @@
                 <label for="input-old-password">Mật khẩu hiện tại (Mật khẩu cũ) *</label>
                 <div class="password-wrap">
                   <input id="input-old-password" type="password" required autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại để xác minh...">
-                  <button type="button" class="pw-eye-btn" data-toggle-pw="input-old-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                  <button type="button" class="pw-eye-btn" data-toggle-pw="input-old-password" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                  </button>
                 </div>
               </div>
 
@@ -219,7 +202,9 @@
                   <label for="input-new-password">Mật khẩu mới *</label>
                   <div class="password-wrap">
                     <input id="input-new-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự...">
-                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-new-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-new-password" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                    </button>
                   </div>
                   <div class="pw-strength-bar"><div id="pw-strength-fill" class="pw-strength-fill"></div></div>
                   <div id="pw-strength-text" class="form-hint">Nên kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
@@ -229,7 +214,9 @@
                   <label for="input-confirm-password">Xác nhận mật khẩu mới *</label>
                   <div class="password-wrap">
                     <input id="input-confirm-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới...">
-                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-confirm-password" title="Ẩn/Hiện mật khẩu">👁</button>
+                    <button type="button" class="pw-eye-btn" data-toggle-pw="input-confirm-password" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -261,6 +248,6 @@
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.4"></script>
-  <script src="../js/pages/profile.js?v=2.5"></script>
+  <script src="../js/pages/profile.js?v=2.6"></script>
 </body>
 </html>

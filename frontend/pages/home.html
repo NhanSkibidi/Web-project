@@ -117,7 +117,7 @@
     <!-- 1. HERO & KHUNG TÌM KIẾM (DI CHUỘT VÀO DI CHUYỂN LÊN) -->
     <section class="hero-section">
       <div class="hero-pill">
-        <span>📖</span>
+        <span class="material-symbols-outlined" style="font-size: 17px;">menu_book</span>
         <span>Cổng tra cứu tài liệu học tập & nghiên cứu</span>
       </div>
 
@@ -138,7 +138,7 @@
           </select>
           <button type="submit" class="search-btn">
             <span>Tìm kiếm</span>
-            <span>→</span>
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
           </button>
         </form>
       </div>
@@ -146,15 +146,15 @@
       <!-- Thống kê nhanh -->
       <div class="hero-stats">
         <div class="stat-pill">
-          <span>📖</span>
+          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">category</span>
           <span><strong id="stat-categories-count">—</strong> Chuyên ngành đào tạo</span>
         </div>
         <div class="stat-pill">
-          <span>✓</span>
+          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">check_circle</span>
           <span><strong id="stat-books-count">—</strong> Đầu sách &amp; <strong id="stat-copies-count">—</strong> Bản sao</span>
         </div>
         <div class="stat-pill">
-          <span id="stat-third-icon">📚</span>
+          <span id="stat-third-icon" class="material-symbols-outlined" style="font-size: 18px; color: var(--color-primary);">library_books</span>
           <span><strong id="stat-third-count">—</strong> <span id="stat-third-label">Bản sẵn sàng mượn</span></span>
         </div>
       </div>
@@ -169,7 +169,7 @@
         </div>
         <a href="javascript:void(0)" class="section-link" id="toggle-category-btn" onclick="toggleCategories()">
           <span id="header-cat-text">Xem tất cả danh mục</span>
-          <span id="header-cat-arrow">&gt;</span>
+          <span id="header-cat-arrow" class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
         </a>
       </div>
 
@@ -183,7 +183,7 @@
       <div class="category-toggle-container" id="category-toggle-container" style="display: none;">
         <button type="button" class="btn-toggle-categories" id="btn-toggle-categories" onclick="toggleCategories()">
           <span id="toggle-cat-text">Xem thêm ngành học khác</span>
-          <span id="toggle-cat-arrow">▼</span>
+          <span id="toggle-cat-arrow" class="material-symbols-outlined" style="font-size: 18px;">expand_more</span>
         </button>
       </div>
     </section>
@@ -210,8 +210,9 @@
           <span id="search-status-text">Đang tìm kiếm...</span>
         </div>
         <button onclick="clearSearchFilter()"
-          style="border:1px solid var(--color-border); background:var(--color-bg); padding:5px 12px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer; font-weight:600; color:var(--color-danger); transition:all 0.2s ease;">
-          ✕ Xóa tìm kiếm (Xem tất cả)
+          style="border:1px solid var(--color-border); background:var(--color-bg); padding:5px 12px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer; font-weight:600; color:var(--color-danger); transition:all 0.2s ease; display:inline-flex; align-items:center; gap:4px;">
+          <span class="material-symbols-outlined" style="font-size: 15px;">close</span>
+          <span>Xóa tìm kiếm (Xem tất cả)</span>
         </button>
       </div>
 
@@ -224,9 +225,15 @@
       <!-- Phân trang danh sách tài liệu -->
       <div class="books-pagination-container" id="books-pagination-container">
         <div class="books-pagination-pills">
-          <button class="page-pill-btn" onclick="prevCarousel()" id="btn-prev-page" disabled>« Trang trước</button>
+          <button class="page-pill-btn" onclick="prevCarousel()" id="btn-prev-page" disabled style="display:inline-flex; align-items:center; gap:4px;">
+            <span class="material-symbols-outlined" style="font-size: 17px;">chevron_left</span>
+            <span>Trang trước</span>
+          </button>
           <div class="page-numbers" id="page-numbers-container"></div>
-          <button class="page-pill-btn" onclick="nextCarousel()" id="btn-next-page" disabled>Trang tiếp »</button>
+          <button class="page-pill-btn" onclick="nextCarousel()" id="btn-next-page" disabled style="display:inline-flex; align-items:center; gap:4px;">
+            <span>Trang tiếp</span>
+            <span class="material-symbols-outlined" style="font-size: 17px;">chevron_right</span>
+          </button>
         </div>
       </div>
     </section>
@@ -238,7 +245,9 @@
       <div class="trending-card">
         <div class="trending-header">
           <h3 class="trending-title">
-            <span class="trending-title-icon">📈</span>
+            <span class="trending-title-icon">
+              <span class="material-symbols-outlined" style="font-size: 19px; color: var(--color-primary);">trending_up</span>
+            </span>
             <span>Mượn nhiều trong tuần</span>
           </h3>
           <span id="trending-updated-label" class="trending-updated-pill">Đang tải...</span>
@@ -253,7 +262,9 @@
 
       <!-- Cột phải: Quy chế mượn tài liệu -->
       <div class="rules-card">
-        <div class="rules-icon">ℹ️</div>
+        <div class="rules-icon">
+          <span class="material-symbols-outlined" style="font-size: 26px;">info</span>
+        </div>
         <h3 style="font-size:20px; font-weight:700; margin:0 0 10px;">Quy chế mượn tài liệu</h3>
         <p class="rules-desc">
           Mỗi sinh viên được mượn tối đa <strong>05 quyển sách</strong> cùng lúc với thời hạn mượn thông thường là
@@ -261,18 +272,18 @@
         </p>
 
         <div class="rules-box">
-          <span>✓</span>
+          <span class="material-symbols-outlined" style="font-size: 20px;">check_circle</span>
           <span>Gia hạn trực tuyến trước hạn trả 2 ngày trên cổng thông tin</span>
         </div>
 
         <div class="rules-box">
-          <span>🕒</span>
+          <span class="material-symbols-outlined" style="font-size: 20px;">schedule</span>
           <span>Thời gian mở cửa: Thứ Hai - Thứ Bảy (07:30 - 20:30)</span>
         </div>
 
         <button type="button" class="btn-rules" onclick="showLibraryRules()">
           <span>Đọc nội quy chi tiết</span>
-          <span>↗</span>
+          <span class="material-symbols-outlined" style="font-size: 18px;">arrow_outward</span>
         </button>
       </div>
 
@@ -401,7 +412,9 @@
        ========================================================================= -->
   <div id="authGuardOverlay" class="auth-guard-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="authGuardTitle">
     <div class="auth-guard-card">
-      <div class="auth-guard-icon">🔒</div>
+      <div class="auth-guard-icon">
+        <span class="material-symbols-outlined" style="font-size: 30px;">lock</span>
+      </div>
       <h2 class="auth-guard-title" id="authGuardTitle">Yêu cầu đăng nhập</h2>
       <p class="auth-guard-desc">
         Trang thông tin chi tiết ấn bản và lưu thông bản sao vật lý yêu cầu độc giả xác thực tài khoản sinh viên thư viện KS25.
@@ -420,8 +433,8 @@
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.5"></script>
-  <script src="../js/notifications.js?v=2.0"></script>
-  <script src="../js/pages/home.js?v=9.16"></script>
+  <script src="../js/notifications.js?v=2.1"></script>
+  <script src="../js/pages/home.js?v=9.17"></script>
 </body>
 
 </html>

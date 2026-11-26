@@ -26,6 +26,85 @@ var pageSize = 10;
 var currentRejectLoanId = null;
 var activeConfirmCallback = null;
 
+var LOAN_STATUS_OPTIONS = [
+  { value: "all", label: "Tất cả trạng thái" },
+  { value: "pending", label: "Chờ duyệt (PENDING)" },
+  { value: "approved", label: "Sẵn sàng nhận (APPROVED)" },
+  { value: "borrowed", label: "Đang mượn (BORROWED)" },
+  { value: "overdue", label: "Quá hạn (OVERDUE)" },
+  { value: "returned", label: "Đã trả (RETURNED)" },
+  { value: "rejected", label: "Đã từ chối / hủy" }
+];
+
+var RESERVATION_STATUS_OPTIONS = [
+  { value: "all", label: "Tất cả trạng thái" },
+  { value: "READY", label: "Sẵn sàng nhận (READY)" },
+  { value: "WAITING", label: "Đang chờ xếp hàng (WAITING)" },
+  { value: "FULFILLED", label: "Đã giao sách (FULFILLED)" },
+  { value: "CANCELLED", label: "Đã hủy (CANCELLED)" },
+  { value: "EXPIRED", label: "Hết hạn giữ chỗ (EXPIRED)" }
+];
+
+var RESERVATION_STATUS_META = {
+  READY: {
+    badgeClass: "badge-ready",
+    badgeText: "Sẵn sàng nhận",
+    modalSub: "Sẵn sàng giao tại quầy",
+    copyFallback: "Chờ gán bản sao"
+  },
+  WAITING: {
+    badgeClass: "badge-pending",
+    badgeText: "Đang chờ",
+    modalSub: "Đang xếp hàng chờ sách",
+    copyFallback: "Chờ gán bản sao"
+  },
+  FULFILLED: {
+    badgeClass: "badge-preparing",
+    badgeText: "Đã giao sách",
+    modalSub: "Đã hoàn tất giao sách",
+    copyFallback: "Đã giao bản sao"
+  },
+  CANCELLED: {
+    badgeClass: "badge-rejected",
+    badgeText: "Đã hủy",
+    modalSub: "Đơn đặt trước đã hủy",
+    copyFallback: "Đã giải phóng bản sao"
+  },
+  EXPIRED: {
+    badgeClass: "badge-overdue",
+    badgeText: "Hết hạn giữ chỗ",
+    modalSub: "Quá hạn giữ 48 giờ",
+    copyFallback: "Đã chuyển lượt"
+  }
+};
+
+function getReservationStatusInfo(res) {
+  var st = String((res && res.status) || "WAITING").toUpperCase();
+  var base = RESERVATION_STATUS_META[st] || RESERVATION_STATUS_META.WAITING;
+  var qPos = String((res && res.queue_position) || "?");
+  var badgeText = st === "WAITING" ? ("Đang chờ (#" + qPos + ")") : base.badgeText;
+  var modalSub = st === "WAITING" ? ("Đang xếp hàng #" + qPos) : base.modalSub;
+  return {
+    status: st,
+    badgeClass: base.badgeClass,
+    badgeText: badgeText,
+    modalSub: modalSub,
+    copyFallback: base.copyFallback
+  };
+}
+
+function renderStatusFilterOptions(mode, selectedValue) {
+  var statusSelect = document.getElementById("filter-status");
+  if (!statusSelect) return;
+  var opts = mode === "reservations" ? RESERVATION_STATUS_OPTIONS : LOAN_STATUS_OPTIONS;
+  statusSelect.disabled = false;
+  statusSelect.innerHTML = opts.map(function (opt) {
+    return '<option value="' + escapeHtml(opt.value) + '">' + escapeHtml(opt.label) + "</option>";
+  }).join("");
+  var validValues = opts.map(function (o) { return o.value; });
+  statusSelect.value = validValues.indexOf(selectedValue) !== -1 ? selectedValue : "all";
+}
+
 // ------------------------------------------------------------------------------
 // 2. HÀM TIỆN ÍCH ĐỊNH DẠNG & BÁO LỖI
 // ------------------------------------------------------------------------------
@@ -247,7 +326,7 @@ async function loadReservationsFromDatabase(showSuccessToast) {
   if (currentTab === "reservations") renderLoanTable();
 
   try {
-    var rows = await api.get("/reservations/staff/active");
+    var rows = await api.get("/reservations/staff/active", { include_history: true });
     reservationData = Array.isArray(rows) ? rows : [];
     isLoadingReservations = false;
     reservationLoadError = null;
@@ -256,7 +335,7 @@ async function loadReservationsFromDatabase(showSuccessToast) {
     if (currentTab === "reservations") renderLoanTable();
 
     if (showSuccessToast) {
-      showToast("success", "Cập nhật thành công!", "Đã đồng bộ " + reservationData.length + " đơn đặt trước đang hiệu lực.");
+      showToast("success", "Cập nhật thành công!", "Đã đồng bộ " + reservationData.length + " đơn đặt trước từ hệ thống.");
     }
   } catch (err) {
     isLoadingReservations = false;
@@ -401,13 +480,18 @@ function updateCountsAndStats() {
   var tabRej = document.getElementById("count-tab-rejected");
   var tabRes = document.getElementById("count-tab-reservations");
 
+  var activeResCount = reservationData.filter(function (r) {
+    var st = String(r.status || "").toUpperCase();
+    return st === "READY" || st === "WAITING";
+  }).length;
+
   if (tabAll) tabAll.textContent = countAll;
   if (tabPen) tabPen.textContent = countPending;
   if (tabRdy) tabRdy.textContent = countReady;
   if (tabBor) tabBor.textContent = countBorrowed;
   if (tabOver) tabOver.textContent = countOverdue;
   if (tabRej) tabRej.textContent = countRejected;
-  if (tabRes) tabRes.textContent = reservationData.length;
+  if (tabRes) tabRes.textContent = activeResCount;
 }
 
 // ------------------------------------------------------------------------------
@@ -476,6 +560,12 @@ function getFilteredReservations() {
   todayStart.setHours(0, 0, 0, 0);
 
   return reservationData.filter(function (res) {
+    if (currentStatusFilter && currentStatusFilter !== "all") {
+      if (String(res.status || "").toUpperCase() !== String(currentStatusFilter).toUpperCase()) {
+        return false;
+      }
+    }
+
     if (currentSearchKeyword.trim() !== "") {
       var kw = currentSearchKeyword.trim().toLowerCase();
       var code = ("dt-" + String(res.id).padStart(4, "0")).toLowerCase();
@@ -551,11 +641,12 @@ function renderReservationTable(tbody) {
   tbody.innerHTML = "";
 
   if (pageItems.length === 0) {
+    var hasResFilter = currentStatusFilter !== "all" || currentSearchKeyword.trim() !== "" || currentTimeFilter !== "all";
     var trEmpty = document.createElement("tr");
     trEmpty.innerHTML =
       '<td colspan="6" class="table-empty-row">' +
       '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.5;">bookmark_remove</span>' +
-      'Không có đơn đặt trước nào đang chờ nhận tại quầy.' +
+      (hasResFilter ? "Không tìm thấy đơn đặt trước nào phù hợp với bộ lọc." : "Chưa có đơn đặt trước nào trong hệ thống.") +
       '</td>';
     tbody.appendChild(trEmpty);
   } else {
@@ -563,6 +654,8 @@ function renderReservationTable(tbody) {
       var tr = document.createElement("tr");
       var resCode = "DT-" + String(res.id).padStart(4, "0");
       var initialLetter = res.user_name ? res.user_name.trim().charAt(0).toUpperCase() : "U";
+      var info = getReservationStatusInfo(res);
+      var st = info.status;
 
       var tdCode = document.createElement("td");
       tdCode.innerHTML =
@@ -583,32 +676,51 @@ function renderReservationTable(tbody) {
         '</div>';
       tr.appendChild(tdReader);
 
-      var isReady = String(res.status || "").toUpperCase() === "READY";
       var tdDeadline = document.createElement("td");
-      tdDeadline.innerHTML = isReady
-        ? '<div class="appointment-cell">' +
-        '<span class="appointment-time-main"><span class="material-symbols-outlined">event_available</span> Hạn lấy: ' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</span>' +
-        '<span class="appointment-due-sub">Kệ: ' + escapeHtml(res.shelf_location || "Quầy thủ thư") + '</span>' +
-        '</div>'
-        : '<div class="appointment-cell">' +
-        '<span class="appointment-time-main"><span class="material-symbols-outlined">hourglass_top</span> Xếp hàng #' + escapeHtml(String(res.queue_position || "?")) + '</span>' +
-        '<span class="appointment-due-sub">Đang chờ sách trả về kho</span>' +
-        '</div>';
+      if (st === "READY") {
+        tdDeadline.innerHTML =
+          '<div class="appointment-cell">' +
+          '<span class="appointment-time-main"><span class="material-symbols-outlined">event_available</span> Hạn lấy: ' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</span>' +
+          '<span class="appointment-due-sub">Kệ: ' + escapeHtml(res.shelf_location || "Quầy thủ thư") + '</span>' +
+          '</div>';
+      } else if (st === "WAITING") {
+        tdDeadline.innerHTML =
+          '<div class="appointment-cell">' +
+          '<span class="appointment-time-main"><span class="material-symbols-outlined">hourglass_top</span> Xếp hàng #' + escapeHtml(String(res.queue_position || "?")) + '</span>' +
+          '<span class="appointment-due-sub">Đang chờ sách trả về kho</span>' +
+          '</div>';
+      } else if (st === "FULFILLED") {
+        tdDeadline.innerHTML =
+          '<div class="appointment-cell">' +
+          '<span class="appointment-time-main"><span class="material-symbols-outlined">task_alt</span> Đã bàn giao sách</span>' +
+          '<span class="appointment-due-sub">Kệ: ' + escapeHtml(res.shelf_location || "Hoàn tất tại quầy") + '</span>' +
+          '</div>';
+      } else if (st === "EXPIRED") {
+        tdDeadline.innerHTML =
+          '<div class="appointment-cell">' +
+          '<span class="overdue-alert-tag"><span class="material-symbols-outlined" style="font-size: 15px;">event_busy</span> Quá hạn giữ 48h</span>' +
+          '<span class="appointment-due-sub">' + (res.pickup_deadline ? ("Hạn cũ: " + escapeHtml(formatDateVN(res.pickup_deadline))) : "Đã chuyển lượt") + '</span>' +
+          '</div>';
+      } else {
+        tdDeadline.innerHTML =
+          '<div class="appointment-cell">' +
+          '<span class="appointment-time-main"><span class="material-symbols-outlined">cancel</span> Đã hủy giữ chỗ</span>' +
+          '<span class="appointment-due-sub">Đơn đặt trước đã đóng</span>' +
+          '</div>';
+      }
       tr.appendChild(tdDeadline);
 
       var tdBook = document.createElement("td");
       tdBook.innerHTML =
         '<div class="books-summary-cell">' +
-        '<span class="book-count-badge">' + escapeHtml(res.copy_code || "Chờ gán bản sao") + '</span>' +
+        '<span class="book-count-badge">' + escapeHtml(res.copy_code || info.copyFallback) + '</span>' +
         '<span class="book-title-ellipsis" title="' + escapeHtml(res.book_title || "") + '">' + escapeHtml(res.book_title || res.book_isbn) + '</span>' +
         '</div>';
       tr.appendChild(tdBook);
 
       var tdStatus = document.createElement("td");
       tdStatus.style.textAlign = "center";
-      tdStatus.innerHTML = isReady
-        ? '<span class="badge badge-ready">Sẵn sàng nhận</span>'
-        : '<span class="badge badge-pending">Đang chờ (#' + escapeHtml(String(res.queue_position || "?")) + ')</span>';
+      tdStatus.innerHTML = '<span class="badge ' + info.badgeClass + '">' + escapeHtml(info.badgeText) + '</span>';
       tr.appendChild(tdStatus);
 
       var tdActions = document.createElement("td");
@@ -625,7 +737,7 @@ function renderReservationTable(tbody) {
       });
       actionsWrap.appendChild(btnDetail);
 
-      if (isReady) {
+      if (st === "READY") {
         var btnNotifyEmail = document.createElement("button");
         btnNotifyEmail.type = "button";
         btnNotifyEmail.className = "btn-icon-renew";
@@ -647,15 +759,17 @@ function renderReservationTable(tbody) {
         actionsWrap.appendChild(btnFulfill);
       }
 
-      var btnCancelRes = document.createElement("button");
-      btnCancelRes.type = "button";
-      btnCancelRes.className = "btn-icon-reject";
-      btnCancelRes.title = "Hủy giữ chỗ đặt trước";
-      btnCancelRes.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">close</span>';
-      btnCancelRes.addEventListener("click", function () {
-        confirmCancelReservation(res.id);
-      });
-      actionsWrap.appendChild(btnCancelRes);
+      if (st === "READY" || st === "WAITING") {
+        var btnCancelRes = document.createElement("button");
+        btnCancelRes.type = "button";
+        btnCancelRes.className = "btn-icon-reject";
+        btnCancelRes.title = "Hủy giữ chỗ đặt trước";
+        btnCancelRes.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">close</span>';
+        btnCancelRes.addEventListener("click", function () {
+          confirmCancelReservation(res.id);
+        });
+        actionsWrap.appendChild(btnCancelRes);
+      }
 
       tdActions.appendChild(actionsWrap);
       tr.appendChild(tdActions);
@@ -897,10 +1011,16 @@ function updateTableHeaderTitle(totalItems) {
   if (activeFilter === "reservations") {
     var readyCnt = reservationData.filter(function (r) { return String(r.status || "").toUpperCase() === "READY"; }).length;
     var waitingCnt = reservationData.filter(function (r) { return String(r.status || "").toUpperCase() === "WAITING"; }).length;
-    titleEl.textContent = "Quản lý đặt trước (Sẵn sàng nhận & Hàng chờ)";
-    badgeEl.textContent = totalItems === 0
-      ? "0 đơn"
-      : (readyCnt + " sẵn sàng · " + waitingCnt + " xếp hàng");
+    var historyCnt = reservationData.length - readyCnt - waitingCnt;
+    titleEl.textContent = "Quản lý đặt trước sách (5 trạng thái)";
+    if (totalItems === 0) {
+      badgeEl.textContent = "0 đơn";
+    } else if (currentStatusFilter !== "all") {
+      badgeEl.textContent = totalItems + " đơn (" + currentStatusFilter + ")";
+    } else {
+      badgeEl.textContent = readyCnt + " sẵn sàng · " + waitingCnt + " xếp hàng" +
+        (historyCnt > 0 ? (" · " + historyCnt + " lịch sử") : "");
+    }
   } else if (activeFilter === "pending") {
     titleEl.textContent = "Phiếu đặt mượn trực tuyến chờ duyệt";
     badgeEl.textContent = totalItems + " chờ xử lý";
@@ -1207,10 +1327,11 @@ function openReservationDetailModal(resId) {
   var resCode = "DT-" + String(res.id).padStart(4, "0");
   document.getElementById("modal-detail-title").textContent = "Chi tiết Đơn đặt trước #" + resCode;
 
-  var isReady = String(res.status || "").toUpperCase() === "READY";
+  var info = getReservationStatusInfo(res);
+  var st = info.status;
   var badgeEl = document.getElementById("modal-detail-badge");
-  badgeEl.className = isReady ? "badge badge-ready" : "badge badge-pending";
-  badgeEl.textContent = isReady ? "Sẵn sàng nhận" : ("Đang chờ (#" + (res.queue_position || "?") + ")");
+  badgeEl.className = "badge " + info.badgeClass;
+  badgeEl.textContent = info.badgeText;
 
   var rejectBanner = document.getElementById("modal-rejected-banner");
   if (rejectBanner) rejectBanner.style.display = "none";
@@ -1227,16 +1348,24 @@ function openReservationDetailModal(resId) {
   var validBadge = modal.querySelector(".reader-valid-badge");
   if (validBadge) {
     validBadge.style.display = "inline-flex";
-    validBadge.innerHTML = isReady
-      ? '<span class="material-symbols-outlined" style="font-size: 16px;">bookmark_added</span><span>Sẵn sàng giao tại quầy</span>'
-      : '<span class="material-symbols-outlined" style="font-size: 16px;">hourglass_top</span><span>Đang xếp hàng #' + escapeHtml(String(res.queue_position || "?")) + '</span>';
+    var badgeIcon = st === "READY" ? "bookmark_added" : (st === "FULFILLED" ? "task_alt" : (st === "WAITING" ? "hourglass_top" : "info"));
+    validBadge.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">' + badgeIcon + '</span><span>' + escapeHtml(info.modalSub) + '</span>';
   }
 
-  document.getElementById("modal-books-count-title").textContent = isReady
+  document.getElementById("modal-books-count-title").textContent = st === "READY"
     ? "ẤN PHẨM ĐANG GIỮ CHỖ TẠI QUẦY (1 CUỐN)"
-    : "ẤN PHẨM ĐỘC GIẢ ĐANG ĐẶT TRƯỚC (1 CUỐN)";
+    : "THÔNG TIN ẤN PHẨM ĐẶT TRƯỚC (1 CUỐN)";
   var booksListContainer = document.getElementById("modal-books-list");
   booksListContainer.innerHTML = "";
+
+  var availHtml = '<span class="book-item-availability unavailable"><span class="material-symbols-outlined" style="font-size: 14px;">info</span> ' + escapeHtml(info.modalSub) + '</span>';
+  if (st === "READY") {
+    availHtml = '<span class="book-item-availability available"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đã giữ chỗ cho đơn đặt trước</span>';
+  } else if (st === "FULFILLED") {
+    availHtml = '<span class="book-item-availability available"><span class="material-symbols-outlined" style="font-size: 14px;">task_alt</span> Đã giao sách cho độc giả</span>';
+  } else if (st === "WAITING") {
+    availHtml = '<span class="book-item-availability unavailable"><span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span> Đang chờ có bản sao trống để giữ chỗ</span>';
+  }
 
   var card = document.createElement("div");
   card.className = "book-item-card";
@@ -1247,21 +1376,27 @@ function openReservationDetailModal(resId) {
     '<div class="book-item-details">' +
     '<div class="book-item-title">' + escapeHtml(res.book_title || res.book_isbn) + '</div>' +
     '<div class="book-item-meta">' +
-    '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(res.copy_code || "Chưa gán") + '</span> • ' +
+    '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(res.copy_code || info.copyFallback) + '</span> • ' +
     '<strong>Vị trí:</strong> ' + escapeHtml(res.shelf_location || "Quầy thủ thư") +
     (res.book_author ? ' • <strong>Tác giả:</strong> ' + escapeHtml(res.book_author) : '') +
     '</div>' +
-    (isReady
-      ? '<span class="book-item-availability available"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đã giữ chỗ cho đơn đặt trước</span>'
-      : '<span class="book-item-availability unavailable"><span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span> Đang chờ có bản sao trống để giữ chỗ</span>') +
+    availHtml +
     '</div>';
   booksListContainer.appendChild(card);
 
   var retentionEl = document.getElementById("modal-shelf-retention-text");
   if (retentionEl) {
-    retentionEl.innerHTML = isReady
-      ? 'Hạn chót độc giả đến nhận sách: <strong>' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</strong>. Quá hạn sẽ tự động nhường người kế tiếp.'
-      : 'Đơn đang ở vị trí hàng chờ <strong>#' + escapeHtml(String(res.queue_position || "?")) + '</strong>. Sẽ tự động chuyển sang Sẵn sàng nhận khi có bản sao trả về kho.';
+    if (st === "READY") {
+      retentionEl.innerHTML = 'Hạn chót độc giả đến nhận sách: <strong>' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</strong>. Quá hạn sẽ tự động nhường người kế tiếp.';
+    } else if (st === "WAITING") {
+      retentionEl.innerHTML = 'Đơn đang ở vị trí hàng chờ <strong>#' + escapeHtml(String(res.queue_position || "?")) + '</strong>. Sẽ tự động chuyển sang Sẵn sàng nhận khi có bản sao trả về kho.';
+    } else if (st === "FULFILLED") {
+      retentionEl.innerHTML = 'Đơn đặt trước đã hoàn tất bàn giao sách và tạo phiếu mượn tại quầy.';
+    } else if (st === "EXPIRED") {
+      retentionEl.innerHTML = 'Đơn đã quá hạn giữ chỗ 48 giờ nên hệ thống tự động chuyển sang <strong>EXPIRED</strong> và nhường lượt.';
+    } else {
+      retentionEl.innerHTML = 'Đơn đặt trước đã bị hủy và giải phóng giữ chỗ.';
+    }
   }
 
   var readerNoteEl = document.getElementById("modal-reader-note-text");
@@ -1275,17 +1410,19 @@ function openReservationDetailModal(resId) {
   var footerEl = document.getElementById("modal-detail-footer");
   footerEl.innerHTML = "";
 
-  var btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "btn-outline-danger";
-  btnCancel.innerHTML = '<span class="material-symbols-outlined">close</span><span>Hủy giữ chỗ</span>';
-  btnCancel.addEventListener("click", function () {
-    closeDetailModal();
-    confirmCancelReservation(res.id);
-  });
-  footerEl.appendChild(btnCancel);
+  if (st === "READY" || st === "WAITING") {
+    var btnCancel = document.createElement("button");
+    btnCancel.type = "button";
+    btnCancel.className = "btn-outline-danger";
+    btnCancel.innerHTML = '<span class="material-symbols-outlined">close</span><span>Hủy giữ chỗ</span>';
+    btnCancel.addEventListener("click", function () {
+      closeDetailModal();
+      confirmCancelReservation(res.id);
+    });
+    footerEl.appendChild(btnCancel);
+  }
 
-  if (isReady) {
+  if (st === "READY") {
     var btnEmailModal = document.createElement("button");
     btnEmailModal.type = "button";
     btnEmailModal.className = "btn-secondary-neutral";
@@ -1304,6 +1441,13 @@ function openReservationDetailModal(resId) {
       confirmFulfillReservation(res.id);
     });
     footerEl.appendChild(btnFulfill);
+  } else if (st !== "WAITING") {
+    var btnCloseRes = document.createElement("button");
+    btnCloseRes.type = "button";
+    btnCloseRes.className = "btn-secondary-neutral";
+    btnCloseRes.textContent = "Đóng";
+    btnCloseRes.addEventListener("click", closeDetailModal);
+    footerEl.appendChild(btnCloseRes);
   }
 
   modal.classList.add("active");
@@ -1763,7 +1907,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Khởi tạo sự kiện Tabs & Filter
   var tabButtons = document.querySelectorAll("#filter-tabs .tab-btn");
   var statusSelect = document.getElementById("filter-status");
-  if (statusSelect) statusSelect.value = currentStatusFilter;
+  renderStatusFilterOptions(currentTab === "reservations" ? "reservations" : "loans", currentStatusFilter);
 
   tabButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -1772,16 +1916,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       currentTab = btn.getAttribute("data-tab") || "all";
       if (currentTab === "reservations") {
         currentStatusFilter = "all";
-        if (statusSelect) {
-          statusSelect.value = "all";
-          statusSelect.disabled = true;
-        }
+        renderStatusFilterOptions("reservations", "all");
       } else {
         currentStatusFilter = currentTab === "ready" ? "approved" : currentTab;
-        if (statusSelect) {
-          statusSelect.disabled = false;
-          statusSelect.value = currentStatusFilter;
-        }
+        renderStatusFilterOptions("loans", currentStatusFilter);
       }
       currentPage = 1;
       renderLoanTable();
@@ -1792,7 +1930,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     statusSelect.addEventListener("change", function () {
       statusSelect.disabled = false;
       currentStatusFilter = statusSelect.value;
-      syncTabsWithStatus(currentStatusFilter);
+      if (currentTab !== "reservations") {
+        syncTabsWithStatus(currentStatusFilter);
+      }
       currentPage = 1;
       renderLoanTable();
     });
@@ -1821,7 +1961,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     btnApply.addEventListener("click", function () {
       if (statusSelect) {
         currentStatusFilter = statusSelect.value;
-        syncTabsWithStatus(currentStatusFilter);
+        if (currentTab !== "reservations") {
+          syncTabsWithStatus(currentStatusFilter);
+        }
       }
       if (timeSelect) currentTimeFilter = timeSelect.value;
       if (searchInput) currentSearchKeyword = searchInput.value;
@@ -1835,17 +1977,23 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (btnReset) {
     btnReset.addEventListener("click", function () {
       if (searchInput) searchInput.value = "";
-      if (statusSelect) statusSelect.value = "all";
       if (timeSelect) timeSelect.value = "all";
 
       currentSearchKeyword = "";
       currentStatusFilter = "all";
       currentTimeFilter = "all";
-      syncTabsWithStatus("all");
       currentPage = 1;
 
-      renderLoanTable();
-      showToast("info", "Đã đặt lại bộ lọc", "Hiển thị toàn bộ phiếu mượn trực tuyến.");
+      if (currentTab === "reservations") {
+        renderStatusFilterOptions("reservations", "all");
+        renderLoanTable();
+        showToast("info", "Đã đặt lại bộ lọc", "Hiển thị toàn bộ đơn đặt trước (5 trạng thái).");
+      } else {
+        renderStatusFilterOptions("loans", "all");
+        syncTabsWithStatus("all");
+        renderLoanTable();
+        showToast("info", "Đã đặt lại bộ lọc", "Hiển thị toàn bộ phiếu mượn trực tuyến.");
+      }
     });
   }
 

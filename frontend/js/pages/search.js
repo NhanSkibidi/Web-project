@@ -192,7 +192,9 @@ function renderSearchResults(books) {
       ? book.authors[0].name
       : (book.author || "");
     const shelfTag = book.shelf_location || book.shelfLocation || "";
-    const shelfTagLabel = shelfTag ? `🏷️ ${shelfTag}` : "";
+    const shelfBadgeHtml = shelfTag
+      ? `<span class="book-badge-shelf"><span class="material-symbols-outlined" style="font-size: 13px;">sell</span><span>${escapeHtml(shelfTag)}</span></span>`
+      : "";
     const availCopies = typeof book.available_copies === "number" ? book.available_copies : (book.copies || 0);
     const totalCopies = typeof book.total_copies === "number" ? book.total_copies : (book.totalCopies || 0);
     const isAvailable = availCopies > 0;
@@ -224,7 +226,7 @@ function renderSearchResults(books) {
             ? `<span class="book-badge-avail">${escapeHtml(statusText)}</span>` 
             : `<span class="book-badge-borrowed">${escapeHtml(statusText)}</span>`
           }
-          ${shelfTagLabel ? `<span class="book-badge-shelf">${escapeHtml(shelfTagLabel)}</span>` : ""}
+          ${shelfBadgeHtml}
         </div>
 
         <!-- Thông tin sách -->
@@ -234,9 +236,7 @@ function renderSearchResults(books) {
           </h3>
           
           <div class="book-card-author">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
+            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-muted);">person</span>
             <span>${escapeHtml(authorName)}</span>
           </div>
 
@@ -254,9 +254,7 @@ function renderSearchResults(books) {
                 onclick="handleBorrowOnline('${bookIdAttr}')"
                 title="Mượn trực tuyến về thẻ thư viện"
               >
-                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 2H6c-1.2 0-2 .8-2 2v16c0 1.2.8 2 2 2h13c.6 0 1-.4 1-1s-.4-1-1-1H6c-.6 0-1-.4-1-1s.4-1 1-1h13c1.2 0 2-.8 2-2V4c0-1.2-.8-2-2-2zm-1 14H6V4h12v12z"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 17px;">shopping_bag</span>
                 <span>Mượn trực tuyến</span>
               </button>
             ` : hasPhysicalCopies ? `
@@ -266,9 +264,7 @@ function renderSearchResults(books) {
                 onclick="handleReserveBook('${bookIdAttr}')"
                 title="Đặt chỗ trước cho ấn bản này"
               >
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 17px;">hourglass_top</span>
                 <span>Đặt trước</span>
               </button>
             ` : `
@@ -289,9 +285,7 @@ function renderSearchResults(books) {
               onclick="toggleBookmark('${bookIdAttr}', this)"
               title="${isBookmarked ? 'Bỏ lưu khỏi danh sách' : 'Lưu vào danh sách đọc'}"
             >
-              <svg width="16" height="16" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-              </svg>
+              <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' ${isBookmarked ? 1 : 0};">bookmark</span>
             </button>
           </div>
         </div>
@@ -324,7 +318,7 @@ function renderPagination(total, totalPages) {
 
   let pagesHtml = "";
   // Prev
-  pagesHtml += `<button type="button" class="page-btn ${cur <= 1 ? 'disabled' : ''}" onclick="goToPage('prev')" ${cur <= 1 ? 'disabled' : ''}>&lt; Trang trước</button>`;
+  pagesHtml += `<button type="button" class="page-btn ${cur <= 1 ? 'disabled' : ''}" onclick="goToPage('prev')" ${cur <= 1 ? 'disabled' : ''} style="gap: 4px;"><span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span><span>Trang trước</span></button>`;
 
   // First
   pagesHtml += `<button type="button" class="page-btn ${cur === 1 ? 'active' : ''}" onclick="goToPage(1)">1</button>`;
@@ -346,7 +340,7 @@ function renderPagination(total, totalPages) {
   }
 
   // Next
-  pagesHtml += `<button type="button" class="page-btn ${cur >= max ? 'disabled' : ''}" onclick="goToPage('next')" ${cur >= max ? 'disabled' : ''}>Trang kế &gt;</button>`;
+  pagesHtml += `<button type="button" class="page-btn ${cur >= max ? 'disabled' : ''}" onclick="goToPage('next')" ${cur >= max ? 'disabled' : ''} style="gap: 4px;"><span>Trang kế</span><span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span></button>`;
 
   container.innerHTML = pagesHtml;
 }
@@ -637,12 +631,12 @@ function goToPage(page) {
 // ---------- Toast ----------
 function getToastIconSvg(type) {
   if (type === "warning") {
-    return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    return `<span class="material-symbols-outlined" style="font-size: 19px;" aria-hidden="true">schedule</span>`;
   }
   if (type === "info") {
-    return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    return `<span class="material-symbols-outlined" style="font-size: 19px;" aria-hidden="true">info</span>`;
   }
-  return `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+  return `<span class="material-symbols-outlined" style="font-size: 19px;" aria-hidden="true">check</span>`;
 }
 
 function dismissSearchToast(toastEl) {
@@ -678,7 +672,7 @@ function showSearchToast({
     ? `<div class="search-toast-meta">${chips.map((c) => `<span class="search-toast-chip">${escapeHtml(c)}</span>`).join("")}</div>`
     : "";
   const actionHtml = actionText && actionHref
-    ? `<div class="search-toast-actions"><a href="${escapeHtml(actionHref)}" class="search-toast-link">${escapeHtml(actionText)} <span aria-hidden="true">→</span></a></div>`
+    ? `<div class="search-toast-actions"><a href="${escapeHtml(actionHref)}" class="search-toast-link" style="display:inline-flex; align-items:center; gap:4px;"><span>${escapeHtml(actionText)}</span><span class="material-symbols-outlined" style="font-size: 15px;" aria-hidden="true">arrow_forward</span></a></div>`
     : "";
 
   toast.innerHTML = `
@@ -690,9 +684,7 @@ function showSearchToast({
       ${actionHtml}
     </div>
     <button type="button" class="search-toast-close" aria-label="Đóng thông báo">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
+      <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
     </button>
     <div class="search-toast-progress" style="animation-duration: ${duration}ms"></div>
   `;
@@ -873,15 +865,15 @@ function toggleBookmark(isbn, buttonEl) {
     savedBookmarks.delete(isbn);
     buttonEl.classList.remove("bookmarked");
     buttonEl.title = "Lưu vào danh sách đọc";
-    const svg = buttonEl.querySelector("svg");
-    if (svg) svg.setAttribute("fill", "none");
+    const iconEl = buttonEl.querySelector(".material-symbols-outlined");
+    if (iconEl) iconEl.style.fontVariationSettings = "'FILL' 0";
     showSearchToast({ type: "info", title: "Đã bỏ lưu ấn bản", message: `Đã xóa ${bookLabel} khỏi danh sách đọc của bạn.`, duration: 2800 });
   } else {
     savedBookmarks.add(isbn);
     buttonEl.classList.add("bookmarked");
     buttonEl.title = "Bỏ lưu khỏi danh sách";
-    const svg = buttonEl.querySelector("svg");
-    if (svg) svg.setAttribute("fill", "currentColor");
+    const iconEl = buttonEl.querySelector(".material-symbols-outlined");
+    if (iconEl) iconEl.style.fontVariationSettings = "'FILL' 1";
     showSearchToast({ type: "info", title: "Đã lưu vào danh sách đọc", message: `Bạn có thể xem lại ${bookLabel} bất cứ lúc nào.`, duration: 2800 });
   }
 }

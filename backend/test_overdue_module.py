@@ -357,6 +357,30 @@ def test_api_endpoints():
     assert res.json()["success"] is True
     print(" -> POST /api/loans/notifications/mark-all-read: 200 OK")
 
+    # 6. Sang trang khác gọi lại GET /api/loans/notifications/my -> không tự sinh lại thông báo chưa đọc
+    res_after_all = client.get("/api/loans/notifications/my", headers=reader1_headers)
+    assert res_after_all.status_code == 200, res_after_all.text
+    after_data = res_after_all.json()
+    assert after_data["unread_count"] == 0, f"Expected unread_count=0 after mark-all-read, got {after_data}"
+    assert after_data["total"] == len(data["items"]), "Should not duplicate notifications on reload"
+
+    # 7. Kiểm tra độc giả 2 đánh dấu đọc 1 notification DUE_SOON rồi load lại
+    reader2_headers = {"Authorization": f"Bearer {create_access_token(3)}"}
+    r2_first = client.get("/api/loans/notifications/my", headers=reader2_headers)
+    assert r2_first.status_code == 200, r2_first.text
+    r2_data = r2_first.json()
+    assert r2_data["unread_count"] == 1
+    r2_notif_id = r2_data["items"][0]["id"]
+
+    r2_patch = client.patch(f"/api/loans/notifications/{r2_notif_id}/read", headers=reader2_headers)
+    assert r2_patch.status_code == 200 and r2_patch.json()["success"] is True
+
+    r2_reload = client.get("/api/loans/notifications/my", headers=reader2_headers)
+    assert r2_reload.status_code == 200, r2_reload.text
+    assert r2_reload.json()["unread_count"] == 0, f"Expected unread_count=0 after PATCH read, got {r2_reload.json()}"
+    assert r2_reload.json()["total"] == r2_data["total"], "Should not duplicate DUE_SOON notification on reload"
+    print(" -> Notification read persistence across page reloads: PASSED")
+
 
 if __name__ == "__main__":
     try:

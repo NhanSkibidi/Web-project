@@ -29,7 +29,7 @@
   };
   const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const icons = () => window.lucide && window.lucide.createIcons();
+  const icons = () => {};
 
   function parseTimeMs(val) {
     if (!val) return null;
@@ -189,8 +189,9 @@
         <div class="empty">
           <strong>Vui lòng đăng nhập để xem phiếu mượn</strong>
           <p style="margin: 8px 0 18px;">Bạn cần đăng nhập tài khoản độc giả KS25 để theo dõi danh sách phiếu mượn từ hệ thống.</p>
-          <a href="login.html#login" class="btn btn--solid" id="loanSlipLoginBtn" style="display: inline-flex; text-decoration: none;">
-            Đăng nhập ngay →
+          <a href="login.html#login" class="btn btn--solid" id="loanSlipLoginBtn" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+            <span>Đăng nhập ngay</span>
+            <span class="material-symbols-outlined" style="font-size: 17px;">arrow_forward</span>
           </a>
         </div>
       `;
@@ -324,7 +325,7 @@
         } else if (b.hasWaitingReservation) {
           actionPart = `<span class="badge badge--warn" style="margin-left:6px;" title="Đầu sách đang có người đặt trước">Có người đặt trước</span>`;
         } else if (!itemOverdue && b.itemId) {
-          actionPart = `<div style="margin-top:8px;"><button type="button" class="btn btn--outline" style="padding:4px 10px; font-size:12.5px;" data-act="renew-item" data-item-id="${b.itemId}"><i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>Gia hạn cuốn này (+7 ngày)</button></div>`;
+          actionPart = `<div style="margin-top:8px;"><button type="button" class="btn btn--outline" style="padding:4px 10px; font-size:12.5px;" data-act="renew-item" data-item-id="${b.itemId}"><span class="material-symbols-outlined" style="font-size:15px;">autorenew</span>Gia hạn cuốn này (+7 ngày)</button></div>`;
         }
         itemActionHtml = `<p class="book__code" style="margin-top:4px;">Gia hạn: <b>${b.renewalCount}/1</b>${dueText}${b.renewalCount >= 1 || b.hasWaitingReservation ? actionPart : ''}</p>${b.renewalCount < 1 && !b.hasWaitingReservation ? actionPart : ''}`;
       }
@@ -376,7 +377,7 @@
         badge = '<span class="badge badge--ok badge--dot">Đang mượn</span>';
       }
 
-      right = `<i data-lucide="calendar"></i><span>Hạn trả:</span><span class="mono">${fmtDate(l.dueAt)}</span>${dueBadge(l)}`;
+      right = `<span class="material-symbols-outlined">calendar_today</span><span>Hạn trả:</span><span class="mono">${fmtDate(l.dueAt)}</span>${dueBadge(l)}`;
       const wholeSlipRenewDisabled = l.renewed || d < 0 || l.hasWaitingReservation;
       const wholeSlipRenewTitle = d < 0
         ? 'Sách đã quá hạn, không thể gia hạn online'
@@ -385,44 +386,44 @@
           : l.renewed
             ? 'Có sách trong phiếu đã đạt giới hạn gia hạn 1/1'
             : '';
-      foot = `<span class="meta-text"><i data-lucide="clock"></i><span>Mượn ngày <b class="mono">${fmtDate(l.borrowedAt)}</b> tại ${esc(l.place)}</span></span>
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">schedule</span><span>Mượn ngày <b class="mono">${fmtDate(l.borrowedAt)}</b> tại ${esc(l.place)}</span></span>
         <div class="actions">
-          <button class="btn btn--outline" data-act="renew" ${wholeSlipRenewDisabled ? 'disabled title="' + esc(wholeSlipRenewTitle) + '"' : ''}><i data-lucide="refresh-cw"></i>Gia hạn cả phiếu (+7 ngày)</button>
-          <button class="btn btn--icon" data-act="print" aria-label="In phiếu" title="In phiếu"><i data-lucide="printer"></i></button></div>`;
+          <button class="btn btn--outline" data-act="renew" ${wholeSlipRenewDisabled ? 'disabled title="' + esc(wholeSlipRenewTitle) + '"' : ''}><span class="material-symbols-outlined">autorenew</span>Gia hạn cả phiếu (+7 ngày)</button>
+          <button class="btn btn--icon" data-act="print" aria-label="In phiếu" title="In phiếu"><span class="material-symbols-outlined">print</span></button></div>`;
     } else if (l.status === 'pending') {
       badge = '<span class="badge badge--warn badge--dot">Chờ duyệt</span>';
       const today = new Date(l.submittedAt).toDateString() === new Date().toDateString();
-      right = `<i data-lucide="clock"></i><span>Gửi lúc:</span><span class="mono">${fmtTime(l.submittedAt)} ${today ? 'hôm nay' : fmtDate(l.submittedAt)}</span>`;
-      note = `<div class="note"><i data-lucide="clock"></i><div><h3>Đang chờ thủ thư duyệt yêu cầu</h3><p>Bạn sẽ nhận được thông báo khi thủ thư xác nhận và chuẩn bị sách tại quầy mượn Tầng 1.</p></div></div>`;
-      foot = `<span class="meta-text"><i data-lucide="info"></i><span>${esc(l.place)}</span></span>
-        <div class="actions"><button class="btn btn--danger" data-act="cancel"><i data-lucide="x"></i>Hủy yêu cầu</button></div>`;
+      right = `<span class="material-symbols-outlined">schedule</span><span>Gửi lúc:</span><span class="mono">${fmtTime(l.submittedAt)} ${today ? 'hôm nay' : fmtDate(l.submittedAt)}</span>`;
+      note = `<div class="note"><span class="material-symbols-outlined">schedule</span><div><h3>Đang chờ thủ thư duyệt yêu cầu</h3><p>Bạn sẽ nhận được thông báo khi thủ thư xác nhận và chuẩn bị sách tại quầy mượn Tầng 1.</p></div></div>`;
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">info</span><span>${esc(l.place)}</span></span>
+        <div class="actions"><button class="btn btn--danger" data-act="cancel"><span class="material-symbols-outlined">close</span>Hủy yêu cầu</button></div>`;
     } else if (l.status === 'approved') {
       badge = '<span class="badge badge--ok badge--dot">Đã duyệt · Chờ nhận</span>';
-      right = `<i data-lucide="clock"></i><span>Tạo lúc:</span><span class="mono">${fmtTime(l.submittedAt)} ${fmtDate(l.submittedAt)}</span>`;
-      note = `<div class="note note--done"><i data-lucide="check-circle-2"></i><div><h3>Phiếu mượn đã được thủ thư duyệt</h3><p>Vui lòng mang Thẻ sinh viên / Thẻ thư viện đến quầy thủ thư để nhận sách.</p></div></div>`;
-      foot = `<span class="meta-text"><i data-lucide="info"></i><span>${esc(l.place)}</span></span>
-        <div class="actions"><button class="btn btn--icon" data-act="print" aria-label="In phiếu" title="In phiếu"><i data-lucide="printer"></i></button></div>`;
+      right = `<span class="material-symbols-outlined">schedule</span><span>Tạo lúc:</span><span class="mono">${fmtTime(l.submittedAt)} ${fmtDate(l.submittedAt)}</span>`;
+      note = `<div class="note note--done"><span class="material-symbols-outlined">check_circle</span><div><h3>Phiếu mượn đã được thủ thư duyệt</h3><p>Vui lòng mang Thẻ sinh viên / Thẻ thư viện đến quầy thủ thư để nhận sách.</p></div></div>`;
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">info</span><span>${esc(l.place)}</span></span>
+        <div class="actions"><button class="btn btn--icon" data-act="print" aria-label="In phiếu" title="In phiếu"><span class="material-symbols-outlined">print</span></button></div>`;
     } else if (l.status === 'rejected') {
       badge = '<span class="badge badge--danger badge--dot">Từ chối</span>';
-      right = `<i data-lucide="calendar"></i><span>Ngày gửi:</span><span class="mono">${fmtDate(l.submittedAt)}</span>`;
-      note = `<div class="note" style="background:#fef2f2; border-color:#fecaca; color:#991b1b;"><i data-lucide="alert-circle"></i><div><h3>Yêu cầu mượn không được duyệt</h3><p>${esc(l.rejectReason || 'Vui lòng liên hệ quầy thủ thư để biết thêm chi tiết.')}</p></div></div>`;
-      foot = `<span class="meta-text"><i data-lucide="info"></i><span>${esc(l.place)}</span></span>
-        <div class="actions"><button class="btn btn--solid" data-act="rebook"><i data-lucide="book-open"></i>Mượn lại</button></div>`;
+      right = `<span class="material-symbols-outlined">calendar_today</span><span>Ngày gửi:</span><span class="mono">${fmtDate(l.submittedAt)}</span>`;
+      note = `<div class="note" style="background:#fef2f2; border-color:#fecaca; color:#991b1b;"><span class="material-symbols-outlined" style="color:#dc2626;">error</span><div><h3>Yêu cầu mượn không được duyệt</h3><p>${esc(l.rejectReason || 'Vui lòng liên hệ quầy thủ thư để biết thêm chi tiết.')}</p></div></div>`;
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">info</span><span>${esc(l.place)}</span></span>
+        <div class="actions"><button class="btn btn--solid" data-act="rebook"><span class="material-symbols-outlined">menu_book</span>Mượn lại</button></div>`;
     } else if (l.status === 'cancelled') {
       badge = '<span class="badge badge--gray badge--dot">Đã hủy</span>';
-      right = `<i data-lucide="calendar"></i><span>Ngày tạo:</span><span class="mono">${fmtDate(l.submittedAt)}</span>`;
-      note = `<div class="note" style="background:#f5f3f0; border-color:#e6e2d8;"><i data-lucide="x-circle"></i><div><h3>Yêu cầu mượn đã được hủy</h3><p>Các bản sao giữ chỗ đã được mở lại cho bạn đọc khác.</p></div></div>`;
-      foot = `<span class="meta-text"><i data-lucide="info"></i><span>${esc(l.place)}</span></span>
-        <div class="actions"><button class="btn btn--solid" data-act="rebook"><i data-lucide="book-open"></i>Mượn lại</button></div>`;
+      right = `<span class="material-symbols-outlined">calendar_today</span><span>Ngày tạo:</span><span class="mono">${fmtDate(l.submittedAt)}</span>`;
+      note = `<div class="note" style="background:#f5f3f0; border-color:#e6e2d8;"><span class="material-symbols-outlined" style="color:var(--muted);">cancel</span><div><h3>Yêu cầu mượn đã được hủy</h3><p>Các bản sao giữ chỗ đã được mở lại cho bạn đọc khác.</p></div></div>`;
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">info</span><span>${esc(l.place)}</span></span>
+        <div class="actions"><button class="btn btn--solid" data-act="rebook"><span class="material-symbols-outlined">menu_book</span>Mượn lại</button></div>`;
     } else {
       badge = '<span class="badge badge--gray badge--dot">Đã trả</span>';
       const returnBadge = l.onTime
         ? '<span class="badge badge--ok">Đúng hạn</span>'
         : `<span class="badge badge--danger">Trễ ${l.overdueDaysFromApi || ''} ngày</span>`;
-      right = `<i data-lucide="check"></i><span>Ngày trả:</span><span class="mono">${fmtDate(l.returnedAt)}</span>${returnBadge}`;
-      note = `<div class="note note--done"><i data-lucide="check-circle-2"></i><div><h3>Đã hoàn tất trả sách</h3><p>${l.onTime ? 'Ghi nhận hoàn trả đúng hạn tại hệ thống thư viện KS25.' : `Hoàn trả trễ ${l.overdueDaysFromApi || 0} ngày.`}</p></div></div>`;
-      foot = `<span class="meta-text"><i data-lucide="file-text"></i><span>Mã phiếu: <b class="mono">${esc(l.id)}</b> &bull; ${esc(l.place)}</span></span>
-        <div class="actions"><button class="btn btn--solid" data-act="rebook"><i data-lucide="book-open"></i>Mượn lại</button></div>`;
+      right = `<span class="material-symbols-outlined">check_circle</span><span>Ngày trả:</span><span class="mono">${fmtDate(l.returnedAt)}</span>${returnBadge}`;
+      note = `<div class="note note--done"><span class="material-symbols-outlined">check_circle</span><div><h3>Đã hoàn tất trả sách</h3><p>${l.onTime ? 'Ghi nhận hoàn trả đúng hạn tại hệ thống thư viện KS25.' : `Hoàn trả trễ ${l.overdueDaysFromApi || 0} ngày.`}</p></div></div>`;
+      foot = `<span class="meta-text"><span class="material-symbols-outlined">receipt_long</span><span>Mã phiếu: <b class="mono">${esc(l.id)}</b> &bull; ${esc(l.place)}</span></span>
+        <div class="actions"><button class="btn btn--solid" data-act="rebook"><span class="material-symbols-outlined">menu_book</span>Mượn lại</button></div>`;
     }
 
     return `<article class="slip" data-id="${esc(l.id)}">
@@ -458,8 +459,8 @@
     const slice = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     $('#slips').innerHTML = slice.length ? slice.map(slipHTML).join('')
       : '<div class="empty"><strong>Không tìm thấy phiếu mượn phù hợp</strong>Thử đổi từ khóa, chọn tab khác hoặc tạo phiếu mượn mới từ giỏ sách.</div>';
-    $('#pager').innerHTML = `<button data-page="-1" aria-label="Trang trước" ${page <= 1 ? 'disabled' : ''}><i data-lucide="chevron-left"></i></button>
-      <span>${page} / ${pages}</span><button data-page="1" aria-label="Trang sau" ${page >= pages ? 'disabled' : ''}><i data-lucide="chevron-right"></i></button>`;
+    $('#pager').innerHTML = `<button data-page="-1" aria-label="Trang trước" ${page <= 1 ? 'disabled' : ''}><span class="material-symbols-outlined">chevron_left</span></button>
+      <span>${page} / ${pages}</span><button data-page="1" aria-label="Trang sau" ${page >= pages ? 'disabled' : ''}><span class="material-symbols-outlined">chevron_right</span></button>`;
   }
 
   function render() {
@@ -471,13 +472,13 @@
   }
 
   /* ---------- Toast ---------- */
-  const ICON = { success: 'check', error: 'alert-circle', info: 'info' };
+  const ICON = { success: 'check', error: 'error', info: 'info' };
   function toast(type, title, msg) {
     const el = document.createElement('div');
     el.className = `toast t-${type}`;
-    el.innerHTML = `<span class="toast__icon"><i data-lucide="${ICON[type] || 'info'}"></i></span>
+    el.innerHTML = `<span class="toast__icon"><span class="material-symbols-outlined">${ICON[type] || 'info'}</span></span>
       <div class="toast__msg"><strong>${esc(title)}</strong><span>${esc(msg || '')}</span></div>
-      <button class="toast__close" aria-label="Đóng"><i data-lucide="x"></i></button>`;
+      <button class="toast__close" aria-label="Đóng"><span class="material-symbols-outlined" style="font-size:16px;">close</span></button>`;
     $('#toasts').appendChild(el); icons();
     const close = () => { el.classList.add('is-out'); setTimeout(() => el.remove(), 200); };
     el.querySelector('.toast__close').onclick = close;
@@ -491,7 +492,7 @@
       const ov = document.createElement('div');
       ov.className = 'overlay';
       ov.innerHTML = `<div class="dialog t-${type}" role="dialog" aria-modal="true" aria-labelledby="dlgT">
-        <div class="dialog__icon"><i data-lucide="${type === 'success' ? 'check' : type === 'error' ? 'alert-circle' : 'info'}"></i></div>
+        <div class="dialog__icon"><span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span></div>
         <h2 id="dlgT">${esc(title)}</h2><p>${esc(msg)}</p>
         <div class="dialog__actions">${alertOnly ? '' : `<button class="btn" data-r="0">${cancel}</button>`}<button class="btn btn--confirm" data-r="1">${alertOnly ? 'Đã hiểu' : ok}</button></div></div>`;
       document.body.appendChild(ov); icons();

@@ -17,10 +17,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (mainEl) {
       mainEl.innerHTML = `
         <div class="guard-box">
-          <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+          <div style="margin-bottom: 10px;">
+            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--warning);">lock</span>
+          </div>
           <h2 style="font-family:var(--font-serif);">Không có quyền truy cập</h2>
           <p style="color:var(--muted); margin-bottom:20px;">Trang Chi tiết Độc giả chỉ dành cho Thủ thư (LIBRARIAN) và Quản trị viên (ADMIN).</p>
-          <a href="login.html#login" class="btn btn-primary">Đăng nhập Thủ thư →</a>
+          <a href="login.html#login" class="btn btn-primary">
+            <span>Đăng nhập Thủ thư</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </a>
         </div>`;
     }
     return;
@@ -262,7 +267,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (readyBadge) readyBadge.textContent = "Sẵn sàng in";
         lockBtns.forEach((b) => {
           if (b) {
-            b.textContent = "🔒 Khóa thẻ";
+            b.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ</span>';
             b.className = b.id === "btn-card-lock" ? "btn btn-soft-danger btn-sm" : "btn btn-soft-danger";
           }
         });
@@ -272,7 +277,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (readyBadge) readyBadge.textContent = "Cần gia hạn";
         lockBtns.forEach((b) => {
           if (b) {
-            b.textContent = "🔒 Khóa thẻ";
+            b.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ</span>';
             b.className = b.id === "btn-card-lock" ? "btn btn-soft-danger btn-sm" : "btn btn-soft-danger";
           }
         });
@@ -282,7 +287,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (readyBadge) readyBadge.textContent = "Thẻ đang khóa";
         lockBtns.forEach((b) => {
           if (b) {
-            b.textContent = "🔓 Mở khóa thẻ";
+            b.innerHTML = '<span class="material-symbols-outlined">lock_open</span><span>Mở khóa thẻ</span>';
             b.className = b.id === "btn-card-lock" ? "btn btn-soft-success btn-sm" : "btn btn-soft-success";
           }
         });
@@ -318,7 +323,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       await loadLoanHistoryFromLoanModule(detail.reader_id);
     } catch (err) {
-      if (mainEl) mainEl.innerHTML = `<div class="guard-box"><h3 style="color:var(--danger);">${escapeHtml(err.message)}</h3><a href="readers.html" class="btn">← Quay lại</a></div>`;
+      if (mainEl) {
+        mainEl.innerHTML = `
+          <div class="guard-box">
+            <div style="margin-bottom: 10px;">
+              <span class="material-symbols-outlined" style="font-size: 40px; color: var(--danger);">error</span>
+            </div>
+            <h3 style="color: var(--danger); margin: 0 0 16px;">${escapeHtml(err.message)}</h3>
+            <a href="readers.html" class="btn-back-readers" style="margin-bottom: 0;">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Quay lại Danh sách Độc giả</span>
+            </a>
+          </div>`;
+      }
     }
   }
 
@@ -554,12 +571,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const reasonInput = document.getElementById("lock-reason-input");
       reasonInput.value = "";
       if (action === "LOCK") {
-        titleEl.textContent = "🔒 Khóa thẻ thư viện";
+        titleEl.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ thư viện</span>';
         submitBtn.textContent = "Xác nhận Khóa thẻ";
         submitBtn.className = "btn btn-soft-danger";
         chipsWrap.innerHTML = LOCK_REASONS.map((r) => `<button type="button" class="quick-chip">${escapeHtml(r)}</button>`).join("");
       } else {
-        titleEl.textContent = "🔓 Mở khóa thẻ thư viện";
+        titleEl.innerHTML = '<span class="material-symbols-outlined">lock_open</span><span>Mở khóa thẻ thư viện</span>';
         submitBtn.textContent = "Xác nhận Mở thẻ";
         submitBtn.className = "btn btn-primary";
         chipsWrap.innerHTML = UNLOCK_REASONS.map((r) => `<button type="button" class="quick-chip">${escapeHtml(r)}</button>`).join("");

@@ -104,6 +104,7 @@
         coverDropZone: document.getElementById("coverDropZone"),
         coverPreviewImg: document.getElementById("coverPreviewImg"),
         copiesCount: document.getElementById("copiesCount"),
+        copiesCountHint: document.getElementById("copiesCountHint"),
         barcodeRange: document.getElementById("barcodeRange"),
 
         // Modal 2: Copies Management Modal
@@ -640,10 +641,29 @@
 
     function updateBarcodeRange() {
         if (!dom.barcodeRange || !dom.copiesCount) return;
-        const count = parseInt(dom.copiesCount.value, 10) || 1;
-        const isbnVal = dom.bookIsbn ? dom.bookIsbn.value.trim() : "9786042100001";
-        const clean = isbnVal.replace(/[^0-9]/g, "").slice(-4) || "0001";
-        dom.barcodeRange.textContent = `Dự kiến: BC-${clean}-01 đến BC-${clean}-${String(count).padStart(2, "0")}`;
+        const raw = parseInt(dom.copiesCount.value, 10);
+        const isbnVal = dom.bookIsbn ? dom.bookIsbn.value.trim().replace(/[^0-9]/g, "") : "";
+        const prefix = isbnVal || "9786040000000";
+
+        if (state.editingIsbn) {
+            const orig = Number(state.editingOriginalCopies || 0);
+            if (isNaN(raw) || raw === orig) {
+                dom.barcodeRange.textContent = `Không tạo thêm bản sao (hiện có ${orig} bản)`;
+            } else if (raw < orig) {
+                dom.barcodeRange.textContent = `Không thể giảm trực tiếp (hiện có ${orig} bản)`;
+            } else {
+                const startSeq = String(orig + 1).padStart(2, "0");
+                const endSeq = String(raw).padStart(2, "0");
+                dom.barcodeRange.textContent = `Bổ sung ${raw - orig} bản: dự kiến BC-${prefix}-${startSeq} ... ${endSeq}`;
+            }
+            return;
+        }
+
+        if (isNaN(raw) || raw <= 0) {
+            dom.barcodeRange.textContent = "Chưa khởi tạo bản sao vật lý (0 bản)";
+            return;
+        }
+        dom.barcodeRange.textContent = `Dự kiến: BC-${prefix}-01 đến BC-${prefix}-${String(raw).padStart(2, "0")}`;
     }
 
     // ============================================================================
@@ -829,6 +849,7 @@
     // ============================================================================
     function openCreateModal() {
         state.editingIsbn = null;
+        state.editingOriginalCopies = 0;
         state.selectedCoverFile = null;
 
         if (dom.modalBookHeading) dom.modalBookHeading.textContent = "Thêm mới đầu sách & Thiết lập bản sao";
@@ -861,7 +882,14 @@
         if (dom.bookPrice) dom.bookPrice.value = "";
         if (dom.bookShelf) dom.bookShelf.value = "Khu A - Kệ A3 (Kho CNTT)";
         if (dom.bookDescription) dom.bookDescription.value = "";
-        if (dom.copiesCount) dom.copiesCount.value = 3;
+        if (dom.copiesCount) {
+            dom.copiesCount.min = "0";
+            dom.copiesCount.max = "50";
+            dom.copiesCount.value = 3;
+        }
+        if (dom.copiesCountHint) {
+            dom.copiesCountHint.textContent = "Nhập số lượng bản sao ban đầu (0–50) để tự sinh mã vạch khi tạo mới.";
+        }
 
         if (dom.coverPreviewImg) {
             dom.coverPreviewImg.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&q=80";
@@ -929,7 +957,14 @@
             }
             if (dom.bookDescription) dom.bookDescription.value = book.description || "";
             state.editingOriginalCopies = Number(book.total_copies || 0);
-            if (dom.copiesCount) dom.copiesCount.value = state.editingOriginalCopies;
+            if (dom.copiesCount) {
+                dom.copiesCount.min = String(state.editingOriginalCopies);
+                dom.copiesCount.max = String(state.editingOriginalCopies + 50);
+                dom.copiesCount.value = state.editingOriginalCopies;
+            }
+            if (dom.copiesCountHint) {
+                dom.copiesCountHint.textContent = `Hiện có ${state.editingOriginalCopies} bản sao. Chỉ hỗ trợ tăng thêm để sinh bản sao mới; để giảm/thanh lý từng cuốn vui lòng vào Quản lý bản sao.`;
+            }
             if (dom.authorSelectDropdown) dom.authorSelectDropdown.value = "";
 
             if (dom.coverPreviewImg) {
@@ -981,6 +1016,19 @@
         return ids;
     }
 
+    async function createBookCopiesBatch(isbn, count, shelfLocation) {
+        if (!count || count <= 0) return;
+        await api.post("/book_copies", {
+            book_isbn: isbn,
+            copies: Array.from({ length: count }, () => ({
+                copy_code: "", // Backend tự sinh mã chuẩn BC-{isbn}-{seq:02d}
+                shelf_location: shelfLocation || "Kệ A1",
+                condition: "MỚI",
+                status: "AVAILABLE"
+            }))
+        });
+    }
+
     async function saveBook() {
         const title = dom.bookTitle ? dom.bookTitle.value.trim() : "";
         const rawIsbn = dom.bookIsbn ? dom.bookIsbn.value.trim() : "";
@@ -1019,6 +1067,39 @@
         const shelfLocation = dom.bookShelf ? dom.bookShelf.value.trim() : "Kệ A1";
         const description = dom.bookDescription ? dom.bookDescription.value.trim() : "";
 
+        const rawCopiesCount = dom.copiesCount ? dom.copiesCount.value.trim() : "";
+        const parsedCopies = rawCopiesCount === "" ? 0 : Number(rawCopiesCount);
+        if (!Number.isInteger(parsedCopies) || parsedCopies < 0) {
+            showNotification("Số lượng bản sao vật lý phải là số nguyên không âm!", "error");
+            if (dom.copiesCount) dom.copiesCount.focus();
+            return;
+        }
+
+        if (state.editingIsbn) {
+            const originalCopies = Number(state.editingOriginalCopies || 0);
+            if (parsedCopies < originalCopies) {
+                showNotification(
+                    `Không thể giảm tổng số bản sao từ ${originalCopies} xuống ${parsedCopies} tại đây. Để thanh lý hoặc báo mất, vui lòng vào Quản lý bản sao.`,
+                    "warning"
+                );
+                if (dom.copiesCount) {
+                    dom.copiesCount.value = String(originalCopies);
+                    dom.copiesCount.focus();
+                    updateBarcodeRange();
+                }
+                return;
+            }
+            if (parsedCopies - originalCopies > 50) {
+                showNotification("Chỉ có thể bổ sung tối đa 50 bản sao mỗi lần lưu!", "warning");
+                if (dom.copiesCount) dom.copiesCount.focus();
+                return;
+            }
+        } else if (parsedCopies > 50) {
+            showNotification("Số lượng bản sao khởi tạo ban đầu tối đa là 50 cuốn!", "warning");
+            if (dom.copiesCount) dom.copiesCount.focus();
+            return;
+        }
+
         if (dom.tagAuthorInput && dom.tagAuthorInput.value.trim()) {
             addAuthorTag(dom.tagAuthorInput.value);
         }
@@ -1049,21 +1130,14 @@
                     }
                 }
 
-                const newCount = parseInt(dom.copiesCount ? dom.copiesCount.value : state.editingOriginalCopies, 10);
-                const extraCopies = !isNaN(newCount) ? Math.max(0, newCount - Number(state.editingOriginalCopies || 0)) : 0;
+                const extraCopies = Math.max(0, parsedCopies - Number(state.editingOriginalCopies || 0));
+                let copyErrorMsg = "";
                 if (extraCopies > 0) {
                     try {
-                        await api.post("/book_copies", {
-                            book_isbn: editedIsbn,
-                            copies: Array.from({ length: extraCopies }, () => ({
-                                copy_code: "",
-                                shelf_location: shelfLocation || "Kệ A1",
-                                condition: "MỚI",
-                                status: "AVAILABLE"
-                            }))
-                        });
+                        await createBookCopiesBatch(editedIsbn, extraCopies, shelfLocation);
                     } catch (copyErr) {
                         console.warn("Lỗi khi bổ sung bản sao:", copyErr);
+                        copyErrorMsg = copyErr.message || "Lỗi kết nối API bản sao";
                     }
                 }
 
@@ -1075,7 +1149,13 @@
                     }
                 }
 
-                showNotification(`Đã cập nhật đầu sách "${title}" thành công!`, "success");
+                if (copyErrorMsg) {
+                    showNotification(`Đã lưu thông tin đầu sách, nhưng lỗi khi bổ sung ${extraCopies} bản sao: ${copyErrorMsg}`, "warning");
+                } else if (extraCopies > 0) {
+                    showNotification(`Đã cập nhật đầu sách "${title}" và bổ sung thêm ${extraCopies} bản sao!`, "success");
+                } else {
+                    showNotification(`Đã cập nhật đầu sách "${title}" thành công!`, "success");
+                }
             } else {
                 const createPayload = {
                     isbn: cleanIsbn,
@@ -1099,25 +1179,23 @@
                     }
                 }
 
-                const count = parseInt(dom.copiesCount ? dom.copiesCount.value : 0, 10) || 0;
-                if (count > 0) {
+                let copyErrorMsg = "";
+                if (parsedCopies > 0) {
                     try {
-                        const copiesPayload = {
-                            book_isbn: cleanIsbn,
-                            copies: Array.from({ length: count }, () => ({
-                                copy_code: "", // Backend tự sinh mã chuẩn BC-{isbn}-{seq:02d}
-                                shelf_location: shelfLocation || "Kệ A1",
-                                condition: "MỚI",
-                                status: "AVAILABLE"
-                            }))
-                        };
-                        await api.post("/book_copies", copiesPayload);
+                        await createBookCopiesBatch(cleanIsbn, parsedCopies, shelfLocation);
                     } catch (copyErr) {
                         console.warn("Lỗi khi tự sinh bản sao ban đầu:", copyErr);
+                        copyErrorMsg = copyErr.message || "Lỗi kết nối API bản sao";
                     }
                 }
 
-                showNotification(`Đã thêm mới đầu sách "${title}" với ${count} bản sao!`, "success");
+                if (copyErrorMsg) {
+                    showNotification(`Đã tạo đầu sách "${title}", nhưng lỗi khi khởi tạo ${parsedCopies} bản sao: ${copyErrorMsg}`, "warning");
+                } else if (parsedCopies > 0) {
+                    showNotification(`Đã thêm mới đầu sách "${title}" với ${parsedCopies} bản sao!`, "success");
+                } else {
+                    showNotification(`Đã thêm mới đầu sách "${title}" thành công!`, "success");
+                }
             }
 
             closeBookModal(Boolean(returnDetailIsbn));

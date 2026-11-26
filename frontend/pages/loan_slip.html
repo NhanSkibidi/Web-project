@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Phiếu mượn của tôi | UniLib</title>
+  <link rel="icon" href="../assets/images/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -13,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     rel="stylesheet" />
-  <link rel="stylesheet" href="../css/loan_slip.css?v=2.1" />
+  <link rel="stylesheet" href="../css/loan_slip.css?v=2.2" />
 </head>
 
 <body data-root="../">
@@ -112,7 +113,7 @@
     <section class="toolbar">
       <div class="tabs" id="tabs" role="tablist" aria-label="Lọc theo trạng thái"></div>
       <label class="search">
-        <i data-lucide="search"></i>
+        <span class="material-symbols-outlined">search</span>
         <input id="searchInput" type="search" placeholder="Tìm theo mã phiếu hoặc tên sách..."
           aria-label="Tìm phiếu mượn" />
         <kbd>⌘K</kbd>
@@ -122,7 +123,7 @@
     <section class="slips" id="slips" aria-live="polite"></section>
 
     <section class="foot-bar">
-      <p class="rule"><i data-lucide="info"></i>Mỗi độc giả được mượn tối đa 5 cuốn cùng lúc. Thời hạn mượn chuẩn là 14
+      <p class="rule"><span class="material-symbols-outlined">info</span>Mỗi độc giả được mượn tối đa 5 cuốn cùng lúc. Thời hạn mượn chuẩn là 14
         ngày.</p>
       <div class="pager" id="pager"></div>
     </section>
@@ -164,13 +165,12 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>
   <script src="../js/utils.js?v=2.5"></script>
-  <script src="../js/notifications.js?v=2.0"></script>
-  <script src="../js/pages/loan_slip.js?v=2.4"></script>
+  <script src="../js/notifications.js?v=2.1"></script>
+  <script src="../js/pages/loan_slip.js?v=2.5"></script>
 </body>
 
 </html>

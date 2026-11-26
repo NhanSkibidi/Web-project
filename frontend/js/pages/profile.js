@@ -18,13 +18,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (mainEl) {
       mainEl.innerHTML = `
         <div class="guard-box">
-          <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+          <div style="margin-bottom: 10px;">
+            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--warning);">lock</span>
+          </div>
           <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">HTTP 401 · UNAUTHORIZED</div>
           <h2 style="font-family:var(--font-serif); margin:8px 0;">Vui lòng đăng nhập</h2>
           <p style="color:var(--muted); font-size:14px; margin-bottom:22px;">
             Bạn cần đăng nhập tài khoản Độc giả, Thủ thư hoặc Quản trị viên để xem hồ sơ và đổi mật khẩu.
           </p>
-          <a href="login.html#login" class="btn btn-primary">Đăng nhập ngay →</a>
+          <a href="login.html#login" class="btn btn-primary">
+            <span>Đăng nhập ngay</span>
+            <span class="material-symbols-outlined" style="font-size: 17px;">arrow_forward</span>
+          </a>
         </div>`;
     }
   }
@@ -46,7 +51,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showInlineAlert(el, message, type = "success") {
     if (!el) return;
     el.className = `inline-alert alert-${type}`;
-    el.textContent = message;
+    el.innerHTML = "";
+    const iconEl = document.createElement("span");
+    iconEl.className = "material-symbols-outlined";
+    iconEl.style.fontSize = "18px";
+    iconEl.style.flexShrink = "0";
+    iconEl.textContent = type === "error" ? "error" : "check_circle";
+    const textEl = document.createElement("span");
+    textEl.textContent = message;
+    el.appendChild(iconEl);
+    el.appendChild(textEl);
   }
 
   function clearInlineAlert(el) {
@@ -115,8 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  function renderShortcuts(role) {
-    const wrap = document.getElementById("pf-shortcuts");
+  function renderNavigation(role) {
     const brandLink = document.getElementById("pf-brand-link");
     const navEl = document.getElementById("pf-top-nav");
 
@@ -128,44 +141,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           : "© 2026 KS25 Library System - Cổng Tra Cứu & Độc Giả Sinh Viên. Bảo lưu mọi quyền.";
     }
 
-    let items = [];
     let homeHref = "home.html";
-
-    if (role === "ADMIN") {
+    if (role === "ADMIN" || role === "LIBRARIAN") {
       homeHref = "staff-dashboard.html";
-      items = [
-        { href: "admin-users.html", label: "🛡️ Quản lý tài khoản Thủ thư" },
-        { href: "staff-dashboard.html", label: "📊 Bàn làm việc Quản trị" },
-        { href: "readers.html", label: "🪪 Quản lý Độc giả & Thẻ thư viện" },
-        { href: "fines.html", label: "💰 Xử lý & Miễn giảm tiền phạt" },
-      ];
-      if (navEl) {
-        navEl.innerHTML = "";
-        navEl.style.display = "none";
-      }
-    } else if (role === "LIBRARIAN") {
-      homeHref = "staff-dashboard.html";
-      items = [
-        { href: "staff-dashboard.html", label: "📊 Bàn làm việc Thủ thư" },
-        { href: "books.html", label: "📚 Quản lý Đầu sách & Bản sao" },
-        { href: "readers.html", label: "🪪 Quản lý Độc giả & Thẻ thư viện" },
-        { href: "borrow_on_site.html", label: "📖 Mượn sách tại quầy" },
-        { href: "returns.html", label: "↩ Trả sách tại quầy" },
-      ];
       if (navEl) {
         navEl.innerHTML = "";
         navEl.style.display = "none";
       }
     } else {
       homeHref = "home.html";
-      items = [
-        { href: "home.html", label: "🏠 Trang chủ Thư viện" },
-        { href: "search.html", label: "🔎 Tra cứu Danh mục Ấn bản" },
-        { href: "loan_slip.html", label: "📋 Phiếu mượn của tôi" },
-        { href: "reservations.html", label: "📌 Sách đặt trước của tôi" },
-        { href: "fines.html", label: "💰 Tiền phạt của tôi" },
-        { href: "loan_basket.html", label: "🛒 Giỏ mượn sách" },
-      ];
       if (navEl) {
         navEl.style.display = "";
         navEl.innerHTML = `
@@ -180,11 +164,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setupBackButton(homeHref);
     if (brandLink) brandLink.href = homeHref;
-    if (wrap) {
-      wrap.innerHTML = items
-        .map((it) => `<a href="${it.href}" class="shortcut-link"><span>${it.label}</span><span>→</span></a>`)
-        .join("");
-    }
   }
 
   function bindProfileToUI(profile) {
@@ -255,52 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       cardSection.hidden = true;
     }
 
-    renderShortcuts(profile.role);
-    loadMyFinesSummary(profile.role);
-  }
-
-  // ---------- 1b. TẢI TÓM TẮT TIỀN PHẠT CÁ NHÂN (GET /api/fines/my-fines) ----------
-  async function loadMyFinesSummary(role) {
-    const section = document.getElementById("pf-fines-section");
-    if (!section) return;
-    if (role !== "READER") {
-      section.hidden = true;
-      return;
-    }
-
-    section.hidden = false;
-    const pillEl = document.getElementById("pf-fines-status-pill");
-    const countEl = document.getElementById("pf-fines-unpaid-count");
-    const amountEl = document.getElementById("pf-fines-unpaid-amount");
-
-    try {
-      const data = await api.get("/fines/my-fines");
-      const unpaidCount = Number(data?.unpaid_count || 0);
-      const totalUnpaid = Number(data?.total_unpaid_amount || 0);
-
-      if (countEl) countEl.textContent = `${unpaidCount} khoản`;
-      if (amountEl) {
-        amountEl.textContent = `${totalUnpaid.toLocaleString("vi-VN")} đ`;
-        amountEl.style.color = unpaidCount > 0 ? "#dc2626" : "";
-        amountEl.style.fontWeight = unpaidCount > 0 ? "700" : "";
-      }
-      if (pillEl) {
-        if (unpaidCount > 0) {
-          pillEl.textContent = "Còn nợ phạt";
-          pillEl.className = "status-pill status-locked";
-        } else {
-          pillEl.textContent = "Không nợ phạt";
-          pillEl.className = "status-pill status-active";
-        }
-      }
-    } catch (_) {
-      if (pillEl) {
-        pillEl.textContent = "Chưa tải được";
-        pillEl.className = "status-pill";
-      }
-      if (countEl) countEl.textContent = "--";
-      if (amountEl) amountEl.textContent = "--";
-    }
+    renderNavigation(profile.role);
   }
 
   // ---------- 1. TẢI HỒ SƠ HIỆN TẠI (GET /api/users/me) ----------
@@ -348,10 +282,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         phone: phone || null,
       });
       bindProfileToUI(updated);
-      showInlineAlert(profileAlert, "✅ Đã cập nhật thông tin hồ sơ cá nhân thành công!", "success");
+      showInlineAlert(profileAlert, "Đã cập nhật thông tin hồ sơ cá nhân thành công!", "success");
       showToast("Đã lưu thông tin hồ sơ!");
     } catch (err) {
-      showInlineAlert(profileAlert, `❌ ${err.message}`, "error");
+      showInlineAlert(profileAlert, err.message, "error");
       showToast(err.message, "error");
     } finally {
       btn.disabled = false;
@@ -425,10 +359,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.target.reset();
       if (strengthFill) strengthFill.style.width = "0%";
       if (strengthText) strengthText.textContent = "Nên kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt.";
-      showInlineAlert(passwordAlert, `✅ ${res.message || "Đổi mật khẩu thành công!"}`, "success");
+      showInlineAlert(passwordAlert, res.message || "Đổi mật khẩu thành công!", "success");
       showToast("Đổi mật khẩu thành công!");
     } catch (err) {
-      showInlineAlert(passwordAlert, `❌ ${err.message}`, "error");
+      showInlineAlert(passwordAlert, err.message, "error");
       showToast(err.message, "error");
     } finally {
       btn.disabled = false;
@@ -441,7 +375,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.addEventListener("click", () => {
       const target = document.getElementById(btn.getAttribute("data-toggle-pw"));
       if (!target) return;
-      target.type = target.type === "password" ? "text" : "password";
+      const showPw = target.type === "password";
+      target.type = showPw ? "text" : "password";
+      const iconEl = btn.querySelector(".material-symbols-outlined");
+      if (iconEl) iconEl.textContent = showPw ? "visibility_off" : "visibility";
     });
   });
 
@@ -453,7 +390,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const cachedUser = typeof auth.getUser === "function" ? auth.getUser() : null;
   if (cachedUser && cachedUser.role) {
-    renderShortcuts(cachedUser.role);
+    renderNavigation(cachedUser.role);
   }
 
   loadProfile();

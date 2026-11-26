@@ -1835,6 +1835,44 @@ def get_due_soon_loans(
     }
 
 
+def _sync_loan_item_notification(
+    db: Session,
+    *,
+    user_id: int,
+    loan_id: int,
+    loan_item_id: int,
+    notif_type: str,
+    title: str,
+    message: str,
+) -> None:
+    """Chỉ tạo 1 thông báo cho mỗi (user, loan_item, type); nếu đã đọc thì không tạo lại."""
+    existing = (
+        db.query(Notification)
+        .filter(
+            Notification.user_id == user_id,
+            Notification.loan_item_id == loan_item_id,
+            Notification.type == notif_type,
+        )
+        .order_by(Notification.is_read.asc(), Notification.id.desc())
+        .first()
+    )
+    if not existing:
+        db.add(
+            Notification(
+                user_id=user_id,
+                loan_id=loan_id,
+                loan_item_id=loan_item_id,
+                title=title,
+                message=message,
+                type=notif_type,
+                is_read=False,
+            )
+        )
+    elif not existing.is_read:
+        existing.title = title
+        existing.message = message
+
+
 def sync_and_get_notifications(
     db: Session,
     user_id: int | None = None,
@@ -1847,7 +1885,7 @@ def sync_and_get_notifications(
     """
     now = datetime.now()
 
-    # 1. Quét sách quá hạn để tạo thông báo nếu chưa có
+    # 1. Quét sách quá hạn để tạo thông báo nếu chưa từng tạo cho bản ghi này
     overdue_query = (
         db.query(LoanItem, Loan, Book)
         .join(Loan, LoanItem.loan_id == Loan.id)
@@ -1863,32 +1901,19 @@ def sync_and_get_notifications(
 
     overdue_items = overdue_query.all()
     for item, loan, book in overdue_items:
-        # Kiểm tra xem đã có thông báo quá hạn chưa đọc cho item này chưa
-        existing = (
-            db.query(Notification)
-            .filter(
-                Notification.user_id == loan.user_id,
-                Notification.loan_item_id == item.id,
-                Notification.type == "OVERDUE",
-                Notification.is_read.is_(False),
-            )
-            .first()
-        )
         days_overdue = max(1, (now.date() - item.due_date.date()).days) if item.due_date else 1
         est_fine = days_overdue * FINE_RATE_PER_DAY
         b_title = book.title if book else "Sách mượn"
 
-        if not existing:
-            new_notif = Notification(
-                user_id=loan.user_id,
-                loan_id=loan.id,
-                loan_item_id=item.id,
-                title=f"Quá hạn trả: {b_title}",
-                message=f"Phiếu #{loan.code} đã quá hạn {days_overdue} ngày. Tiền phạt tạm tính: {est_fine:,.0f} đ. Vui lòng mang sách tới quầy thư viện để hoàn trả.",
-                type="OVERDUE",
-                is_read=False,
-            )
-            db.add(new_notif)
+        _sync_loan_item_notification(
+            db,
+            user_id=loan.user_id,
+            loan_id=loan.id,
+            loan_item_id=item.id,
+            notif_type="OVERDUE",
+            title=f"Quá hạn trả: {b_title}",
+            message=f"Phiếu #{loan.code} đã quá hạn {days_overdue} ngày. Tiền phạt tạm tính: {est_fine:,.0f} đ. Vui lòng mang sách tới quầy thư viện để hoàn trả.",
+        )
 
     # 2. Quét sách sắp đến hạn (trong 2 ngày)
     today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
@@ -1909,31 +1934,19 @@ def sync_and_get_notifications(
 
     due_soon_items = due_soon_query.all()
     for item, loan, book in due_soon_items:
-        existing = (
-            db.query(Notification)
-            .filter(
-                Notification.user_id == loan.user_id,
-                Notification.loan_item_id == item.id,
-                Notification.type == "DUE_SOON",
-                Notification.is_read.is_(False),
-            )
-            .first()
-        )
         days_left = (item.due_date.date() - now.date()).days if item.due_date else 0
         status_txt = "hôm nay" if days_left <= 0 else f"trong {days_left} ngày tới"
         b_title = book.title if book else "Sách mượn"
 
-        if not existing:
-            new_notif = Notification(
-                user_id=loan.user_id,
-                loan_id=loan.id,
-                loan_item_id=item.id,
-                title=f"Sắp đến hạn trả: {b_title}",
-                message=f"Sách '{b_title}' (phiếu #{loan.code}) sẽ hết hạn {status_txt} ({item.due_date.strftime('%d/%m/%Y') if item.due_date else '—'}). Vui lòng gia hạn hoặc chuẩn bị trả sách.",
-                type="DUE_SOON",
-                is_read=False,
-            )
-            db.add(new_notif)
+        _sync_loan_item_notification(
+            db,
+            user_id=loan.user_id,
+            loan_id=loan.id,
+            loan_item_id=item.id,
+            notif_type="DUE_SOON",
+            title=f"Sắp đến hạn trả: {b_title}",
+            message=f"Sách '{b_title}' (phiếu #{loan.code}) sẽ hết hạn {status_txt} ({item.due_date.strftime('%d/%m/%Y') if item.due_date else '—'}). Vui lòng gia hạn hoặc chuẩn bị trả sách.",
+        )
 
     db.commit()
 

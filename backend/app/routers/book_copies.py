@@ -2,10 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.dependencies import require_librarian
 from app.db.session import get_db
-from app.schemas.book_copy import BookCopiesCreate, BookCopyResponse, BookCopyUpdate, CopyStatusChangeRequest
+from app.schemas.book_copy import (
+    BookCopiesCreate,
+    BookCopyConditionOption,
+    BookCopyResponse,
+    BookCopyUpdate,
+    CopyStatusChangeRequest,
+)
 from app.schemas.copy_status_log import CopyStatusLogResponse
 from app.crud.book_copies import (
     create_copy,
+    get_book_copy_conditions,
     get_book_copies,
     get_copy_by_code,
     dispose_copy,
@@ -16,6 +23,12 @@ from app.crud.book_copies import (
 )
 
 router = APIRouter(prefix="/book_copies", tags=["BookCopies"])
+
+
+@router.get("/conditions", response_model=list[BookCopyConditionOption], status_code=status.HTTP_200_OK, dependencies=[Depends(require_librarian)])
+def get_book_copy_conditions_api(db: Session = Depends(get_db)):
+    """Trả về danh sách tình trạng thực tế bản sao đọc từ database."""
+    return get_book_copy_conditions(db=db)
 
 
 @router.post("", response_model=list[BookCopyResponse], status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_librarian)])

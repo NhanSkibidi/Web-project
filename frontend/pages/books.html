@@ -412,20 +412,26 @@
                                     value="420">
                             </div>
                             <div class="form-group">
-                                <label for="bookShelf">Kệ lưu trữ mặc định</label>
-                                <select id="bookShelf" class="form-select">
-                                    <option value="Khu A - Kệ A1 (Kho CNTT)">Khu A - Kệ A1 (Kho CNTT)</option>
-                                    <option value="Khu A - Kệ A2 (Kho CNTT)">Khu A - Kệ A2 (Kho CNTT)</option>
-                                    <option value="Khu A - Kệ A3 (Kho CNTT)" selected>Khu A - Kệ A3 (Kho CNTT)</option>
-                                    <option value="Khu A - Kệ A4 (Kho CNTT)">Khu A - Kệ A4 (Kho CNTT)</option>
-                                    <option value="Khu B - Kệ B1 (Kho Điện tử)">Khu B - Kệ B1 (Kho Điện tử)</option>
-                                    <option value="Khu B - Kệ B2 (Kho Điện tử)">Khu B - Kệ B2 (Kho Điện tử)</option>
-                                    <option value="Khu C - Kệ C1 (Kho Kinh tế)">Khu C - Kệ C1 (Kho Kinh tế)</option>
-                                    <option value="Khu C - Kệ C2 (Kho Kinh tế)">Khu C - Kệ C2 (Kho Kinh tế)</option>
-                                    <option value="Khu D - Kệ D1 (Kho Ngoại ngữ)">Khu D - Kệ D1 (Kho Ngoại ngữ)</option>
-                                    <option value="Khu D - Kệ D2 (Kho Ngoại ngữ)">Khu D - Kệ D2 (Kho Ngoại ngữ)</option>
-                                </select>
+                                <label for="bookPrice">Đơn giá (VNĐ)</label>
+                                <input type="number" id="bookPrice" class="form-input" min="0" step="1000"
+                                    placeholder="VD: 145000">
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bookShelf">Kệ lưu trữ mặc định</label>
+                            <select id="bookShelf" class="form-select">
+                                <option value="Khu A - Kệ A1 (Kho CNTT)">Khu A - Kệ A1 (Kho CNTT)</option>
+                                <option value="Khu A - Kệ A2 (Kho CNTT)">Khu A - Kệ A2 (Kho CNTT)</option>
+                                <option value="Khu A - Kệ A3 (Kho CNTT)" selected>Khu A - Kệ A3 (Kho CNTT)</option>
+                                <option value="Khu A - Kệ A4 (Kho CNTT)">Khu A - Kệ A4 (Kho CNTT)</option>
+                                <option value="Khu B - Kệ B1 (Kho Điện tử)">Khu B - Kệ B1 (Kho Điện tử)</option>
+                                <option value="Khu B - Kệ B2 (Kho Điện tử)">Khu B - Kệ B2 (Kho Điện tử)</option>
+                                <option value="Khu C - Kệ C1 (Kho Kinh tế)">Khu C - Kệ C1 (Kho Kinh tế)</option>
+                                <option value="Khu C - Kệ C2 (Kho Kinh tế)">Khu C - Kệ C2 (Kho Kinh tế)</option>
+                                <option value="Khu D - Kệ D1 (Kho Ngoại ngữ)">Khu D - Kệ D1 (Kho Ngoại ngữ)</option>
+                                <option value="Khu D - Kệ D2 (Kho Ngoại ngữ)">Khu D - Kệ D2 (Kho Ngoại ngữ)</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -495,15 +501,6 @@
                                     Mỗi bản sao sẽ được sinh mã vạch riêng và in tem nhãn sau khi lưu.
                                 </small>
                             </div>
-
-                            <!-- Switch cho phép mượn về nhà -->
-                            <label class="switch-label">
-                                <span>Cho phép mượn về nhà</span>
-                                <span class="switch-control">
-                                    <input type="checkbox" id="allowBorrowHome" checked>
-                                    <span class="switch-slider"></span>
-                                </span>
-                            </label>
                         </div>
 
                         <div
@@ -520,13 +517,6 @@
 
             <!-- Modal Footer -->
             <div class="modal-footer-bar">
-                <div class="modal-api-tag">
-                    <span class="material-symbols-outlined"
-                        style="font-size: 14px; vertical-align: -2px; color: var(--color-brand);">terminal</span>
-                    <span>API: POST <strong style="color: var(--color-brand);">/books</strong></span>
-                    <span style="color: var(--color-border);">|</span>
-                    <span>Schema: BookCreateWithCopies</span>
-                </div>
                 <div class="modal-footer-actions">
                     <button id="cancelModalBtn" type="button" class="btn-modal-cancel">Hủy bỏ</button>
                     <button id="draftModalBtn" type="button" class="btn-modal-cancel"
@@ -653,7 +643,7 @@
                             </button>
                         </div>
                         <form id="addCopyForm" class="add-copy-form">
-                            <div class="form-grid-4">
+                            <div class="form-grid-3">
                                 <div class="form-field">
                                     <label for="newCopyQty">Số lượng (*)</label>
                                     <input type="number" id="newCopyQty" min="1" max="50" value="1" class="form-control"
@@ -674,19 +664,7 @@
                                 <div class="form-field">
                                     <label for="newCopyCondition">Tình trạng thực tế</label>
                                     <select id="newCopyCondition" class="form-control">
-                                        <option value="Mới 100% • Đã dán bọc" selected>Mới 100% (Nguyên bản - Đã dán bọc)</option>
-                                        <option value="Tốt 95% • Đã qua sử dụng">Tốt 95% (Đã qua sử dụng)</option>
-                                        <option value="Khá 80% • Hơi cũ / ố vàng">Khá 80% (Hơi cũ / ố vàng nhẹ)</option>
-                                        <option value="Cũ 60% • Sờn gáy / quăn mép">Cũ 60% (Sờn gáy / quăn mép)</option>
-                                        <option value="Hỏng nhẹ • Cần tu sửa">Hỏng nhẹ (Cần tu sửa)</option>
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label for="newCopyPolicy">Chính sách</label>
-                                    <select id="newCopyPolicy" class="form-control">
-                                        <option value="Mượn 14 ngày">Cho mượn về nhà (14 ngày)</option>
-                                        <option value="Chỉ đọc tại chỗ">Chỉ đọc tại phòng đọc</option>
-                                        <option value="Tạm khóa">Tạm khóa lưu thông</option>
+                                        <option value="">Đang tải tình trạng...</option>
                                     </select>
                                 </div>
                             </div>
@@ -709,7 +687,6 @@
                                     <th>VỊ TRÍ KỆ</th>
                                     <th>TÌNH TRẠNG THỰC TẾ</th>
                                     <th>TRẠNG THÁI LƯU THÔNG</th>
-                                    <th class="text-center">CHÍNH SÁCH</th>
                                     <th class="text-right">THAO TÁC</th>
                                 </tr>
                             </thead>

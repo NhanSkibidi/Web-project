@@ -344,13 +344,14 @@ body.returns-body {
 .librarian-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1B1C1A;
   line-height: 1.2;
 }
 
 .librarian-role {
   font-size: 11px;
-  color: var(--color-text-muted);
+  color: var(--color-brand);
+  font-weight: 500;
 }
 
 /* ==========================================================================

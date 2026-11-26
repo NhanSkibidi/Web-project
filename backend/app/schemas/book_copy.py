@@ -49,5 +49,11 @@ class BookCopyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class BookCopyConditionOption(BaseModel):
+    value: str
+    label: str
+    count: int = 0
+
 class CopyStatusChangeRequest(BaseModel):
     reason: str = Field(min_length=1, max_length=500)

@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 from app.schemas.book_copy import BookCopiesCreate, BookCopyUpdate
 from app.models.BookCopy import BookCopy
@@ -6,6 +7,53 @@ from app.models.Book import Book
 from app.crud.copy_status_log import change_copy_status
 from app.crud.reservation import assign_copy_to_next_waiting_reservation_in_tx
 from app.models.CopyStatusLog import CopyStatusLog
+
+CONDITION_LABELS = {
+    "MỚI": "Mới (MỚI)",
+    "CŨ": "Cũ (CŨ)",
+    "HỎNG": "Hỏng (HỎNG)",
+}
+
+
+def get_book_copy_conditions(db: Session) -> list[dict[str, object]]:
+    """Đọc danh sách tình trạng thực tế bản sao từ schema và dữ liệu bảng book_copies."""
+    counts_rows = (
+        db.query(BookCopy.condition, func.count(BookCopy.id))
+        .group_by(BookCopy.condition)
+        .all()
+    )
+    counts_map = {str(cond): int(cnt or 0) for cond, cnt in counts_rows if cond}
+
+    ordered_values: list[str] = []
+
+    def add_value(val: object) -> None:
+        cleaned = str(val or "").strip()
+        if cleaned and cleaned not in ordered_values:
+            ordered_values.append(cleaned)
+
+    try:
+        col_row = db.execute(text("SHOW COLUMNS FROM book_copies LIKE 'condition'")).first()
+        if col_row and len(col_row) > 1 and isinstance(col_row[1], str) and col_row[1].lower().startswith("enum("):
+            raw_enum = col_row[1][5:-1]
+            for token in raw_enum.split(","):
+                add_value(token.strip().strip("'\""))
+    except Exception:
+        pass
+
+    for enum_val in getattr(BookCopy.__table__.c.condition.type, "enums", ()):
+        add_value(enum_val)
+
+    for cond in counts_map:
+        add_value(cond)
+
+    return [
+        {
+            "value": val,
+            "label": CONDITION_LABELS.get(val, val),
+            "count": counts_map.get(val, 0),
+        }
+        for val in ordered_values
+    ]
 
 
 def create_copy(book_copies: BookCopiesCreate, db: Session):

@@ -133,8 +133,14 @@
             <p class="page-subtitle">Quản lý hồ sơ bạn đọc, theo dõi trạng thái thẻ thư viện, cấp phát, gia hạn, khoá thẻ và lịch sử mượn trả.</p>
           </div>
           <div class="page-head-actions">
-            <button id="btn-export-csv" type="button" class="btn">⬇ Xuất danh sách</button>
-            <button id="btn-open-add-reader" type="button" class="btn btn-primary">👤+ Thêm độc giả mới</button>
+            <button id="btn-export-csv" type="button" class="btn">
+              <span class="material-symbols-outlined">file_download</span>
+              <span>Xuất danh sách</span>
+            </button>
+            <button id="btn-open-add-reader" type="button" class="btn btn-primary">
+              <span class="material-symbols-outlined">person_add</span>
+              <span>Thêm độc giả mới</span>
+            </button>
           </div>
         </div>
 
@@ -143,7 +149,9 @@
           <div class="kpi-card">
             <div class="kpi-top">
               <span class="kpi-label">Tổng số độc giả</span>
-              <span class="kpi-icon kpi-icon-neutral">👥</span>
+              <span class="kpi-icon kpi-icon-neutral">
+                <span class="material-symbols-outlined">group</span>
+              </span>
             </div>
             <div id="kpi-total" class="kpi-value">—</div>
             <div class="kpi-sub">Hồ sơ độc giả toàn hệ thống</div>
@@ -152,28 +160,43 @@
           <div class="kpi-card">
             <div class="kpi-top">
               <span class="kpi-label">Thẻ đang hoạt động</span>
-              <span class="kpi-icon kpi-icon-green">💳</span>
+              <span class="kpi-icon kpi-icon-green">
+                <span class="material-symbols-outlined">credit_card</span>
+              </span>
             </div>
             <div id="kpi-active" class="kpi-value" style="color: var(--primary);">—</div>
-            <div id="kpi-active-rate" class="kpi-sub" style="color: var(--success);">• Đang tính tỷ lệ hợp lệ...</div>
+            <div id="kpi-active-rate" class="kpi-sub" style="color: var(--success);">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>Đang tính tỷ lệ hợp lệ...</span>
+            </div>
           </div>
 
           <div class="kpi-card">
             <div class="kpi-top">
               <span class="kpi-label">Thẻ bị tạm khóa</span>
-              <span class="kpi-icon kpi-icon-red">🔒</span>
+              <span class="kpi-icon kpi-icon-red">
+                <span class="material-symbols-outlined">lock</span>
+              </span>
             </div>
             <div id="kpi-locked" class="kpi-value" style="color: var(--danger);">—</div>
-            <div class="kpi-sub" style="color: var(--danger);">⚠ Vi phạm trễ hạn hoặc mất thẻ</div>
+            <div class="kpi-sub" style="color: var(--danger);">
+              <span class="material-symbols-outlined">warning</span>
+              <span>Vi phạm trễ hạn hoặc mất thẻ</span>
+            </div>
           </div>
 
           <div class="kpi-card" id="kpi-expired-card" style="cursor:pointer;" title="Bấm để quét & tự chuyển EXPIRED các thẻ quá hạn">
             <div class="kpi-top">
               <span class="kpi-label">Hết hạn / Sắp hết hạn (30 ngày)</span>
-              <span class="kpi-icon kpi-icon-amber">🔔</span>
+              <span class="kpi-icon kpi-icon-amber">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </span>
             </div>
             <div id="kpi-expiring" class="kpi-value" style="color: var(--warning);">—</div>
-            <div id="kpi-expiring-sub" class="kpi-sub">⚡ Bấm để quét thẻ quá hạn (EXPIRED)</div>
+            <div id="kpi-expiring-sub" class="kpi-sub">
+              <span class="material-symbols-outlined">bolt</span>
+              <span>Bấm để quét thẻ quá hạn (EXPIRED)</span>
+            </div>
           </div>
         </div>
 
@@ -199,8 +222,13 @@
               <option value="LOCKED">Tạm khóa (LOCKED)</option>
             </select>
 
-            <button type="submit" class="btn btn-primary">🔽 Áp dụng</button>
-            <button id="btn-reset-filter" type="button" class="btn" style="height:40px; width:40px; padding:0;" title="Làm mới">↻</button>
+            <button type="submit" class="btn btn-primary">
+              <span class="material-symbols-outlined">filter_alt</span>
+              <span>Áp dụng</span>
+            </button>
+            <button id="btn-reset-filter" type="button" class="btn-refresh-spin" title="Làm mới" aria-label="Làm mới">
+              <span class="material-symbols-outlined">refresh</span>
+            </button>
           </form>
         </div>
 
@@ -209,7 +237,10 @@
           <!-- LEFT COLUMN: Danh sách Độc giả -->
           <section class="panel-card">
             <div class="panel-head">
-              <h2 class="panel-title">🪪 Danh sách Độc giả</h2>
+              <h2 class="panel-title">
+                <span class="material-symbols-outlined">badge</span>
+                <span>Danh sách Độc giả</span>
+              </h2>
               <span id="table-total-badge" class="panel-meta">Tổng 0 hồ sơ</span>
             </div>
 
@@ -251,7 +282,10 @@
             <!-- Card 1: Phôi Thẻ Thư Viện -->
             <section class="panel-card">
               <div class="panel-head">
-                <h2 class="panel-title">🪪 Phôi Thẻ Thư Viện</h2>
+                <h2 class="panel-title">
+                  <span class="material-symbols-outlined">credit_card</span>
+                  <span>Phôi Thẻ Thư Viện</span>
+                </h2>
                 <span id="preview-ready-badge" class="card-ready-pill">Sẵn sàng in</span>
               </div>
 
@@ -267,11 +301,7 @@
                       </div>
                     </div>
                     <div class="id-card-rfid" title="Thẻ tích hợp RFID">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                      </svg>
+                      <span class="material-symbols-outlined" style="font-size: 16px;">contactless</span>
                     </div>
                   </div>
 
@@ -313,9 +343,18 @@
 
                 <!-- 3 Nút tác nghiệp: In thẻ · Gia hạn · Khóa/Mở thẻ -->
                 <div class="card-action-bar">
-                  <button id="btn-print-card" type="button" class="btn btn-sm">🖨️ In thẻ</button>
-                  <button id="btn-extend-card" type="button" class="btn btn-soft-blue btn-sm">🔄 Gia hạn</button>
-                  <button id="btn-lock-card" type="button" class="btn btn-soft-danger btn-sm">🔒 Khóa thẻ</button>
+                  <button id="btn-print-card" type="button" class="btn btn-sm">
+                    <span class="material-symbols-outlined">print</span>
+                    <span>In thẻ</span>
+                  </button>
+                  <button id="btn-extend-card" type="button" class="btn btn-soft-blue btn-sm">
+                    <span class="material-symbols-outlined">autorenew</span>
+                    <span>Gia hạn</span>
+                  </button>
+                  <button id="btn-lock-card" type="button" class="btn btn-soft-danger btn-sm">
+                    <span class="material-symbols-outlined">lock</span>
+                    <span>Khóa thẻ</span>
+                  </button>
                 </div>
 
                 <div id="card-preview-reason" style="margin-top:10px; font-size:12px; color:var(--danger); display:none;"></div>
@@ -325,7 +364,10 @@
             <!-- Card 2: Lịch sử mượn gần nhất (lấy từ module Mượn: GET /api/loans?user_id=...) -->
             <section class="panel-card">
               <div class="panel-head">
-                <h2 class="panel-title">🕒 Lịch sử mượn gần nhất</h2>
+                <h2 class="panel-title">
+                  <span class="material-symbols-outlined">history</span>
+                  <span>Lịch sử mượn gần nhất</span>
+                </h2>
                 <a id="link-view-all-detail" href="reader-detail.html" style="font-size:12.5px; font-weight:700; color:var(--primary); text-decoration:none;">Xem tất cả →</a>
               </div>
 
@@ -363,8 +405,13 @@
   <div id="modal-add-reader" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3>👤 Thêm độc giả &amp; Cấp thẻ thư viện mới</h3>
-        <button type="button" class="modal-close" data-close="modal-add-reader">✕</button>
+        <h3>
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Thêm độc giả &amp; Cấp thẻ thư viện mới</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-add-reader" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="add-reader-form">
         <div class="form-field">
@@ -395,8 +442,13 @@
   <div id="modal-extend" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3>🔄 Gia hạn thẻ thư viện</h3>
-        <button type="button" class="modal-close" data-close="modal-extend">✕</button>
+        <h3>
+          <span class="material-symbols-outlined">autorenew</span>
+          <span>Gia hạn thẻ thư viện</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-extend" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="extend-card-form">
         <input type="hidden" id="extend-card-id">
@@ -442,8 +494,13 @@
   <div id="modal-lock" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3 id="lock-modal-title">🔒 Khóa thẻ thư viện</h3>
-        <button type="button" class="modal-close" data-close="modal-lock">✕</button>
+        <h3 id="lock-modal-title">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Khóa thẻ thư viện</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-lock" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="lock-card-form">
         <input type="hidden" id="lock-card-id">

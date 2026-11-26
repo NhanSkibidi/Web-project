@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (mainEl) {
         mainEl.innerHTML = `
           <div class="guard-box">
-            <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+            <span class="material-symbols-outlined" style="font-size:42px; color:var(--primary); margin-bottom:10px; display:block;">lock</span>
             <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">HTTP 401 · UNAUTHORIZED</div>
             <h2 style="font-family:var(--font-serif); margin:8px 0;">Yêu cầu đăng nhập Thủ thư / Quản trị</h2>
             <p style="color:var(--muted); font-size:14px; margin-bottom:22px;">Vui lòng đăng nhập tài khoản Thủ thư hoặc Quản trị viên để truy cập phân hệ Quản lý Độc giả &amp; Thẻ.</p>
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (mainEl) {
         mainEl.innerHTML = `
           <div class="guard-box">
-            <div style="font-size:40px; margin-bottom:10px;">⛔</div>
+            <span class="material-symbols-outlined" style="font-size:42px; color:var(--danger); margin-bottom:10px; display:block;">block</span>
             <div style="font-family:var(--font-mono); font-size:12px; color:var(--danger);">HTTP 403 · FORBIDDEN</div>
             <h2 style="font-family:var(--font-serif); margin:8px 0;">Không đủ quyền truy cập</h2>
             <p style="color:var(--muted); font-size:14px; margin-bottom:22px;">Tài khoản <strong>${escapeHtml(user.full_name || user.email)}</strong> (${escapeHtml(user.role)}) không có quyền quản lý thẻ thư viện.</p>
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userRole = document.getElementById("userRole");
   if (userAvatar) userAvatar.textContent = (staffUser.full_name || staffUser.email || "T").charAt(0).toUpperCase();
   if (userName) userName.textContent = staffUser.full_name || staffUser.email;
-  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư trực quầy";
+  if (userRole) userRole.textContent = staffUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
 
   // Mobile Menu Toggle
   const mobileMenuToggle = document.getElementById("mobileMenuToggle");
@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       document.getElementById("kpi-total").textContent = totalAll;
       document.getElementById("kpi-active").textContent = res.active_count ?? 0;
-      document.getElementById("kpi-active-rate").textContent = `• Tỷ lệ ${activeRate}% thẻ hợp lệ`;
+      document.getElementById("kpi-active-rate").innerHTML = `<span class="material-symbols-outlined">check_circle</span><span>Tỷ lệ ${activeRate}% thẻ hợp lệ</span>`;
       document.getElementById("kpi-locked").textContent = res.locked_count ?? 0;
       document.getElementById("kpi-expiring").textContent = Math.max(res.expired_count || 0, soonOrExpired);
       document.getElementById("table-total-badge").textContent = `Tổng ${allItems.length} hồ sơ`;
@@ -331,10 +331,10 @@ document.addEventListener("DOMContentLoaded", async () => {
               <td style="text-align:right;">
                 <div class="row-actions">
                   <a href="reader-detail.html?id=${r.reader_id}" class="row-icon-btn" title="Mở trang chi tiết độc giả & lịch sử mượn trả" onclick="event.stopPropagation()">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span class="material-symbols-outlined">visibility</span>
                   </a>
                   <button type="button" class="row-icon-btn" data-quick-print="${r.reader_id}" title="In thẻ thư viện (window.print)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    <span class="material-symbols-outlined">print</span>
                   </button>
                 </div>
               </td>
@@ -397,19 +397,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       statusEl.textContent = "ĐANG HOẠT ĐỘNG";
       statusEl.className = "id-status-text id-status-active";
       readyBadge.textContent = "Sẵn sàng in";
-      lockBtn.textContent = "🔒 Khóa thẻ";
+      lockBtn.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ</span>';
       lockBtn.className = "btn btn-soft-danger btn-sm";
     } else if (reader.card_status === "EXPIRED") {
       statusEl.textContent = "ĐÃ HẾT HẠN";
       statusEl.className = "id-status-text id-status-expired";
       readyBadge.textContent = "Cần gia hạn";
-      lockBtn.textContent = "🔒 Khóa thẻ";
+      lockBtn.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ</span>';
       lockBtn.className = "btn btn-soft-danger btn-sm";
     } else if (reader.card_status === "LOCKED") {
       statusEl.textContent = "TẠM KHÓA";
       statusEl.className = "id-status-text id-status-locked";
       readyBadge.textContent = "Thẻ đang khóa";
-      lockBtn.textContent = "🔓 Mở thẻ";
+      lockBtn.innerHTML = '<span class="material-symbols-outlined">lock_open</span><span>Mở thẻ</span>';
       lockBtn.className = "btn btn-soft-success btn-sm";
     }
 
@@ -428,9 +428,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Cập nhật thông báo tiền phạt
     const fineEl = document.getElementById("preview-fine-status");
     if (reader.unpaid_fine_amount > 0) {
-      fineEl.innerHTML = `<span style="color:var(--danger); font-weight:700;">⚠ Nợ phạt: ${formatMoney(reader.unpaid_fine_amount)}</span>`;
+      fineEl.innerHTML = `<span style="color:var(--danger); font-weight:700; display:inline-flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:15px;">warning</span><span>Nợ phạt: ${formatMoney(reader.unpaid_fine_amount)}</span></span>`;
     } else {
-      fineEl.innerHTML = `<span style="color:var(--success);">✔ Không nợ phạt quá hạn</span>`;
+      fineEl.innerHTML = `<span style="color:var(--success); display:inline-flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:15px;">check_circle</span><span>Không nợ phạt quá hạn</span></span>`;
     }
 
     if (triggerPrint) {
@@ -622,12 +622,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     reasonInput.value = "";
     if (action === "LOCK") {
-      titleEl.textContent = "🔒 Khóa thẻ thư viện";
+      titleEl.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa thẻ thư viện</span>';
       submitBtn.textContent = "Xác nhận Khóa thẻ";
       submitBtn.className = "btn btn-soft-danger";
       chipsWrap.innerHTML = LOCK_REASONS.map((r) => `<button type="button" class="quick-chip">${escapeHtml(r)}</button>`).join("");
     } else {
-      titleEl.textContent = "🔓 Mở khóa thẻ thư viện";
+      titleEl.innerHTML = '<span class="material-symbols-outlined">lock_open</span><span>Mở khóa thẻ thư viện</span>';
       submitBtn.textContent = "Xác nhận Mở thẻ";
       submitBtn.className = "btn btn-primary";
       chipsWrap.innerHTML = UNLOCK_REASONS.map((r) => `<button type="button" class="quick-chip">${escapeHtml(r)}</button>`).join("");
@@ -751,11 +751,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   typeSelect?.addEventListener("change", () => loadReaders());
   statusSelect?.addEventListener("change", () => loadReaders());
 
-  document.getElementById("btn-reset-filter")?.addEventListener("click", () => {
+  const btnResetReaderFilter = document.getElementById("btn-reset-filter");
+  btnResetReaderFilter?.addEventListener("click", async () => {
+    btnResetReaderFilter.classList.add("is-spinning");
     if (kwInput) kwInput.value = "";
     if (typeSelect) typeSelect.value = "";
     if (statusSelect) statusSelect.value = "";
-    loadReaders();
+    try {
+      await loadReaders();
+    } finally {
+      setTimeout(() => {
+        btnResetReaderFilter.classList.remove("is-spinning");
+      }, 700);
+    }
   });
 
   // Đóng Modals

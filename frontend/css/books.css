@@ -217,8 +217,8 @@ body.books-body {
 }
 
 .librarian-avatar {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: var(--color-brand);
     color: #ffffff;
@@ -235,17 +235,16 @@ body.books-body {
 }
 
 .librarian-name {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: #1B1C1A;
     line-height: 1.2;
 }
 
 .librarian-role {
     font-size: 11px;
-    color: var(--color-success);
+    color: var(--color-brand);
     font-weight: 500;
-    line-height: 1.2;
 }
 
 /* User Account Dropdown (đồng bộ loan_management) */
@@ -1607,74 +1606,15 @@ select.form-control {
     color: var(--color-brand);
 }
 
-/* Switch toggle */
-.switch-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 8px;
-    cursor: pointer;
-}
-
-.switch-control {
-    position: relative;
-    display: inline-block;
-    width: 38px;
-    height: 22px;
-}
-
-.switch-control input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.switch-slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #E4E2DF;
-    border-radius: 22px;
-    transition: .3s;
-}
-
-.switch-slider:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: .3s;
-}
-
-.switch-control input:checked+.switch-slider {
-    background-color: var(--color-brand);
-}
-
-.switch-control input:checked+.switch-slider:before {
-    transform: translateX(16px);
-}
-
 .modal-footer-bar {
     padding: 14px 24px;
     background: #FAF8F5;
     border-top: 1px solid var(--color-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-}
-
-.modal-api-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--color-text-secondary);
 }
 
 .modal-footer-actions {
@@ -2195,7 +2135,7 @@ select.form-control {
     background: #efeeeb;
 }
 
-.form-grid-4 {
+.form-grid-3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
@@ -2792,11 +2732,6 @@ select.form-control {
         min-width: 140px;
     }
 
-    .form-grid-4 {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
     .copies-table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -2879,10 +2814,6 @@ select.form-control {
         padding: 12px 16px;
     }
 
-    .modal-api-tag {
-        display: none;
-    }
-
     .modal-footer-actions {
         width: 100%;
         display: flex;
@@ -2897,7 +2828,7 @@ select.form-control {
     }
 
     /* Modal 2 drawer on small mobile */
-    .form-grid-4 {
+    .form-grid-3 {
         grid-template-columns: 1fr;
     }
 
@@ -2921,10 +2852,6 @@ select.form-control {
 }
 
 /* Helper utilities for Stitch high-fidelity alignment */
-.text-center {
-    text-align: center;
-}
-
 .text-right {
     text-align: right;
 }

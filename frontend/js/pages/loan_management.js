@@ -286,14 +286,14 @@ function showToast(type, title, message) {
 
   toast.innerHTML =
     '<div class="toast-icon-wrap">' +
-      '<span class="material-symbols-outlined">' + iconName + '</span>' +
+    '<span class="material-symbols-outlined">' + iconName + '</span>' +
     '</div>' +
     '<div class="toast-content">' +
-      '<div class="toast-title">' + escapeHtml(title) + '</div>' +
-      '<div class="toast-msg">' + escapeHtml(message) + '</div>' +
+    '<div class="toast-title">' + escapeHtml(title) + '</div>' +
+    '<div class="toast-msg">' + escapeHtml(message) + '</div>' +
     '</div>' +
     '<button type="button" class="toast-close-btn" title="Đóng">' +
-      '<span class="material-symbols-outlined" style="font-size: 16px;">close</span>' +
+    '<span class="material-symbols-outlined" style="font-size: 16px;">close</span>' +
     '</button>';
 
   container.appendChild(toast);
@@ -509,8 +509,8 @@ function renderReservationTable(tbody) {
     updateTableHeaderTitle(0);
     tbody.innerHTML =
       '<tr><td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.6;">hourglass_empty</span>' +
-        'Đang tải danh sách đặt trước sẵn sàng nhận...' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.6;">hourglass_empty</span>' +
+      'Đang tải danh sách đặt trước sẵn sàng nhận...' +
       '</td></tr>';
     renderPagination(0, 1, 0, 0);
     return;
@@ -520,11 +520,11 @@ function renderReservationTable(tbody) {
     updateTableHeaderTitle(0);
     tbody.innerHTML =
       '<tr><td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; color: var(--color-danger);">cloud_off</span>' +
-        '<div>' + escapeHtml(reservationLoadError) + '</div>' +
-        '<button type="button" class="btn-table-action" id="btn-retry-res-load" style="margin: 12px auto 0;">' +
-          '<span class="material-symbols-outlined">refresh</span><span>Thử lại</span>' +
-        '</button>' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; color: var(--color-danger);">cloud_off</span>' +
+      '<div>' + escapeHtml(reservationLoadError) + '</div>' +
+      '<button type="button" class="btn-table-action" id="btn-retry-res-load" style="margin: 12px auto 0;">' +
+      '<span class="material-symbols-outlined">refresh</span><span>Thử lại</span>' +
+      '</button>' +
       '</td></tr>';
     var retryResBtn = document.getElementById("btn-retry-res-load");
     if (retryResBtn) {
@@ -554,8 +554,8 @@ function renderReservationTable(tbody) {
     var trEmpty = document.createElement("tr");
     trEmpty.innerHTML =
       '<td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.5;">bookmark_remove</span>' +
-        'Không có đơn đặt trước nào đang chờ nhận tại quầy.' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.5;">bookmark_remove</span>' +
+      'Không có đơn đặt trước nào đang chờ nhận tại quầy.' +
       '</td>';
     tbody.appendChild(trEmpty);
   } else {
@@ -567,19 +567,19 @@ function renderReservationTable(tbody) {
       var tdCode = document.createElement("td");
       tdCode.innerHTML =
         '<div class="loan-code-cell">' +
-          '<span class="loan-code-text font-mono">' + escapeHtml(resCode) + '</span>' +
-          '<span class="loan-time-sub">Đặt ' + escapeHtml(formatDateTimeVN(res.reserved_at)) + '</span>' +
+        '<span class="loan-code-text font-mono">' + escapeHtml(resCode) + '</span>' +
+        '<span class="loan-time-sub">Đặt ' + escapeHtml(formatDateTimeVN(res.reserved_at)) + '</span>' +
         '</div>';
       tr.appendChild(tdCode);
 
       var tdReader = document.createElement("td");
       tdReader.innerHTML =
         '<div class="reader-cell">' +
-          '<div class="reader-avatar-circle">' + escapeHtml(initialLetter) + '</div>' +
-          '<div class="reader-meta-wrap">' +
-            '<span class="reader-name-text">' + escapeHtml(res.user_name || ("Độc giả #" + res.user_id)) + '</span>' +
-            '<span class="reader-mssv-text">' + escapeHtml(res.user_email || ("ID #" + res.user_id)) + '</span>' +
-          '</div>' +
+        '<div class="reader-avatar-circle">' + escapeHtml(initialLetter) + '</div>' +
+        '<div class="reader-meta-wrap">' +
+        '<span class="reader-name-text">' + escapeHtml(res.user_name || ("Độc giả #" + res.user_id)) + '</span>' +
+        '<span class="reader-mssv-text">' + escapeHtml(res.user_email || ("ID #" + res.user_id)) + '</span>' +
+        '</div>' +
         '</div>';
       tr.appendChild(tdReader);
 
@@ -587,20 +587,20 @@ function renderReservationTable(tbody) {
       var tdDeadline = document.createElement("td");
       tdDeadline.innerHTML = isReady
         ? '<div class="appointment-cell">' +
-            '<span class="appointment-time-main"><span class="material-symbols-outlined">event_available</span> Hạn lấy: ' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</span>' +
-            '<span class="appointment-due-sub">Kệ: ' + escapeHtml(res.shelf_location || "Quầy thủ thư") + '</span>' +
-          '</div>'
+        '<span class="appointment-time-main"><span class="material-symbols-outlined">event_available</span> Hạn lấy: ' + escapeHtml(formatDateVN(res.pickup_deadline)) + '</span>' +
+        '<span class="appointment-due-sub">Kệ: ' + escapeHtml(res.shelf_location || "Quầy thủ thư") + '</span>' +
+        '</div>'
         : '<div class="appointment-cell">' +
-            '<span class="appointment-time-main"><span class="material-symbols-outlined">hourglass_top</span> Xếp hàng #' + escapeHtml(String(res.queue_position || "?")) + '</span>' +
-            '<span class="appointment-due-sub">Đang chờ sách trả về kho</span>' +
-          '</div>';
+        '<span class="appointment-time-main"><span class="material-symbols-outlined">hourglass_top</span> Xếp hàng #' + escapeHtml(String(res.queue_position || "?")) + '</span>' +
+        '<span class="appointment-due-sub">Đang chờ sách trả về kho</span>' +
+        '</div>';
       tr.appendChild(tdDeadline);
 
       var tdBook = document.createElement("td");
       tdBook.innerHTML =
         '<div class="books-summary-cell">' +
-          '<span class="book-count-badge">' + escapeHtml(res.copy_code || "Chờ gán bản sao") + '</span>' +
-          '<span class="book-title-ellipsis" title="' + escapeHtml(res.book_title || "") + '">' + escapeHtml(res.book_title || res.book_isbn) + '</span>' +
+        '<span class="book-count-badge">' + escapeHtml(res.copy_code || "Chờ gán bản sao") + '</span>' +
+        '<span class="book-title-ellipsis" title="' + escapeHtml(res.book_title || "") + '">' + escapeHtml(res.book_title || res.book_isbn) + '</span>' +
         '</div>';
       tr.appendChild(tdBook);
 
@@ -690,8 +690,8 @@ function renderLoanTable() {
     updateTableHeaderTitle(0);
     tbody.innerHTML =
       '<tr><td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.6;">hourglass_empty</span>' +
-        'Đang tải danh sách phiếu mượn từ cơ sở dữ liệu...' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.6;">hourglass_empty</span>' +
+      'Đang tải danh sách phiếu mượn từ cơ sở dữ liệu...' +
       '</td></tr>';
     renderPagination(0, 1, 0, 0);
     return;
@@ -701,11 +701,11 @@ function renderLoanTable() {
     updateTableHeaderTitle(0);
     tbody.innerHTML =
       '<tr><td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; color: var(--color-danger);">cloud_off</span>' +
-        '<div>' + escapeHtml(loadError) + '</div>' +
-        '<button type="button" class="btn-table-action" id="btn-retry-load" style="margin: 12px auto 0;">' +
-          '<span class="material-symbols-outlined">refresh</span><span>Thử lại</span>' +
-        '</button>' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; color: var(--color-danger);">cloud_off</span>' +
+      '<div>' + escapeHtml(loadError) + '</div>' +
+      '<button type="button" class="btn-table-action" id="btn-retry-load" style="margin: 12px auto 0;">' +
+      '<span class="material-symbols-outlined">refresh</span><span>Thử lại</span>' +
+      '</button>' +
       '</td></tr>';
     var retryBtn = document.getElementById("btn-retry-load");
     if (retryBtn) {
@@ -735,8 +735,8 @@ function renderLoanTable() {
     var trEmpty = document.createElement("tr");
     trEmpty.innerHTML =
       '<td colspan="6" class="table-empty-row">' +
-        '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.5;">search_off</span>' +
-        'Không tìm thấy yêu cầu phù hợp.' +
+      '<span class="material-symbols-outlined" style="font-size: 32px; display:block; margin-bottom: 8px; opacity: 0.5;">search_off</span>' +
+      'Không tìm thấy yêu cầu phù hợp.' +
       '</td>';
     tbody.appendChild(trEmpty);
   } else {
@@ -750,8 +750,8 @@ function renderLoanTable() {
       var tdMaPhieu = document.createElement("td");
       tdMaPhieu.innerHTML =
         '<div class="loan-code-cell">' +
-          '<span class="loan-code-text font-mono">' + escapeHtml(loan.maPhieu) + '</span>' +
-          '<span class="loan-time-sub">' + escapeHtml(loan.gioTao) + '</span>' +
+        '<span class="loan-code-text font-mono">' + escapeHtml(loan.maPhieu) + '</span>' +
+        '<span class="loan-time-sub">' + escapeHtml(loan.gioTao) + '</span>' +
         '</div>';
       tr.appendChild(tdMaPhieu);
 
@@ -760,11 +760,11 @@ function renderLoanTable() {
       var initialLetter = loan.docGia.ten ? loan.docGia.ten.trim().charAt(0).toUpperCase() : "U";
       tdDocGia.innerHTML =
         '<div class="reader-cell">' +
-          '<div class="reader-avatar-circle">' + escapeHtml(initialLetter) + '</div>' +
-          '<div class="reader-meta-wrap">' +
-            '<span class="reader-name-text">' + escapeHtml(loan.docGia.ten) + '</span>' +
-            '<span class="reader-mssv-text">Mã thẻ: ' + escapeHtml(loan.docGia.cardCode) + '</span>' +
-          '</div>' +
+        '<div class="reader-avatar-circle">' + escapeHtml(initialLetter) + '</div>' +
+        '<div class="reader-meta-wrap">' +
+        '<span class="reader-name-text">' + escapeHtml(loan.docGia.ten) + '</span>' +
+        '<span class="reader-mssv-text">Mã thẻ: ' + escapeHtml(loan.docGia.cardCode) + '</span>' +
+        '</div>' +
         '</div>';
       tr.appendChild(tdDocGia);
 
@@ -773,20 +773,20 @@ function renderLoanTable() {
       if (loan.trangThai === "Quá hạn") {
         tdHenNhan.innerHTML =
           '<div class="appointment-cell">' +
-            '<span class="overdue-alert-tag"><span class="material-symbols-outlined" style="font-size: 15px;">warning</span> ' + escapeHtml(loan.henNhan) + '</span>' +
-            '<span class="appointment-due-sub font-mono">' + escapeHtml(loan.hanNhan) + '</span>' +
+          '<span class="overdue-alert-tag"><span class="material-symbols-outlined" style="font-size: 15px;">warning</span> ' + escapeHtml(loan.henNhan) + '</span>' +
+          '<span class="appointment-due-sub font-mono">' + escapeHtml(loan.hanNhan) + '</span>' +
           '</div>';
       } else if (loan.trangThai === "Đã từ chối" || loan.trangThai === "Đã hủy") {
         tdHenNhan.innerHTML =
           '<div class="appointment-cell">' +
-            '<span class="overdue-alert-tag"><span class="material-symbols-outlined" style="font-size: 15px;">event_busy</span> ' + escapeHtml(loan.henNhan) + '</span>' +
-            '<span class="appointment-due-sub" title="' + escapeHtml(loan.hanNhan) + '">' + escapeHtml(loan.hanNhan) + '</span>' +
+          '<span class="overdue-alert-tag"><span class="material-symbols-outlined" style="font-size: 15px;">event_busy</span> ' + escapeHtml(loan.henNhan) + '</span>' +
+          '<span class="appointment-due-sub" title="' + escapeHtml(loan.hanNhan) + '">' + escapeHtml(loan.hanNhan) + '</span>' +
           '</div>';
       } else {
         tdHenNhan.innerHTML =
           '<div class="appointment-cell">' +
-            '<span class="appointment-time-main"><span class="material-symbols-outlined">schedule</span> ' + escapeHtml(loan.henNhan) + '</span>' +
-            '<span class="appointment-due-sub">' + escapeHtml(loan.hanNhan) + '</span>' +
+          '<span class="appointment-time-main"><span class="material-symbols-outlined">schedule</span> ' + escapeHtml(loan.henNhan) + '</span>' +
+          '<span class="appointment-due-sub">' + escapeHtml(loan.hanNhan) + '</span>' +
           '</div>';
       }
       tr.appendChild(tdHenNhan);
@@ -797,8 +797,8 @@ function renderLoanTable() {
       var firstBookTitle = loan.sach[0] ? loan.sach[0].ten : "Chưa có ấn phẩm";
       tdSach.innerHTML =
         '<div class="books-summary-cell">' +
-          '<span class="book-count-badge">' + bookCount + ' cuốn</span>' +
-          '<span class="book-title-ellipsis" title="' + escapeHtml(firstBookTitle) + '">' + escapeHtml(firstBookTitle) + '</span>' +
+        '<span class="book-count-badge">' + bookCount + ' cuốn</span>' +
+        '<span class="book-title-ellipsis" title="' + escapeHtml(firstBookTitle) + '">' + escapeHtml(firstBookTitle) + '</span>' +
         '</div>';
       tr.appendChild(tdSach);
 
@@ -1078,20 +1078,20 @@ function openDetailModal(loanId) {
 
     card.innerHTML =
       '<div class="book-item-icon-wrap">' +
-        '<span class="material-symbols-outlined">menu_book</span>' +
+      '<span class="material-symbols-outlined">menu_book</span>' +
       '</div>' +
       '<div class="book-item-details">' +
-        '<div class="book-item-title">' + escapeHtml(book.ten) + '</div>' +
-        '<div class="book-item-meta">' +
-          '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(book.maBanSao) + '</span> • ' +
-          '<strong>Vị trí trên giá:</strong> ' + escapeHtml(book.viTri) +
-          (book.tacGia ? ' • <strong>Tác giả:</strong> ' + escapeHtml(book.tacGia) : '') +
-          itemMetaExtra +
-        '</div>' +
-        getBookCopyStatusHtml(book, loan) +
-        (book.hasWaitingReservation && !book.returnDate && loan.rawStatus === "BORROWED"
-          ? ' <span class="badge badge-pending" style="margin-left:8px; font-size:11px;">Có người đặt trước</span>'
-          : '') +
+      '<div class="book-item-title">' + escapeHtml(book.ten) + '</div>' +
+      '<div class="book-item-meta">' +
+      '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(book.maBanSao) + '</span> • ' +
+      '<strong>Vị trí trên giá:</strong> ' + escapeHtml(book.viTri) +
+      (book.tacGia ? ' • <strong>Tác giả:</strong> ' + escapeHtml(book.tacGia) : '') +
+      itemMetaExtra +
+      '</div>' +
+      getBookCopyStatusHtml(book, loan) +
+      (book.hasWaitingReservation && !book.returnDate && loan.rawStatus === "BORROWED"
+        ? ' <span class="badge badge-pending" style="margin-left:8px; font-size:11px;">Có người đặt trước</span>'
+        : '') +
       '</div>';
 
     if (canRenewThisItem) {
@@ -1242,18 +1242,18 @@ function openReservationDetailModal(resId) {
   card.className = "book-item-card";
   card.innerHTML =
     '<div class="book-item-icon-wrap">' +
-      '<span class="material-symbols-outlined">menu_book</span>' +
+    '<span class="material-symbols-outlined">menu_book</span>' +
     '</div>' +
     '<div class="book-item-details">' +
-      '<div class="book-item-title">' + escapeHtml(res.book_title || res.book_isbn) + '</div>' +
-      '<div class="book-item-meta">' +
-        '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(res.copy_code || "Chưa gán") + '</span> • ' +
-        '<strong>Vị trí:</strong> ' + escapeHtml(res.shelf_location || "Quầy thủ thư") +
-        (res.book_author ? ' • <strong>Tác giả:</strong> ' + escapeHtml(res.book_author) : '') +
-      '</div>' +
-      (isReady
-        ? '<span class="book-item-availability available"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đã giữ chỗ cho đơn đặt trước</span>'
-        : '<span class="book-item-availability unavailable"><span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span> Đang chờ có bản sao trống để giữ chỗ</span>') +
+    '<div class="book-item-title">' + escapeHtml(res.book_title || res.book_isbn) + '</div>' +
+    '<div class="book-item-meta">' +
+    '<strong>Mã bản sao:</strong> <span class="font-mono">' + escapeHtml(res.copy_code || "Chưa gán") + '</span> • ' +
+    '<strong>Vị trí:</strong> ' + escapeHtml(res.shelf_location || "Quầy thủ thư") +
+    (res.book_author ? ' • <strong>Tác giả:</strong> ' + escapeHtml(res.book_author) : '') +
+    '</div>' +
+    (isReady
+      ? '<span class="book-item-availability available"><span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Đã giữ chỗ cho đơn đặt trước</span>'
+      : '<span class="book-item-availability unavailable"><span class="material-symbols-outlined" style="font-size: 14px;">hourglass_top</span> Đang chờ có bản sao trống để giữ chỗ</span>') +
     '</div>';
   booksListContainer.appendChild(card);
 
@@ -1693,8 +1693,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!role) return "Độc giả";
     var r = String(role).toUpperCase();
     if (r === "ADMIN") return "Quản trị viên";
-    if (r === "LIBRARIAN") return "Thủ thư";
-    if (r === "READER") return "Sinh viên / Độc giả";
+    if (r === "LIBRARIAN") return "Thủ thư trực quầy";
+    if (r === "READER") return "Độc giả";
     return role;
   }
 

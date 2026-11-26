@@ -148,7 +148,7 @@
       const roleEl = document.getElementById("userRole");
       if (avatarEl) avatarEl.textContent = (user.full_name || user.email || "A").charAt(0).toUpperCase();
       if (nameEl) nameEl.textContent = user.full_name || user.email || "Thủ thư";
-      if (roleEl) roleEl.textContent = user.role === "ADMIN" ? "Quản trị viên" : "Thủ thư";
+      if (roleEl) roleEl.textContent = user.role === "ADMIN" ? "Quản trị viên" : "Thủ thư trực quầy";
     }
 
     // Toggle menu mobile
@@ -301,8 +301,8 @@
       tabKey === "category"
         ? document.getElementById("tabBtnCategory")
         : tabKey === "author"
-        ? document.getElementById("tabBtnAuthor")
-        : document.getElementById("tabBtnPublisher");
+          ? document.getElementById("tabBtnAuthor")
+          : document.getElementById("tabBtnPublisher");
 
     if (activeBtn) {
       activeBtn.classList.add("active");

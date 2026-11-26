@@ -361,13 +361,14 @@ body.readers-app {
 .librarian-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1B1C1A;
   line-height: 1.2;
 }
 
 .librarian-role {
   font-size: 11px;
-  color: var(--color-text-muted);
+  color: var(--color-brand);
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -630,6 +631,8 @@ body.readers-app {
 .btn-soft-success:hover { background: #D1FAE5; }
 
 .btn-sm { padding: 6px 12px; font-size: 12.5px; }
+.btn .material-symbols-outlined { font-size: 17px; line-height: 1; }
+.btn-sm .material-symbols-outlined { font-size: 15px; line-height: 1; }
 
 /* ---------- 4. FOUR STAT CARDS ---------- */
 .kpi-grid {
@@ -669,13 +672,19 @@ body.readers-app {
 }
 
 .kpi-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
+  flex-shrink: 0;
+}
+
+.kpi-icon .material-symbols-outlined {
+  font-size: 19px;
+  line-height: 1;
 }
 
 .kpi-icon-neutral { background: #F2EFE9; color: var(--text-sec); }
@@ -694,6 +703,15 @@ body.readers-app {
 .kpi-sub {
   font-size: 12px;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kpi-sub .material-symbols-outlined {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 /* ---------- 5. FILTER BAR CARD ---------- */
@@ -1124,6 +1142,12 @@ body.readers-app {
   margin: 0;
 }
 
+.panel-title .material-symbols-outlined {
+  font-size: 19px;
+  color: var(--primary);
+  line-height: 1;
+}
+
 .panel-meta {
   font-size: 12.5px;
   color: var(--muted);
@@ -1260,6 +1284,11 @@ table.readers-table tbody tr.is-selected {
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s;
+}
+
+.row-icon-btn .material-symbols-outlined {
+  font-size: 17px;
+  line-height: 1;
 }
 
 .row-icon-btn:hover {
@@ -1749,6 +1778,15 @@ table.readers-table tbody tr.is-selected {
   font-family: var(--font-serif);
   font-size: 21px;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-head h3 .material-symbols-outlined {
+  font-size: 22px;
+  color: var(--primary);
+  line-height: 1;
 }
 
 .modal-close {
@@ -1759,6 +1797,20 @@ table.readers-table tbody tr.is-selected {
   background: transparent;
   cursor: pointer;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.modal-close:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.modal-close .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .form-field { margin-bottom: 14px; }

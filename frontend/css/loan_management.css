@@ -226,7 +226,7 @@ body.loan-mgmt-body {
   background: var(--color-brand);
   color: #ffffff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,15 +240,14 @@ body.loan-mgmt-body {
 .librarian-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1B1C1A;
   line-height: 1.2;
 }
 
 .librarian-role {
   font-size: 11px;
-  color: var(--color-success);
+  color: var(--color-brand);
   font-weight: 500;
-  line-height: 1.2;
 }
 
 /* Mobile Menu Toggle Button (đồng bộ loan_basket) */

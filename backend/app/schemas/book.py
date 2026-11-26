@@ -12,7 +12,7 @@ class BookCreate(BaseModel):
     language: str = "Tiếng Việt"
     description: str | None = None
     cover_image: str | None = None
-    price: Decimal = 0
+    price: Decimal = Field(default=Decimal(0), ge=0)
     author_ids: List[int] = Field(default_factory=list)
 
 
@@ -25,7 +25,7 @@ class BookUpdate(BaseModel):
     language: str | None = None
     description: str | None = None
     cover_image: str | None = None
-    price: Decimal | None = None
+    price: Decimal | None = Field(default=None, ge=0)
     author_ids: List[int] | None = None
 
 

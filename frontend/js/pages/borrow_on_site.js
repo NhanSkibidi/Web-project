@@ -960,9 +960,77 @@
   }
 
   // ----------------------------------------------------------------------------
-  // ĐỒNG BỘ THÔNG TIN NGƯỜI DÙNG & SỰ KIỆN TẠI AVATAR (LOGIN / LOGOUT / PROFILE)
+  // KIỂM TRA QUYỀN NHÂN VIÊN (ADMIN / LIBRARIAN) & ĐỒNG BỘ TOPBAR
   // ----------------------------------------------------------------------------
-  async function loadUserProfile() {
+  function getSessionAuthInfo() {
+    let token = null;
+    let user = null;
+    if (typeof auth !== "undefined") {
+      token = typeof auth.getToken === "function" ? auth.getToken() : null;
+      user = typeof auth.getUser === "function" ? auth.getUser() : null;
+    }
+    if (!token) {
+      token =
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("access_token") ||
+        null;
+    }
+    if (!user) {
+      try {
+        const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
+        if (raw) user = JSON.parse(raw);
+      } catch (e) { /* ignore */ }
+    }
+    return { token, user };
+  }
+
+  function renderBorrowAuthGuard(codeText, reasonTitle, reasonDesc, ctaLabel, ctaHref, isForbidden) {
+    const sidebar = document.getElementById("app-sidebar");
+    if (sidebar) sidebar.style.display = "none";
+    const wrapper = document.querySelector(".main-wrapper");
+    if (wrapper) wrapper.style.marginLeft = "0";
+
+    const container = document.querySelector(".page-container");
+    if (!container) return;
+
+    const iconName = isForbidden ? "block" : "lock";
+    const secondaryHtml = isForbidden
+      ? `<a href="login.html#login" id="btn-guard-switch-acc" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;border:1px solid var(--color-border,#E6E2D8);background:#fff;color:var(--color-text-primary,#1A202C);font-weight:600;font-size:14px;text-decoration:none;">Đổi tài khoản khác</a>`
+      : `<a href="home.html" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;border:1px solid var(--color-border,#E6E2D8);background:#fff;color:var(--color-text-primary,#1A202C);font-weight:600;font-size:14px;text-decoration:none;">Về Trang chủ</a>`;
+
+    container.innerHTML = `
+      <div style="max-width:560px;margin:48px auto;padding:34px 32px;background:var(--color-surface,#FFFFFF);border:1px solid var(--color-border,#E6E2D8);border-radius:var(--radius-card,14px);box-shadow:var(--shadow-card,0 1px 4px rgba(27,67,50,0.06));text-align:center;">
+        <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--color-danger-bg,#FEF2F2);color:#DC2626;display:flex;align-items:center;justify-content:center;">
+          <span class="material-symbols-outlined" style="font-size:28px;">${iconName}</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-text-secondary,#4A5568);margin-bottom:6px;">${escapeHtml(codeText)}</div>
+        <h2 style="font-family:'Newsreader',Georgia,serif;margin:0 0 8px;color:var(--color-brand,#1B4332);font-size:24px;">${escapeHtml(reasonTitle)}</h2>
+        <p style="margin:0 0 24px;color:var(--color-text-secondary,#4A5568);font-size:14px;line-height:1.55;">${escapeHtml(reasonDesc)}</p>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+          <a href="${ctaHref}" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;background:var(--color-brand,#1B4332);color:#fff;font-weight:600;font-size:14px;text-decoration:none;">${escapeHtml(ctaLabel)}</a>
+          ${secondaryHtml}
+        </div>
+      </div>
+    `;
+
+    const switchBtn = document.getElementById("btn-guard-switch-acc");
+    if (switchBtn) {
+      switchBtn.addEventListener("click", () => {
+        if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
+          auth.clearSession();
+        } else {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_info");
+          sessionStorage.removeItem("access_token");
+          sessionStorage.removeItem("user_info");
+        }
+      });
+    }
+  }
+
+  function renderTopbarUser(user) {
     const avatarEl = document.getElementById("userAvatar");
     const nameEl = document.getElementById("userName");
     const roleEl = document.getElementById("userRole");
@@ -977,82 +1045,110 @@
       return role;
     }
 
-    function renderUser(user) {
-      if (!user) {
-        if (avatarEl) avatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
-        if (nameEl) nameEl.textContent = "Chưa đăng nhập";
-        if (roleEl) roleEl.textContent = "Bấm để đăng nhập";
-        if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = "Chưa đăng nhập";
-        if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = "—";
-
-        if (dropdownMenu) {
-          dropdownMenu.innerHTML = `
-            <a href="login.html#login" class="dropdown-item">
-              <span class="material-symbols-outlined">login</span>
-              <span>Đăng nhập</span>
-            </a>
-            <a href="login.html#register" class="dropdown-item">
-              <span class="material-symbols-outlined">person_add</span>
-              <span>Đăng ký thẻ mới</span>
-            </a>
-          `;
-        }
-        return;
-      }
-
-      const displayName = user.full_name || user.name || user.email || "Thủ thư";
-      const initialChar = (displayName.trim().charAt(0) || "T").toUpperCase();
-      const displayRole = mapRoleLabel(user.role);
-
-      if (avatarEl) avatarEl.textContent = initialChar;
-      if (nameEl) nameEl.textContent = displayName;
-      if (roleEl) roleEl.textContent = displayRole;
-
-      if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = displayName;
-      if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = displayName;
+    if (!user) {
+      if (avatarEl) avatarEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person</span>';
+      if (nameEl) nameEl.textContent = "Chưa đăng nhập";
+      if (roleEl) roleEl.textContent = "Bấm để đăng nhập";
+      if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = "Chưa đăng nhập";
+      if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = "—";
 
       if (dropdownMenu) {
         dropdownMenu.innerHTML = `
-          <a href="profile.html" class="dropdown-item">
-            <span class="material-symbols-outlined">account_circle</span>
-            <span>Thông tin cá nhân</span>
+          <a href="login.html#login" class="dropdown-item">
+            <span class="material-symbols-outlined">login</span>
+            <span>Đăng nhập</span>
           </a>
-          <div class="dropdown-divider"></div>
-          <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
-            <span class="material-symbols-outlined">logout</span>
-            <span>Đăng xuất</span>
-          </button>
+          <a href="login.html#register" class="dropdown-item">
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Đăng ký thẻ mới</span>
+          </a>
         `;
       }
+      return;
     }
 
-    // 1. Lấy thông tin từ cache (hiển thị ngay)
-    let currentUser = null;
-    if (typeof auth !== "undefined" && typeof auth.getUser === "function") {
-      currentUser = auth.getUser();
-    } else {
-      try {
-        const raw = localStorage.getItem("user_info") || sessionStorage.getItem("user_info");
-        if (raw) currentUser = JSON.parse(raw);
-      } catch (e) { /* ignore */ }
-    }
-    renderUser(currentUser);
+    const displayName = user.full_name || user.name || user.email || "Thủ thư";
+    const initialChar = (displayName.trim().charAt(0) || "T").toUpperCase();
+    const displayRole = mapRoleLabel(user.role);
 
-    // 2. Đồng bộ session mới nhất từ database nếu có token
-    if (typeof auth !== "undefined" && typeof auth.getToken === "function" && auth.getToken()) {
+    if (avatarEl) avatarEl.textContent = initialChar;
+    if (nameEl) nameEl.textContent = displayName;
+    if (roleEl) roleEl.textContent = displayRole;
+
+    if (dom.summaryLibrarianName) dom.summaryLibrarianName.textContent = displayName;
+    if (dom.pSigLibrarianName) dom.pSigLibrarianName.textContent = displayName;
+
+    if (dropdownMenu) {
+      dropdownMenu.innerHTML = `
+        <a href="profile.html" class="dropdown-item">
+          <span class="material-symbols-outlined">account_circle</span>
+          <span>Thông tin cá nhân</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <button type="button" class="dropdown-item text-danger" id="logoutMenuBtn">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Đăng xuất</span>
+        </button>
+      `;
+    }
+  }
+
+  function enforceBorrowStaffGuard(userOverride = undefined) {
+    const session = getSessionAuthInfo();
+    const activeUser = userOverride !== undefined ? userOverride : session.user;
+
+    if (!session.token || !activeUser) {
+      try { sessionStorage.setItem("redirect_after_login", window.location.href); } catch (_) {}
+      renderTopbarUser(null);
+      renderBorrowAuthGuard(
+        "HTTP 401 · UNAUTHORIZED",
+        "Yêu cầu đăng nhập Thủ thư / Admin",
+        "Chức năng Mượn sách tại quầy yêu cầu tài khoản Thủ thư (LIBRARIAN) hoặc Quản trị viên (ADMIN).",
+        "Đăng nhập ngay →",
+        "login.html#login",
+        false
+      );
+      return null;
+    }
+
+    const role = String(activeUser.role || "").toUpperCase();
+    if (!["ADMIN", "LIBRARIAN"].includes(role)) {
+      renderTopbarUser(activeUser);
+      renderBorrowAuthGuard(
+        "HTTP 403 · FORBIDDEN",
+        "Không đủ quyền truy cập (403)",
+        `Tài khoản "${activeUser.full_name || activeUser.email}" (${role || "READER"}) không có quyền thao tác quầy mượn sách.`,
+        "Về Cổng Độc giả →",
+        "home.html",
+        true
+      );
+      return null;
+    }
+
+    renderTopbarUser(activeUser);
+    return activeUser;
+  }
+
+  async function loadUserProfile() {
+    const { token, user: currentUser } = getSessionAuthInfo();
+    if (!token || !currentUser) return null;
+
+    if (typeof auth !== "undefined" && typeof auth.syncSession === "function") {
       try {
-        if (typeof auth.syncSession === "function") {
-          const freshUser = await auth.syncSession();
-          if (freshUser) {
-            renderUser(freshUser);
-          } else if (typeof auth.getUser === "function" && !auth.getUser()) {
-            renderUser(null);
+        const freshUser = await auth.syncSession();
+        if (!freshUser) {
+          const latest = getSessionAuthInfo();
+          if (!latest.token || !latest.user) {
+            return enforceBorrowStaffGuard(null);
           }
+          return enforceBorrowStaffGuard(latest.user);
         }
+        return enforceBorrowStaffGuard(freshUser);
       } catch (err) {
         console.warn("Không thể đồng bộ session user:", err);
       }
     }
+    return currentUser;
   }
 
   function handleLogoutClick(e) {
@@ -1093,11 +1189,8 @@
   // ==============================================================================
   // 10. KHỞI TẠO VÀ LẮNG NGHE SỰ KIỆN GIAO DIỆN
   // ==============================================================================
-  function init() {
-    // 1. Tải và đồng bộ thông tin tài khoản
-    loadUserProfile();
-
-    // Header Mobile Menu & User Dropdown (đồng bộ loan_management)
+  async function init() {
+    // 1. Khởi tạo header topbar & hộp thoại xác nhận chung (hoạt động cả trên màn hình chặn)
     const mobileMenuToggle = document.getElementById("mobileMenuToggle");
     const navMenu = document.getElementById("navMenu");
     if (mobileMenuToggle && navMenu) {
@@ -1119,7 +1212,6 @@
       });
     }
 
-    // Bắt sự kiện đăng xuất qua delegation trên document (hoạt động cả khi DOM dropdown render lại)
     document.addEventListener("click", (e) => {
       const logoutBtn = e.target.closest("#logoutMenuBtn");
       if (logoutBtn) {
@@ -1140,7 +1232,6 @@
       }
     });
 
-    // Sự kiện trong Hộp thoại xác nhận chung (Confirm modal)
     const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
     const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
     const confirmModal = document.getElementById("confirm-modal");
@@ -1163,7 +1254,29 @@
       });
     }
 
-    // 2. Đặt ngày hẹn trả mặc định 14 ngày
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (confirmModal && confirmModal.classList.contains("active")) {
+          closeConfirmModal();
+        }
+        if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
+          userDropdownMenu.classList.remove("show");
+          if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
+        }
+        if (navMenu && navMenu.classList.contains("show")) {
+          navMenu.classList.remove("show");
+        }
+      }
+    });
+
+    // 2. Chặn truy cập nếu chưa đăng nhập hoặc không phải Thủ thư / Admin
+    const staffUser = enforceBorrowStaffGuard();
+    if (!staffUser) return;
+
+    const verifiedUser = await loadUserProfile();
+    if (!verifiedUser) return;
+
+    // 3. Đặt ngày hẹn trả mặc định 14 ngày
     dom.summaryDueDate.textContent = getStandardDueDate();
 
     // 3. Sự kiện tra cứu thẻ
@@ -1210,22 +1323,13 @@
     dom.btnFinishModal.addEventListener("click", closeModalAndReset);
     dom.btnPrintReceiptAction.addEventListener("click", printReceipt);
 
-    // 8. Đóng modal bằng phím Escape
+    // 8. Đóng modal nghiệp vụ bằng phím Escape
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (!dom.cameraScannerModal.classList.contains("hidden")) {
           stopCameraScanner();
         } else if (!dom.receiptModal.classList.contains("hidden")) {
           dom.receiptModal.classList.add("hidden");
-        } else if (confirmModal && confirmModal.classList.contains("active")) {
-          closeConfirmModal();
-        }
-        if (userDropdownMenu && userDropdownMenu.classList.contains("show")) {
-          userDropdownMenu.classList.remove("show");
-          if (userProfileBtn) userProfileBtn.setAttribute("aria-expanded", "false");
-        }
-        if (navMenu && navMenu.classList.contains("show")) {
-          navMenu.classList.remove("show");
         }
       }
     });

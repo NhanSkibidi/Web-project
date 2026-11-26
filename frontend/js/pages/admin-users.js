@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (mainEl) {
         mainEl.innerHTML = `
           <div class="guard-box">
-            <div style="font-size:40px; margin-bottom:10px;">🔒</div>
+            <span class="material-symbols-outlined" style="font-size:42px; color:var(--primary); margin-bottom:10px; display:block;">lock</span>
             <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">HTTP 401 · UNAUTHORIZED</div>
             <h2 style="font-family:var(--font-serif); margin:8px 0;">Yêu cầu đăng nhập Quản trị viên</h2>
             <p style="color:var(--muted); font-size:14px; margin-bottom:22px;">
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (mainEl) {
         mainEl.innerHTML = `
           <div class="guard-box">
-            <div style="font-size:40px; margin-bottom:10px;">⛔</div>
+            <span class="material-symbols-outlined" style="font-size:42px; color:var(--danger); margin-bottom:10px; display:block;">block</span>
             <div style="font-family:var(--font-mono); font-size:12px; color:var(--danger);">HTTP 403 · FORBIDDEN</div>
             <h2 style="font-family:var(--font-serif); margin:8px 0;">Chỉ dành cho Quản trị viên (ADMIN)</h2>
             <p style="color:var(--muted); font-size:14px; margin-bottom:22px;">
@@ -56,9 +56,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const avatarEl = document.getElementById("userAvatar");
   const nameEl = document.getElementById("userName");
   const roleEl = document.getElementById("userRole");
-  if (avatarEl) avatarEl.textContent = (adminUser.full_name || "A").charAt(0).toUpperCase();
+  if (avatarEl) avatarEl.textContent = (adminUser.full_name || adminUser.email || "A").trim().charAt(0).toUpperCase();
   if (nameEl) nameEl.textContent = adminUser.full_name || adminUser.email;
-  if (roleEl) roleEl.textContent = adminUser.role === "ADMIN" ? "Quản trị hệ thống" : "Thủ thư";
+  if (roleEl) roleEl.textContent = adminUser.role === "ADMIN" ? "Quản trị viên" : "Thủ thư";
 
   // Mobile Menu Toggle
   const mobileMenuToggle = document.getElementById("mobileMenuToggle");
@@ -236,8 +236,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             : `<span class="status-pill status-locked">Đã khóa (LOCKED)</span>`;
 
           const toggleBtn = isActive
-            ? `<button type="button" class="btn btn-soft-danger btn-sm" data-toggle-id="${lib.id}" data-action="LOCK">🔒 Khóa</button>`
-            : `<button type="button" class="btn btn-soft-success btn-sm" data-toggle-id="${lib.id}" data-action="UNLOCK">🔓 Mở khóa</button>`;
+            ? `<button type="button" class="btn btn-soft-danger btn-sm" data-toggle-id="${lib.id}" data-action="LOCK"><span class="material-symbols-outlined">lock</span><span>Khóa</span></button>`
+            : `<button type="button" class="btn btn-soft-success btn-sm" data-toggle-id="${lib.id}" data-action="UNLOCK"><span class="material-symbols-outlined">lock_open</span><span>Mở khóa</span></button>`;
 
           return `
             <tr>
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <td>${formatDateVN(lib.created_at)}</td>
               <td style="text-align:right;">
                 <div class="row-actions">
-                  <button type="button" class="btn btn-soft-blue btn-sm" data-edit-id="${lib.id}">✏️ Sửa</button>
+                  <button type="button" class="btn btn-soft-blue btn-sm" data-edit-id="${lib.id}"><span class="material-symbols-outlined">edit</span><span>Sửa</span></button>
                   ${toggleBtn}
                 </div>
               </td>
@@ -340,12 +340,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const confirmBtn = document.getElementById("btn-confirm-toggle-lib");
 
       if (action === "LOCK") {
-        titleEl.textContent = "🔒 Khóa tài khoản Thủ thư";
+        titleEl.innerHTML = '<span class="material-symbols-outlined">lock</span><span>Khóa tài khoản Thủ thư</span>';
         descEl.innerHTML = `Bạn có chắc chắn muốn <strong>khóa</strong> tài khoản thủ thư <strong>${escapeHtml(lib.full_name)}</strong> (<code>${escapeHtml(lib.email)}</code>)?<br>Tài khoản bị khóa sẽ không thể đăng nhập hoặc thực hiện bất kỳ thao tác nào trên hệ thống.`;
         confirmBtn.textContent = "Xác nhận Khóa tài khoản";
         confirmBtn.className = "btn btn-soft-danger";
       } else {
-        titleEl.textContent = "🔓 Mở khóa tài khoản Thủ thư";
+        titleEl.innerHTML = '<span class="material-symbols-outlined">lock_open</span><span>Mở khóa tài khoản Thủ thư</span>';
         descEl.innerHTML = `Xác nhận <strong>mở khóa</strong> tài khoản thủ thư <strong>${escapeHtml(lib.full_name)}</strong> (<code>${escapeHtml(lib.email)}</code>)?<br>Thủ thư sẽ có thể đăng nhập và làm việc trở lại ngay lập tức.`;
         confirmBtn.textContent = "Xác nhận Mở khóa";
         confirmBtn.className = "btn btn-primary";

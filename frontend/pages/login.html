@@ -33,14 +33,6 @@
         <a href="search.html" class="topbar-nav-link">Tra cứu sách</a>
       </nav>
     </div>
-
-    <div class="topbar-right">
-      <div class="lang-switch" title="Chuyển đổi ngôn ngữ / Language / 言語">
-        <button type="button" class="lang-btn active" data-lang="vi">VN</button>
-        <button type="button" class="lang-btn" data-lang="en">EN</button>
-        <button type="button" class="lang-btn" data-lang="ja">JP</button>
-      </div>
-    </div>
   </header>
 
   <!-- Main Content Wrap -->
@@ -65,13 +57,6 @@
             <input id="quick-search-input" type="search" class="search-input" placeholder="Tên sách, tác giả, ISBN...">
             <select id="quick-search-category" class="search-select">
               <option value="">Tất cả thể loại</option>
-              <option value="1">Công nghệ thông tin</option>
-              <option value="2">Văn học</option>
-              <option value="3">Kinh tế</option>
-              <option value="4">Kỹ năng sống</option>
-              <option value="5">Lịch sử</option>
-              <option value="6">Khoa học</option>
-              <option value="7">Tâm lý học</option>
             </select>
             <button id="quick-search-btn" type="button" class="search-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -82,13 +67,10 @@
             </button>
           </div>
 
-          <!-- Quick tags -->
-          <div class="quick-tags">
+          <!-- Quick tags (nạp từ database) -->
+          <div id="quick-tags-container" class="quick-tags">
             <span class="tag-label">Gợi ý tìm kiếm:</span>
-            <button type="button" class="tag-pill">Giáo trình Kinh tế</button>
-            <button type="button" class="tag-pill">Khoa học máy tính</button>
-            <button type="button" class="tag-pill">Văn học cổ điển</button>
-            <button type="button" class="tag-pill">Kỹ năng sống</button>
+            <span class="tag-label">Đang tải gợi ý...</span>
           </div>
 
           <!-- Results preview dropdown -->
@@ -243,23 +225,6 @@
           <div id="register-alert" class="alert-box"></div>
 
           <form id="register-form">
-            <!-- Mã sinh viên / Cán bộ -->
-            <div class="form-group">
-              <div class="form-label-row">
-                <label for="reg-student-code" class="form-label">Mã số sinh viên / Cán bộ (*)</label>
-                <span class="form-badge-hint">8 chữ số</span>
-              </div>
-              <div class="input-wrap">
-                <input
-                  id="reg-student-code"
-                  type="text"
-                  class="form-control"
-                  placeholder="Ví dụ: 25010412"
-                  maxlength="20"
-                >
-              </div>
-            </div>
-
             <!-- Họ và tên -->
             <div class="form-group">
               <div class="form-label-row">
@@ -421,16 +386,17 @@
     </div>
   </main>
 
-  <!-- Bottom Page Footer -->
-  <footer class="auth-footer">
-    <div class="auth-footer-inner">
-      <div>© 2026 Thư viện số KS25. Bảo lưu mọi quyền.</div>
-      <div class="auth-footer-links">
-        <a href="#rules">Quy chế thư viện</a>
-        <a href="#privacy">Chính sách bảo mật</a>
-        <a href="#help">Trung tâm trợ giúp</a>
-        <a href="#student-support">Hỗ trợ sinh viên</a>
-      </div>
+  <!-- FOOTER TRANG WEB (ĐỒNG BỘ HOME.HTML) -->
+  <footer class="app-footer">
+    <div class="footer-left">
+      © 2026 KS25 Library System - Cổng Tra Cứu &amp; Độc Giả Sinh Viên. Bảo lưu mọi quyền.
+    </div>
+    <div class="footer-right">
+      <a href="#" class="footer-link">Trung tâm trợ giúp</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Quy định mượn trả</a>
+      <span class="footer-dot">•</span>
+      <a href="#" class="footer-link">Hỗ trợ sinh viên</a>
     </div>
   </footer>
 

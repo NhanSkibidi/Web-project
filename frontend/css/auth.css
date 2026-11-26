@@ -178,12 +178,6 @@ body.auth-page {
   box-shadow: 0 2px 8px rgba(27, 67, 50, 0.25);
 }
 
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 .auth-header-inner {
   max-width: 1240px;
   margin: 0 auto;
@@ -224,31 +218,6 @@ body.auth-page {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.lang-switch {
-  display: inline-flex;
-  padding: 4px;
-  background: #EFECE6;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.lang-btn {
-  padding: 4px 10px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  border-radius: var(--radius-pill);
-  transition: all 0.2s;
-}
-
-.lang-btn.active {
-  background: #FFFFFF;
-  color: var(--color-primary);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 /* ---------- Main Two-Column Layout ---------- */
@@ -613,15 +582,6 @@ body.auth-page {
   color: var(--color-text-secondary);
 }
 
-.form-badge-hint {
-  font-size: 11px;
-  background: #EFECE6;
-  color: var(--color-text-muted);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-}
-
 .form-link {
   font-size: 12px;
   color: var(--color-primary);
@@ -946,40 +906,47 @@ body.auth-page {
   background: #FEE2E2;
 }
 
-/* ---------- Footer ---------- */
-.auth-footer {
+/* ==========================================================
+   FOOTER TRANG WEB (ĐỒNG BỘ HOME.HTML / BOOKS.HTML)
+   ========================================================== */
+.app-footer {
+  margin-top: auto;
+  padding: 24px 32px;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
-  margin-top: auto;
-}
-
-.auth-footer-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 20px 24px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   font-size: 13px;
-  color: var(--color-text-muted);
-  flex-wrap: wrap;
-  gap: 14px;
+  color: #78716C;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.auth-footer-links {
+.footer-left {
+  font-weight: 500;
+}
+
+.footer-right {
   display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 
-.auth-footer-links a {
-  color: var(--color-text-muted);
+.footer-link {
+  color: #78716C;
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color 0.15s ease;
 }
 
-.auth-footer-links a:hover {
+.footer-link:hover {
   color: var(--color-primary);
+}
+
+.footer-dot {
+  color: var(--color-border);
 }
 
 .toast {

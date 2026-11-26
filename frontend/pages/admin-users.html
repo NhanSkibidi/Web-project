@@ -134,7 +134,10 @@
           <h1 class="page-title">Quản lý Tài khoản Thủ thư</h1>
         </div>
         <div class="page-head-actions">
-          <button id="btn-open-create-lib" type="button" class="btn btn-primary">👤+ Tạo tài khoản thủ thư</button>
+          <button id="btn-open-create-lib" type="button" class="btn btn-primary">
+            <span class="material-symbols-outlined">person_add</span>
+            <span>Tạo tài khoản thủ thư</span>
+          </button>
         </div>
       </div>
 
@@ -143,7 +146,9 @@
         <div class="kpi-card">
           <div class="kpi-top">
             <span class="kpi-label">Tổng tài khoản Thủ thư</span>
-            <span class="kpi-icon kpi-icon-neutral">👥</span>
+            <span class="kpi-icon kpi-icon-neutral">
+              <span class="material-symbols-outlined">group</span>
+            </span>
           </div>
           <div id="kpi-lib-total" class="kpi-value">—</div>
           <div class="kpi-sub">Nhân sự phân hệ Thủ thư</div>
@@ -152,19 +157,29 @@
         <div class="kpi-card">
           <div class="kpi-top">
             <span class="kpi-label">Đang hoạt động (ACTIVE)</span>
-            <span class="kpi-icon kpi-icon-green">✔</span>
+            <span class="kpi-icon kpi-icon-green">
+              <span class="material-symbols-outlined">check_circle</span>
+            </span>
           </div>
           <div id="kpi-lib-active" class="kpi-value" style="color: var(--primary);">—</div>
-          <div class="kpi-sub" style="color: var(--success);">• Có quyền đăng nhập &amp; tác nghiệp</div>
+          <div class="kpi-sub" style="color: var(--success);">
+            <span class="material-symbols-outlined">verified_user</span>
+            <span>Có quyền đăng nhập &amp; tác nghiệp</span>
+          </div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-top">
             <span class="kpi-label">Đang bị khóa (LOCKED)</span>
-            <span class="kpi-icon kpi-icon-red">🔒</span>
+            <span class="kpi-icon kpi-icon-red">
+              <span class="material-symbols-outlined">lock</span>
+            </span>
           </div>
           <div id="kpi-lib-locked" class="kpi-value" style="color: var(--danger);">—</div>
-          <div class="kpi-sub" style="color: var(--danger);">⚠ Đã chặn đăng nhập &amp; vô hiệu hóa phiên</div>
+          <div class="kpi-sub" style="color: var(--danger);">
+            <span class="material-symbols-outlined">warning</span>
+            <span>Đã chặn đăng nhập &amp; vô hiệu hóa phiên</span>
+          </div>
         </div>
       </div>
 
@@ -192,7 +207,10 @@
       <!-- Librarians Table -->
       <section class="panel-card">
         <div class="panel-head">
-          <h2 class="panel-title">🛡️ Danh sách tài khoản Thủ thư</h2>
+          <h2 class="panel-title">
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+            <span>Danh sách tài khoản Thủ thư</span>
+          </h2>
           <span id="lib-count-badge" class="panel-meta">0 tài khoản</span>
         </div>
 
@@ -239,8 +257,13 @@
   <div id="modal-create-lib" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3>👤+ Tạo tài khoản Thủ thư mới</h3>
-        <button type="button" class="modal-close" data-close="modal-create-lib">✕</button>
+        <h3>
+          <span class="material-symbols-outlined">person_add</span>
+          <span>Tạo tài khoản Thủ thư mới</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-create-lib" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="create-lib-form">
         <div class="form-field">
@@ -271,8 +294,13 @@
   <div id="modal-edit-lib" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3>✏️ Chỉnh sửa tài khoản Thủ thư</h3>
-        <button type="button" class="modal-close" data-close="modal-edit-lib">✕</button>
+        <h3>
+          <span class="material-symbols-outlined">edit</span>
+          <span>Chỉnh sửa tài khoản Thủ thư</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-edit-lib" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="edit-lib-form">
         <input type="hidden" id="edit-lib-id">
@@ -305,8 +333,13 @@
   <div id="modal-toggle-lib" class="modal-backdrop" hidden>
     <div class="modal-dialog">
       <div class="modal-head">
-        <h3 id="toggle-lib-title">🔒 Khóa tài khoản Thủ thư</h3>
-        <button type="button" class="modal-close" data-close="modal-toggle-lib">✕</button>
+        <h3 id="toggle-lib-title">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Khóa tài khoản Thủ thư</span>
+        </h3>
+        <button type="button" class="modal-close" data-close="modal-toggle-lib" aria-label="Đóng">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <p id="toggle-lib-desc" style="font-size:14px; color:var(--text-sec); line-height:1.6; margin:0 0 18px;"></p>
       <input type="hidden" id="toggle-lib-id">

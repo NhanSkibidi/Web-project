@@ -187,6 +187,9 @@ def create_book(db: Session, book_data):
         if book_data.publish_year < 1 or book_data.publish_year > datetime.now().year:
             raise ValueError("Năm xuất bản không hợp lệ")
 
+    if book_data.price is not None and book_data.price < 0:
+        raise ValueError("Đơn giá không được nhỏ hơn 0")
+
     existing_book = db.query(Book).filter(
         Book.isbn == book_data.isbn).first()
 
@@ -250,6 +253,9 @@ def update_book(db: Session, isbn: str, book_data):
     if "publish_year" in data and data["publish_year"] is not None:
         if data["publish_year"] < 1 or data["publish_year"] > datetime.now().year:
             raise ValueError("Năm xuất bản không hợp lệ")
+
+    if "price" in data and data["price"] is not None and data["price"] < 0:
+        raise ValueError("Đơn giá không được nhỏ hơn 0")
 
     if "category_id" in data:
         if data["category_id"] is None:

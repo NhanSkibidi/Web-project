@@ -154,7 +154,6 @@
         detailCopiesAvail: document.getElementById("detailCopiesAvail"),
         detailCopiesBorrowed: document.getElementById("detailCopiesBorrowed"),
         detailCopiesReserved: document.getElementById("detailCopiesReserved"),
-        btnDetailPrintSpine: document.getElementById("btnDetailPrintSpine"),
         detailBookTitle: document.getElementById("detailBookTitle"),
         detailAuthor: document.getElementById("detailAuthor"),
         detailPublisher: document.getElementById("detailPublisher"),
@@ -2587,12 +2586,6 @@
                     state.returnToDetailIsbn = isbn;
                     openEditModal(isbn);
                 }
-            });
-        }
-
-        if (dom.btnDetailPrintSpine) {
-            dom.btnDetailPrintSpine.addEventListener("click", () => {
-                showNotification("Đang gửi lệnh in tem nhãn gáy sách (Spine Label)...", "info");
             });
         }
 

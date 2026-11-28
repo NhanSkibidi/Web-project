@@ -47,10 +47,6 @@ const submitModal = document.getElementById('submitModal');
 const cancelSubmitBtn = document.getElementById('cancelSubmitBtn');
 const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
 
-const logoutModal = document.getElementById('logoutModal');
-const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
-const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-
 const toastContainer = document.getElementById('toastContainer');
 
 let bookIsbnToDelete = null;
@@ -533,23 +529,8 @@ function setupEventListeners() {
         });
     }
 
-    // Modal Logout
-    if (cancelLogoutBtn) {
-        cancelLogoutBtn.addEventListener('click', closeLogoutModal);
-    }
-    if (confirmLogoutBtn) {
-        confirmLogoutBtn.addEventListener('click', () => {
-            closeLogoutModal();
-            if (typeof auth !== 'undefined' && typeof auth.clearSession === 'function') {
-                auth.clearSession();
-            }
-            showToast('Đăng xuất thành công', 'Hẹn gặp lại bạn lần sau.', 'success');
-            setTimeout(() => { location.href = 'login.html#login'; }, 700);
-        });
-    }
-
     // Modal click outside to close
-    [deleteModal, deleteAllModal, submitModal, logoutModal].forEach(modal => {
+    [deleteModal, deleteAllModal, submitModal].forEach(modal => {
         if (modal) {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -625,7 +606,6 @@ function setupEventListeners() {
             closeDeleteAllModal();
             closeSubmitModal();
             closeConfirmModal();
-            closeLogoutModal();
             closeCustomDropdown();
             if (userDropdownMenu) userDropdownMenu.classList.remove('show');
         }
@@ -785,10 +765,6 @@ function closeConfirmModal() {
     const modal = document.getElementById('confirm-modal');
     if (modal) modal.classList.remove('active');
     activeConfirmCallback = null;
-}
-
-function closeLogoutModal() {
-    closeConfirmModal();
 }
 
 function openSubmitModal(selectedBooks) {

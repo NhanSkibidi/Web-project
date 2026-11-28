@@ -186,7 +186,7 @@
       const coverUrl = formatCoverUrl(book.cover_image);
       coverWrap.innerHTML = `
         <div style="width:100%; height:100%; border-radius:12px; overflow:hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.25); background: #f8fafc; display:flex; align-items:center; justify-content:center;">
-          <img src="${coverUrl}" alt="${escapeHtml(book.title)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'">
+          <img src="${coverUrl}" alt="${escapeHtml(book.title)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'">
         </div>
       `;
     }
@@ -483,7 +483,7 @@
         return `
           <div class="related-card" onclick="window.location.href='book_detail.html?isbn=${encodeURIComponent(b.isbn)}'" style="cursor: pointer;">
             <div class="related-cover-box" style="padding:0; overflow:hidden;">
-              <img src="${coverSrc}" alt="${escapeHtml(b.title)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
+              <img src="${coverSrc}" alt="${escapeHtml(b.title)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
             </div>
             <div class="related-info">
               <span class="related-ddc">${escapeHtml(b.isbn)}</span>

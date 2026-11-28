@@ -55,7 +55,7 @@
         <!-- Các ô phạm vi tìm kiếm: Ban đầu chữ đen; khi di chuột hoặc bấm thì chữ đổi trắng, ô thành xanh và di chuyển lên -->
         <div class="scope-selector">
           <span class="scope-label">Phạm vi:</span>
-          <button type="button" class="scope-pill" data-scope="all" onclick="selectScope('all', this)">Tất cả</button>
+          <button type="button" class="scope-pill active" data-scope="all" onclick="selectScope('all', this)">Tất cả</button>
           <button type="button" class="scope-pill" data-scope="title" onclick="selectScope('title', this)">Nhan
             đề</button>
           <button type="button" class="scope-pill" data-scope="author" onclick="selectScope('author', this)">Tác
@@ -87,7 +87,7 @@
             <span style="width:8px; height:8px; border-radius:50%; background:#16A34A;"></span>
             Chỉ hiện sách còn sẵn
           </span>
-          <input type="checkbox" id="filter-avail-only" class="filter-checkbox" checked onchange="applyFilters()">
+          <input type="checkbox" id="filter-avail-only" class="filter-checkbox" onchange="applyFilters()">
         </label>
 
         <!-- 2. Thể loại & Chuyên ngành -->

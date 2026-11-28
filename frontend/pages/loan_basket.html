@@ -54,7 +54,7 @@
         <!-- Header Right Area -->
         <div class="topbar-right">
             <!-- Chuông thông báo in-app (Task T3CFF48) -->
-            <div class="notif-dropdown-container" id="notifDropdownContainer">
+            <div class="notif-dropdown-container" id="notifDropdownContainer" data-auth-required="true">
                 <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
                     aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
                     <span class="material-symbols-outlined">notifications</span>
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Giỏ mượn sách -->
-            <a href="loan_basket.html" class="topbar-icon-btn active" data-page="cart" title="Giỏ mượn sách" aria-label="Giỏ mượn sách (0 cuốn)">
+            <a href="loan_basket.html" class="topbar-icon-btn active" data-page="cart" data-auth-required="true" title="Giỏ mượn sách" aria-label="Giỏ mượn sách (0 cuốn)">
                 <span class="material-symbols-outlined">shopping_bag</span>
                 <span class="cart-badge-count" id="cartBadge" aria-live="polite" style="display: none;">0</span>
             </a>

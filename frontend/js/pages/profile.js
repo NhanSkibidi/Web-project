@@ -382,10 +382,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Đăng xuất
-  document.getElementById("btn-pf-logout")?.addEventListener("click", () => {
+  // Đăng xuất với hộp thoại xác nhận
+  const confirmModal = document.getElementById("confirm-modal");
+  const btnConfirmCancel = document.getElementById("btn-confirm-cancel");
+  const btnConfirmProceed = document.getElementById("btn-confirm-proceed");
+
+  function openLogoutConfirm() {
+    if (!confirmModal) {
+      auth.clearSession();
+      window.location.href = "login.html#login";
+      return;
+    }
+    confirmModal.setAttribute("aria-hidden", "false");
+    confirmModal.classList.add("active");
+  }
+
+  function closeLogoutConfirm() {
+    if (!confirmModal) return;
+    confirmModal.classList.remove("active");
+    confirmModal.setAttribute("aria-hidden", "true");
+  }
+
+  document.getElementById("btn-pf-logout")?.addEventListener("click", openLogoutConfirm);
+  btnConfirmCancel?.addEventListener("click", closeLogoutConfirm);
+  btnConfirmProceed?.addEventListener("click", () => {
+    closeLogoutConfirm();
     auth.clearSession();
     window.location.href = "login.html#login";
+  });
+  confirmModal?.addEventListener("click", (e) => {
+    if (e.target === confirmModal) closeLogoutConfirm();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && confirmModal?.classList.contains("active")) {
+      closeLogoutConfirm();
+    }
   });
 
   const cachedUser = typeof auth.getUser === "function" ? auth.getUser() : null;

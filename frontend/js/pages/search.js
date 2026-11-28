@@ -26,16 +26,27 @@ let currentDisplayedBooks = [];
 let pendingBorrowBook = null;
 let lastModalTriggerEl = null;
 let searchUiBound = false;
+let isBorrowSubmitting = false;
 let savedBookmarks = new Set();
 
 // ---------- Helper: format cover URL ----------
-function formatCoverUrl(coverImage, root) {
+function formatCoverUrl(coverImage) {
   if (!coverImage) return null;
-  if (coverImage.startsWith("http://") || coverImage.startsWith("https://") || coverImage.startsWith("data:")) {
-    return coverImage;
+  const trimmed = String(coverImage).trim();
+  if (!trimmed) return null;
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("data:") ||
+    trimmed.startsWith("blob:")
+  ) {
+    return trimmed;
   }
-  const r = root || (document.body.dataset.root || "../");
-  return r + coverImage.replace(/^\//, "");
+  const baseOrigin =
+    typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL
+      ? CONFIG.API_BASE_URL.replace(/\/api\/?$/, "")
+      : "";
+  return `${baseOrigin}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`;
 }
 
 // ---------- Helper: SVG fallback bìa sách ----------
@@ -787,17 +798,23 @@ function handleBorrowOnline(isbn) {
 }
 
 async function confirmBorrowOnline() {
-  if (!pendingBorrowBook) return;
+  if (!pendingBorrowBook || isBorrowSubmitting) return;
   const book = pendingBorrowBook;
+  const confirmBtn = document.getElementById("btn-confirm-borrow");
+  const labelEl = confirmBtn?.querySelector(".btn-borrow-confirm-label");
+
+  isBorrowSubmitting = true;
+  if (confirmBtn) confirmBtn.disabled = true;
+  if (labelEl) labelEl.textContent = "Đang gửi...";
 
   try {
     // Gọi API mượn sách
     const isbn = book.isbn || "";
-    await api.post("/loans/online", { book_isbns: [isbn] });
+    const res = await api.post("/loans/online", { book_isbns: [isbn] });
 
     const today = new Date();
     const dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-    const slipCode = generateLoanSlipCode();
+    const slipCode = res?.code || (res?.id ? `PM-${res.id}` : generateLoanSlipCode());
 
     closeBorrowModal();
     fetchBooks(); // Làm mới kết quả
@@ -816,8 +833,12 @@ async function confirmBorrowOnline() {
     showSearchToast({
       type: "warning",
       title: "Không thể hoàn tất yêu cầu",
-      message: err?.data?.detail || "Có lỗi xảy ra khi mượn sách. Vui lòng thử lại hoặc liên hệ thủ thư."
+      message: err?.message || err?.data?.detail || "Có lỗi xảy ra khi mượn sách. Vui lòng thử lại hoặc liên hệ thủ thư."
     });
+  } finally {
+    isBorrowSubmitting = false;
+    if (confirmBtn) confirmBtn.disabled = false;
+    if (labelEl) labelEl.textContent = "Xác nhận mượn sách";
   }
 }
 
@@ -957,6 +978,9 @@ function initSearchPage() {
   searchPageInitialized = true;
 
   initBorrowModalBindings();
+
+  const availCb = document.getElementById("filter-avail-only");
+  if (availCb) availCb.checked = searchState.availableOnly;
 
   // Đặt URL param keyword nếu có (từ trang khác chuyển sang)
   const urlParams = new URLSearchParams(window.location.search);

@@ -482,7 +482,7 @@
                         <span class="book-isbn-cell">ISBN: ${escapeHtml(book.isbn)}</span>
                     </td>
                     <td style="text-align: center;">
-                        <img src="${coverSrc}" alt="${escapeHtml(book.title)}" class="book-cover-img" onerror="this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
+                        <img src="${coverSrc}" alt="${escapeHtml(book.title)}" class="book-cover-img" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=80'">
                     </td>
                     <td>
                         <a href="book_detail.html?isbn=${encodeURIComponent(book.isbn)}" onclick="window.booksApp.openBookDetailModal('${book.isbn}'); return false;" class="book-title-text" title="Xem chi tiết đầu sách">

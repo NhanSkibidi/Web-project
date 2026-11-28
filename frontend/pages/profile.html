@@ -244,6 +244,23 @@
     </div>
   </footer>
 
+  <!-- Hộp thoại xác nhận đăng xuất (đồng bộ toàn hệ thống) -->
+  <div class="modal-backdrop" id="confirm-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-confirm">
+      <div class="confirm-content-wrap">
+        <div class="confirm-icon-circle icon-red" id="confirm-icon-box">
+          <span class="material-symbols-outlined" id="confirm-icon">warning</span>
+        </div>
+        <h3 class="confirm-title" id="confirm-title">Xác nhận đăng xuất?</h3>
+        <p class="confirm-message" id="confirm-message">Bạn có chắc chắn muốn kết thúc phiên làm việc hiện tại không?</p>
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">Hủy</button>
+          <button type="button" class="btn-confirm-proceed btn-danger" id="btn-confirm-proceed">Đăng xuất</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/api.js?v=2.2"></script>

@@ -52,7 +52,7 @@
     <!-- Góc phải: Chuông thông báo + Giỏ hàng + Avatar người dùng -->
     <div class="topbar-right">
       <!-- Chuông thông báo in-app (Task T3CFF48) -->
-      <div class="notif-dropdown-container" id="notifDropdownContainer">
+      <div class="notif-dropdown-container" id="notifDropdownContainer" data-auth-required="true">
         <button type="button" class="topbar-icon-btn notif-btn" id="notifBellBtn"
           aria-label="Xem thông báo nhắc trả sách" aria-expanded="false" title="Thông báo nhắc trả sách">
           <span class="material-symbols-outlined">notifications</span>
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Nút Giỏ Hàng Mượn Sách -->
-      <a href="loan_basket.html" class="topbar-icon-btn" id="headerCartBtn" title="Giỏ mượn sách">
+      <a href="loan_basket.html" class="topbar-icon-btn" id="headerCartBtn" title="Giỏ mượn sách" data-auth-required="true">
         <span class="material-symbols-outlined">shopping_bag</span>
         <span class="cart-badge-count" id="headerCartBadge" style="display: none;">0</span>
       </a>
@@ -474,7 +474,7 @@
 
           <!-- Nhắc nhở quy định -->
           <div class="copies-footer-notice">
-            <div>ⓘ Sinh viên được mượn tối đa <strong>3 bản in</strong> cùng lúc trong thời hạn <strong>14
+            <div>ⓘ Sinh viên được mượn tối đa <strong>5 cuốn sách</strong> cùng lúc trong thời hạn <strong>14
                 ngày</strong>.</div>
             <a href="javascript:void(0)"
               onclick="showToast('Quy chế mượn trả: Mượn tối đa 5 cuốn/14 ngày. Phạt trễ hạn 2.000đ/ngày.', 'success')">

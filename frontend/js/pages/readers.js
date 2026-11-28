@@ -143,8 +143,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (typeof auth !== "undefined" && typeof auth.clearSession === "function") {
           auth.clearSession();
         } else {
-          localStorage.clear();
-          sessionStorage.clear();
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_info");
+          localStorage.removeItem("library_card");
+          sessionStorage.removeItem("access_token");
+          sessionStorage.removeItem("user_info");
         }
         window.location.href = "login.html#login";
       }

@@ -305,9 +305,15 @@
         const userMenu =
           document.getElementById("userDropdownMenu") ||
           document.getElementById("accountMenu");
+        const userProfileBtn = document.getElementById("userProfileBtn");
         if (userMenu) {
           userMenu.classList.remove("show");
-          userMenu.setAttribute("hidden", "");
+          if (userMenu.id === "accountMenu") {
+            userMenu.setAttribute("hidden", "");
+          }
+        }
+        if (userProfileBtn) {
+          userProfileBtn.setAttribute("aria-expanded", "false");
         }
 
         if (isHidden) {
